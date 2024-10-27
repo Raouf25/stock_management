@@ -17,7 +17,7 @@ public class Supplier {
     private String address;
     private String phone;
     private String email;
-    private String weSite;
+    private String webSite;
     private String tvaCode;
     private String rib;
     private String iban;

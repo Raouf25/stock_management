@@ -1,10 +1,11 @@
 -- Insertion des données de test
 
 -- Insertion de fournisseurs
-INSERT INTO Supplier (name, address, phone, email, contact_person)
+INSERT INTO Supplier (name, address, phone, email, web_site, tva_code, rib, iban, contact_person)
 VALUES
-    ('Fournisseur A', '123 Rue A, Ville A', '0123456789', 'fournisseurA@example.com', 'Personne A'),
-    ('Fournisseur B', '456 Rue B, Ville B', '0987654321', 'fournisseurB@example.com', 'Personne B');
+    ('Fournisseur A', '123 Rue A, Ville A', '0123456789', 'fournisseurA@example.com', 'www.fournisseurA.com', '123456789', '12345678901234567890', 'FR7612345678901234567890', 'Personne A'),
+    ('Fournisseur B', '456 Rue B, Ville B', '0987654321', 'fournisseurB@example.com', 'www.fournisseurB.com', '987654321', '09876543210987654321', 'FR7698765432109876543210', 'Personne B'),
+    ('Aldecco S.A.R.L', 'Avenue de l''U.M.A, TUNIS', '+216 71 494 496', 'info@valpaint.tn', 'www.valpaint.tn', '954308X/A/M/000', '08110010021000316328', 'TN59 0811 0010 0210 0031 6328', 'Personne C');
 
 -- Insertion de clients
 INSERT INTO Customer (name, address, phone, fax, email)

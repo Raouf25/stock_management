@@ -16,6 +16,10 @@ CREATE TABLE IF NOT EXISTS Supplier (
                              address VARCHAR(255),
                              phone VARCHAR(20),
                              email VARCHAR(100),
+                             web_site VARCHAR(100),
+                             tva_code VARCHAR(100),
+                             rib VARCHAR(100),
+                             iban VARCHAR(100),
                              contact_person VARCHAR(100)
 );
 
