@@ -36,6 +36,7 @@ CREATE TABLE IF NOT EXISTS Customer (
 -- Table Product
 CREATE TABLE IF NOT EXISTS Product (
                          id_product SERIAL PRIMARY KEY,
+                         reference BIGINT NOT NULL,
                          name VARCHAR(100) NOT NULL,
                          description TEXT,
                          category VARCHAR(100) NOT NULL,

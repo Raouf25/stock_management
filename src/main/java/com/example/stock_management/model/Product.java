@@ -9,6 +9,7 @@ public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idProduct;
+    private Long reference;
 
     private String name;
     private String description;
