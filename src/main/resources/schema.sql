@@ -28,6 +28,7 @@ CREATE TABLE IF NOT EXISTS Customer (
                         customer_id SERIAL PRIMARY KEY,
                         name VARCHAR(100) NOT NULL,
                         address VARCHAR(255),
+                        tva_code VARCHAR(100),
                         phone VARCHAR(20),
                         fax VARCHAR(20),
                         email VARCHAR(100)

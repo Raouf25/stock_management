@@ -23,7 +23,7 @@ public class Bill {
 
     @OneToMany(mappedBy = "bill", cascade = CascadeType.ALL, orphanRemoval = true)
     @ToString.Exclude // Exclusion de la relation pour éviter la récursion infinie
-    private List<BillProduct> products;
+    private List<BillProduct> billProducts;
 
     private double total;
 }

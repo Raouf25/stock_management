@@ -3,15 +3,16 @@
 -- Insertion de fournisseurs
 INSERT INTO Supplier (name, address, phone, email, web_site, tva_code, rib, iban, contact_person)
 VALUES
-    ('Fournisseur A', '123 Rue A, Ville A', '0123456789', 'fournisseurA@example.com', 'www.fournisseurA.com', '123456789', '12345678901234567890', 'FR7612345678901234567890', 'Personne A'),
-    ('Fournisseur B', '456 Rue B, Ville B', '0987654321', 'fournisseurB@example.com', 'www.fournisseurB.com', '987654321', '09876543210987654321', 'FR7698765432109876543210', 'Personne B'),
+    ('Fournitures Générales S.A.R.L', 'Avenue des Industries, ZI Sfax', '+216 74 678 123', 'contact@fournitures-generales.com', 'www.fournitures-generales.com', '123456789/A/M/000', '08110010021000316329', 'TN59 0811 0010 0210 0031 6329', 'Ahmed Mansour'),
+    ('Technologie & Co S.A.', 'Boulevard Technologique, Ariana', '+216 71 234 567', 'info@technologieco.com', 'www.technologieco.com', '987654321/B/M/000', '08110010021000316330', 'TN59 0811 0010 0210 0031 6330', 'Leila Trabelsi'),
     ('Aldecco S.A.R.L', 'Avenue de l''U.M.A, TUNIS', '+216 71 494 496', 'info@valpaint.tn', 'www.valpaint.tn', '954308X/A/M/000', '08110010021000316328', 'TN59 0811 0010 0210 0031 6328', 'Personne C');
 
 -- Insertion de clients
-INSERT INTO Customer (name, address, phone, fax, email)
+INSERT INTO Customer (name, address, phone, fax, email, tva_code)
 VALUES
-    ('Customer A', '789 Rue C, Ville C', '0112233445', '0556677889', 'clientA@example.com'),
-    ('Customer B', '101 Rue D, Ville D', '0556677889', '0112233445', 'clientB@example.com');
+    ('Société de Construction Tunisienne', '15 Rue des Entrepreneurs, Tunis', '+216 71 123 456', '+216 71 654 321', 'contact@construction-tun.com','123456789/A/M/000'),
+    ('Import Export Médical', '32 Avenue de la Santé, Sfax', '+216 74 987 654', '+216 74 321 987', 'info@importexport-med.com','987654321/B/M/000');
+
 
 -- Insertion de products
 INSERT INTO Product (category,name, unit, unit_price_ht,  unit_price_ttc, initial_stock_quantity, current_stock_quantity, supplier_id, reference)
@@ -135,16 +136,19 @@ VALUES
 
 
 -- Insertion de bills
--- INSERT INTO Bill (date_bill, id_client, total)
--- VALUES
---     ('2024-08-24 10:00:00', 1, 200.00),
---     ('2024-08-25 12:00:00', 2, 270.00);
+INSERT INTO Bill (date_bill, customer_id, total)
+VALUES
+    ('2024-08-24 10:00:00', 1, 200.00),
+    ('2024-08-25 12:00:00', 2, 270.00);
 
 -- Insertion des products commandés (liaison Bill-Product)
--- INSERT INTO Bill_Product (id_bill, id_product, quantity, total_product_price)
--- VALUES
---     (1, 1, 2, 100.00),
---     (2, 2, 3, 90.00);
+INSERT INTO Bill_Product (id_bill, id_product, quantity, total_product_price)
+VALUES
+    (1, 1, 2, 100.00),
+    (2, 2, 5, 180.35),
+    (2, 3, 4, 601.92),
+    (2, 4, 3, 29.31),
+    (2, 5, 2, 66.04)    ;
 
 -- Insertion des mouvements de stock lors des bills
 -- INSERT INTO Stock_Mouvement (id_product, quantite_changee, date_mouvement, type_mouvement)

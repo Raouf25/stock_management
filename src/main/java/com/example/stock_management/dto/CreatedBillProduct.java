@@ -6,6 +6,7 @@ import lombok.Data;
 @Data
 public class CreatedBillProduct {
 
+    private Long reference;
     private String productName;
     private String productDescription;
     private Double unitPrice;
