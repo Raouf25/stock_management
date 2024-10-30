@@ -56,6 +56,7 @@ CREATE TABLE IF NOT EXISTS Bill (
                           date_bill TIMESTAMP NOT NULL,
                           customer_id INT REFERENCES Customer(customer_id)
 );
+ALTER TABLE Bill ADD COLUMN payment_status VARCHAR(20) DEFAULT 'UNPAID';
 
 -- Table Bill_Product (Table de liaison pour la relation many-to-many)
 CREATE TABLE IF NOT EXISTS Bill_Product (

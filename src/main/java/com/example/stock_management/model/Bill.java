@@ -1,5 +1,6 @@
 package com.example.stock_management.model;
 
+import com.example.stock_management.dto.PaymentStatus;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.ToString;
@@ -26,4 +27,7 @@ public class Bill {
     private List<BillProduct> billProducts;
 
     private double total;
+
+    @Enumerated(EnumType.STRING)
+    private PaymentStatus paymentStatus;
 }

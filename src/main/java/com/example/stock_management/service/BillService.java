@@ -68,6 +68,7 @@ public class BillService {
         }).toList();
 
         bill.setBillProducts(billProducts);
+
         // Sauvegarder la facture dans la base de données
         return billRepository.save(bill);
     }

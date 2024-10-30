@@ -9,5 +9,5 @@ public class BillDTO {
 
     private Long idClient;
     private List<BillProductDTO> products;
-
+    private PaymentStatus paymentStatus = PaymentStatus.UNPAID;
 }
