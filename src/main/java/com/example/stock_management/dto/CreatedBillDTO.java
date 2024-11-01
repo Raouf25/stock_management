@@ -15,6 +15,8 @@ public class CreatedBillDTO {
     private String clientFax;
     private String clientEmail;
     private Double totalAmount;
+    private Double deposit;
+    private Double amountDue;
     private List<CreatedBillProduct> products;
     private PaymentStatus paymentStatus;
 }

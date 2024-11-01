@@ -27,6 +27,11 @@ public class Bill {
     private List<BillProduct> billProducts;
 
     private double total;
+    private double deposit;// "Acompte"
+
+    @Column(name = "amount_due")
+    private double amountDue;// "Net à payer"
+
 
     @Enumerated(EnumType.STRING)
     private PaymentStatus paymentStatus;

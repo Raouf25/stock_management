@@ -19,7 +19,9 @@ public interface BillMapper {
             @Mapping(source = "idBill", target = "billId"),
             @Mapping(source = "total", target = "totalAmount"),
             @Mapping(source = "billProducts", target = "products"),
-            @Mapping(source = "paymentStatus", target = "paymentStatus")
+            @Mapping(source = "paymentStatus", target = "paymentStatus"),
+            @Mapping(source = "deposit", target = "deposit"),
+            @Mapping(source = "amountDue", target = "amountDue")
     })
     CreatedBillDTO sourceToDestination(Bill source);
 
@@ -27,7 +29,7 @@ public interface BillMapper {
             @Mapping(source = "product.reference", target = "reference"),
             @Mapping(source = "product.name", target = "productName"),
             @Mapping(source = "product.description", target = "productDescription"),
-            @Mapping(source = "product.unitPriceHt", target = "unitPrice"),
+            @Mapping(source = "product.unitPriceBought", target = "unitPrice"),
             @Mapping(source = "quantity", target = "quantity"),
             @Mapping(source = "totalProductPrice", target = "totalProductPrice")
     })

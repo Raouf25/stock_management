@@ -1,6 +1,7 @@
 package com.example.stock_management.service;
 
 import com.example.stock_management.dto.BillDTO;
+import com.example.stock_management.dto.PaymentStatus;
 import com.example.stock_management.model.Bill;
 import com.example.stock_management.model.BillProduct;
 import com.example.stock_management.model.Customer;
@@ -58,7 +59,7 @@ public class BillService {
             billProduct.setProduct(product);
             billProduct.setQuantity(billProductDTO.getQuantite());
             productRepository.updateStock(billProductDTO.getIdProduct(), billProductDTO.getQuantite());
-            billProduct.setTotalProductPrice(billProductDTO.getQuantite() * product.getUnitPriceHt());
+            billProduct.setTotalProductPrice(billProductDTO.getQuantite() * product.getUnitPriceBought());
 
             bill.setTotal(bill.getTotal() + billProduct.getTotalProductPrice());
             // Associer la facture aux produits
@@ -66,6 +67,14 @@ public class BillService {
 
             return billProduct;
         }).toList();
+
+        if (bill.getDeposit()>0) {
+            bill.setAmountDue(bill.getTotal() - bill.getDeposit());
+            bill.setPaymentStatus(PaymentStatus.PARTIALLY_PAID);
+        } else {
+            bill.setAmountDue(bill.getTotal());
+            bill.setPaymentStatus(PaymentStatus.UNPAID);
+        }
 
         bill.setBillProducts(billProducts);
 

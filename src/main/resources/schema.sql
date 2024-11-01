@@ -42,8 +42,8 @@ CREATE TABLE IF NOT EXISTS Product (
                          description TEXT,
                          category VARCHAR(100) NOT NULL,
                          unit VARCHAR(100) NOT NULL,
-                         unit_price_ht DECIMAL(10, 2) NOT NULL,
-                         unit_price_ttc DECIMAL(10, 2) NOT NULL,
+                         unit_price_sold DECIMAL(10, 2) NOT NULL,
+                         unit_price_bought DECIMAL(10, 2) NOT NULL,
                          current_stock_quantity INT NOT NULL,
                          initial_stock_quantity INT DEFAULT 0,
                          supplier_id INT REFERENCES Supplier(supplier_id)
@@ -53,10 +53,12 @@ CREATE TABLE IF NOT EXISTS Product (
 CREATE TABLE IF NOT EXISTS Bill (
                           id_bill SERIAL PRIMARY KEY,
                           total DECIMAL(10, 2) NOT NULL,
+                          deposit DECIMAL(10, 2) NOT NULL DEFAULT  0, -- Acompte
+                          amountDue DECIMAL(10, 2) NOT NULL, -- "Net à payer"
                           date_bill TIMESTAMP NOT NULL,
+                          payment_status VARCHAR(20) DEFAULT 'UNPAID',
                           customer_id INT REFERENCES Customer(customer_id)
 );
-ALTER TABLE Bill ADD COLUMN payment_status VARCHAR(20) DEFAULT 'UNPAID';
 
 -- Table Bill_Product (Table de liaison pour la relation many-to-many)
 CREATE TABLE IF NOT EXISTS Bill_Product (

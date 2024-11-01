@@ -15,8 +15,8 @@ public class Product {
     private String description;
     private String category;
     private String unit;
-    private Double unitPriceHt;
-    private Double unitPriceTtc;
+    private Double unitPriceSold;
+    private Double unitPriceBought;
     private Integer currentStockQuantity;
     private Integer initialStockQuantity;
 
