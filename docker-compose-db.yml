@@ -1,0 +1,78 @@
+version: '3.8'
+
+services:
+  # Base de Données MySQL
+  mysql:
+    image: mysql:8.0
+    container_name: stock_management_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: stock_db
+      MYSQL_USER: stock_user
+      MYSQL_PASSWORD: stock_password
+      MYSQL_ROOT_HOST: '%'
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./INIT_DATA.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - stock_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  # Application Spring Boot (optionnel - à décommenter si vous avez un Dockerfile)
+  # app:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   container_name: stock_management_app
+  #   restart: always
+  #   depends_on:
+  #     mysql:
+  #       condition: service_healthy
+  #   environment:
+  #     SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/stock_db
+  #     SPRING_DATASOURCE_USERNAME: stock_user
+  #     SPRING_DATASOURCE_PASSWORD: stock_password
+  #     SPRING_JPA_HIBERNATE_DDL_AUTO: update
+  #   ports:
+  #     - "8080:8080"
+  #   networks:
+  #     - stock_network
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-f", "http://localhost:8080/api/products"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+  #     start_period: 40s
+
+volumes:
+  mysql_data:
+    driver: local
+
+networks:
+  stock_network:
+    driver: bridge
+
+# Instructions d'utilisation :
+# 1. Démarrer les services :
+#    docker-compose up -d
+#
+# 2. Vérifier l'état :
+#    docker-compose ps
+#
+# 3. Consulter les logs :
+#    docker-compose logs -f mysql
+#
+# 4. Accéder à MySQL :
+#    docker exec -it stock_management_db mysql -u root -p stock_db
+#
+# 5. Arrêter les services :
+#    docker-compose down
+#
+# 6. Supprimer les volumes (données) :
+#    docker-compose down -v

@@ -11,15 +11,28 @@ public class Product {
     private Long idProduct;
     private Long reference;
 
+    private String designation;
     private String name;
     private String description;
     private String category;
     private String unit;
     private Double unitPriceSold;
     private Double unitPriceBought;
-    private Integer currentStockQuantity;
+    
+    // Stock initial
     private Integer initialStockQuantity;
-
+    private Double initialUnitPrice; // prix unitaire initial TTC
+    private Double initialStockValue; // valeur initiale = quantiteInitiale * prixUnitaireInitial
+    
+    // Stock actuel
+    private Integer currentStockQuantity;
+    
+    // Valeur du stock actuel
+    private Double currentStockValue; // valeur stock final
+    
+    // CMP (Coût Moyen Pondéré)
+    private Double cmp; // = valeurStockFinal / quantiteStockFinal
+    
     @ManyToOne
     @JoinColumn(name = "supplier_id")
     private Supplier supplier;

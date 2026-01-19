@@ -88,6 +88,13 @@
 			<artifactId>mapstruct-processor</artifactId>
 			<version>1.4.1.Final</version>
 		</dependency>
+
+		<!-- OpenCSV pour la lecture des fichiers CSV -->
+		<dependency>
+			<groupId>com.opencsv</groupId>
+			<artifactId>opencsv</artifactId>
+			<version>5.9</version>
+		</dependency>
 	</dependencies>
 
 	<build>

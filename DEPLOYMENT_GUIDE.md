@@ -1,0 +1,425 @@
+# Guide de Déploiement - Stock Management API
+
+## 📌 Déploiement Local
+
+### Option 1 : Déploiement Classique (sans Docker)
+
+#### 1. Prérequis
+- Java 21+
+- Maven 4.x
+- MySQL 8.0+
+
+#### 2. Configurer MySQL
+```bash
+# Créer la base de données
+mysql -u root -p
+CREATE DATABASE stock_db;
+EXIT;
+```
+
+#### 3. Configurer l'Application
+Modifier `src/main/resources/application.properties` :
+```properties
+spring.datasource.url=jdbc:mysql://localhost:3306/stock_db
+spring.datasource.username=root
+spring.datasource.password=votre_motdepasse
+```
+
+#### 4. Initialiser les Données
+```bash
+mysql -u root -p stock_db < INIT_DATA.sql
+```
+
+#### 5. Démarrer l'Application
+```bash
+./mvnw spring-boot:run
+```
+
+L'API sera accessible : `http://localhost:8080/api`
+
+---
+
+### Option 2 : Déploiement avec Docker Compose
+
+#### 1. Prérequis
+- Docker
+- Docker Compose
+
+#### 2. Lancer les Services
+```bash
+# Démarrer MySQL seul (sans app)
+docker-compose -f docker-compose-db.yml up -d
+
+# Ou démarrer l'app + MySQL (après décommenter dans docker-compose.yml)
+docker-compose up -d
+```
+
+#### 3. Vérifier l'État
+```bash
+docker-compose ps
+docker-compose logs -f
+```
+
+#### 4. Accéder à l'Application
+```
+API: http://localhost:8080/api
+Swagger UI: http://localhost:8080/swagger-ui.html
+```
+
+#### 5. Arrêter les Services
+```bash
+docker-compose down
+```
+
+---
+
+### Option 3 : Déploiement Multi-Conteneurs (Complet)
+
+#### 1. Compiler l'Application
+```bash
+mvn clean package
+```
+
+#### 2. Construire l'Image Docker
+```bash
+docker build -t stock-management:1.0 .
+```
+
+#### 3. Vérifier l'Image
+```bash
+docker images | grep stock-management
+```
+
+#### 4. Lancer les Conteneurs
+```bash
+# Démarrer MySQL
+docker run -d \
+  --name stock_db \
+  --network stock_network \
+  -e MYSQL_ROOT_PASSWORD=root \
+  -e MYSQL_DATABASE=stock_db \
+  -p 3306:3306 \
+  mysql:8.0
+
+# Attendre que MySQL soit prêt
+sleep 30
+
+# Initialiser les données
+docker exec stock_db mysql -u root -proot stock_db < INIT_DATA.sql
+
+# Démarrer l'Application
+docker run -d \
+  --name stock_app \
+  --network stock_network \
+  -e SPRING_DATASOURCE_URL=jdbc:mysql://stock_db:3306/stock_db \
+  -e SPRING_DATASOURCE_USERNAME=root \
+  -e SPRING_DATASOURCE_PASSWORD=root \
+  -p 8080:8080 \
+  stock-management:1.0
+```
+
+#### 5. Vérifier les Logs
+```bash
+docker logs -f stock_app
+docker logs -f stock_db
+```
+
+#### 6. Arrêter et Nettoyer
+```bash
+docker stop stock_app stock_db
+docker rm stock_app stock_db
+docker network rm stock_network
+```
+
+---
+
+## 🚀 Déploiement en Production
+
+### Recommandations
+
+1. **Database**
+   - Utiliser MySQL 8.0+ ou MariaDB 10.5+
+   - Configurer des sauvegardes régulières
+   - Utiliser une base de données externe (ex: AWS RDS)
+
+2. **Application**
+   - Utiliser HTTPS/TLS
+   - Activer l'authentification JWT
+   - Configurer les logs
+   - Mettre en place la monitoring
+
+3. **Infrastructure**
+   - Utiliser Kubernetes pour l'orchestration
+   - Mettre en place un load balancer
+   - Configurer l'auto-scaling
+   - Utiliser un CDN pour les assets statiques
+
+### Exemple de Déploiement sur Heroku
+
+#### 1. Prérequis
+- Compte Heroku
+- CLI Heroku installé
+- Git configuré
+
+#### 2. Créer l'Application Heroku
+```bash
+heroku login
+heroku create stock-management-app
+heroku addons:create cleardb:ignite  # MySQL add-on
+```
+
+#### 3. Configurer application.properties
+```properties
+spring.jpa.hibernate.ddl-auto=create-drop
+spring.jpa.show-sql=false
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQL8Dialect
+```
+
+#### 4. Déployer
+```bash
+git push heroku main
+```
+
+#### 5. Initialiser les Données
+```bash
+heroku config:get CLEARDB_DATABASE_URL
+# Puis exécuter le script SQL via l'URL fournie
+```
+
+### Exemple de Déploiement sur AWS ECS
+
+#### 1. Prérequis
+- Compte AWS
+- AWS CLI configuré
+
+#### 2. Créer ECR Repository
+```bash
+aws ecr create-repository --repository-name stock-management
+```
+
+#### 3. Construire et Pousser l'Image
+```bash
+docker tag stock-management:1.0 <ACCOUNT_ID>.dkr.ecr.<REGION>.amazonaws.com/stock-management:1.0
+docker push <ACCOUNT_ID>.dkr.ecr.<REGION>.amazonaws.com/stock-management:1.0
+```
+
+#### 4. Créer une Task Definition ECS
+```json
+{
+  "family": "stock-management",
+  "containerDefinitions": [{
+    "name": "stock-management",
+    "image": "<ACCOUNT_ID>.dkr.ecr.<REGION>.amazonaws.com/stock-management:1.0",
+    "portMappings": [{"containerPort": 8080}],
+    "environment": [
+      {"name": "SPRING_DATASOURCE_URL", "value": "jdbc:mysql://..."},
+      {"name": "SPRING_DATASOURCE_USERNAME", "value": "admin"},
+      {"name": "SPRING_DATASOURCE_PASSWORD", "value": "..."}
+    ]
+  }]
+}
+```
+
+#### 5. Créer le Service ECS
+```bash
+aws ecs create-service \
+  --cluster stock-cluster \
+  --service-name stock-management-service \
+  --task-definition stock-management:1 \
+  --desired-count 2 \
+  --load-balancers targetGroupArn=arn:aws:...,containerName=stock-management,containerPort=8080
+```
+
+---
+
+## 📊 Monitoring et Logging
+
+### Logs de l'Application
+```bash
+# En local
+tail -f logs/spring.log
+
+# Avec Docker
+docker logs -f stock_app
+
+# Avec Heroku
+heroku logs --tail
+
+# Avec AWS CloudWatch
+aws logs tail /ecs/stock-management --follow
+```
+
+### Health Check
+```bash
+# Vérifier la santé de l'application
+curl http://localhost:8080/actuator/health
+
+# Vérifier les métriques
+curl http://localhost:8080/actuator/metrics
+```
+
+### Configuration du Monitoring
+
+Ajouter dans `pom.xml` :
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-actuator</artifactId>
+</dependency>
+```
+
+Ajouter dans `application.properties` :
+```properties
+management.endpoints.web.exposure.include=health,metrics,prometheus
+management.metrics.export.prometheus.enabled=true
+```
+
+---
+
+## 🔒 Sécurité
+
+### Checklist de Sécurité
+
+- [ ] HTTPS/TLS activé
+- [ ] Authentification JWT implémentée
+- [ ] CORS configuré correctement
+- [ ] SQL Injection prévenue (utiliser les requêtes paramétrées - fait ✅)
+- [ ] Rate limiting activé
+- [ ] Validation des entrées (fait ✅)
+- [ ] Gestion des erreurs sécurisée
+- [ ] Logs de sécurité activés
+- [ ] Secrets gérés via variables d'environnement
+- [ ] Mises à jour de sécurité appliquées
+
+### Configurer HTTPS
+
+```properties
+# application.properties
+server.ssl.key-store=classpath:keystore.p12
+server.ssl.key-store-password=votre_password
+server.ssl.key-store-type=PKCS12
+```
+
+### Activer la Validation CORS
+
+```java
+@Configuration
+public class CorsConfig implements WebMvcConfigurer {
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/api/**")
+            .allowedOrigins("https://votre-domaine.com")
+            .allowedMethods("GET", "POST", "PUT", "DELETE")
+            .allowedHeaders("*")
+            .allowCredentials(true)
+            .maxAge(3600);
+    }
+}
+```
+
+---
+
+## 📈 Performance
+
+### Optimisations Recommandées
+
+1. **Database**
+   - Ajouter des index sur les colonnes fréquemment interrogées
+   - Utiliser des requêtes optimisées
+   - Implémenter la pagination
+
+2. **Cache**
+   - Utiliser Redis pour le cache
+   - Configurer le cache des réponses
+
+3. **Application**
+   - Utiliser l'async pour les opérations longues
+   - Implémenter la compression GZIP
+   - Utiliser les projections JPA
+
+### Exemple de Configuration Cache
+
+```java
+@Configuration
+@EnableCaching
+public class CacheConfig {
+    @Bean
+    public CacheManager cacheManager() {
+        return new ConcurrentMapCacheManager("products", "sales", "purchases");
+    }
+}
+```
+
+Utiliser dans les services :
+```java
+@Cacheable("products")
+public List<Product> getAllProducts() {
+    return productRepository.findAll();
+}
+```
+
+---
+
+## 🐛 Troubleshooting
+
+### Problème : Connection Timeout
+```
+Error: Cannot connect to database
+Solución: Vérifier que MySQL est démarré et accessible
+docker ps
+docker logs stock_db
+```
+
+### Problème : Port Already in Use
+```bash
+# Trouver le processus utilisant le port
+lsof -i :8080
+kill -9 <PID>
+
+# Ou utiliser un autre port
+java -Dserver.port=8081 -jar app.jar
+```
+
+### Problème : OutOfMemory
+```bash
+# Augmenter la mémoire JVM
+java -Xmx2g -Xms1g -jar app.jar
+```
+
+### Problème : Slow Queries
+```sql
+-- Analyser les requêtes lentes
+SET GLOBAL slow_query_log = 'ON';
+SET GLOBAL long_query_time = 2;
+```
+
+---
+
+## ✅ Checklist de Déploiement
+
+- [ ] Code compilé sans erreurs
+- [ ] Tests unitaires passés
+- [ ] Configuration validée
+- [ ] Base de données initialisée
+- [ ] Données de test importées
+- [ ] Endpoints testés manuellement
+- [ ] Documentation mise à jour
+- [ ] Logs configurés
+- [ ] Monitoring actif
+- [ ] Backups configurés
+- [ ] Plan de rollback préparé
+
+---
+
+## 📞 Support et Assistance
+
+Pour des problèmes de déploiement :
+1. Consulter les logs : `docker logs -f app`
+2. Vérifier la connectivité MySQL : `docker exec -it db mysql -u root -p`
+3. Tester l'API : `curl http://localhost:8080/api/products`
+4. Consulter la documentation Swagger : `http://localhost:8080/swagger-ui.html`
+
+---
+
+**Dernier mis à jour : 2024-01-18**  
+**Version : 1.0.0**

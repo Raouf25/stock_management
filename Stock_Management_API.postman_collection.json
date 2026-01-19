@@ -1,0 +1,392 @@
+{
+  "info": {
+    "name": "Stock Management API",
+    "description": "Collection de tests pour l'API REST de gestion de stock",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Produits",
+      "item": [
+        {
+          "name": "Lister tous les produits",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/products",
+              "host": ["{{base_url}}"],
+              "path": ["products"]
+            }
+          }
+        },
+        {
+          "name": "Détails d'un produit",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/products/{{product_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["products", "{{product_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Stock d'un produit",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/products/{{product_id}}/stock",
+              "host": ["{{base_url}}"],
+              "path": ["products", "{{product_id}}", "stock"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Achats",
+      "item": [
+        {
+          "name": "Créer un achat",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"datePurchase\": \"2024-01-19T10:30:00\",\n  \"supplierId\": 1,\n  \"productId\": 1,\n  \"invoiceNumber\": \"BL-2024-001\",\n  \"quantity\": 50,\n  \"unitPriceTTC\": 10.30,\n  \"comment\": \"Achat standard\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/purchases",
+              "host": ["{{base_url}}"],
+              "path": ["purchases"]
+            }
+          }
+        },
+        {
+          "name": "Lister tous les achats",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/purchases",
+              "host": ["{{base_url}}"],
+              "path": ["purchases"]
+            }
+          }
+        },
+        {
+          "name": "Détails d'un achat",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/purchases/1",
+              "host": ["{{base_url}}"],
+              "path": ["purchases", "1"]
+            }
+          }
+        },
+        {
+          "name": "Rechercher les achats",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/purchases/search?dateFrom=2024-01-01T00:00:00&dateTo=2024-02-01T00:00:00&supplierId=1",
+              "host": ["{{base_url}}"],
+              "path": ["purchases", "search"],
+              "query": [
+                {
+                  "key": "dateFrom",
+                  "value": "2024-01-01T00:00:00"
+                },
+                {
+                  "key": "dateTo",
+                  "value": "2024-02-01T00:00:00"
+                },
+                {
+                  "key": "supplierId",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Achats par produit",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/purchases/product/{{product_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["purchases", "product", "{{product_id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ventes",
+      "item": [
+        {
+          "name": "Créer une vente",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dateSale\": \"2024-01-19T14:00:00\",\n  \"productId\": 1,\n  \"quantitySold\": 30,\n  \"unitSalePrice\": 12.50\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/sales",
+              "host": ["{{base_url}}"],
+              "path": ["sales"]
+            }
+          }
+        },
+        {
+          "name": "Lister toutes les ventes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/sales",
+              "host": ["{{base_url}}"],
+              "path": ["sales"]
+            }
+          }
+        },
+        {
+          "name": "Détails d'une vente",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/sales/1",
+              "host": ["{{base_url}}"],
+              "path": ["sales", "1"]
+            }
+          }
+        },
+        {
+          "name": "Rechercher les ventes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/sales/search?dateFrom=2024-01-01T00:00:00&dateTo=2024-02-01T00:00:00",
+              "host": ["{{base_url}}"],
+              "path": ["sales", "search"],
+              "query": [
+                {
+                  "key": "dateFrom",
+                  "value": "2024-01-01T00:00:00"
+                },
+                {
+                  "key": "dateTo",
+                  "value": "2024-02-01T00:00:00"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Ventes par produit",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/sales/product/{{product_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["sales", "product", "{{product_id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mouvements de Stock",
+      "item": [
+        {
+          "name": "Lister tous les mouvements",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/stock-movements",
+              "host": ["{{base_url}}"],
+              "path": ["stock-movements"]
+            }
+          }
+        },
+        {
+          "name": "Détails d'un mouvement",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/stock-movements/1",
+              "host": ["{{base_url}}"],
+              "path": ["stock-movements", "1"]
+            }
+          }
+        },
+        {
+          "name": "Rechercher les mouvements",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/stock-movements/search?productId={{product_id}}&type=ENTREE",
+              "host": ["{{base_url}}"],
+              "path": ["stock-movements", "search"],
+              "query": [
+                {
+                  "key": "productId",
+                  "value": "{{product_id}}"
+                },
+                {
+                  "key": "type",
+                  "value": "ENTREE"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Mouvements par produit",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/stock-movements/product/{{product_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["stock-movements", "product", "{{product_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Mouvements par type (ENTREE)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/stock-movements/type/ENTREE",
+              "host": ["{{base_url}}"],
+              "path": ["stock-movements", "type", "ENTREE"]
+            }
+          }
+        },
+        {
+          "name": "Mouvements par source (ACHAT)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/stock-movements/source/ACHAT",
+              "host": ["{{base_url}}"],
+              "path": ["stock-movements", "source", "ACHAT"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reporting",
+      "item": [
+        {
+          "name": "Résumé global du stock",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/stock/summary",
+              "host": ["{{base_url}}"],
+              "path": ["stock", "summary"]
+            }
+          }
+        },
+        {
+          "name": "Résumé d'un produit",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/stock/{{product_id}}/summary",
+              "host": ["{{base_url}}"],
+              "path": ["stock", "{{product_id}}", "summary"]
+            }
+          }
+        },
+        {
+          "name": "Alertes de stock",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/stock/alerts?threshold=10",
+              "host": ["{{base_url}}"],
+              "path": ["stock", "alerts"],
+              "query": [
+                {
+                  "key": "threshold",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Valeur totale du stock",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/stock/total-value",
+              "host": ["{{base_url}}"],
+              "path": ["stock", "total-value"]
+            }
+          }
+        },
+        {
+          "name": "Recalculer le CMP",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/stock/recalculate-cmp",
+              "host": ["{{base_url}}"],
+              "path": ["stock", "recalculate-cmp"]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080/api",
+      "type": "string"
+    },
+    {
+      "key": "product_id",
+      "value": "1",
+      "type": "string"
+    }
+  ]
+}
