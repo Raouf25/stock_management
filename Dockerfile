@@ -3,8 +3,8 @@ FROM maven:3.9-eclipse-temurin-21 as builder
 
 WORKDIR /app
 
-# Copier les fichiers de configuration Maven
-COPY pom.xml .
+# Copier les fichiers de configuration Maven depuis backend
+COPY backend/pom.xml .
 COPY mvnw .
 COPY mvnw.cmd .
 COPY .mvn .mvn
@@ -12,8 +12,8 @@ COPY .mvn .mvn
 # Télécharger les dépendances
 RUN ./mvnw dependency:resolve
 
-# Copier le code source
-COPY src ./src
+# Copier le code source backend
+COPY backend/src ./src
 
 # Compiler l'application
 RUN ./mvnw clean package -DskipTests
@@ -22,6 +22,9 @@ RUN ./mvnw clean package -DskipTests
 FROM eclipse-temurin:21-jre
 
 WORKDIR /app
+
+# Installer curl pour le healthcheck
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 
 # Copier le JAR depuis le stage de build
 COPY --from=builder /app/target/*.jar app.jar

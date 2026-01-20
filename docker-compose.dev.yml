@@ -1,0 +1,33 @@
+version: '3.9'
+
+# Configuration simplifiée pour développement
+# Pour le frontend: cd frontend && npm install && npm start
+# Pour le backend: cd backend && mvn spring-boot:run
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15
+    container_name: stock_management_postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DB: stock_db
+    volumes:
+      - stock_postgres_data:/var/lib/postgresql/data
+    networks:
+      - stock_network
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      timeout: 20s
+      retries: 10
+
+volumes:
+  stock_postgres_data:
+    driver: local
+
+networks:
+  stock_network:
+    driver: bridge

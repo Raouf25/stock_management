@@ -1,0 +1,13 @@
+.navbar {
+  margin-bottom: 30px;
+}
+
+.nav-link {
+  margin-right: 10px;
+  transition: color 0.3s;
+}
+
+.nav-link.active {
+  font-weight: bold;
+  border-bottom: 2px solid white;
+}

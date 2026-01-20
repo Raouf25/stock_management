@@ -1,0 +1,43 @@
+<nav class="navbar navbar-dark navbar-expand-lg">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="/">
+      📦 Stock Management System
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+            Dashboard
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/products" routerLinkActive="active">
+            Produits
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/purchases" routerLinkActive="active">
+            Achats
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/sales" routerLinkActive="active">
+            Ventes
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/stock-movements" routerLinkActive="active">
+            Mouvements
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="container-fluid">
+  <router-outlet></router-outlet>
+</div>

@@ -1,0 +1,42 @@
+# Frontend - Angular
+node_modules/
+dist/
+.angular/
+.env
+.env.local
+.env.*.local
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Coverage
+coverage/
+.nyc_output/
+
+# Testing
+karma.conf.js
+test.ts
+
+# Build
+dist/
+build/
+out/
+.next/
+*.zip
+*.tar.gz
+
+# OS
+Thumbs.db
+.DS_Store
+._*

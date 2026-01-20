@@ -1,8 +1,10 @@
-# API REST de Gestion de Stock - Stock Management
+# 📦 Stock Management System - Multi-Module
 
-## 📋 Vue d'ensemble
+Système complet de gestion de stock avec architecture multi-module : **Backend API Spring Boot** + **Frontend Angular**.
 
-Une **API REST complète et transactionnelle** développée avec **Spring Boot 3.3.3** et **Java 21**, dédiée à la gestion professionnelle des stocks et des achats-ventes.
+## 🎯 Caractéristiques Principales
+
+Système professionnel et transactionnel pour la gestion complète du stock.
 
 ### 🎯 Fonctionnalités Principales
 

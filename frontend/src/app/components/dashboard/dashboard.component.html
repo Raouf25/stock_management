@@ -1,0 +1,112 @@
+<div class="dashboard">
+  <h1 class="mb-4">📊 Tableau de Bord</h1>
+
+  <div *ngIf="loading" class="alert alert-info">Chargement des données...</div>
+
+  <!-- KPIs Row -->
+  <div class="row mb-4">
+    <div class="col-md-3">
+      <div class="stat-card">
+        <div class="stat-number">{{ products.length }}</div>
+        <div class="stat-label">Produits Total</div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="stat-card">
+        <div class="stat-number">{{ totalValue | number: '1.2-2' }} DH</div>
+        <div class="stat-label">Valeur Total Stock</div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="stat-card">
+        <div class="stat-number">{{ stockSummary.length }}</div>
+        <div class="stat-label">Articles en Stock</div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="stat-card">
+        <div class="stat-number">{{ getLowStockPercentage() }}%</div>
+        <div class="stat-label">Stock Faible</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Alerts -->
+  <div class="row mb-4">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header bg-danger text-white">
+          ⚠️ Alertes Stock Faible
+        </div>
+        <div class="card-body">
+          <div *ngIf="alerts.length === 0" class="alert alert-success">
+            Aucune alerte - Stock normal
+          </div>
+          <div *ngIf="alerts.length > 0" class="table-responsive">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>Produit</th>
+                  <th>Quantité Actuelle</th>
+                  <th>Seuil</th>
+                  <th>Niveau d'Alerte</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let alert of alerts" [ngClass]="{'table-danger': alert.alertLevel === 'CRITICAL'}">
+                  <td>{{ alert.productDesignation }}</td>
+                  <td>{{ alert.currentQuantity }}</td>
+                  <td>{{ alert.threshold }}</td>
+                  <td>
+                    <span [ngClass]="alert.alertLevel === 'CRITICAL' ? 'badge bg-danger' : 'badge bg-warning'">
+                      {{ alert.alertLevel }}
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stock Summary Table -->
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header bg-primary text-white">
+          📦 Résumé du Stock par Produit
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Produit</th>
+                  <th>Qté Initiale</th>
+                  <th>Qté Actuelle</th>
+                  <th>Achats (Montant)</th>
+                  <th>Ventes (Montant)</th>
+                  <th>Valeur Stock Final</th>
+                  <th>CMP</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of stockSummary">
+                  <td><strong>{{ item.productDesignation }}</strong></td>
+                  <td>{{ item.initialQuantity }}</td>
+                  <td>{{ item.finalQuantity }}</td>
+                  <td>{{ item.totalPurchasesAmount | number: '1.2-2' }}</td>
+                  <td>{{ item.totalSalesAmount | number: '1.2-2' }}</td>
+                  <td>{{ item.finalStockValue | number: '1.2-2' }} DH</td>
+                  <td>{{ item.cmp | number: '1.2-2' }} DH</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

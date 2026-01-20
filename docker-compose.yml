@@ -16,16 +16,18 @@ services:
     networks:
       - stock_network
     healthcheck:
-      test: ["CMD", "pg_isready", "-U", "postgres"]
-      timeout: 20s
-      retries: 10
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
-  # Spring Boot Application
-  stock_app:
+  # Spring Boot Application (Backend)
+  backend:
     build:
       context: .
-      dockerfile: Dockerfile
-    container_name: stock_management_app
+      dockerfile: ./Dockerfile
+    container_name: stock_management_backend
     ports:
       - "8080:8080"
     depends_on:
@@ -37,10 +39,38 @@ services:
       SPRING_DATASOURCE_PASSWORD: postgres
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
     volumes:
-      - ./src:/app/src
+      - ./backend/src:/app/src
       - ./logs:/app/logs
     networks:
       - stock_network
+#    healthcheck:
+#      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health || exit 1"]
+#      interval: 30s
+#      timeout: 10s
+#      retries: 5
+#      start_period: 60s
+
+  # Angular Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: ./Dockerfile
+      args:
+        - NODE_OPTIONS=--max_old_space_size=4096
+    container_name: stock_management_frontend
+    ports:
+      - "4200:4200"
+    depends_on:
+      backend:
+        condition: service_healthy
+    environment:
+      - API_URL=http://backend:8080
+      - NODE_OPTIONS=--max_old_space_size=2048
+    volumes:
+      - ./frontend/src:/app/src
+    networks:
+      - stock_network
+    restart: unless-stopped
 
 volumes:
   stock_postgres_data:
@@ -49,3 +79,7 @@ volumes:
 networks:
   stock_network:
     driver: bridge
+
+# Résultat de `docker-compose ps`
+# Output des logs
+# Erreurs affichées
