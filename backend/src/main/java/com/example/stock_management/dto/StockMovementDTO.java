@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Data
 @NoArgsConstructor
@@ -14,7 +14,7 @@ public class StockMovementDTO {
     private Long productId;
     private String productDesignation;
     private Integer quantity;
-    private LocalDateTime date;
+    private LocalDate date;
     private String type; // ENTREE | SORTIE
     private String source; // ACHAT, VENTE, AJUSTEMENT
     private String reference;

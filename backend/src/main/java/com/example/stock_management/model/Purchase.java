@@ -3,7 +3,7 @@ package com.example.stock_management.model;
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Data
 @Entity
@@ -13,7 +13,7 @@ public class Purchase {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private LocalDateTime datePurchase;
+    private LocalDate datePurchase;
 
     @ManyToOne
     @JoinColumn(name = "supplier_id", nullable = false)

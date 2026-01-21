@@ -4,7 +4,7 @@ package com.example.stock_management.model;
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Data
 @Entity
@@ -19,7 +19,7 @@ public class StockMouvement {
     private Product product;
 
     private Integer quantity;
-    private LocalDateTime date;
+    private LocalDate date;
 
     @Enumerated(EnumType.STRING)
     private Type type; // ENTREE | SORTIE

@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 
 @Repository
@@ -20,14 +20,14 @@ public interface PurchaseRepository extends JpaRepository<Purchase, Long> {
 
     // Trouver les achats entre deux dates
     @Query("SELECT p FROM Purchase p WHERE p.datePurchase BETWEEN :dateFrom AND :dateTo")
-    List<Purchase> findByDateRange(@Param("dateFrom") LocalDateTime dateFrom, @Param("dateTo") LocalDateTime dateTo);
+    List<Purchase> findByDateRange(@Param("dateFrom") LocalDate dateFrom, @Param("dateTo") LocalDate dateTo);
 
     // Trouver les achats par fournisseur et date
     @Query("SELECT p FROM Purchase p WHERE p.supplier.id = :supplierId AND p.datePurchase BETWEEN :dateFrom AND :dateTo")
     List<Purchase> findBySupplierAndDateRange(
         @Param("supplierId") Long supplierId,
-        @Param("dateFrom") LocalDateTime dateFrom,
-        @Param("dateTo") LocalDateTime dateTo
+        @Param("dateFrom") LocalDate dateFrom,
+        @Param("dateTo") LocalDate dateTo
     );
 
     // Total des achats pour un produit

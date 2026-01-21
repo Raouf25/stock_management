@@ -4,14 +4,14 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class PurchaseDTO {
     private Long id;
-    private LocalDateTime datePurchase;
+    private LocalDate datePurchase;
     private Long supplierId;
     private String supplierName;
     private Long productId;

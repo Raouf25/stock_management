@@ -11,7 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -45,7 +45,7 @@ public class SaleService {
 
         // Créer la vente
         Sale sale = new Sale();
-        sale.setDateSale(saleDTO.getDateSale() != null ? saleDTO.getDateSale() : LocalDateTime.now());
+        sale.setDateSale(saleDTO.getDateSale() != null ? saleDTO.getDateSale() : LocalDate.now());
         sale.setProduct(product);
         sale.setQuantitySold(saleDTO.getQuantitySold());
         sale.setUnitSalePrice(saleDTO.getUnitSalePrice());
@@ -58,7 +58,7 @@ public class SaleService {
         StockMouvement mouvement = new StockMouvement();
         mouvement.setProduct(product);
         mouvement.setQuantity(saleDTO.getQuantitySold());
-        mouvement.setDate(LocalDateTime.now());
+        mouvement.setDate(LocalDate.now());
         mouvement.setType(StockMouvement.Type.SORTIE);
         mouvement.setSource(StockMouvement.Source.VENTE);
         mouvement.setSale(savedSale);
@@ -89,7 +89,7 @@ public class SaleService {
     /**
      * Récupérer les ventes filtrées
      */
-    public List<Sale> getSalesByFilter(LocalDateTime dateFrom, LocalDateTime dateTo) {
+    public List<Sale> getSalesByFilter(LocalDate dateFrom, LocalDate dateTo) {
         if (dateFrom != null && dateTo != null) {
             return saleRepository.findByDateRange(dateFrom, dateTo);
         }

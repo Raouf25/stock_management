@@ -6,7 +6,7 @@ import com.example.stock_management.repository.StockMouvementRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -34,7 +34,7 @@ public class StockMovementService {
     /**
      * Récupérer les mouvements filtrés
      */
-    public List<StockMouvement> getMovementsByFilter(Long productId, String type, LocalDateTime dateFrom, LocalDateTime dateTo) {
+    public List<StockMouvement> getMovementsByFilter(Long productId, String type, LocalDate dateFrom, LocalDate dateTo) {
         if (productId != null && type != null && dateFrom != null && dateTo != null) {
             return stockMouvementRepository.findByProductAndType(
                 productId, 

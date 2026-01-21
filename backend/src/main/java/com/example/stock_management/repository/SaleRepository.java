@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 
 @Repository
@@ -17,14 +17,14 @@ public interface SaleRepository extends JpaRepository<Sale, Long> {
 
     // Trouver les ventes entre deux dates
     @Query("SELECT s FROM Sale s WHERE s.dateSale BETWEEN :dateFrom AND :dateTo")
-    List<Sale> findByDateRange(@Param("dateFrom") LocalDateTime dateFrom, @Param("dateTo") LocalDateTime dateTo);
+    List<Sale> findByDateRange(@Param("dateFrom") LocalDate dateFrom, @Param("dateTo") LocalDate dateTo);
 
     // Trouver les ventes par produit et date
     @Query("SELECT s FROM Sale s WHERE s.product.idProduct = :productId AND s.dateSale BETWEEN :dateFrom AND :dateTo")
     List<Sale> findByProductAndDateRange(
         @Param("productId") Long productId,
-        @Param("dateFrom") LocalDateTime dateFrom,
-        @Param("dateTo") LocalDateTime dateTo
+        @Param("dateFrom") LocalDate dateFrom,
+        @Param("dateTo") LocalDate dateTo
     );
 
     // Total des ventes pour un produit

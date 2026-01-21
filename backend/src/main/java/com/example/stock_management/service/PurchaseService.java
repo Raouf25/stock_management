@@ -13,7 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -48,7 +48,7 @@ public class PurchaseService {
 
         // Créer l'achat
         Purchase purchase = new Purchase();
-        purchase.setDatePurchase(purchaseDTO.getDatePurchase() != null ? purchaseDTO.getDatePurchase() : LocalDateTime.now());
+        purchase.setDatePurchase(purchaseDTO.getDatePurchase() != null ? purchaseDTO.getDatePurchase() : LocalDate.now());
         purchase.setProduct(product);
         purchase.setSupplier(supplier);
         purchase.setInvoiceNumber(purchaseDTO.getInvoiceNumber());
@@ -64,7 +64,7 @@ public class PurchaseService {
         StockMouvement mouvement = new StockMouvement();
         mouvement.setProduct(product);
         mouvement.setQuantity(purchaseDTO.getQuantity());
-        mouvement.setDate(LocalDateTime.now());
+        mouvement.setDate(LocalDate.now());
         mouvement.setType(StockMouvement.Type.ENTREE);
         mouvement.setSource(StockMouvement.Source.ACHAT);
         mouvement.setPurchase(savedPurchase);
@@ -95,7 +95,7 @@ public class PurchaseService {
     /**
      * Récupérer les achats filtrés
      */
-    public List<Purchase> getPurchasesByFilter(LocalDateTime dateFrom, LocalDateTime dateTo, Long supplierId) {
+    public List<Purchase> getPurchasesByFilter(LocalDate dateFrom, LocalDate dateTo, Long supplierId) {
         if (supplierId != null && dateFrom != null && dateTo != null) {
             return purchaseRepository.findBySupplierAndDateRange(supplierId, dateFrom, dateTo);
         } else if (dateFrom != null && dateTo != null) {
