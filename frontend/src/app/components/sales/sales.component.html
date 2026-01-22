@@ -43,7 +43,7 @@
 
   <div class="card">
     <div class="card-header bg-info text-white">
-      📋 Liste des Ventes (Total: {{ getTotalAmount() | number: '1.2-2' }} DH)
+      📋 Liste des Ventes (Total: {{ getTotalAmount() | number: '1.2-2' }} DNT)
     </div>
     <div class="card-body">
       <div class="table-responsive">
@@ -54,8 +54,8 @@
               <th>Date</th>
               <th>Produit</th>
               <th>Quantité Vendue</th>
-              <th>Prix Unitaire</th>
-              <th>Montant Total</th>
+              <th>Prix Unitaire (DNT)</th>
+              <th>Montant Total (DNT)</th>
             </tr>
           </thead>
           <tbody>
@@ -64,8 +64,8 @@
               <td>{{ s.dateSale | date: 'dd/MM/yyyy' }}</td>
               <td>{{ s.productDesignation }}</td>
               <td><strong>{{ s.quantitySold }}</strong></td>
-              <td>{{ s.unitSalePrice | number: '1.2-2' }} DH</td>
-              <td><strong>{{ s.totalSaleAmount | number: '1.2-2' }} DH</strong></td>
+              <td>{{ s.unitSalePrice | number: '1.2-2' }}</td>
+              <td><strong>{{ s.totalSaleAmount | number: '1.2-2' }}</strong></td>
             </tr>
             <tr *ngIf="sales.length === 0">
               <td colspan="6" class="text-center">Aucune vente trouvée</td>

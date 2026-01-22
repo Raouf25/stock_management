@@ -13,7 +13,7 @@
     </div>
     <div class="col-md-3">
       <div class="stat-card">
-        <div class="stat-number">{{ totalValue | number: '1.2-2' }} DH</div>
+        <div class="stat-number">{{ totalValue | number: '1.2-2' }} DNT</div>
         <div class="stat-label">Valeur Total Stock</div>
       </div>
     </div>
@@ -86,10 +86,10 @@
                   <th>Produit</th>
                   <th>Qté Initiale</th>
                   <th>Qté Actuelle</th>
-                  <th>Achats (Montant)</th>
-                  <th>Ventes (Montant)</th>
-                  <th>Valeur Stock Final</th>
-                  <th>CMP</th>
+                  <th>Achats (DNT)</th>
+                  <th>Ventes (DNT)</th>
+                  <th>Valeur Stock Final (DNT)</th>
+                  <th>CMP (DNT)</th>
                 </tr>
               </thead>
               <tbody>
@@ -99,8 +99,8 @@
                   <td>{{ item.finalQuantity }}</td>
                   <td>{{ item.totalPurchasesAmount | number: '1.2-2' }}</td>
                   <td>{{ item.totalSalesAmount | number: '1.2-2' }}</td>
-                  <td>{{ item.finalStockValue | number: '1.2-2' }} DH</td>
-                  <td>{{ item.cmp | number: '1.2-2' }} DH</td>
+                  <td>{{ item.finalStockValue | number: '1.2-2' }}</td>
+                  <td>{{ item.cmp | number: '1.2-2' }}</td>
                 </tr>
               </tbody>
             </table>

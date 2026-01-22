@@ -52,7 +52,7 @@
 
   <div class="card">
     <div class="card-header bg-info text-white">
-      📋 Liste des Achats (Total: {{ getTotalAmount() | number: '1.2-2' }} DH)
+      📋 Liste des Achats (Total: {{ getTotalAmount() | number: '1.2-2' }} DNT)
     </div>
     <div class="card-body">
       <div class="table-responsive">
@@ -64,8 +64,8 @@
               <th>Fournisseur</th>
               <th>Produit</th>
               <th>Quantité</th>
-              <th>Prix Unitaire</th>
-              <th>Montant Total (TTC)</th>
+              <th>Prix Unitaire (DNT)</th>
+              <th>Montant Total TTC (DNT)</th>
               <th>N° Facture</th>
             </tr>
           </thead>
@@ -76,8 +76,8 @@
               <td>{{ p.supplierName }}</td>
               <td>{{ p.productDesignation }}</td>
               <td><strong>{{ p.quantity }}</strong></td>
-              <td>{{ p.unitPriceTTC | number: '1.2-2' }} DH</td>
-              <td><strong>{{ p.totalAmountTTC | number: '1.2-2' }} DH</strong></td>
+              <td>{{ p.unitPriceTTC | number: '1.2-2' }}</td>
+              <td><strong>{{ p.totalAmountTTC | number: '1.2-2' }}</strong></td>
               <td><span class="badge bg-secondary">{{ p.invoiceNumber }}</span></td>
             </tr>
             <tr *ngIf="purchases.length === 0">
