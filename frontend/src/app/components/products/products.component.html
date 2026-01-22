@@ -1,15 +1,16 @@
-<div class="container mt-4">
+<div class="products-page">
   <h1 class="mb-4">📦 Gestion des Produits</h1>
 
+  <!-- Search Bar -->
   <div class="row mb-4">
-    <div class="col-md-8">
+    <div class="col-md-10">
       <input type="text" 
-             class="form-control" 
-             placeholder="Rechercher un produit..." 
+             class="form-control search-input" 
+             placeholder="🔍 Rechercher par nom, désignation ou catégorie..." 
              [(ngModel)]="searchText">
     </div>
-    <div class="col-md-4">
-      <button class="btn btn-primary w-100" (click)="loadProducts()">
+    <div class="col-md-2">
+      <button class="btn btn-primary w-100 btn-refresh" (click)="loadProducts()">
         🔄 Rafraîchir
       </button>
     </div>
@@ -21,42 +22,82 @@
     Aucun produit disponible.
   </div>
 
+  <!-- KPIs Row -->
   <div *ngIf="!loading && products.length > 0" class="row mb-4">
-    <div class="col-md-4">
-      <div class="stat-card">
+    <div class="col-md-3">
+      <div class="stat-card stat-card-blue">
+        <div class="stat-icon">📦</div>
         <div class="stat-number">{{ getFilteredProducts().length }}</div>
-        <div class="stat-label">Produits</div>
+        <div class="stat-label">Total Produits</div>
       </div>
     </div>
-    <div class="col-md-4">
-      <div class="stat-card">
+    <div class="col-md-3">
+      <div class="stat-card stat-card-purple">
+        <div class="stat-icon">📊</div>
         <div class="stat-number">{{ getTotalStock() }}</div>
         <div class="stat-label">Quantité Totale</div>
       </div>
     </div>
-    <div class="col-md-4">
-      <div class="stat-card">
-        <div class="stat-number">{{ getTotalValue() | number: '1.2-2' }} DNT</div>
-        <div class="stat-label">Valeur Totale</div>
+    <div class="col-md-3">
+      <div class="stat-card stat-card-green">
+        <div class="stat-icon">💰</div>
+        <div class="stat-number">{{ getTotalValue() | number: '1.2-2' }}</div>
+        <div class="stat-label">Valeur Totale (DNT)</div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="stat-card stat-card-warning">
+        <div class="stat-icon">⚠️</div>
+        <div class="stat-number">{{ getLowStockCount() }}</div>
+        <div class="stat-label">Stock Faible</div>
       </div>
     </div>
   </div>
 
-  <div class="card">
-    <div class="card-header bg-info text-white">
-      📋 Liste des Produits
+  <!-- Charts Row -->
+  <div class="row mb-4" *ngIf="!loading && products.length > 0">
+    <div class="col-lg-8">
+      <div class="card chart-card">
+        <div class="card-header bg-gradient-primary">
+          <i class="fas fa-chart-bar"></i> Distribution du Stock
+        </div>
+        <div class="card-body">
+          <div class="chart-container">
+            <canvas #stockDistributionChart></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-4">
+      <div class="card chart-card">
+        <div class="card-header bg-gradient-success">
+          <i class="fas fa-chart-pie"></i> Par Catégorie
+        </div>
+        <div class="card-body">
+          <div class="chart-container-small">
+            <canvas #categoryChart></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Products Table -->
+  <div class="card table-card">
+    <div class="card-header bg-gradient-info">
+      📋 Liste des Produits ({{ getFilteredProducts().length }})
     </div>
     <div class="card-body" *ngIf="products.length > 0">
       <div class="table-responsive">
-        <table class="table table-striped table-hover">
-          <thead class="table-light">
+        <table class="table table-hover table-striped">
+          <thead class="table-dark">
             <tr>
               <th>ID</th>
               <th>Nom</th>
               <th>Désignation</th>
               <th>Catégorie</th>
-              <th>Quantité Initiale</th>
-              <th>Quantité Actuelle</th>
+              <th>Qté Initiale</th>
+              <th>Qté Actuelle</th>
               <th>Valeur Init (DNT)</th>
               <th>Valeur Actuelle (DNT)</th>
               <th>CMP (DNT)</th>
@@ -64,22 +105,22 @@
           </thead>
           <tbody>
             <tr *ngFor="let product of getFilteredProducts()">
-              <td>{{ product.idProduct }}</td>
+              <td><span class="badge bg-secondary">{{ product.idProduct }}</span></td>
               <td><strong>{{ product.name }}</strong></td>
-              <td><strong>{{ product.designation }}</strong></td>
-              <td><span class="badge bg-secondary">{{ product.category }}</span></td>
+              <td>{{ product.designation }}</td>
+              <td><span class="badge bg-info">{{ product.category }}</span></td>
               <td>{{ product.initialStockQuantity }}</td>
               <td>
-                <span [ngClass]="product.currentStockQuantity < 50 ? 'badge bg-warning' : 'badge bg-success'">
+                <span [ngClass]="product.currentStockQuantity < 50 ? 'badge bg-warning text-dark' : 'badge bg-success'">
                   {{ product.currentStockQuantity }}
                 </span>
               </td>
               <td>{{ product.initialStockValue | number: '1.2-2' }}</td>
-              <td>{{ product.currentStockValue | number: '1.2-2' }}</td>
+              <td><strong class="text-success">{{ product.currentStockValue | number: '1.2-2' }}</strong></td>
               <td>{{ product.cmp | number: '1.2-2' }}</td>
             </tr>
             <tr *ngIf="getFilteredProducts().length === 0">
-              <td colspan="8" class="text-center">Aucun produit trouvé</td>
+              <td colspan="9" class="text-center text-muted">Aucun produit trouvé</td>
             </tr>
           </tbody>
         </table>

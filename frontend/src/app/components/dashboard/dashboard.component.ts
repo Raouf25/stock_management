@@ -103,7 +103,12 @@ export class DashboardComponent implements OnInit, AfterViewInit {
 
   createCharts(): void {
     // Attendre que toutes les données soient chargées
-    if (this.stockSummary.length === 0 || this.sales.length === 0) {
+    if (this.stockSummary.length === 0 || this.sales.length === 0 || this.products.length === 0) {
+      console.log('Données incomplètes pour créer les graphiques:', {
+        stockSummary: this.stockSummary.length,
+        sales: this.sales.length,
+        products: this.products.length
+      });
       return;
     }
 
@@ -250,16 +255,30 @@ export class DashboardComponent implements OnInit, AfterViewInit {
       this.topProductsChart.destroy();
     }
 
+    // Vérifier si des ventes existent
+    if (!this.sales || this.sales.length === 0) {
+      console.log('Aucune vente disponible pour le graphique Top 5');
+      return;
+    }
+
     // Top 5 produits par quantité vendue
     const salesByProduct: { [key: string]: number } = {};
     this.sales.forEach(sale => {
-      const product = sale.productDesignation;
-      salesByProduct[product] = (salesByProduct[product] || 0) + sale.quantitySold;
+      const product = sale.productDesignation || 'Produit Inconnu';
+      if (product && sale.quantitySold) {
+        salesByProduct[product] = (salesByProduct[product] || 0) + sale.quantitySold;
+      }
     });
 
     const topSold = Object.entries(salesByProduct)
       .sort((a, b) => b[1] - a[1])
       .slice(0, 5);
+
+    // Vérifier s'il y a des données
+    if (topSold.length === 0) {
+      console.log('Aucun produit vendu trouvé');
+      return;
+    }
 
     const config: ChartConfiguration = {
       type: 'doughnut',

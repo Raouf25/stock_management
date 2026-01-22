@@ -1,63 +1,131 @@
-<div class="container mt-4">
+<div class="purchases-page">
   <h1 class="mb-4">🛒 Gestion des Achats</h1>
 
+  <!-- KPIs Row -->
+  <div class="row mb-4">
+    <div class="col-md-3">
+      <div class="stat-card stat-card-red">
+        <div class="stat-icon">💵</div>
+        <div class="stat-number">{{ getTotalAmount() | number: '1.2-2' }}</div>
+        <div class="stat-label">Total Achats (DNT)</div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="stat-card stat-card-blue">
+        <div class="stat-icon">📦</div>
+        <div class="stat-number">{{ getTotalQuantity() }}</div>
+        <div class="stat-label">Quantité Totale Achetée</div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="stat-card stat-card-purple">
+        <div class="stat-icon">📊</div>
+        <div class="stat-number">{{ purchases.length }}</div>
+        <div class="stat-label">Nombre d'Achats</div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="stat-card stat-card-orange">
+        <div class="stat-icon">💰</div>
+        <div class="stat-number">{{ getAveragePrice() | number: '1.2-2' }}</div>
+        <div class="stat-label">Prix Moyen (DNT)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Action Button -->
   <div class="mb-4">
-    <button class="btn btn-success" (click)="showForm = !showForm">
-      {{ showForm ? '✕ Annuler' : '➕ Nouveau Achat' }}
+    <button class="btn btn-success btn-lg btn-action" (click)="showForm = !showForm">
+      <span *ngIf="!showForm">➕ Nouveau Achat</span>
+      <span *ngIf="showForm">✕ Annuler</span>
     </button>
   </div>
 
-  <div *ngIf="showForm" class="card mb-4">
-    <div class="card-header bg-success text-white">Nouveau Achat</div>
+  <!-- Form Card -->
+  <div *ngIf="showForm" class="card form-card mb-4">
+    <div class="card-header bg-gradient-success">
+      <i class="fas fa-plus-circle"></i> Nouveau Achat
+    </div>
     <div class="card-body">
       <div class="row">
         <div class="col-md-6 mb-3">
-          <label>Fournisseur</label>
-          <select class="form-control" [(ngModel)]="newPurchase.supplierId" (change)="onSupplierChange()">
-            <option value="">Sélectionnez...</option>
+          <label class="form-label">Fournisseur</label>
+          <select class="form-control form-control-modern" [(ngModel)]="newPurchase.supplierId" (change)="onSupplierChange()">
+            <option value="">Sélectionnez un fournisseur...</option>
             <option *ngFor="let s of suppliers" [value]="s.id">{{ s.name }}</option>
           </select>
         </div>
         <div class="col-md-6 mb-3">
-          <label>Produit</label>
-          <select class="form-control" [(ngModel)]="newPurchase.productId">
-            <option value="">Sélectionnez...</option>
-            <option *ngFor="let p of filteredProducts" [value]="p.idProduct">{{ p.name +" "+  p.category  }}</option>
+          <label class="form-label">Produit</label>
+          <select class="form-control form-control-modern" [(ngModel)]="newPurchase.productId">
+            <option value="">Sélectionnez un produit...</option>
+            <option *ngFor="let p of filteredProducts" [value]="p.idProduct">{{ p.name }} - {{ p.category }}</option>
           </select>
         </div>
       </div>
       <div class="row">
         <div class="col-md-3 mb-3">
-          <label>Quantité</label>
-          <input type="number" class="form-control" [(ngModel)]="newPurchase.quantity">
+          <label class="form-label">Quantité</label>
+          <input type="number" class="form-control form-control-modern" [(ngModel)]="newPurchase.quantity" min="1" placeholder="Ex: 100">
         </div>
         <div class="col-md-3 mb-3">
-          <label>Prix Unitaire (TTC)</label>
-          <input type="number" step="0.01" class="form-control" [(ngModel)]="newPurchase.unitPriceTTC">
+          <label class="form-label">Prix Unitaire TTC (DNT)</label>
+          <input type="number" step="0.01" class="form-control form-control-modern" [(ngModel)]="newPurchase.unitPriceTTC" placeholder="Ex: 50.00">
         </div>
         <div class="col-md-3 mb-3">
-          <label>N° Facture</label>
-          <input type="text" class="form-control" [(ngModel)]="newPurchase.invoiceNumber">
+          <label class="form-label">N° Facture</label>
+          <input type="text" class="form-control form-control-modern" [(ngModel)]="newPurchase.invoiceNumber" placeholder="Ex: FAC-2026-001">
         </div>
         <div class="col-md-3 mb-3">
-          <label>Date</label>
-          <input type="date" class="form-control" [(ngModel)]="newPurchase.datePurchase">
+          <label class="form-label">Date d'Achat</label>
+          <input type="date" class="form-control form-control-modern" [(ngModel)]="newPurchase.datePurchase">
         </div>
       </div>
-      <button class="btn btn-success" (click)="createPurchase()">Créer Achat</button>
+      <button class="btn btn-success btn-lg" (click)="createPurchase()">
+        <i class="fas fa-check"></i> Créer l'Achat
+      </button>
     </div>
   </div>
 
   <div *ngIf="loading" class="alert alert-info">Chargement des achats...</div>
 
-  <div class="card">
-    <div class="card-header bg-info text-white">
-      📋 Liste des Achats (Total: {{ getTotalAmount() | number: '1.2-2' }} DNT)
+  <!-- Charts Row -->
+  <div class="row mb-4" *ngIf="!loading && purchases.length > 0">
+    <div class="col-lg-8">
+      <div class="card chart-card">
+        <div class="card-header bg-gradient-danger">
+          <i class="fas fa-chart-line"></i> Évolution des Achats
+        </div>
+        <div class="card-body">
+          <div class="chart-container">
+            <canvas #purchasesTrendChart></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-4">
+      <div class="card chart-card">
+        <div class="card-header bg-gradient-info">
+          <i class="fas fa-chart-bar"></i> Top Fournisseurs
+        </div>
+        <div class="card-body">
+          <div class="chart-container-small">
+            <canvas #supplierChart></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Purchases Table -->
+  <div class="card table-card">
+    <div class="card-header bg-gradient-primary">
+      📋 Liste des Achats ({{ purchases.length }})
     </div>
     <div class="card-body">
       <div class="table-responsive">
-        <table class="table table-striped table-hover">
-          <thead class="table-light">
+        <table class="table table-hover table-striped">
+          <thead class="table-dark">
             <tr>
               <th>ID</th>
               <th>Date</th>
@@ -71,17 +139,17 @@
           </thead>
           <tbody>
             <tr *ngFor="let p of purchases">
-              <td>{{ p.id }}</td>
+              <td><span class="badge bg-secondary">{{ p.id }}</span></td>
               <td>{{ p.datePurchase | date: 'dd/MM/yyyy' }}</td>
-              <td>{{ p.supplierName }}</td>
+              <td><strong>{{ p.supplierName }}</strong></td>
               <td>{{ p.productDesignation }}</td>
-              <td><strong>{{ p.quantity }}</strong></td>
+              <td><span class="badge bg-info">{{ p.quantity }}</span></td>
               <td>{{ p.unitPriceTTC | number: '1.2-2' }}</td>
-              <td><strong>{{ p.totalAmountTTC | number: '1.2-2' }}</strong></td>
-              <td><span class="badge bg-secondary">{{ p.invoiceNumber }}</span></td>
+              <td><strong class="text-danger">{{ p.totalAmountTTC | number: '1.2-2' }}</strong></td>
+              <td><span class="badge bg-primary">{{ p.invoiceNumber }}</span></td>
             </tr>
             <tr *ngIf="purchases.length === 0">
-              <td colspan="8" class="text-center">Aucun achat trouvé</td>
+              <td colspan="8" class="text-center text-muted">Aucun achat trouvé</td>
             </tr>
           </tbody>
         </table>
