@@ -11,6 +11,7 @@ import { ApiService } from '../../services/api.service';
 })
 export class DashboardComponent implements OnInit {
   stockSummary: any[] = [];
+  stockTotals: any = null;
   totalValue: number = 0;
   alerts: any[] = [];
   products: any[] = [];
@@ -27,7 +28,11 @@ export class DashboardComponent implements OnInit {
     
     // Charger les données
     this.apiService.getStockSummary().subscribe({
-      next: (data) => this.stockSummary = data
+      next: (data) => {
+        // L'API retourne maintenant {totals: {...}, products: [...]}
+        this.stockTotals = data.totals;
+        this.stockSummary = data.products || [];
+      }
     });
 
     this.apiService.getStockTotalValue().subscribe({

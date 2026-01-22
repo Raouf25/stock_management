@@ -23,8 +23,8 @@ export class ApiService {
     return this.http.get<any[]>(`${this.apiUrl}/products/supplier/${supplierId}`);
   }
 
-  getStockSummary(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/stock/summary`);
+  getStockSummary(): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/stock/summary`);
   }
 
   getStockAlerts(threshold: number = 10): Observable<any[]> {
