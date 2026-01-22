@@ -4,16 +4,42 @@ API REST Spring Boot 3.3.3 pour la gestion complète du stock avec calcul automa
 
 ## 🎯 Fonctionnalités
 
-- ✅ Gestion des produits
-- ✅ Gestion des achats (avec mouvement stock automatique)
-- ✅ Gestion des ventes (avec validation stock)
+- ✅ Gestion des produits (118 produits de test)
+- ✅ Gestion des fournisseurs (3 fournisseurs de test)
+- ✅ Gestion des clients (30 clients de test)
+- ✅ Gestion des achats avec mouvement stock automatique (68 achats)
+- ✅ Gestion des ventes avec validation stock (92 ventes)
+- ✅ Historique complet des mouvements (160 mouvements de stock)
 - ✅ Calcul Coût Moyen Pondéré (CMP)
-- ✅ Historique complet des mouvements
 - ✅ Alertes de stock faible
-- ✅ Chargement CSV au démarrage
+- ✅ Schéma de base de données auto-généré par JPA
+- ✅ Données de test chargées au démarrage
 - ✅ API REST complète (25+ endpoints)
 - ✅ Documentation Swagger/OpenAPI
 - ✅ Transactions ACID
+
+## 🗄️ Base de Données
+
+### Création Automatique du Schéma
+
+Le schéma est **automatiquement créé par JPA/Hibernate** à partir des entités Java :
+
+- ✅ **Pas de schema.sql** - Tables générées depuis les annotations `@Entity`
+- ✅ **data.sql uniquement** - Insère les données de test au démarrage
+- ✅ **`spring.jpa.hibernate.ddl-auto=create`** - Recrée le schéma à chaque démarrage
+
+### Données de Test Incluses
+
+Le fichier `data.sql` contient :
+
+| Table | Nombre d'enregistrements | Description |
+|-------|--------------------------|-------------|
+| `supplier` | 3 | Fournisseurs (Fournitures Générales, Technologie & Co, Aldecco) |
+| `customer` | 30 | Clients répartis en Tunisie |
+| `product` | 118 | Produits (peintures, enduits, finitions, colorants, etc.) |
+| `purchase` | 68 | Achats de Jan 2025 à Jan 2026 |
+| `sale` | 92 | Ventes de Jan 2025 à Jan 2026 |
+| `stock_mouvement` | 160 | 68 ENTREE (achats) + 92 SORTIE (ventes) |
 
 ## 🚀 Démarrage
 
@@ -26,24 +52,41 @@ API REST Spring Boot 3.3.3 pour la gestion complète du stock avec calcul automa
 ### Option 1: Docker Compose (Recommandé)
 ```bash
 cd /workspaces/stock_management
-docker-compose up -d
+docker-compose up -d --build
 ```
-API disponible sur `http://localhost:8080`
+
+Au démarrage :
+1. PostgreSQL démarre et crée la base `stock_db`
+2. Le backend démarre et Hibernate crée automatiquement toutes les tables
+3. Le fichier `data.sql` insère les 471 enregistrements de test
+4. L'API est prête sur `http://localhost:8080/api`
 
 ### Option 2: Local avec Docker DB
 ```bash
 # Lancer PostgreSQL
-docker run -d --name postgres -e POSTGRES_PASSWORD=postgres -p 5432:5432 postgres:15
+docker run -d --name postgres \
+  -e POSTGRES_DB=stock_db \
+  -e POSTGRES_PASSWORD=postgres \
+  -p 5432:5432 \
+  postgres:15
 
 # Compiler et lancer
-mvn clean install
-mvn spring-boot:run
+cd backend
+./mvnw clean install
+./mvnw spring-boot:run
 ```
 
 ### Option 3: Local complet
-Mettre à jour `application.properties` pour votre config locale et :
+1. Créer la base de données :
+```sql
+CREATE DATABASE stock_db;
+```
+
+2. Configurer `application.properties` avec vos identifiants PostgreSQL
+
+3. Lancer l'application :
 ```bash
-mvn spring-boot:run
+./mvnw spring-boot:run
 ```
 
 ## 📡 Endpoints Principaux
@@ -108,13 +151,18 @@ backend/
 
 **Entités** :
 - `Product` - Articles en stock
-- `Purchase` - Achats fournisseurs
-- `Sale` - Ventes clients
-- `StockMouvement` - Historique mouvements
+- `Purchase` - Achats fournisseurs (relation `@OneToMany` avec `StockMouvement`)
+- `Sale` - Ventes clients (relation `@OneToMany` avec `StockMouvement`)
+- `StockMouvement` - Historique mouvements (relation `@ManyToOne` avec `Purchase` et `Sale`)
 - `Supplier` - Fournisseurs
 - `Customer` - Clients
 - `Bill` - Factures
 - `BillProduct` - Détails factures
+
+**Relations bidirectionnelles** :
+- Un `Purchase` peut avoir plusieurs `StockMouvement` (`@OneToMany`)
+- Un `Sale` peut avoir plusieurs `StockMouvement` (`@OneToMany`)
+- Un `StockMouvement` appartient à un seul `Purchase` ou `Sale` (`@ManyToOne`)
 
 ## 🔧 Configuration
 

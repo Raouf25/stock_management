@@ -27,12 +27,12 @@ public class StockMouvement {
     @Enumerated(EnumType.STRING)
     private Source source; // ACHAT, VENTE, AJUSTEMENT
 
-    @OneToOne
-    @JoinColumn(name = "purchase_id")
+    @ManyToOne
+    @JoinColumn(name = "purchase_id", unique = false)
     private Purchase purchase;
 
-    @OneToOne
-    @JoinColumn(name = "sale_id")
+    @ManyToOne
+    @JoinColumn(name = "sale_id", unique = false)
     private Sale sale;
 
     private String reference; // référence source (ex: numéro de commande, numéro de facture)

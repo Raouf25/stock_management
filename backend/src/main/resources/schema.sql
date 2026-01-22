@@ -69,15 +69,6 @@ CREATE TABLE IF NOT EXISTS Bill_Product (
                                   total_product_price DECIMAL(10, 2) NOT NULL
 );
 
--- Table Stock_Mouvement
-CREATE TABLE IF NOT EXISTS Stock_Mouvement (
-                                 id_mouvement SERIAL PRIMARY KEY,
-                                 id_product INT REFERENCES Product(id_product),
-                                 quantite_changee INT NOT NULL,
-                                 date_mouvement TIMESTAMP NOT NULL,
-                                 type_mouvement VARCHAR(50) NOT NULL CHECK (type_mouvement IN ('AJOUT', 'RETRAIT', 'RETOUR'))
-);
-
 -- Table Historique_Bill
 CREATE TABLE IF NOT EXISTS Historic_Bill (
                                      id_historic SERIAL PRIMARY KEY,
@@ -109,3 +100,28 @@ CREATE TABLE IF NOT EXISTS Purchase (
                           comment TEXT
 );
 
+-- Table Sale (Ventes)
+CREATE TABLE IF NOT EXISTS Sale (
+                          id SERIAL PRIMARY KEY,
+                          date_sale DATE NOT NULL,
+                          customer_id INT REFERENCES Customer(customer_id),
+                          product_id INT REFERENCES Product(id_product),
+                          invoice_number VARCHAR(100),
+                          quantity_sold INT NOT NULL,
+                          unit_sale_price DECIMAL(10, 2) NOT NULL,
+                          total_sale_amount DECIMAL(10, 2) NOT NULL,
+                          comment TEXT
+);
+
+-- Table Stock_Mouvement (doit être après Purchase et Sale pour les références)
+CREATE TABLE IF NOT EXISTS Stock_Mouvement (
+                                 id SERIAL PRIMARY KEY,
+                                 product_id INT REFERENCES Product(id_product),
+                                 quantity INT NOT NULL,
+                                 date DATE NOT NULL,
+                                 type VARCHAR(50) NOT NULL CHECK (type IN ('ENTREE', 'SORTIE')),
+                                 source VARCHAR(50) NOT NULL CHECK (source IN ('ACHAT', 'VENTE', 'AJUSTEMENT')),
+                                 purchase_id INT REFERENCES Purchase(id),
+                                 sale_id INT REFERENCES Sale(id),
+                                 reference VARCHAR(100)
+);

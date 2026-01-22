@@ -1,5 +1,12 @@
 # Guide de Déploiement - Stock Management API
 
+## 📌 Architecture de Déploiement
+
+Le système utilise **JPA/Hibernate pour créer automatiquement le schéma** de base de données :
+- ✅ **Pas de schema.sql** - Les tables sont générées depuis les entités Java
+- ✅ **data.sql uniquement** - Pour insérer les données de test initiales
+- ✅ **spring.jpa.hibernate.ddl-auto=create** - Crée le schéma au démarrage
+
 ## 📌 Déploiement Local
 
 ### Option 1 : Déploiement Classique (sans Docker)
@@ -9,38 +16,51 @@
 - Maven 4.x
 - PostgreSQL 14+
 
-#### 2. Configurer MySQL
+#### 2. Configurer PostgreSQL
 ```bash
 # Créer la base de données
-mysql -u root -p
+psql -U postgres
 CREATE DATABASE stock_db;
-EXIT;
+\q
 ```
 
 #### 3. Configurer l'Application
-Modifier `src/main/resources/application.properties` :
+Le fichier `src/main/resources/application.properties` :
 ```properties
+# Database
 spring.datasource.url=jdbc:postgresql://localhost:5432/stock_db
-spring.datasource.username=root
-spring.datasource.password=votre_motdepasse
+spring.datasource.username=postgres
+spring.datasource.password=postgres
+
+# JPA - Crée automatiquement le schéma
+spring.jpa.hibernate.ddl-auto=create
+spring.jpa.defer-datasource-initialization=true
+spring.sql.init.mode=always
 ```
 
-#### 4. Initialiser les Données
+#### 4. Démarrer l'Application
 ```bash
-psql -U postgres -d stock_db -f backend/src/main/resources/schema.sql
-psql -U postgres -d stock_db -f backend/src/main/resources/data.sql
-```
-
-#### 5. Démarrer l'Application
-```bash
+cd backend
+./mvnw clean install
 ./mvnw spring-boot:run
 ```
+
+**Note** : Au démarrage, Hibernate :
+1. Crée automatiquement toutes les tables depuis les entités `@Entity` (avec relations `@OneToMany` et `@ManyToOne`)
+2. Génère les contraintes de clés étrangères et les index
+3. Exécute `data.sql` pour insérer les données de test :
+   - 3 fournisseurs
+   - 30 clients  
+   - 118 produits
+   - 68 achats (avec relation bidirectionnelle vers `stock_mouvement`)
+   - 92 ventes (avec relation bidirectionnelle vers `stock_mouvement`)
+   - 160 mouvements de stock (68 ENTREE + 92 SORTIE)
 
 L'API sera accessible : `http://localhost:8080/api`
 
 ---
 
-### Option 2 : Déploiement avec Docker Compose
+### Option 2 : Déploiement avec Docker Compose (Recommandé)
 
 #### 1. Prérequis
 - Docker
@@ -48,33 +68,52 @@ L'API sera accessible : `http://localhost:8080/api`
 
 #### 2. Lancer les Services
 ```bash
-# Démarrer PostgreSQL seul (sans app)
-docker-compose -f docker-compose-db.yml up -d
+# Démarrer tous les services (Backend + Frontend + PostgreSQL)
+docker-compose up -d --build
 
-# Ou démarrer l'app + PostgreSQL (après décommenter dans docker-compose.yml)
-docker-compose up -d
+# Ou démarrer uniquement PostgreSQL
+docker-compose -f docker-compose-db.yml up -d
 ```
 
 #### 3. Vérifier l'État
 ```bash
 docker-compose ps
-docker-compose logs -f
+docker-compose logs -f backend
 ```
 
-#### 4. Accéder à l'Application
+#### 4. Accéder aux Services
 ```
-API: http://localhost:8080/api
+Backend API: http://localhost:8080/api
+Frontend: http://localhost:4200
 Swagger UI: http://localhost:8080/swagger-ui.html
+PostgreSQL: localhost:5432
 ```
 
-#### 5. Arrêter les Services
+#### 5. Réinitialiser la Base de Données
+```bash
+# Arrêter et supprimer les volumes
+docker-compose down -v
+
+# Redémarrer (le schéma sera recréé automatiquement)
+docker-compose up -d --build
+```
+
+#### 6. Arrêter les Services
 ```bash
 docker-compose down
 ```
 
 ---
 
-### Option 3 : Déploiement Multi-Conteneurs (Complet)
+### Option 3 : Déploiement Production (sans data.sql)
+
+Pour la production, désactiver l'insertion automatique des données de test :
+
+```properties
+# application-prod.properties
+spring.jpa.hibernate.ddl-auto=validate
+spring.sql.init.mode=never
+```
 
 #### 1. Compiler l'Application
 ```bash

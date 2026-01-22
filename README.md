@@ -105,100 +105,101 @@ Système professionnel et transactionnel pour la gestion complète du stock.
               │             │ 1
               │        ┌────▼─────┐
               │ 1      │          │ n
-              ├────────┤   Sale   │
-              │        └──────────┘
-              │ 1          │
-              │ ┌─────────┐ n
-              └─┤ BillProduct├──┐
-                └─────────────┘  │
-                                  │ 1
-                            ┌─────▼──┐
-                            │  Bill   │
-                            └─────────┘
+              ├────────┤   Sale   │───┐
+              │        └──────┬───┘   │
+              │               │ 1     │ n
+   ┌──────────┤          ┌────▼────┐  │
+   │          │          │Customer │  │
+   │ 1        │          └─────────┘  │
+   │          │ 1                     │
+   │          │ ┌─────────────┐ n    │
+   │          └─┤ BillProduct ├──┐   │
+   │            └─────────────┘  │   │
+   │                             │ 1 │
+   │                       ┌─────▼───▼┐
+   └───────────────────────┤   Bill   │
+                           └──────────┘
 ```
 
 ### Tables Principales
 
 #### `supplier`
-```sql
-CREATE TABLE supplier (
-  id BIGINT PRIMARY KEY AUTO_INCREMENT,
-  name VARCHAR(255) NOT NULL,
-  address VARCHAR(255),
-  phone VARCHAR(20),
-  email VARCHAR(255),
-  web_site VARCHAR(255),
-  tva_code VARCHAR(20),
-  contact_person VARCHAR(255)
-);
-```
+- Fournisseurs du système
+- Relation 1:N avec `product`
+
+#### `customer`
+- Clients du système
+- Relation 1:N avec `sale` et `bill`
 
 #### `product`
-```sql
-CREATE TABLE product (
-  id_product BIGINT PRIMARY KEY AUTO_INCREMENT,
-  designation VARCHAR(100),
-  name VARCHAR(255),
-  description TEXT,
-  category VARCHAR(100),
-  unit VARCHAR(50),
-  initial_stock_quantity INT,
-  initial_unit_price DECIMAL(10,2),
-  initial_stock_value DECIMAL(12,2),
-  current_stock_quantity INT,
-  current_stock_value DECIMAL(12,2),
-  cmp DECIMAL(10,2),
-  supplier_id BIGINT,
-  FOREIGN KEY (supplier_id) REFERENCES supplier(id)
-);
-```
+- Produits en stock
+- Champs de stock : `initial_stock_quantity`, `current_stock_quantity`
+- Champ calculé : `cmp` (Coût Moyen Pondéré)
+- Relation N:1 avec `supplier`
 
 #### `purchase`
-```sql
-CREATE TABLE purchase (
-  id BIGINT PRIMARY KEY AUTO_INCREMENT,
-  date_purchase DATETIME,
-  supplier_id BIGINT NOT NULL,
-  product_id BIGINT NOT NULL,
-  invoice_number VARCHAR(100),
-  quantity INT,
-  unit_price_ttc DECIMAL(10,2),
-  total_amount_ttc DECIMAL(12,2),
-  comment TEXT,
-  FOREIGN KEY (supplier_id) REFERENCES supplier(id),
-  FOREIGN KEY (product_id) REFERENCES product(id_product)
-);
-```
+- Achats de produits auprès des fournisseurs
+- Crée automatiquement un mouvement de stock ENTREE
+- Met à jour le stock et recalcule le CMP
+- Relation bidirectionnelle `@OneToMany` avec `stock_mouvement`
 
 #### `sale`
-```sql
-CREATE TABLE sale (
-  id BIGINT PRIMARY KEY AUTO_INCREMENT,
-  date_sale DATETIME,
-  product_id BIGINT NOT NULL,
-  quantity_sold INT,
-  unit_sale_price DECIMAL(10,2),
-  total_sale_amount DECIMAL(12,2),
-  FOREIGN KEY (product_id) REFERENCES product(id_product)
-);
-```
+- Ventes de produits aux clients
+- Crée automatiquement un mouvement de stock SORTIE
+- Décrément le stock disponible
+- Lien avec `customer` et `product`
+- Relation bidirectionnelle `@OneToMany` avec `stock_mouvement`
 
 #### `stock_mouvement`
-```sql
-CREATE TABLE stock_mouvement (
-  id BIGINT PRIMARY KEY AUTO_INCREMENT,
-  product_id BIGINT NOT NULL,
-  quantity INT,
-  date DATETIME,
-  type ENUM('ENTREE', 'SORTIE'),
-  source ENUM('ACHAT', 'VENTE', 'AJUSTEMENT'),
-  purchase_id BIGINT,
-  sale_id BIGINT,
-  reference VARCHAR(100),
-  FOREIGN KEY (product_id) REFERENCES product(id_product),
-  FOREIGN KEY (purchase_id) REFERENCES purchase(id),
-  FOREIGN KEY (sale_id) REFERENCES sale(id)
-);
+- Historique complet des mouvements de stock
+- Types : `ENTREE` (achat), `SORTIE` (vente)
+- Sources : `ACHAT`, `VENTE`, `AJUSTEMENT`
+- Relation `@ManyToOne` avec `purchase` (plusieurs mouvements par achat possibles)
+- Relation `@ManyToOne` avec `sale` (plusieurs mouvements par vente possibles)
+
+#### `bill` & `bill_product`
+- Factures clients avec produits associés
+- Relation N:N entre `bill` et `product` via `bill_product`
+
+---
+
+## 🗄️ Gestion du Schéma de Base de Données
+
+### Configuration JPA/Hibernate
+
+Le schéma de base de données est **automatiquement créé par JPA/Hibernate** à partir des entités Java :
+
+```properties
+# application.properties
+spring.jpa.hibernate.ddl-auto=create
+spring.jpa.defer-datasource-initialization=true
+spring.sql.init.mode=always
+```
+
+- **`ddl-auto=create`** : Hibernate crée automatiquement toutes les tables au démarrage
+- **Pas de schema.sql** : Le schéma est généré depuis les annotations `@Entity`
+- **data.sql seulement** : Fichier pour insérer les données de test initiales
+
+### Données de Test
+
+Le fichier `data.sql` contient :
+- **3 fournisseurs** (Fournitures Générales, Technologie & Co, Aldecco)
+- **30 clients** répartis dans toute la Tunisie
+- **118 produits** (peintures, enduits, finitions, etc.)
+- **68 achats** (Janvier 2025 - Janvier 2026)
+- **92 ventes** (Janvier 2025 - Janvier 2026)
+- **160 mouvements de stock** (68 ENTREE + 92 SORTIE)
+
+### Structure des Tables Générées
+
+Les tables sont créées automatiquement avec les bonnes relations :
+
+```
+supplier → product → purchase → stock_mouvement
+                  ↓          ↘
+customer → sale ─────────────→ stock_mouvement
+         ↓
+       bill → bill_product
 ```
 
 ---
@@ -210,44 +211,65 @@ CREATE TABLE stock_mouvement (
 - **Java 21+** (LTS)
 - **Maven 4.x** ou Maven Wrapper
 - **PostgreSQL 14+**
+- **Docker & Docker Compose** (recommandé)
 
-### 1️⃣ Cloner le Projet
+### 1️⃣ Démarrage avec Docker Compose (Recommandé)
 
 ```bash
-git clone https://github.com/Raouf25/stock_management.git
+# Cloner le projet
+git clone https://github.com/votre-repo/stock_management.git
 cd stock_management
+
+# Démarrer tous les services (Backend + Frontend + PostgreSQL)
+docker-compose up -d --build
+
+# Vérifier les logs
+docker-compose logs -f backend
 ```
 
-### 2️⃣ Configurer la Base de Données
+Les services seront disponibles :
+- **Backend API** : http://localhost:8080/api
+- **Frontend Angular** : http://localhost:4200
+- **PostgreSQL** : localhost:5432
+
+### 2️⃣ Installation Manuelle
 
 **Créer la base de données :**
 
 ```sql
 CREATE DATABASE stock_db;
-\c stock_db;
 ```
 
-**Mettre à jour `application.properties` :**
+**Configuration `application.properties` :**
 
 ```properties
 # Database Configuration
 spring.datasource.url=jdbc:postgresql://localhost:5432/stock_db
 spring.datasource.username=postgres
-spring.datasource.password=votre_motdepasse
+spring.datasource.password=postgres
 spring.datasource.driver-class-name=org.postgresql.Driver
 
-# JPA/Hibernate Configuration
-spring.jpa.hibernate.ddl-auto=update
+# JPA/Hibernate Configuration - Crée automatiquement le schéma
+spring.jpa.hibernate.ddl-auto=create
 spring.jpa.show-sql=false
 spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
 spring.jpa.properties.hibernate.format_sql=true
 
+# Data Initialization - Charge data.sql après création du schéma
+spring.jpa.defer-datasource-initialization=true
+spring.sql.init.mode=always
+
 # Server Configuration
 server.port=8080
 server.servlet.context-path=/api
+```
 
-# Application Name
-spring.application.name=stock_management
+**Compiler et lancer :**
+
+```bash
+cd backend
+./mvnw clean install
+./mvnw spring-boot:run
 ```
 
 ### 3️⃣ Initialiser les Données de Test

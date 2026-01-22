@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Data
 @Entity
@@ -30,6 +31,6 @@ public class Purchase {
     private String comment;
 
     // Préserver la relation avec l'historique
-    @OneToOne(mappedBy = "purchase")
-    private StockMouvement stockMouvement;
+    @OneToMany(mappedBy = "purchase", cascade = CascadeType.ALL)
+    private List<StockMouvement> stockMouvements;
 }
