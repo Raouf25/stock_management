@@ -54,7 +54,6 @@ export class SalesComponent implements OnInit {
 
     this.apiService.createSale(this.newSale).subscribe({
       next: () => {
-        alert('Vente créée avec succès');
         this.showForm = false;
         this.loadSales();
         this.resetForm();

@@ -52,6 +52,7 @@
           <thead class="table-light">
             <tr>
               <th>ID</th>
+              <th>Nom</th>
               <th>Désignation</th>
               <th>Catégorie</th>
               <th>Quantité Initiale</th>
@@ -64,6 +65,7 @@
           <tbody>
             <tr *ngFor="let product of getFilteredProducts()">
               <td>{{ product.idProduct }}</td>
+              <td><strong>{{ product.name }}</strong></td>
               <td><strong>{{ product.designation }}</strong></td>
               <td><span class="badge bg-secondary">{{ product.category }}</span></td>
               <td>{{ product.initialStockQuantity }}</td>

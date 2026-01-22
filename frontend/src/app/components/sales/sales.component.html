@@ -16,7 +16,7 @@
           <select class="form-control" [(ngModel)]="newSale.productId">
             <option value="">Sélectionnez...</option>
             <option *ngFor="let p of products" [value]="p.idProduct">
-              {{ p.designation }} (Stock: {{ p.currentStockQuantity }})
+              {{ p.name +" "+  p.category +" "+ p.designation }} (Stock: {{ p.currentStockQuantity }})
             </option>
           </select>
         </div>
