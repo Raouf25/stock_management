@@ -54,4 +54,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     @Query("SELECT p FROM Product p WHERE lower(p.category) = :category")
     Map<String, Float> getProductsStatesCategories();
+
+    @Query("SELECT p FROM Product p WHERE p.supplier.id = :supplierId")
+    List<Product> findBySupplierId(Long supplierId);
 }

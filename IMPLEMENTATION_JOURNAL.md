@@ -273,9 +273,10 @@ POST   /api/stock/recalculate-cmp         - Recalculer les CMP
 - Scénarios détaillés
 - Calculs pas à pas
 
-### 4. **INIT_DATA.sql** - Créé ✅
+### 4. **schema.sql et data.sql** - Créés ✅
 
-- Script SQL d'initialisation
+- Scripts SQL d'initialisation
+- Structure de la base de données
 - Données de test complètes
 - Requêtes de vérification
 
@@ -352,7 +353,8 @@ POST   /api/stock/recalculate-cmp         - Recalculer les CMP
    ✅ README.md (créé)
    ✅ API_DOCUMENTATION.md (créé)
    ✅ API_EXAMPLES.md (créé)
-   ✅ INIT_DATA.sql (créé)
+   ✅ backend/src/main/resources/schema.sql (créé)
+   ✅ backend/src/main/resources/data.sql (créé)
    ✅ IMPLEMENTATION_JOURNAL.md (ce fichier)
 ```
 

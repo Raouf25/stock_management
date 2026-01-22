@@ -232,7 +232,7 @@ stock_management/
 | `SaleService.java` | Logique des ventes + validation stock |
 | `StockService.java` | Calculs du stock final et CMP |
 | `docker-compose.yml` | Déploiement simplifié |
-| `application.properties` | Configuration MySQL |
+| `application.properties` | Configuration PostgreSQL |
 
 ---
 

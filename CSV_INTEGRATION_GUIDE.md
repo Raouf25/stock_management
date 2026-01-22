@@ -213,7 +213,7 @@ Logs : "Données existent déjà" (incorrect)
 
 4. **Supprimer les données et redémarrer**
    ```bash
-   docker-compose exec mysql mysql -u stock_user -pstock_password stock_db << EOF
+   docker-compose exec postgres psql -U postgres -d stock_db << EOF
    DELETE FROM stock_mouvement;
    DELETE FROM sale;
    DELETE FROM purchase;
@@ -318,7 +318,7 @@ curl http://localhost:8080/api/products | jq 'length'
 docker-compose logs stock_app | grep "Chargement"
 
 # Base de données
-docker-compose exec mysql mysql -u stock_user -pstock_password -e \
+docker-compose exec postgres psql -U postgres -d stock_db -e \
   "SELECT COUNT(*) FROM stock_db.product;"
 ```
 
@@ -329,7 +329,7 @@ docker-compose exec mysql mysql -u stock_user -pstock_password -e \
 docker-compose down
 
 # 2. Nettoyer la base de données
-docker volume rm stock_management_stock_mysql_data
+docker volume rm stock_management_postgres_data
 
 # 3. Redémarrer
 docker-compose up -d

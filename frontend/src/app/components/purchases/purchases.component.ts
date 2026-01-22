@@ -26,6 +26,7 @@ export class PurchasesComponent implements OnInit {
 
   suppliers: any[] = [];
   products: any[] = [];
+  filteredProducts: any[] = [];
 
   constructor(private apiService: ApiService) {}
 
@@ -52,7 +53,29 @@ export class PurchasesComponent implements OnInit {
 
   loadProducts(): void {
     this.apiService.getProducts().subscribe({
-      next: (data) => this.products = data
+      next: (data) => {
+        this.products = data;
+        this.filteredProducts = data; // Initialize with all products
+      }
+    });
+  }
+
+  onSupplierChange(): void {
+    const supplierId = Number(this.newPurchase.supplierId);
+    if (!supplierId) {
+      this.filteredProducts = [...this.products]; // Show all products if no supplier selected
+      this.newPurchase.productId = ''; // Reset product selection
+      return;
+    }
+
+    this.apiService.getProductsBySupplier(supplierId).subscribe({
+      next: (data) => {
+        this.filteredProducts = data;
+        this.newPurchase.productId = ''; // Reset product selection when supplier changes
+      },
+      error: () => {
+        this.filteredProducts = [];
+      }
     });
   }
 

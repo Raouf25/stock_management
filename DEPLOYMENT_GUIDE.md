@@ -7,7 +7,7 @@
 #### 1. Prérequis
 - Java 21+
 - Maven 4.x
-- MySQL 8.0+
+- PostgreSQL 14+
 
 #### 2. Configurer MySQL
 ```bash
@@ -20,14 +20,15 @@ EXIT;
 #### 3. Configurer l'Application
 Modifier `src/main/resources/application.properties` :
 ```properties
-spring.datasource.url=jdbc:mysql://localhost:3306/stock_db
+spring.datasource.url=jdbc:postgresql://localhost:5432/stock_db
 spring.datasource.username=root
 spring.datasource.password=votre_motdepasse
 ```
 
 #### 4. Initialiser les Données
 ```bash
-mysql -u root -p stock_db < INIT_DATA.sql
+psql -U postgres -d stock_db -f backend/src/main/resources/schema.sql
+psql -U postgres -d stock_db -f backend/src/main/resources/data.sql
 ```
 
 #### 5. Démarrer l'Application
@@ -47,10 +48,10 @@ L'API sera accessible : `http://localhost:8080/api`
 
 #### 2. Lancer les Services
 ```bash
-# Démarrer MySQL seul (sans app)
+# Démarrer PostgreSQL seul (sans app)
 docker-compose -f docker-compose-db.yml up -d
 
-# Ou démarrer l'app + MySQL (après décommenter dans docker-compose.yml)
+# Ou démarrer l'app + PostgreSQL (après décommenter dans docker-compose.yml)
 docker-compose up -d
 ```
 
@@ -92,28 +93,29 @@ docker images | grep stock-management
 
 #### 4. Lancer les Conteneurs
 ```bash
-# Démarrer MySQL
+# Démarrer PostgreSQL
 docker run -d \
   --name stock_db \
   --network stock_network \
-  -e MYSQL_ROOT_PASSWORD=root \
-  -e MYSQL_DATABASE=stock_db \
-  -p 3306:3306 \
-  mysql:8.0
+  -e POSTGRES_PASSWORD=postgres \
+  -e POSTGRES_DB=stock_db \
+  -p 5432:5432 \
+  postgres:14
 
-# Attendre que MySQL soit prêt
+# Attendre que PostgreSQL soit prêt
 sleep 30
 
 # Initialiser les données
-docker exec stock_db mysql -u root -proot stock_db < INIT_DATA.sql
+docker exec -i stock_db psql -U postgres -d stock_db < backend/src/main/resources/schema.sql
+docker exec -i stock_db psql -U postgres -d stock_db < backend/src/main/resources/data.sql
 
 # Démarrer l'Application
 docker run -d \
   --name stock_app \
   --network stock_network \
-  -e SPRING_DATASOURCE_URL=jdbc:mysql://stock_db:3306/stock_db \
-  -e SPRING_DATASOURCE_USERNAME=root \
-  -e SPRING_DATASOURCE_PASSWORD=root \
+  -e SPRING_DATASOURCE_URL=jdbc:postgresql://stock_db:5432/stock_db \
+  -e SPRING_DATASOURCE_USERNAME=postgres \
+  -e SPRING_DATASOURCE_PASSWORD=postgres \
   -p 8080:8080 \
   stock-management:1.0
 ```
@@ -138,7 +140,7 @@ docker network rm stock_network
 ### Recommandations
 
 1. **Database**
-   - Utiliser MySQL 8.0+ ou MariaDB 10.5+
+   - Utiliser PostgreSQL 14+
    - Configurer des sauvegardes régulières
    - Utiliser une base de données externe (ex: AWS RDS)
 

@@ -19,6 +19,10 @@ export class ApiService {
     return this.http.get<any>(`${this.apiUrl}/products/${id}`);
   }
 
+  getProductsBySupplier(supplierId: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/products/supplier/${supplierId}`);
+  }
+
   getStockSummary(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/stock/summary`);
   }

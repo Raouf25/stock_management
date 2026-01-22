@@ -16,12 +16,18 @@ public class Sale {
     private LocalDate dateSale;
 
     @ManyToOne
+    @JoinColumn(name = "customer_id")
+    private Customer customer;
+
+    @ManyToOne
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
+    private String invoiceNumber;
     private Integer quantitySold;
     private Double unitSalePrice; // Prix unitaire de vente TTC
     private Double totalSaleAmount; // quantitySold × unitSalePrice
+    private String comment;
 
     // Préserver la relation avec l'historique
     @OneToOne(mappedBy = "sale")

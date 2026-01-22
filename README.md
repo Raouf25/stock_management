@@ -37,7 +37,7 @@ Système professionnel et transactionnel pour la gestion complète du stock.
 └─────────────────┬───────────────────────────────┘
                   │
 ┌─────────────────▼───────────────────────────────┐
-│           Database (MySQL/MariaDB)            │
+│           Database (PostgreSQL)               │
 │  (Persisted Data)                            │
 └──────────────────────────────────────────────────┘
 ```
@@ -62,8 +62,8 @@ Système professionnel et transactionnel pour la gestion complète du stock.
 
 <!-- Database -->
 <dependency>
-    <groupId>com.mysql</groupId>
-    <artifactId>mysql-connector-java</artifactId>
+    <groupId>org.postgresql</groupId>
+    <artifactId>postgresql</artifactId>
 </dependency>
 
 <!-- Lombok (Annotations @Data, @Autowired) -->
@@ -209,7 +209,7 @@ CREATE TABLE stock_mouvement (
 
 - **Java 21+** (LTS)
 - **Maven 4.x** ou Maven Wrapper
-- **MySQL 8.0+** ou **MariaDB 10.5+**
+- **PostgreSQL 14+**
 
 ### 1️⃣ Cloner le Projet
 
@@ -224,22 +224,22 @@ cd stock_management
 
 ```sql
 CREATE DATABASE stock_db;
-USE stock_db;
+\c stock_db;
 ```
 
 **Mettre à jour `application.properties` :**
 
 ```properties
 # Database Configuration
-spring.datasource.url=jdbc:mysql://localhost:3306/stock_db
-spring.datasource.username=root
+spring.datasource.url=jdbc:postgresql://localhost:5432/stock_db
+spring.datasource.username=postgres
 spring.datasource.password=votre_motdepasse
-spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+spring.datasource.driver-class-name=org.postgresql.Driver
 
 # JPA/Hibernate Configuration
 spring.jpa.hibernate.ddl-auto=update
 spring.jpa.show-sql=false
-spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQL8Dialect
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
 spring.jpa.properties.hibernate.format_sql=true
 
 # Server Configuration
@@ -255,8 +255,9 @@ spring.application.name=stock_management
 Après le démarrage de l'application :
 
 ```bash
-# Exécuter le script SQL d'initialisation
-mysql -u root -p stock_db < INIT_DATA.sql
+# Exécuter les scripts SQL d'initialisation
+psql -U postgres -d stock_db -f backend/src/main/resources/schema.sql
+psql -U postgres -d stock_db -f backend/src/main/resources/data.sql
 ```
 
 ### 4️⃣ Démarrer l'Application
@@ -466,9 +467,9 @@ kill -9 <PID>
 server.port=8081
 ```
 
-### Erreur : `Access denied for user 'root'`
+### Erreur : `Access denied for user 'postgres'`
 
-Vérifier les identifiants MySQL dans `application.properties`
+Vérifier les identifiants PostgreSQL dans `application.properties`
 
 ### Erreur : `Hibernate: cannot find table`
 
@@ -481,7 +482,8 @@ Vérifier que `spring.jpa.hibernate.ddl-auto=update` est configuré
 Voir les fichiers :
 - [API_DOCUMENTATION.md](API_DOCUMENTATION.md) - Guide complet des endpoints
 - [API_EXAMPLES.md](API_EXAMPLES.md) - Exemples détaillés de requêtes
-- [INIT_DATA.sql](INIT_DATA.sql) - Script d'initialisation des données
+- [backend/src/main/resources/schema.sql](backend/src/main/resources/schema.sql) - Schéma de base de données
+- [backend/src/main/resources/data.sql](backend/src/main/resources/data.sql) - Données d'initialisation
 
 ---
 
@@ -491,7 +493,7 @@ Voir les fichiers :
 |------------|---------|-------|
 | Spring Boot | 3.3.3 | Framework principal |
 | Java | 21 | Langage |
-| MySQL | 8.0+ | Base de données |
+| PostgreSQL | 14+ | Base de données |
 | JPA/Hibernate | - | ORM |
 | Lombok | - | Annotations |
 | Swagger/OpenAPI | - | Documentation API |

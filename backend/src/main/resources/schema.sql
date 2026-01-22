@@ -96,3 +96,16 @@ CREATE TABLE IF NOT EXISTS Historic_Product (
                                     details_modification TEXT
 );
 
+-- Table Purchase (Achats)
+CREATE TABLE IF NOT EXISTS Purchase (
+                          id SERIAL PRIMARY KEY,
+                          date_purchase DATE NOT NULL,
+                          supplier_id INT REFERENCES Supplier(supplier_id),
+                          product_id INT REFERENCES Product(id_product),
+                          invoice_number VARCHAR(100),
+                          quantity INT NOT NULL,
+                          unit_pricettc DECIMAL(10, 2) NOT NULL,
+                          total_amountttc DECIMAL(10, 2) NOT NULL,
+                          comment TEXT
+);
+

@@ -74,4 +74,8 @@ public class ProductService {
     public List<Product> getProductsByCategory(String category) {
         return productRepository.getProductsByCategory(category);
     }
+
+    public List<Product> findBySupplierId(Long supplierId) {
+        return productRepository.findBySupplierId(supplierId);
+    }
 }
