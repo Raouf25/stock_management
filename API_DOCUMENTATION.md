@@ -439,12 +439,12 @@ POST /api/stock/recalculate-cmp
 Configuration dans `application.properties` :
 
 ```properties
-spring.datasource.url=jdbc:mysql://localhost:3306/stock_db
-spring.datasource.username=root
-spring.datasource.password=
+spring.datasource.url=jdbc:postgresql://localhost:5432/stock_db
+spring.datasource.username=postgres
+spring.datasource.password=postgres
 spring.jpa.hibernate.ddl-auto=update
 spring.jpa.show-sql=false
-spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQL8Dialect
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
 ```
 
 ## Démarrage de l'Application

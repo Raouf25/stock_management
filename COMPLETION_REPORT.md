@@ -46,7 +46,7 @@ CMP = Valeur / Quantité (ou 0 si quantité = 0)
 - [x] Création automatique des fournisseurs
 
 ### ✅ Infrastructure
-- [x] Docker Compose avec MySQL
+- [x] Docker Compose avec PostgreSQL
 - [x] Dockerfile multi-stage
 - [x] Configuration Spring Boot
 - [x] Health checks
@@ -172,7 +172,7 @@ Importer : Stock_Management_API.postman_collection.json
 ├───────────────────────────────────────────┤
 │  Repositories (JPA/Hibernate)             │
 ├───────────────────────────────────────────┤
-│  Database (MySQL/PostgreSQL)              │
+│  Database (PostgreSQL)              │
 └───────────────────────────────────────────┘
          + CsvDataLoaderService
          + @Transactional (ACID)
@@ -238,7 +238,7 @@ Redémarrage N fois = même data (pas de duplication)
 
 ### Spring Boot
 ```properties
-spring.datasource.url=jdbc:mysql://localhost/stock_db
+spring.datasource.url=jdbc:postgresql://localhost:5432/stock_db
 spring.jpa.hibernate.ddl-auto=update
 spring.sql.init.mode=never  # CSV Loader à la place
 ```
@@ -246,7 +246,7 @@ spring.sql.init.mode=never  # CSV Loader à la place
 ### Docker
 ```yaml
 services:
-  mysql: (port 3306)
+  postgres: (port 5432)
   stock_app: (port 8080)
 ```
 
@@ -315,8 +315,8 @@ docker-compose up -d
 
 **Erreur de base de données**
 ```bash
-docker-compose exec mysql mysqladmin ping
-docker-compose logs mysql
+docker-compose exec postgres pg_isready -U postgres
+docker-compose logs postgres
 ```
 
 ---

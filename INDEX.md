@@ -76,7 +76,7 @@ docker-compose up -d
 ### Configuration
 ```
 📄 application.properties              → Configuration Spring Boot
-📄 docker-compose.yml                  → Docker Compose (MySQL + App)
+📄 docker-compose.yml                  → Docker Compose (PostgreSQL + App)
 📄 Dockerfile                          → Image Docker multi-stage
 📄 pom.xml                             → Dépendances Maven
 📄 application-postgresql.properties   → Configuration PostgreSQL (optionnel)
@@ -259,7 +259,7 @@ curl http://localhost:8080/actuator/health   # Health check
 
 ### Base de données
 ```bash
-docker-compose exec mysql mysql -u stock_user -pstock_password stock_db
+docker-compose exec postgres psql -U postgres -d stock_db
 # SELECT COUNT(*) FROM product;
 ```
 
@@ -316,7 +316,7 @@ Contenu   : Historique des transactions
 - [Spring Boot Documentation](https://spring.io/projects/spring-boot)
 - [Hibernate/JPA](https://hibernate.org/orm/)
 - [Docker Documentation](https://docs.docker.com/)
-- [MySQL Documentation](https://dev.mysql.com/doc/)
+- [PostgreSQL Documentation](https://www.postgresql.org/docs/)
 - [OpenAPI/Swagger](https://swagger.io/)
 
 ---

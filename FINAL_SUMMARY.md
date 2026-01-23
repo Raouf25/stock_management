@@ -235,7 +235,7 @@ Chaque mouvement est tracé avec :
 ├─────────────────────────────────────┤
 │    Repositories (3 + autres)        │
 ├─────────────────────────────────────┤
-│    Database (MySQL via Docker)      │
+│    Database (PostgreSQL via Docker)      │
 └─────────────────────────────────────┘
 ```
 
@@ -270,8 +270,8 @@ Chaque mouvement est tracé avec :
 ### Docker Compose
 ```yaml
 services:
-  mysql:
-    - Port 3306
+  postgres:
+    - Port 5432
     - Volume persistant
     - Health check
   stock_app:

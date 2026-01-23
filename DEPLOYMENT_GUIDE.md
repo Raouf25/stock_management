@@ -205,14 +205,14 @@ docker network rm stock_network
 ```bash
 heroku login
 heroku create stock-management-app
-heroku addons:create cleardb:ignite  # MySQL add-on
+heroku addons:create heroku-postgresql:mini  # PostgreSQL add-on
 ```
 
 #### 3. Configurer application.properties
 ```properties
 spring.jpa.hibernate.ddl-auto=create-drop
 spring.jpa.show-sql=false
-spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQL8Dialect
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
 ```
 
 #### 4. Déployer
@@ -252,8 +252,8 @@ docker push <ACCOUNT_ID>.dkr.ecr.<REGION>.amazonaws.com/stock-management:1.0
     "image": "<ACCOUNT_ID>.dkr.ecr.<REGION>.amazonaws.com/stock-management:1.0",
     "portMappings": [{"containerPort": 8080}],
     "environment": [
-      {"name": "SPRING_DATASOURCE_URL", "value": "jdbc:mysql://..."},
-      {"name": "SPRING_DATASOURCE_USERNAME", "value": "admin"},
+      {"name": "SPRING_DATASOURCE_URL", "value": "jdbc:postgresql://..."},
+      {"name": "SPRING_DATASOURCE_USERNAME", "value": "postgres"},
       {"name": "SPRING_DATASOURCE_PASSWORD", "value": "..."}
     ]
   }]
@@ -405,7 +405,7 @@ public List<Product> getAllProducts() {
 ### Problème : Connection Timeout
 ```
 Error: Cannot connect to database
-Solución: Vérifier que MySQL est démarré et accessible
+Solución: Vérifier que PostgreSQL est démarré et accessible
 docker ps
 docker logs stock_db
 ```
@@ -455,7 +455,7 @@ SET GLOBAL long_query_time = 2;
 
 Pour des problèmes de déploiement :
 1. Consulter les logs : `docker logs -f app`
-2. Vérifier la connectivité MySQL : `docker exec -it db mysql -u root -p`
+2. Vérifier la connectivité PostgreSQL : `docker exec -it db psql -U postgres`
 3. Tester l'API : `curl http://localhost:8080/api/products`
 4. Consulter la documentation Swagger : `http://localhost:8080/swagger-ui.html`
 

@@ -174,10 +174,10 @@ POST   /api/stock/recalculate-cmp  # Recalcul du CMP
 
 #### ✓ application.properties
 ```properties
-# MySQL Configuration
-spring.datasource.url=jdbc:mysql://localhost:3306/stock_db
-spring.datasource.username=root
-spring.datasource.password=
+# PostgreSQL Configuration
+spring.datasource.url=jdbc:postgresql://localhost:5432/stock_db
+spring.datasource.username=postgres
+spring.datasource.password=postgres
 
 # Hibernate/JPA
 spring.jpa.hibernate.ddl-auto=update
@@ -203,8 +203,8 @@ logging.file.name=logs/stock_management.log
 ```
 
 #### ✓ docker-compose.yml - Amélioré
-- Service MySQL avec health check
-- Service Spring Boot avec dépendance MySQL
+- Service PostgreSQL avec health check
+- Service Spring Boot avec dépendance PostgreSQL
 - Option PostgreSQL (profile)
 - Volumes persistants
 - Network custom
@@ -229,7 +229,7 @@ Documentation complète du chargement CSV :
 Guide de déploiement :
 - Déploiement Docker Compose
 - Déploiement manuel
-- Configuration MySQL / PostgreSQL
+- Configuration PostgreSQL
 - Monitoring & troubleshooting
 - Checklist de déploiement
 

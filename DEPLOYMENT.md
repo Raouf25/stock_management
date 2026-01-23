@@ -3,7 +3,7 @@
 ## 📋 Prérequis
 
 - Docker & Docker Compose (recommandé)
-- Ou : Java 21+ et MySQL 8.0+
+- Ou : Java 21+ et PostgreSQL 14+
 - Maven 3.9+
 
 ## 🚀 Déploiement avec Docker Compose (Recommandé)
@@ -13,7 +13,7 @@
 ```bash
 cd /workspaces/stock_management
 
-# Démarrer MySQL et l'application Spring Boot
+# Démarrer PostgreSQL et l'application Spring Boot
 docker-compose up -d
 
 # Afficher les logs
@@ -41,16 +41,15 @@ docker-compose down -v
 
 ## 🏗️ Déploiement Manuel (Sans Docker)
 
-### 1. Configuration MySQL
+### 1. Configuration PostgreSQL
 
 ```bash
 # Créer la base de données
-mysql -u root -p << EOF
+psql -U postgres << EOF
 CREATE DATABASE stock_db;
-CREATE USER 'stock_user'@'localhost' IDENTIFIED BY 'stock_password';
-GRANT ALL PRIVILEGES ON stock_db.* TO 'stock_user'@'localhost';
-FLUSH PRIVILEGES;
-EXIT;
+CREATE USER stock_user WITH PASSWORD 'stock_password';
+GRANT ALL PRIVILEGES ON DATABASE stock_db TO stock_user;
+\q
 EOF
 ```
 
@@ -73,21 +72,6 @@ mvn spring-boot:run
 - **Swagger UI** : http://localhost:8080/swagger-ui.html
 - **OpenAPI JSON** : http://localhost:8080/v3/api-docs
 
-## 🐘 Déploiement avec PostgreSQL (Alternative)
-
-### 1. Démarrer PostgreSQL avec Docker
-
-```bash
-docker-compose --profile postgres up -d
-```
-
-### 2. Démarrer l'application avec PostgreSQL
-
-```bash
-mvn spring-boot:run -Dspring-boot.run.arguments="--spring.profiles.active=postgresql"
-```
-
-Ou modifier `application.properties` et utiliser la configuration PostgreSQL.
 
 ## 📊 Initialisation des Données
 
@@ -115,7 +99,7 @@ Pour forcer un rechargement des données CSV, supprimez les données existantes 
 
 ```bash
 # Avec Docker
-docker-compose exec mysql mysql -u stock_user -pstock_password stock_db << EOF
+docker-compose exec postgres psql -U postgres -d stock_db << EOF
 DELETE FROM stock_mouvement;
 DELETE FROM sale;
 DELETE FROM purchase;
@@ -134,11 +118,10 @@ docker-compose restart stock_app
 Créez un fichier `.env` à la racine du projet :
 
 ```env
-# MySQL Configuration
-MYSQL_ROOT_PASSWORD=root
-MYSQL_USER=stock_user
-MYSQL_PASSWORD=stock_password
-MYSQL_DATABASE=stock_db
+# PostgreSQL Configuration
+POSTGRES_DB=stock_db
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
 
 # Spring Boot Configuration
 SPRING_PROFILES_ACTIVE=default
@@ -196,8 +179,8 @@ docker-compose logs stock_app
 # Vérifier que le port 8080 est disponible
 lsof -i :8080
 
-# Vérifier que MySQL est prêt
-docker-compose exec mysql mysqladmin ping
+# Vérifier que PostgreSQL est prêt
+docker-compose exec postgres pg_isready -U postgres
 ```
 
 ### Connexion à la base de données échouée
@@ -206,11 +189,11 @@ docker-compose exec mysql mysqladmin ping
 # Vérifier les variables d'environnement
 docker-compose config
 
-# Vérifier la connectivité MySQL
-docker-compose exec stock_app wget -O- http://mysql:3306
+# Vérifier la connectivité PostgreSQL
+docker-compose exec postgres psql -U postgres -d stock_db -c '\l'
 
-# Vérifier les logs MySQL
-docker-compose logs mysql
+# Vérifier les logs PostgreSQL
+docker-compose logs postgres
 ```
 
 ### Les données ne se chargent pas
@@ -306,5 +289,5 @@ mvn spring-boot:run
 - [Documentation API](CSV_LOADER_README.md)
 - [Configuration Spring Boot](src/main/resources/application.properties)
 - [Swagger UI](http://localhost:8080/swagger-ui.html)
-- [MySQL Documentation](https://dev.mysql.com/doc/)
+- [PostgreSQL Documentation](https://www.postgresql.org/docs/)
 - [Docker Documentation](https://docs.docker.com/)
