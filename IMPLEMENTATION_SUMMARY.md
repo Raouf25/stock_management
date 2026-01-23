@@ -403,7 +403,7 @@ stock_management/
 │   │   └── resources/
 │   │       ├── application.properties ✓ (configuré CSV)
 │   │       ├── Products.csv (données CSV)
-│   │       ├── schema.sql
+│   │       ├── data.sql (données d'initialisation)
 │   │       └── ...autres
 │   └── test/
 │       └── java/...tests

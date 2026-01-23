@@ -140,7 +140,7 @@ backend/
 │   ├── application.properties   # Config PostgreSQL
 │   ├── application-postgresql.properties
 │   ├── Products.csv            # Données initiales
-│   └── schema.sql
+│   └── data.sql                # Données d'initialisation
 │
 └── pom.xml
 ```

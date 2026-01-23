@@ -144,8 +144,7 @@ docker run -d \
 # Attendre que PostgreSQL soit prêt
 sleep 30
 
-# Initialiser les données
-docker exec -i stock_db psql -U postgres -d stock_db < backend/src/main/resources/schema.sql
+# Initialiser les données (optionnel, data.sql est chargé automatiquement)
 docker exec -i stock_db psql -U postgres -d stock_db < backend/src/main/resources/data.sql
 
 # Démarrer l'Application

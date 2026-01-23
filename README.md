@@ -176,8 +176,7 @@ spring.jpa.defer-datasource-initialization=true
 spring.sql.init.mode=always
 ```
 
-- **`ddl-auto=create`** : Hibernate crée automatiquement toutes les tables au démarrage
-- **Pas de schema.sql** : Le schéma est généré depuis les annotations `@Entity`
+- **`ddl-auto=create`** : Hibernate crée automatiquement toutes les tables au démarrage depuis les annotations `@Entity`
 - **data.sql seulement** : Fichier pour insérer les données de test initiales
 
 ### Données de Test
@@ -274,11 +273,11 @@ cd backend
 
 ### 3️⃣ Initialiser les Données de Test
 
-Après le démarrage de l'application :
+Les données de test sont chargées automatiquement au démarrage via `data.sql`.
+Si vous devez réinitialiser les données :
 
 ```bash
-# Exécuter les scripts SQL d'initialisation
-psql -U postgres -d stock_db -f backend/src/main/resources/schema.sql
+# Optionnel : Exécuter le script SQL d'initialisation manuellement
 psql -U postgres -d stock_db -f backend/src/main/resources/data.sql
 ```
 
@@ -504,7 +503,6 @@ Vérifier que `spring.jpa.hibernate.ddl-auto=update` est configuré
 Voir les fichiers :
 - [API_DOCUMENTATION.md](API_DOCUMENTATION.md) - Guide complet des endpoints
 - [API_EXAMPLES.md](API_EXAMPLES.md) - Exemples détaillés de requêtes
-- [backend/src/main/resources/schema.sql](backend/src/main/resources/schema.sql) - Schéma de base de données
 - [backend/src/main/resources/data.sql](backend/src/main/resources/data.sql) - Données d'initialisation
 
 ---
