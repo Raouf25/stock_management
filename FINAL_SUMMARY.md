@@ -7,11 +7,13 @@ Une **API REST complète** de gestion de stock a été implémentée avec succè
 - ✅ Gestion des produits avec valorisation
 - ✅ Gestion des achats avec traçabilité
 - ✅ Gestion des ventes avec contrôle de stock
+- ✅ Gestion des factures avec génération PDF tunisienne
 - ✅ Calcul automatique du Coût Moyen Pondéré (CMP)
 - ✅ Historique complet des mouvements de stock
 - ✅ Reporting et alertes
 - ✅ Chargement automatique des données CSV
 - ✅ Infrastructure Docker prête pour production
+- ✅ Interface Angular avec onglet Factures
 
 ---
 
@@ -21,11 +23,13 @@ Une **API REST complète** de gestion de stock a été implémentée avec succè
 | Catégorie | Quantité | Statut |
 |-----------|----------|--------|
 | Modèles (Model) | 4 | ✅ Créés/Améliorés |
-| Services | 5 | ✅ Implémentés |
-| Contrôleurs | 4 | ✅ Opérationnels |
+| Services | 6 | ✅ Implémentés |
+| Contrôleurs | 5 | ✅ Opérationnels |
 | Repositories | 3 | ✅ Fonctionnels |
 | DTOs | 5 | ✅ Complètes |
-| Endpoints API | 25+ | ✅ Documentés |
+| Composants Frontend | 6 | ✅ Opérationnels |
+| Endpoints API | 30+ | ✅ Documentés |
+| Templates PDF | 1 | ✅ Conforme loi TN |
 
 ### Documentation Livrée
 | Document | Pages | Statut |
@@ -97,6 +101,16 @@ open http://localhost:8080/swagger-ui.html
 ✓ Résumé par produit
 ✓ Alertes de stock faible
 ✓ Valeur totale du stock
+```
+
+### 5. Gestion des Factures
+```
+✓ Liste avec filtres (date, montant, client)
+✓ Tri ascendant/descendant
+✓ Génération PDF conforme loi tunisienne
+✓ Mentions légales (Code TVA, NCT)
+✓ Téléchargement direct depuis l'interface
+✓ Statuts: PAID, UNPAID, PARTIAL
 ```
 
 ---

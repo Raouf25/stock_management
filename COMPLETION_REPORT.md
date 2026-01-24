@@ -12,6 +12,7 @@ Tous les objectifs de l'API REST de gestion de stock ont été **complètement i
 - [x] **Product** - Amélioré avec CMP, valorisation initiale et actuelle
 - [x] **Purchase** - Création, stockage des achats avec fournisseur
 - [x] **Sale** - Création, stockage des ventes avec contrôle de stock
+- [x] **Bill** - Factures avec produits, acomptes, statuts paiement
 - [x] **StockMouvement** - Historique complet des entrées/sorties
 - [x] **Supplier** - Fournisseurs
 - [x] **Customer** - Clients (existant)
@@ -19,6 +20,8 @@ Tous les objectifs de l'API REST de gestion de stock ont été **complètement i
 ### ✅ Services Métier
 - [x] **PurchaseService** - Achats avec génération automatique des mouvements
 - [x] **SaleService** - Ventes avec validation du stock
+- [x] **BillService** - Gestion des factures
+- [x] **PdfGenerateService** - Génération PDF conforme loi tunisienne
 - [x] **StockService** - Calculs du CMP et résumés de stock
 - [x] **StockMovementService** - Gestion de l'historique
 - [x] **CsvDataLoaderService** - Chargement automatique des CSV (NOUVEAU)
@@ -28,9 +31,18 @@ Tous les objectifs de l'API REST de gestion de stock ont été **complètement i
 Produits         : GET, POST, PUT, GET(id), GET(stock)
 Achats           : POST, GET, GET(id), GET(search), GET(product)
 Ventes           : POST, GET, GET(id), GET(search), GET(product)
+Factures         : GET, GET(id), POST, GET(generate/{id})
 Mouvements Stock : GET, GET(id), GET(search), GET(type), GET(source)
 Reporting        : GET(summary), GET(product), GET(alerts), GET(total), POST(recalc)
 ```
+
+### ✅ Composants Frontend
+- [x] **DashboardComponent** - Tableau de bord
+- [x] **ProductsComponent** - Gestion produits
+- [x] **PurchasesComponent** - Gestion achats
+- [x] **SalesComponent** - Gestion ventes
+- [x] **StockMovementComponent** - Historique mouvements
+- [x] **InvoicesComponent** - Liste factures + téléchargement PDF
 
 ### ✅ Règles de Calcul Métier
 ```

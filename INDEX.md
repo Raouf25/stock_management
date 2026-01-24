@@ -41,6 +41,13 @@ docker-compose up -d
 - Tous les contrôleurs
 - Architecture détaillée
 
+### Je Veux Gérer les Factures
+👉 Frontend: [http://localhost:4200/invoices](http://localhost:4200/invoices)
+- Liste des factures avec filtres
+- Tri par date ou montant
+- Téléchargement PDF conforme loi tunisienne
+- API: GET /api/bills, GET /api/bills/generate/{id}
+
 ### Je Veux Vérifier la Complétude
 👉 [COMPLETION_REPORT.md](COMPLETION_REPORT.md)
 - Checklist de livraison

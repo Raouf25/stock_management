@@ -44,6 +44,11 @@ npm start
 | Élément | URL |
 |---------|-----|
 | Dashboard | http://localhost:4200 |
+| Produits | http://localhost:4200/products |
+| Achats | http://localhost:4200/purchases |
+| Ventes | http://localhost:4200/sales |
+| Mouvements | http://localhost:4200/stock-movement |
+| Factures | http://localhost:4200/invoices |
 | API Swagger | http://localhost:8080/swagger-ui.html |
 | PostgreSQL | localhost:5432 |
 

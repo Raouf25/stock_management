@@ -4,332 +4,139 @@
     <meta charset="UTF-8"></meta>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"></meta>
     <title>Facture</title>
-    <style>
-        body {
-            /*font-family: Arial, sans-serif;*/
-            margin: 0;
-            padding: 20px;
-            background-color: #f9f9f9;
-            width: 210mm; /* Largeur A4 */
-            height: 297mm; /* Hauteur A4 */
-            box-sizing: border-box;
-            font-size: 14px; /* Taille de police globale */
-        }
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 20px;
-        }
-        .header .company-info {
-            width: 45%;
-        }
-        .header .logo {
-            text-align: right;
-            width: 45%;
-        }
-        .header img {
-            max-width: 350px;
-        }
-        .invoice-details {
-            /*width: 60%;*/
-            /*margin-top: 10px;*/
-            /*margin-bottom: 0px;*/
-            border-collapse: collapse;
-        }
-        .invoice-details th, .invoice-details td {
-            padding: 8px;
-            text-align: left;
-        }
-        .invoice-details th {
-            font-weight: bold;
-            width: 30%;
-        }
-        /*.invoice-container {*/
-        /*    background-color: white;*/
-        /*    padding: 20px;*/
-        /*    border-radius: 10px;*/
-        /*    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);*/
-        /*    margin-top: 10px; !* Ajout d'une marge supérieure *!*/
-        /*}*/
-        table {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
-            margin-bottom: 20px;
-            font-size: 12px; /* Réduction de la taille de la police */
-        }
-        table th, table td {
-            padding: 8px;
-            text-align: left;
-        }
-        .products, .totals, .payment {
-            border: 1px solid #ddd;
-            border-radius: 10px;
-            overflow: hidden;
-        }
-        .products th {
-            background-color: #f2f2f2;
-            border-bottom: 2px solid #ddd;
-        }
-        .products td, .products th {
-            border-bottom: 1px solid #ddd;
-        }
-        .totals td, .payment td {
-            border-top: 1px solid #ddd;
-            font-weight: bold;
-            text-align: right;
-        }
-        .totals td:first-child, .payment td:first-child {
-            text-align: left;
-        }
-        .payment th {
-            background-color: #f2f2f2;
-            border-bottom: 2px solid #ddd;
-            text-align: center;
-        }
-        .totals td:first-child {
-            background-color: #f2f2f2;
-            font-weight: bold;
-        }
-        .flex-container {
-            display: flex;
-            justify-content: space-between;
-        }
-        .left {
-            width: 48%;
-        }
-        .right {
-            width: 48%;
-        }
-
-        .footer {
-            display: flex; /* Utiliser Flexbox pour le positionnement */
-            justify-content: space-between; /* Espacement égal entre les sections */
-            font-size: 12px;
-            color: #555;
-        }
-
-        .footer-section {
-            flex: 1; /* Chaque section occupe une portion égale de l'espace */
-        }
-
-        .invoice-details-container table.invoice-details {
-            margin-bottom: 0; /* Suppression de la marge inférieure */
-        }
-
-        .invoice-details-container {
-            max-width: 350px; /* Largeur maximale égale à la largeur maximale de l'image */
-            /*margin-top: 10px; !* Ajout d'une marge supérieure *!*/
-            padding: 10px; /* Ajout d'un rembourrage */
-            background-color: #f9f9f9; /* Couleur d'arrière-plan optionnelle */
-            border: 1px solid #ddd; /* Bordure optionnelle */
-            border-radius: 8px; /* Coins arrondis optionnels */
-        }
-
-
-        @page {size: Wpx 1px;margin:0px;}
-
-        /* Styles spécifiques pour l'impression */
-        @media print {
-            .products thead {
-                display: table-header-group; /* Répéter l'en-tête du tableau */
-            }
-            .products tbody {
-                display: table-row-group;
-            }
-
-            .header img {
-                max-width: 105mm;
-            }
-            body {
-                width: 210mm;
-                height: auto;
-                margin: 0;
-            }
-            .header, .invoice-container {
-                box-shadow: none; /* Pas d'ombre lors de l'impression */
-            }
-            table {
-                font-size: 10px; /* Réduire la taille de la police pour l'impression */
-            }
-            .footer {
-                font-size: 10px; /* Réduction de la taille de la police du pied de page */
-            }
-
-
-        }
-    </style>
+    <link rel="stylesheet" href="facture.css" />
 </head>
 <body>
 
 <div class="header">
     <div class="company-info">
-        <h2 th:text="${supplier.name ?: 'Aldecco S.A.R.L'}"></h2>
-        <p th:text="${supplier.address ?: 'Avenue de l''U.M.A, TUNIS'}"></p>
-        <p th:text="'Tel: ' + (${supplier.phone ?: '+216 71 494 496'}) + ' | Fax: +216 71 494 496'"></p>
-        <p th:text="'Email: ' + (${supplier.email ?: 'info@valpaint.tn'})"></p>
-        <p th:text="'Site WEB: ' + (${supplier.webSite ?: 'www.valpaint.tn'})"></p>
-        <p th:text="'Code TVA: ' + (${supplier.tvaCode ?: '954308X/A/M/000'})"></p>
-        <p th:text="'RIB: ' + (${supplier.rib ?: '08110010021000316328 BIAT'})"></p>
-        <p th:text="'IBAN: ' + (${supplier.iban ?: 'TN59 0811 0010 0210 0031 6328'})"></p>
+        <h2>{{companyName}}</h2>
+        <p>{{companyAddress}}</p>
+        <p>Tel: {{companyPhone}}</p>
+        <p>Matricule Fiscale: {{companyTaxId}}</p>
+        <p>RC: {{supplierRc}}</p>
+        <p>RIB: {{supplierRib}}</p>
+        <p>IBAN: {{supplierIban}}</p>
     </div>
+
     <div class="logo">
-<!--        <img src="https://www.valpaint.it/img/public/Oro_Tricolore.png" alt="Valpaint Logo"/>-->
-        <!-- Nouveau conteneur pour les détails de la facture -->
+        <!-- Invoice header box with number and date -->
         <div class="invoice-details-container">
             <table class="invoice-details">
                 <tr>
-                    <th>Client</th>
-<!--                    <td>CLIENT DIVERS SIEGE</td>-->
-                    <td th:text="${customer.name ?: 'CLIENT DIVERS SIEGE'}" ></td>
+                    <th>Facture N°</th>
+                    <td>{{billNumber}}</td>
                 </tr>
                 <tr>
-                    <th>Adresse</th>
-<!--                    <td>ARIANA G TUNIS</td>-->
-                    <td th:text="${customer.address ?: 'ARIANA G TUNIS'}" ></td>
+                    <th>Date</th>
+                    <td>{{billDate}}</td>
                 </tr>
                 <tr>
-                    <th>Tél</th>
-<!--                    <td>2401001530</td>-->
-                    <td th:text="${customer.phone ?: '2401001530'}" ></td>
-                </tr>
-                <tr>
-                    <th>Code TVA</th>
-<!--                    <td></td>-->
-                    <td th:text="${customer.tvaCode ?: '2401001530'}" ></td>
+                    <th>Conditions</th>
+                    <td>{{paymentTerms}}</td>
                 </tr>
             </table>
         </div>
     </div>
 </div>
 
-
-<div class="invoice-container">
-    <h2>Devis</h2>
-    <!-- Products Devis -->
-    <table class="products">
-        <thead>
-        <tr>
-            <th>Date</th>
-            <th>Numéro pièce</th>
-            <th>Client</th>
-            <th>Réference</th>
-            <th>Representant</th>
-            <th>Opérateur</th>
-            <th>PV</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr>
-            <td>20/08/2024</td>
-            <td>2401001530</td>
-            <td>CL000001</td>
-            <td> </td>
-            <td>CM021</td>
-            <td>ADV2</td>
-            <td>01</td>
-        </tr>
-        </tbody>
-    </table>
-
-
-    <!-- Products Table -->
-    <table class="products">
-        <thead>
-        <tr>
-            <th>N°</th>
-            <th>Référence</th>
-            <th>Désignation</th>
-            <th>Quantité</th>
-            <th>Prix unitaire</th>
-            <th>Remise</th>
-            <th>Montant</th>
-            <th>TVA</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:each="item, iterStat: ${products}">
-            <td th:text="${iterStat.index + 1}"></td>
-            <td th:text="${item.product.reference}"></td>
-            <td th:text="${item.product.category} +' / '+${item.product.name}+' '+${item.product.unit.replace('.000', '')}"></td>
-            <td th:text="${item.quantity}"></td>
-            <td th:text="${item.product.unitPriceTtc}"></td>
-            <td>15% + 05% + 22.00%</td>
-            <td th:text="${item.totalProductPrice}"></td>
-            <td>03</td>
-        </tr>
-        </tbody>
-    </table>
-
-    <div class="flex-container">
+<!-- Client & Delivery -->
+<div class="flex-container spaced-bottom">
         <div class="left">
-            <!-- Payment Method Table -->
-            <table class="payment">
-                <thead>
-                <tr>
-                    <th>Mode de règlement</th>
-                    <th>Poids Net (Kg)</th>
-                    <th>Poids Brut (Kg)</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr>
-                    <td>Espèces</td>
-                    <td>2350.000</td>
-                    <td>2373.000</td>
-                </tr>
-                </tbody>
-            </table>
-        </div>
+        <h3>Facturé à / Client</h3>
+        <p>{{customerName}}</p>
+        <p>{{customerAddress}}</p>
+        <p>Tél: {{customerPhone}}</p>
+        <p>Matricule Fiscale: {{customerTva}}</p>
+    </div>
+    <div class="right">
+        <h3>Livré à</h3>
+        <p>{{deliveryAddress}}</p>
+        <p>Référence client: {{customerRef}}</p>
+    </div>
+</div>
 
-        <div class="right">
-            <!-- Totals Table -->
-            <table class="totals">
-                <tr>
-                    <td>Total HT</td>
-                    <td>5 368.088 TND</td>
-                </tr>
-                <tr>
-                    <td>Total Remise</td>
-                    <td>1 769.219 TND</td>
-                </tr>
-                <tr>
-                    <td>Net HT</td>
-                    <td>3 598.869 TND</td>
-                </tr>
-                <tr>
-                    <td>Montant TTC</td>
-<!--                    <td>4 283.654 TND</td>-->
-                    <td th:text="${total}+ ' TND'" ></td>
-                </tr>
-                <tr>
-                    <td>Acompte</td>
-                    <td>0</td>
-                </tr>
-                <tr>
-                    <td>Net à payer</td>
-                    <td>4 283.654 TND</td>
-                </tr>
-            </table>
-        </div>
+<!-- Products Table -->
+<table class="products">
+    <thead>
+    <tr>
+        <th>N°</th>
+        <th>Référence</th>
+        <th>Désignation</th>
+        <th>Quantité</th>
+        <th>Prix Unitaire HT</th>
+        <th>Remise</th>
+        <th>Montant HT</th>
+        <th>Taux TVA</th>
+        <th>Montant TVA</th>
+        <th>Montant TTC</th>
+    </tr>
+    </thead>
+    <tbody>
+    {{PRODUCTS_ROWS}}
+    </tbody>
+</table>
+
+<div class="flex-container">
+    <div class="left">
+        <!-- Payment Method Table (kept simple) -->
+        <table class="payment">
+            <thead>
+            <tr>
+                <th>Mode de règlement</th>
+                <th>Référence paiement</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td th:text="${paymentMethod ?: 'Espèces / Virement / Chèque'}"></td>
+                <td th:text="${paymentRef ?: ''}"></td>
+            </tr>
+            </tbody>
+        </table>
     </div>
 
+    <div class="right">
+        <!-- Totals Table -->
+        <table class="totals">
+            <tr>
+                <td>Total HT</td>
+                <td>{{totalHTFormatted}}</td>
+            </tr>
+            <tr>
+                <td>TVA</td>
+                <td>{{tvaFormatted}}</td>
+            </tr>
+            <tr>
+                <td>Total TTC</td>
+                <td>{{totalTTCFormatted}}</td>
+            </tr>
+            <tr>
+                <td>Acompte</td>
+                <td>{{depositFormatted}}</td>
+            </tr>
+            <tr class="net-pay-row">
+                <td>Net à payer</td>
+                <td>{{amountDueFormatted}}</td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+<!-- Legal mention and signatures -->
+<div class="mt-18">
+    <p class="match-payment-header"><strong>Mentions légales :</strong> Cette facture est établie conformément aux dispositions de l'article 18 du code de la TVA. Toute contestation doit être signalée dans un délai de 7 jours.</p>
     <div class="footer">
         <div class="footer-section left">
-            <p style="margin: 0; padding: 0;">Validité du devis : 7 jours</p>
-            <p style="margin: 0; padding: 0;">Transport : PAR VOS SOINS</p>
+            <p class="no-margin">Conditions de paiement : <span>{{paymentTerms}}</span></p>
         </div>
         <div class="footer-section center">
-            <p style="margin: 0; padding: 0;"><b>Signature client</b></p>
-            <p style="margin: 0; padding: 0;"> </p>
+            <p class="no-margin"><b>Signature client</b></p>
         </div>
         <div class="footer-section right">
-            <p style="margin: 0; padding: 0;"><b>Signature et cachet</b></p>
-            <p style="margin: 0; padding: 0;"> </p>
+            <p class="no-margin"><b>Signature et cachet</b></p>
         </div>
     </div>
-
 </div>
 
 </body>

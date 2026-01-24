@@ -4,17 +4,19 @@ API REST Spring Boot 3.3.3 pour la gestion complète du stock avec calcul automa
 
 ## 🎯 Fonctionnalités
 
-- ✅ Gestion des produits (118 produits de test)
+- ✅ Gestion des produits (10 produits de test)
 - ✅ Gestion des fournisseurs (3 fournisseurs de test)
 - ✅ Gestion des clients (30 clients de test)
-- ✅ Gestion des achats avec mouvement stock automatique (68 achats)
-- ✅ Gestion des ventes avec validation stock (92 ventes)
-- ✅ Historique complet des mouvements (160 mouvements de stock)
+- ✅ Gestion des achats avec mouvement stock automatique (30 achats)
+- ✅ Gestion des ventes avec validation stock (80 ventes)
+- ✅ Gestion des factures avec génération PDF (80 factures)
+- ✅ Template PDF conforme législation tunisienne
+- ✅ Historique complet des mouvements (110 mouvements de stock)
 - ✅ Calcul Coût Moyen Pondéré (CMP)
 - ✅ Alertes de stock faible
 - ✅ Schéma de base de données auto-généré par JPA
 - ✅ Données de test chargées au démarrage
-- ✅ API REST complète (25+ endpoints)
+- ✅ API REST complète (30+ endpoints)
 - ✅ Documentation Swagger/OpenAPI
 - ✅ Transactions ACID
 
@@ -36,10 +38,12 @@ Le fichier `data.sql` contient :
 |-------|--------------------------|-------------|
 | `supplier` | 3 | Fournisseurs (Fournitures Générales, Technologie & Co, Aldecco) |
 | `customer` | 30 | Clients répartis en Tunisie |
-| `product` | 118 | Produits (peintures, enduits, finitions, colorants, etc.) |
-| `purchase` | 68 | Achats de Jan 2025 à Jan 2026 |
-| `sale` | 92 | Ventes de Jan 2025 à Jan 2026 |
-| `stock_mouvement` | 160 | 68 ENTREE (achats) + 92 SORTIE (ventes) |
+| `product` | 10 | Produits (VALPRIMER, VALFIX, FISSATIVO, VALMAT, VALTEX, VALBLANC, VALPRO MAT) |
+| `purchase` | 30 | Achats de Jan 2025 à Jan 2026 |
+| `sale` | 80 | Ventes de Jan 2025 à Jan 2026 |
+| `bill` | 80 | Factures correspondant aux ventes |
+| `bill_product` | 80 | Produits de factures |
+| `stock_mouvement` | 110 | 30 ENTREE (achats) + 80 SORTIE (ventes) |
 
 ## 🚀 Démarrage
 

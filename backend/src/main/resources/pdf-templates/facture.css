@@ -1,0 +1,235 @@
+body {
+    /*font-family: Arial, sans-serif;*/
+    margin: 0;
+    padding: 20px;
+    background-color: #f9f9f9;
+    width: 210mm; /* Largeur A4 */
+    height: 297mm; /* Hauteur A4 */
+    box-sizing: border-box;
+    font-size: 14px; /* Taille de police globale */
+}
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+}
+.header .company-info {
+    width: 45%;
+}
+.header .logo {
+    text-align: right;
+    width: 45%;
+}
+.header img {
+    max-width: 350px;
+}
+.invoice-details {
+    /*width: 60%;*/
+    /*margin-top: 10px;*/
+    /*margin-bottom: 0px;*/
+    border-collapse: collapse;
+}
+.invoice-details th, .invoice-details td {
+    padding: 8px;
+    text-align: left;
+}
+.invoice-details th {
+    font-weight: bold;
+    width: 30%;
+}
+/*.invoice-container {*/
+/*    background-color: white;*/
+/*    padding: 20px;*/
+/*    border-radius: 10px;*/
+/*    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);*/
+/*    margin-top: 10px; !* Ajout d'une marge supérieure *!*/
+/*}*/
+table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin-bottom: 20px;
+    font-size: 12px; /* Réduction de la taille de la police */
+}
+table th, table td {
+    padding: 8px;
+    text-align: left;
+}
+.products, .totals, .payment {
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    overflow: hidden;
+}
+.products th {
+    background-color: #f2f2f2;
+}
+.products td, .products th {
+    border: none; /* remove cell borders so outer radius is visible */
+    background-clip: padding-box;
+}
+
+/* draw separators using row borders so rounded corners are preserved */
+.products tbody tr + tr td {
+    border-top: 1px solid #e5e5e5;
+}
+.totals td, .payment td {
+    border-top: 1px solid #ddd;
+    font-weight: bold;
+    text-align: right;
+}
+.totals td:first-child, .payment td:first-child {
+    text-align: left;
+}
+.payment th {
+    background-color: #f2f2f2;
+    text-align: center;
+}
+/* Match payment header font for other elements */
+.match-payment-header {
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: #000;
+}
+.totals td:first-child {
+    background-color: #f2f2f2;
+    font-weight: bold;
+}
+.flex-container {
+    display: flex;
+    justify-content: space-between;
+}
+.left {
+    width: 48%;
+}
+.right {
+    width: 48%;
+}
+
+.footer {
+    display: flex; /* Utiliser Flexbox pour le positionnement */
+    justify-content: space-between; /* Espacement égal entre les sections */
+    font-size: 12px;
+    color: #555;
+}
+
+.footer-section {
+    flex: 1; /* Chaque section occupe une portion égale de l'espace */
+}
+
+.invoice-details-container table.invoice-details {
+    margin-bottom: 0; /* Suppression de la marge inférieure */
+}
+
+.invoice-details-container {
+    max-width: 350px; /* Largeur maximale égale à la largeur maximale de l'image */
+    /*margin-top: 10px; !* Ajout d'une marge supérieure *!*/
+    padding: 10px; /* Ajout d'un rembourrage */
+    background-color: #f9f9f9; /* Couleur d'arrière-plan optionnelle */
+    border: 1px solid #ddd; /* Bordure optionnelle */
+    border-radius: 8px; /* Coins arrondis optionnels */
+}
+
+
+@page {size: Wpx 1px;margin:0px;}
+
+/* Styles spécifiques pour l'impression */
+@media print {
+    .products thead {
+        display: table-header-group; /* Répéter l'en-tête du tableau */
+    }
+    .products tbody {
+        display: table-row-group;
+    }
+
+    .header img {
+        max-width: 105mm;
+    }
+    body {
+        width: 210mm;
+        height: auto;
+        margin: 0;
+    }
+    .header, .invoice-container {
+        box-shadow: none; /* Pas d'ombre lors de l'impression */
+    }
+    table {
+        font-size: 10px; /* Réduire la taille de la police pour l'impression */
+    }
+    .footer {
+        font-size: 10px; /* Réduction de la taille de la police du pied de page */
+    }
+
+
+}
+
+/* Utility classes moved from inline styles in facture.html */
+.spaced-bottom {
+    margin-bottom: 16px;
+}
+.mt-18 {
+    margin-top: 18px;
+}
+.no-margin {
+    margin: 0;
+    padding: 0;
+}
+.net-pay-row {
+    background-color: #ffe6e6;
+}
+.net-pay-row td {
+    color: #cc0000;
+}
+.footer-section.center {
+    text-align: center;
+}
+
+/* Make table and container corners rounded and ensure cell backgrounds don't overflow */
+.products, .totals, .payment {
+    border-radius: 10px;
+    overflow: hidden;
+    border-collapse: separate; /* keep separate so corner radii apply */
+    background-clip: padding-box;
+}
+
+/* Header top corners */
+.products thead th:first-child,
+.payment thead th:first-child {
+    border-top-left-radius: 10px;
+}
+.products thead th:last-child,
+.payment thead th:last-child {
+    border-top-right-radius: 10px;
+}
+
+/* Footer bottom corners — apply to last row cells */
+.products tbody tr:last-child td:first-child,
+.payment tbody tr:last-child td:first-child {
+    border-bottom-left-radius: 10px;
+}
+.products tbody tr:last-child td:last-child,
+.payment tbody tr:last-child td:last-child {
+    border-bottom-right-radius: 10px;
+}
+
+/* Totals table: apply radii to first/last cells of first and last rows */
+.totals tr:first-child td:first-child {
+    border-top-left-radius: 10px;
+}
+.totals tr:first-child td:last-child {
+    border-top-right-radius: 10px;
+}
+.totals tr:last-child td:first-child {
+    border-bottom-left-radius: 10px;
+}
+.totals tr:last-child td:last-child {
+    border-bottom-right-radius: 10px;
+}
+
+/* Ensure the small invoice-details container also clips corners */
+.invoice-details-container {
+    border-radius: 8px; /* keep existing */
+    overflow: hidden;
+    background-clip: padding-box;
+}

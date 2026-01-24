@@ -34,6 +34,15 @@ Interface web moderne pour visualiser et gérer toutes les fonctionnalités de l
 - Filtrage par source (ACHAT/VENTE/AJUSTEMENT)
 - Traçabilité complète
 
+### 🧧 Gestion des Factures
+- Liste des factures avec filtres avancés
+- Recherche par numéro, client, montant
+- Filtrage par plage de dates
+- Tri par date ou montant (croissant/décroissant)
+- Téléchargement PDF conforme législation tunisienne
+- Affichage des statuts (PAID, UNPAID, PARTIAL)
+- Totaux et reste à encaisser
+
 ## 🚀 Installation
 
 ### Prérequis

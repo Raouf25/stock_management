@@ -4,6 +4,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
 
+import com.example.stock_management.util.NumberUtils;
+
 @Configuration
 public class ThymeleafConfiguration {
 
@@ -16,6 +18,11 @@ public class ThymeleafConfiguration {
         pdfTemplateResolver.setCharacterEncoding("UTF-8");
         pdfTemplateResolver.setOrder(1);
         return pdfTemplateResolver;
+    }
+
+    @Bean
+    public NumberUtils numberUtils() {
+        return new NumberUtils();
     }
 
 }

@@ -1,9 +1,9 @@
 # 📋 Inventaire des Fichiers - Stock Management API
 
 ## 📊 Résumé
-- **Fichiers Créés** : 18
-- **Fichiers Modifiés** : 8
-- **Total** : 26
+- **Fichiers Créés** : 21
+- **Fichiers Modifiés** : 12
+- **Total** : 33
 
 ---
 
@@ -44,6 +44,14 @@
 |---------|--------|-------------|
 | `src/main/java/.../api/PurchaseController.java` | ✅ | Endpoints des achats |
 | `src/main/java/.../api/SaleController.java` | ✅ | Endpoints des ventes |
+| `src/main/java/.../api/BillController.java` | ✅ | Endpoints des factures + PDF |
+
+### Composants Frontend
+| Fichier | Statut | Description |
+|---------|--------|-------------|
+| `frontend/src/app/components/invoices/invoices.component.ts` | ✅ | Composant de gestion des factures |
+| `frontend/src/app/components/invoices/invoices.component.html` | ✅ | Template liste factures |
+| `frontend/src/app/components/invoices/invoices.component.css` | ✅ | Styles du composant factures |
 
 ### Infrastructure
 | Fichier | Statut | Description |
@@ -90,6 +98,23 @@
 | Fichier | Changements |
 |---------|------------|
 | `src/main/java/.../repository/StockMouvementRepository.java` | Enrichissement des requêtes |
+
+### Templates
+| Fichier | Changements |
+|---------|------------|
+| `backend/src/main/resources/pdf-templates/facture.html` | Template PDF conforme législation tunisienne |
+
+### Données
+| Fichier | Changements |
+|---------|------------|
+| `backend/src/main/resources/data.sql` | Réduction à 10 produits + 80 factures |
+
+### Configuration Frontend
+| Fichier | Changements |
+|---------|------------|
+| `frontend/src/app/app.routes.ts` | Ajout route /invoices |
+| `frontend/src/app/app.component.html` | Ajout onglet Factures |
+| `frontend/src/app/services/api.service.ts` | Méthodes bills/PDF |
 
 ---
 

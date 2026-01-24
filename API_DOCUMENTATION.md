@@ -2,6 +2,8 @@
 
 Une API REST complète basée sur Spring Boot pour gérer :
 - Les achats fournisseurs
+- Les ventes clients
+- Les factures avec génération PDF
 - Les mouvements de stock (entrée/sortie)
 - Le stock initial et final
 - La valorisation du stock (CMP - Coût Moyen Pondéré)
@@ -142,6 +144,78 @@ CMP = 0 si quantiteStockFinal = 0
 **Tous les montants sont en TTC**
 
 ## Endpoints REST
+
+### Factures (Bills)
+
+#### Récupérer toutes les factures
+```http
+GET /api/bills
+```
+
+**Réponse :**
+```json
+[
+  {
+    "idBill": 1,
+    "total": 206.00,
+    "deposit": 0.00,
+    "amountDue": 206.00,
+    "dateBill": "2025-01-10T10:00:00",
+    "paymentStatus": "UNPAID",
+    "customer": {
+      "customerId": 1,
+      "name": "Entreprise Construction ABC"
+    },
+    "billProducts": [
+      {
+        "product": {
+          "idProduct": 1,
+          "name": "VALPRIMER",
+          "unit": "1.000 KG"
+        },
+        "quantity": 20,
+        "totalProductPrice": 206.00
+      }
+    ]
+  }
+]
+```
+
+#### Générer et télécharger une facture PDF
+```http
+GET /api/bills/generate/{id}
+```
+
+**Description :** Génère une facture PDF conforme à la législation tunisienne avec :
+- Mentions légales (Code TVA, Code des Obligations)
+- Matricule Fiscale
+- TVA à 19%
+- Totaux (HT, TTC, Acompte, Net à payer)
+- Sections de signature
+
+**Réponse :** Fichier PDF (Content-Type: application/pdf)
+
+#### Créer une nouvelle facture
+```http
+POST /api/bills
+Content-Type: application/json
+
+{
+  "customerId": 1,
+  "total": 500.00,
+  "deposit": 100.00,
+  "amountDue": 400.00,
+  "dateBill": "2026-01-23T14:00:00",
+  "paymentStatus": "PARTIAL",
+  "billProducts": [
+    {
+      "productId": 1,
+      "quantity": 10,
+      "totalProductPrice": 500.00
+    }
+  ]
+}
+```
 
 ### Produits
 

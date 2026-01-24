@@ -98,6 +98,20 @@ Alertes de stock faible avec niveaux de criticité
   6. Recalcul du CMP
 - Gestion du stock insuffisant (exception métier explicite)
 
+#### ✓ BillService.java
+**Fonctionnalités** :
+- `getAllBills()` → Récupération de toutes les factures
+- `getBillById()` → Récupération d'une facture spécifique
+- `createBill()` → Création de facture avec produits
+- Intégration avec PdfGenerateService pour génération PDF
+
+#### ✓ PdfGenerateService.java
+**Fonctionnalités** :
+- `generatePdfFileAPI()` → Génération PDF Thymeleaf
+- Template conforme législation tunisienne
+- Mentions légales (Code TVA art. 18-19, Code Obligations art. 431)
+- Calculs TVA 19%, totaux HT/TTC, acompte, net à payer
+
 **Transactions** : `@Transactional` pour l'intégrité
 
 #### ✓ StockService.java

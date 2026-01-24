@@ -103,4 +103,23 @@ export class ApiService {
   getCustomers(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/customers`);
   }
+
+  // === INVOICES / BILLS ===
+  getAllBills(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/bills`);
+  }
+
+  getBillById(id: number): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/bills/${id}`);
+  }
+
+  createBill(bill: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/bills`, bill);
+  }
+
+  downloadInvoicePDF(id: number): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/bills/generate/${id}`, {
+      responseType: 'blob'
+    });
+  }
 }

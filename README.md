@@ -10,6 +10,8 @@ Système professionnel et transactionnel pour la gestion complète du stock.
 
 ✅ **Gestion des achats** - Création, lecture, recherche par date/fournisseur  
 ✅ **Gestion des ventes** - Création, validation du stock disponible  
+✅ **Gestion des factures** - Liste, filtrage, téléchargement PDF conforme loi tunisienne  
+✅ **Génération PDF** - Factures professionnelles avec mentions légales  
 ✅ **Historique de stock** - Traçabilité complète des mouvements  
 ✅ **Calcul du CMP** - Coût Moyen Pondéré automatique et récalculé  
 ✅ **Reporting avancé** - Résumé de stock, valeur totale, alertes  
