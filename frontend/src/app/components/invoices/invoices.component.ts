@@ -160,4 +160,32 @@ export class InvoicesComponent implements OnInit {
   getTotalAmountDue(): number {
     return this.filteredInvoices.reduce((sum, inv) => sum + inv.amountDue, 0);
   }
+
+  getPaymentStatusClass(invoice: Invoice): string {
+    if (invoice.amountDue === 0) {
+      return 'paid';
+    } else if (invoice.amountDue < invoice.totalAmount) {
+      return 'partial';
+    } else {
+      return 'unpaid';
+    }
+  }
+
+  getAmountDueClass(invoice: Invoice): string {
+    if (invoice.amountDue === 0) {
+      return 'paid';
+    } else if (invoice.amountDue > 0) {
+      return 'pending';
+    }
+    return 'paid';
+  }
+
+  getAmountDueIcon(invoice: Invoice): string {
+    if (invoice.amountDue === 0) {
+      return 'bi-check-circle-fill text-success';
+    } else if (invoice.amountDue > 0) {
+      return 'bi-exclamation-triangle-fill text-warning';
+    }
+    return 'bi-check-circle-fill text-success';
+  }
 }

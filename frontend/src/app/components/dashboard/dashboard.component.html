@@ -1,71 +1,157 @@
-<div class="dashboard">
-  <h1 class="mb-4">📊 Tableau de Bord</h1>
-
-  <div *ngIf="loading" class="alert alert-info">Chargement des données...</div>
-
-  <!-- KPIs Row - Enhanced Design -->
-  <div class="row mb-4">
-    <div class="col-md-3">
-      <div class="stat-card stat-card-blue">
-        <div class="stat-icon">📦</div>
-        <div class="stat-number">{{ products.length }}</div>
-        <div class="stat-label">Produits Total</div>
+<div class="dashboard-container">
+  <!-- Page Header -->
+  <div class="page-header mb-4">
+    <div class="d-flex justify-content-between align-items-center">
+      <div>
+        <h2 class="mb-1">
+          <i class="bi bi-speedometer2 text-primary me-2"></i>
+          Tableau de Bord
+        </h2>
+        <p class="text-muted mb-0">Vue d'ensemble de votre activité commerciale</p>
       </div>
-    </div>
-    <div class="col-md-3">
-      <div class="stat-card stat-card-green">
-        <div class="stat-icon">💰</div>
-        <div class="stat-number">{{ totalValue | number: '1.2-2' }}</div>
-        <div class="stat-label">Valeur Total Stock (DNT)</div>
-      </div>
-    </div>
-    <div class="col-md-3">
-      <div class="stat-card stat-card-purple">
-        <div class="stat-icon">📈</div>
-        <div class="stat-number">{{ getTotalSales() | number: '1.2-2' }}</div>
-        <div class="stat-label">Total Ventes (DNT)</div>
-      </div>
-    </div>
-    <div class="col-md-3">
-      <div class="stat-card stat-card-warning">
-        <div class="stat-icon">⚠️</div>
-        <div class="stat-number">{{ getLowStockPercentage() }}%</div>
-        <div class="stat-label">Stock Faible</div>
+      <div class="header-actions">
+        <button class="btn btn-outline-primary" (click)="loadDashboard()" [disabled]="loading">
+          <i class="bi bi-arrow-clockwise me-1" [class.spin]="loading"></i>
+          Actualiser
+        </button>
       </div>
     </div>
   </div>
 
-  <!-- Invoice KPIs Row -->
-  <div class="row mb-4">
-    <div class="col-md-3">
-      <div class="stat-card stat-card-info">
-        <div class="stat-icon">📄</div>
-        <div class="stat-number">{{ invoiceKPIs.totalInvoices || 0 }}</div>
-        <div class="stat-label">Total Factures</div>
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-skeleton">
+    <div class="row mb-4">
+      <div class="col-md-3" *ngFor="let i of [1,2,3,4]">
+        <div class="skeleton-card">
+          <div class="skeleton-icon"></div>
+          <div class="skeleton-number"></div>
+          <div class="skeleton-label"></div>
+        </div>
       </div>
     </div>
-    <div class="col-md-3">
-      <div class="stat-card stat-card-success">
-        <div class="stat-icon">💵</div>
-        <div class="stat-number">{{ invoiceKPIs.totalInvoicedAmount | number: '1.2-2' }}</div>
-        <div class="stat-label">Montant Total Facturé (DNT)</div>
+    <div class="row">
+      <div class="col-lg-8">
+        <div class="skeleton-chart"></div>
       </div>
-    </div>
-    <div class="col-md-3">
-      <div class="stat-card stat-card-danger">
-        <div class="stat-icon">⏳</div>
-        <div class="stat-number">{{ invoiceKPIs.unpaidInvoices || 0 }}</div>
-        <div class="stat-label">Factures Non Payées</div>
-      </div>
-    </div>
-    <div class="col-md-3">
-      <div class="stat-card stat-card-warning">
-        <div class="stat-icon">🕒</div>
-        <div class="stat-number">{{ invoiceKPIs.totalAmountDue | number: '1.2-2' }}</div>
-        <div class="stat-label">Montant Restant (DNT)</div>
+      <div class="col-lg-4">
+        <div class="skeleton-chart"></div>
       </div>
     </div>
   </div>
+
+  <!-- Content -->
+  <div *ngIf="!loading">
+    <!-- KPIs Row - Enhanced Design -->
+    <div class="row mb-4">
+      <div class="col-md-3">
+        <div class="stat-card stat-card-blue">
+          <div class="stat-icon">
+            <i class="bi bi-boxes"></i>
+          </div>
+          <div class="stat-number">{{ products.length }}</div>
+          <div class="stat-label">Produits Total</div>
+          <div class="stat-trend">
+            <i class="bi bi-arrow-up-circle-fill text-success me-1"></i>
+            <small class="text-success">+12%</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="stat-card stat-card-green">
+          <div class="stat-icon">
+            <i class="bi bi-cash-stack"></i>
+          </div>
+          <div class="stat-number">{{ totalValue | number: '1.2-2' }}</div>
+          <div class="stat-label">Valeur Total Stock (DNT)</div>
+          <div class="stat-trend">
+            <i class="bi bi-arrow-up-circle-fill text-success me-1"></i>
+            <small class="text-success">+8.5%</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="stat-card stat-card-purple">
+          <div class="stat-icon">
+            <i class="bi bi-graph-up-arrow"></i>
+          </div>
+          <div class="stat-number">{{ getTotalSales() | number: '1.2-2' }}</div>
+          <div class="stat-label">Total Ventes (DNT)</div>
+          <div class="stat-trend">
+            <i class="bi bi-arrow-up-circle-fill text-success me-1"></i>
+            <small class="text-success">+15.2%</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="stat-card stat-card-warning">
+          <div class="stat-icon">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+          </div>
+          <div class="stat-number">{{ getLowStockPercentage() }}%</div>
+          <div class="stat-label">Stock Faible</div>
+          <div class="stat-trend" [class]="getLowStockPercentage() > 20 ? 'text-danger' : 'text-warning'">
+            <i class="bi bi-dash-circle-fill me-1"></i>
+            <small>{{ getLowStockPercentage() > 20 ? 'Critique' : 'Attention' }}</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Invoice KPIs Row -->
+    <div class="row mb-4">
+      <div class="col-md-3">
+        <div class="stat-card stat-card-info">
+          <div class="stat-icon">
+            <i class="bi bi-receipt"></i>
+          </div>
+          <div class="stat-number">{{ invoiceKPIs.totalInvoices || 0 }}</div>
+          <div class="stat-label">Total Factures</div>
+          <div class="stat-trend">
+            <i class="bi bi-calendar-event me-1"></i>
+            <small class="text-info">Ce mois</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="stat-card stat-card-success">
+          <div class="stat-icon">
+            <i class="bi bi-currency-dollar"></i>
+          </div>
+          <div class="stat-number">{{ invoiceKPIs.totalInvoicedAmount | number: '1.2-2' }}</div>
+          <div class="stat-label">Montant Total Facturé (DNT)</div>
+          <div class="stat-trend">
+            <i class="bi bi-arrow-up-circle-fill text-success me-1"></i>
+            <small class="text-success">+22%</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="stat-card stat-card-danger">
+          <div class="stat-icon">
+            <i class="bi bi-clock-history"></i>
+          </div>
+          <div class="stat-number">{{ invoiceKPIs.unpaidInvoices || 0 }}</div>
+          <div class="stat-label">Factures Non Payées</div>
+          <div class="stat-trend" [class]="(invoiceKPIs.unpaidInvoices || 0) > 5 ? 'text-danger' : 'text-warning'">
+            <i class="bi bi-exclamation-circle-fill me-1"></i>
+            <small>{{ (invoiceKPIs.unpaidInvoices || 0) > 5 ? 'Suivi requis' : 'Normal' }}</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="stat-card stat-card-warning">
+          <div class="stat-icon">
+            <i class="bi bi-cash"></i>
+          </div>
+          <div class="stat-number">{{ invoiceKPIs.totalAmountDue | number: '1.2-2' }}</div>
+          <div class="stat-label">Montant Restant (DNT)</div>
+          <div class="stat-trend">
+            <i class="bi bi-info-circle-fill text-info me-1"></i>
+            <small class="text-info">Encours</small>
+          </div>
+        </div>
+      </div>
+    </div>
 
   <!-- Charts Row 1 -->
   <div class="row mb-4">

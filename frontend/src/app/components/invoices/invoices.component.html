@@ -1,185 +1,264 @@
-<div class="container-fluid py-4">
-  <div class="row mb-4">
-    <div class="col-12">
-      <div class="card shadow-sm">
-        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-          <h4 class="mb-0">
-            <i class="bi bi-receipt-cutoff me-2"></i>
-            Gestion des Factures
-          </h4>
-          <span class="badge bg-light text-primary fs-6">
-            {{filteredInvoices.length}} facture(s)
-          </span>
+<div class="invoices-container">
+  <!-- Page Header -->
+  <div class="page-header mb-4">
+    <div class="d-flex justify-content-between align-items-center flex-wrap">
+      <div class="mb-3 mb-md-0">
+        <h2 class="mb-1">
+          <i class="bi bi-receipt text-primary me-2"></i>
+          Gestion des Factures
+        </h2>
+        <p class="text-muted mb-0">Suivez et gérez vos factures clients</p>
+      </div>
+      <div class="d-flex gap-2 flex-wrap">
+        <button class="btn btn-outline-primary" (click)="loadInvoices()" [disabled]="loading">
+          <i class="bi bi-arrow-clockwise me-1" [class.spin]="loading"></i>
+          Actualiser
+        </button>
+        <div class="badge bg-primary fs-6 px-3 py-2">
+          <i class="bi bi-receipt me-1"></i>
+          {{filteredInvoices.length}} facture(s)
         </div>
-        <div class="card-body">
-          <!-- Filtres -->
-          <div class="row mb-4">
-            <div class="col-md-3 mb-3">
-              <label class="form-label fw-bold">Recherche</label>
-              <input 
-                type="text" 
-                class="form-control form-control-modern" 
-                [(ngModel)]="searchTerm" 
-                (ngModelChange)="applyFilters()"
-                placeholder="N° facture ou client...">
-            </div>
-            <div class="col-md-3 mb-3">
-              <label class="form-label fw-bold">Date début</label>
-              <input 
-                type="date" 
-                class="form-control form-control-modern" 
-                [(ngModel)]="startDate"
-                (ngModelChange)="applyFilters()">
-            </div>
-            <div class="col-md-3 mb-3">
-              <label class="form-label fw-bold">Date fin</label>
-              <input 
-                type="date" 
-                class="form-control form-control-modern" 
-                [(ngModel)]="endDate"
-                (ngModelChange)="applyFilters()">
-            </div>
-            <div class="col-md-3 mb-3">
-              <!-- Tri déplacé dans les en-têtes de colonnes (chevrons) -->
-              <label class="form-label fw-bold">&nbsp;</label>
-              <div></div>
-            </div>
-          </div>
+      </div>
+    </div>
+  </div>
 
-          <div class="d-flex justify-content-between mb-3">
-            <button class="btn btn-secondary" (click)="clearFilters()">
-              <i class="bi bi-x-circle me-2"></i>Réinitialiser
-            </button>
-            <button class="btn btn-success" (click)="loadInvoices()">
-              <i class="bi bi-arrow-clockwise me-2"></i>Actualiser
-            </button>
-          </div>
-
-          <!-- Messages -->
-          <div *ngIf="loading" class="alert alert-info">
-            <i class="bi bi-hourglass-split me-2"></i>Chargement des factures...
-          </div>
-
-          <div *ngIf="error" class="alert alert-danger">
-            <i class="bi bi-exclamation-triangle me-2"></i>{{error}}
-          </div>
-
-          <!-- Table des factures -->
-          <div class="table-responsive" *ngIf="!loading && !error">
-            <table class="table table-hover table-bordered align-middle">
-              <thead class="table-primary">
-                <tr>
-                  <th class="text-center" style="width: 10%">N° Facture</th>
-                  <th style="width: 15%; cursor: pointer;" (click)="setSortField('date')">
-                    Date
-                    <i class="bi ms-2"
-                      [class.bi-chevron-down]="sortField === 'date' && sortDirection === 'desc'"
-                      [class.bi-chevron-up]="sortField === 'date' && sortDirection === 'asc'"></i>
-                  </th>
-                  <th style="width: 25%">Client</th>
-                  <th class="text-center" style="width: 10%">Articles</th>
-                  <th class="text-end" style="width: 15%; cursor: pointer;" (click)="setSortField('amount')">
-                    Montant Total
-                    <i class="bi ms-2"
-                      [class.bi-chevron-down]="sortField === 'amount' && sortDirection === 'desc'"
-                      [class.bi-chevron-up]="sortField === 'amount' && sortDirection === 'asc'"></i>
-                  </th>
-                  <th class="text-end" style="width: 15%; cursor: pointer;" (click)="setSortField('amountDue')">
-                    Reste à payer
-                    <i class="bi ms-2"
-                      [class.bi-chevron-down]="sortField === 'amountDue' && sortDirection === 'desc'"
-                      [class.bi-chevron-up]="sortField === 'amountDue' && sortDirection === 'asc'"></i>
-                  </th>
-                  <th class="text-center" style="width: 10%">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngIf="filteredInvoices.length === 0">
-                  <td colspan="7" class="text-center text-muted py-4">
-                    <i class="bi bi-inbox fs-1 d-block mb-2"></i>
-                    Aucune facture trouvée
-                  </td>
-                </tr>
-                <tr *ngFor="let invoice of filteredInvoices" class="invoice-row">
-                  <td class="text-center fw-bold">
-                    <span class="badge bg-info text-dark">
-                      #{{invoice.billId}}
-                    </span>
-                  </td>
-                  <td>
-                    <i class="bi bi-calendar3 me-2 text-muted"></i>
-                    {{formatDate(invoice.billDate)}}
-                  </td>
-                  <td>
-                    <div class="d-flex flex-column">
-                      <strong>{{invoice.clientName}}</strong>
-                      <small class="text-muted">
-                        <i class="bi bi-telephone me-1"></i>{{invoice.clientPhone}}
-                      </small>
-                      <small class="text-muted" *ngIf="invoice.clientEmail">
-                        <i class="bi bi-envelope me-1"></i>{{invoice.clientEmail}}
-                      </small>
-                    </div>
-                  </td>
-                  <td class="text-center">
-                    <span class="badge bg-secondary">
-                      {{getTotalProducts(invoice)}} article(s)
-                    </span>
-                  </td>
-                  <td class="text-end fw-bold text-primary">
-                    {{formatCurrency(invoice.totalAmount)}}
-                  </td>
-                  <td class="text-end">
-                    <span [class]="invoice.amountDue > 0 ? 'text-danger fw-bold' : 'text-success'">
-                      {{formatCurrency(invoice.amountDue)}}
-                    </span>
-                  </td>
-                  <td class="text-center">
-                    <button 
-                      class="btn btn-sm btn-outline-danger" 
-                      (click)="downloadInvoice(invoice.billId)"
-                      title="Télécharger la facture PDF">
-                      <i class="bi bi-file-earmark-pdf me-1"></i>
-                      PDF
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <!-- Résumé -->
-          <div class="row mt-4" *ngIf="filteredInvoices.length > 0">
-            <div class="col-md-4">
-              <div class="card bg-light">
-                <div class="card-body text-center">
-                  <h6 class="text-muted">Total Factures</h6>
-                  <h3 class="text-primary mb-0">{{filteredInvoices.length}}</h3>
-                </div>
-              </div>
-            </div>
-            <div class="col-md-4">
-              <div class="card bg-light">
-                <div class="card-body text-center">
-                  <h6 class="text-muted">Montant Total</h6>
-                  <h3 class="text-success mb-0">
-                    {{formatCurrency(getTotalAmount())}}
-                  </h3>
-                </div>
-              </div>
-            </div>
-            <div class="col-md-4">
-              <div class="card bg-light">
-                <div class="card-body text-center">
-                  <h6 class="text-muted">Reste à Encaisser</h6>
-                  <h3 class="text-danger mb-0">
-                    {{formatCurrency(getTotalAmountDue())}}
-                  </h3>
-                </div>
-              </div>
-            </div>
-          </div>
+  <!-- Summary Cards -->
+  <div *ngIf="filteredInvoices.length > 0" class="row mt-4 mb-4">
+    <div class="col-md-4">
+      <div class="summary-card bg-light">
+        <div class="summary-icon">
+          <i class="bi bi-receipt"></i>
         </div>
+        <div class="summary-content">
+          <h6 class="text-muted mb-1">Total Factures</h6>
+          <h3 class="text-primary mb-0">{{filteredInvoices.length}}</h3>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="summary-card bg-light">
+        <div class="summary-icon">
+          <i class="bi bi-cash-stack"></i>
+        </div>
+        <div class="summary-content">
+          <h6 class="text-muted mb-1">Montant Total</h6>
+          <h3 class="text-success mb-0">{{formatCurrency(getTotalAmount())}}</h3>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="summary-card bg-light">
+        <div class="summary-icon">
+          <i class="bi bi-clock-history"></i>
+        </div>
+        <div class="summary-content">
+          <h6 class="text-muted mb-1">Reste à Encaisser</h6>
+          <h3 class="text-warning mb-0">{{formatCurrency(getTotalAmountDue())}}</h3>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters Card -->
+  <div class="card filters-card mb-4">
+    <div class="card-header bg-light">
+      <h5 class="mb-0">
+        <i class="bi bi-funnel me-2"></i>
+        Filtres et Recherche
+      </h5>
+    </div>
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-3">
+          <label class="form-label fw-bold">
+            <i class="bi bi-search me-1"></i>
+            Recherche
+          </label>
+          <input
+            type="text"
+            class="form-control form-control-modern"
+            [(ngModel)]="searchTerm"
+            (ngModelChange)="applyFilters()"
+            placeholder="N° facture ou client..."
+            autocomplete="off">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label fw-bold">
+            <i class="bi bi-calendar-event me-1"></i>
+            Date début
+          </label>
+          <input
+            type="date"
+            class="form-control form-control-modern"
+            [(ngModel)]="startDate"
+            (ngModelChange)="applyFilters()">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label fw-bold">
+            <i class="bi bi-calendar-check me-1"></i>
+            Date fin
+          </label>
+          <input
+            type="date"
+            class="form-control form-control-modern"
+            [(ngModel)]="endDate"
+            (ngModelChange)="applyFilters()">
+        </div>
+        <div class="col-md-3 d-flex align-items-end">
+          <button class="btn btn-outline-secondary w-100" (click)="clearFilters()">
+            <i class="bi bi-x-circle me-2"></i>
+            Réinitialiser
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Chargement...</span>
+    </div>
+    <p class="mt-3 text-muted">Chargement des factures...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="alert alert-danger alert-dismissible fade show" role="alert">
+    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+    <strong>Erreur:</strong> {{error}}
+    <button type="button" class="btn-close" (click)="error = ''"></button>
+  </div>
+
+  <!-- Invoices Table -->
+  <div *ngIf="!loading && !error" class="card table-card">
+    <div class="card-header bg-white border-bottom-0">
+      <div class="d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">
+          <i class="bi bi-table me-2"></i>
+          Liste des Factures
+        </h5>
+        <div class="table-info">
+          <small class="text-muted">
+            Tri: {{ sortField === 'date' ? 'Date' : sortField === 'amount' ? 'Montant' : 'Reste à payer' }}
+            ({{ sortDirection === 'asc' ? 'Croissant' : 'Décroissant' }})
+          </small>
+        </div>
+      </div>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover table-modern mb-0">
+          <thead class="table-light">
+            <tr>
+              <th class="text-center border-0" style="width: 10%">
+                <i class="bi bi-hash me-1"></i>
+                N° Facture
+              </th>
+              <th class="border-0" style="width: 15%; cursor: pointer;" (click)="setSortField('date')"
+                  [title]="'Trier par date (' + (sortDirection === 'asc' ? 'croissant' : 'décroissant') + ')'">
+                <i class="bi bi-calendar3 me-1"></i>
+                Date
+                <i class="bi ms-2 sort-icon"
+                  [class]="sortField === 'date' ? (sortDirection === 'desc' ? 'bi-chevron-down' : 'bi-chevron-up') : 'bi-chevron-expand'"></i>
+              </th>
+              <th class="border-0" style="width: 25%">
+                <i class="bi bi-person me-1"></i>
+                Client
+              </th>
+              <th class="text-center border-0" style="width: 10%">
+                <i class="bi bi-boxes me-1"></i>
+                Articles
+              </th>
+              <th class="text-end border-0" style="width: 15%; cursor: pointer;" (click)="setSortField('amount')"
+                  [title]="'Trier par montant (' + (sortDirection === 'asc' ? 'croissant' : 'décroissant') + ')'">
+                <i class="bi bi-cash me-1"></i>
+                Montant Total
+                <i class="bi ms-2 sort-icon"
+                  [class]="sortField === 'amount' ? (sortDirection === 'desc' ? 'bi-chevron-down' : 'bi-chevron-up') : 'bi-chevron-expand'"></i>
+              </th>
+              <th class="text-end border-0" style="width: 15%; cursor: pointer;" (click)="setSortField('amountDue')"
+                  [title]="'Trier par reste à payer (' + (sortDirection === 'asc' ? 'croissant' : 'décroissant') + ')'">
+                <i class="bi bi-clock me-1"></i>
+                Reste à payer
+                <i class="bi ms-2 sort-icon"
+                  [class]="sortField === 'amountDue' ? (sortDirection === 'desc' ? 'bi-chevron-down' : 'bi-chevron-up') : 'bi-chevron-expand'"></i>
+              </th>
+              <th class="text-center border-0" style="width: 10%">
+                <i class="bi bi-gear me-1"></i>
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Empty State -->
+            <tr *ngIf="filteredInvoices.length === 0">
+              <td colspan="7" class="text-center py-5">
+                <div class="empty-state">
+                  <i class="bi bi-receipt-x fs-1 text-muted mb-3"></i>
+                  <h5 class="text-muted">Aucune facture trouvée</h5>
+                  <p class="text-muted mb-3">Il n'y a pas de factures correspondant à vos critères de recherche.</p>
+                  <button class="btn btn-outline-primary" (click)="clearFilters()">
+                    <i class="bi bi-x-circle me-2"></i>
+                    Effacer les filtres
+                  </button>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Invoice Rows -->
+            <tr *ngFor="let invoice of filteredInvoices" class="invoice-row">
+              <td class="text-center">
+                <span class="badge badge-invoice" [class]="'badge-' + getPaymentStatusClass(invoice)">
+                  #{{invoice.billId}}
+                </span>
+              </td>
+              <td>
+                <div class="d-flex align-items-center">
+                  <i class="bi bi-calendar3 text-muted me-2"></i>
+                  <span>{{formatDate(invoice.billDate)}}</span>
+                </div>
+              </td>
+              <td>
+                <div class="client-info">
+                  <div class="client-name fw-bold">{{invoice.clientName}}</div>
+                  <div class="client-details text-muted small">
+                    <i class="bi bi-telephone me-1"></i>{{invoice.clientPhone || 'N/A'}}
+                    <span class="mx-2">•</span>
+                    <i class="bi bi-envelope me-1"></i>{{invoice.clientEmail || 'N/A'}}
+                  </div>
+                </div>
+              </td>
+              <td class="text-center">
+                <span class="badge bg-light text-dark">
+                  {{getTotalProducts(invoice)}} article(s)
+                </span>
+              </td>
+              <td class="text-end fw-bold text-primary">
+                <div class="amount-display">
+                  {{formatCurrency(invoice.totalAmount)}}
+                </div>
+              </td>
+              <td class="text-end">
+                <div class="amount-due" [class]="'amount-' + getAmountDueClass(invoice)">
+                  <i class="bi me-1" [class]="getAmountDueIcon(invoice)"></i>
+                  {{formatCurrency(invoice.amountDue)}}
+                </div>
+              </td>
+              <td class="text-center">
+                <div class="btn-group" role="group">
+                  <button
+                    class="btn btn-sm btn-outline-primary"
+                    (click)="downloadInvoice(invoice.billId)"
+                    title="Télécharger la facture PDF"
+                    [disabled]="loading">
+                    <i class="bi bi-file-earmark-pdf"></i>
+                    <span class="d-none d-sm-inline ms-1">PDF</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </div>
