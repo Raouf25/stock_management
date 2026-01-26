@@ -50,10 +50,10 @@ public class BillController {
         return Optional.of(billService.save(billDTO)).map(billMapper::sourceToDestination);
     }
 
-    @DeleteMapping("/{id}")
-    @Operation(summary = "Supprimer une Bill par ID")
-    public void deleteBill(@PathVariable Long id) {
-        billService.deleteById(id);
+    @GetMapping("/kpis")
+    @Operation(summary = "Obtenir les KPIs des factures")
+    public Map<String, Object> getInvoiceKPIs() {
+        return billService.getInvoiceKPIs();
     }
 
 

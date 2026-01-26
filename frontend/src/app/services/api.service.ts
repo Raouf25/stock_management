@@ -122,4 +122,8 @@ export class ApiService {
       responseType: 'blob'
     });
   }
+
+  getInvoiceKPIs(): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/bills/kpis`);
+  }
 }

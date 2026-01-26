@@ -35,6 +35,38 @@
     </div>
   </div>
 
+  <!-- Invoice KPIs Row -->
+  <div class="row mb-4">
+    <div class="col-md-3">
+      <div class="stat-card stat-card-info">
+        <div class="stat-icon">📄</div>
+        <div class="stat-number">{{ invoiceKPIs.totalInvoices || 0 }}</div>
+        <div class="stat-label">Total Factures</div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="stat-card stat-card-success">
+        <div class="stat-icon">💵</div>
+        <div class="stat-number">{{ invoiceKPIs.totalInvoicedAmount | number: '1.2-2' }}</div>
+        <div class="stat-label">Montant Total Facturé (DNT)</div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="stat-card stat-card-danger">
+        <div class="stat-icon">⏳</div>
+        <div class="stat-number">{{ invoiceKPIs.unpaidInvoices || 0 }}</div>
+        <div class="stat-label">Factures Non Payées</div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="stat-card stat-card-warning">
+        <div class="stat-icon">🕒</div>
+        <div class="stat-number">{{ invoiceKPIs.totalAmountDue | number: '1.2-2' }}</div>
+        <div class="stat-label">Montant Restant (DNT)</div>
+      </div>
+    </div>
+  </div>
+
   <!-- Charts Row 1 -->
   <div class="row mb-4">
     <div class="col-lg-8">
@@ -80,7 +112,7 @@
     <div class="col-lg-4">
       <div class="card chart-card">
         <div class="card-header bg-gradient-warning">
-          <i class="fas fa-chart-pie"></i> Top 5 - Plus Vendus
+          <i class="fas fa-chart-pie"></i> Top 5 - Plus Vendus (Revenus)
         </div>
         <div class="card-body">
           <div class="chart-container-small">

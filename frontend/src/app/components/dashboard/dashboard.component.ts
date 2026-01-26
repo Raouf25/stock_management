@@ -25,6 +25,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   products: any[] = [];
   sales: any[] = [];
   purchases: any[] = [];
+  invoiceKPIs: any = {};
   loading = true;
   showTable = false;
 
@@ -83,6 +84,12 @@ export class DashboardComponent implements OnInit, AfterViewInit {
       next: (data) => {
         this.purchases = data;
         this.createCharts();
+      }
+    });
+
+    this.apiService.getInvoiceKPIs().subscribe({
+      next: (data) => {
+        this.invoiceKPIs = data;
       }
     });
   }
@@ -261,17 +268,21 @@ export class DashboardComponent implements OnInit, AfterViewInit {
       return;
     }
 
-    // Top 5 produits par quantité vendue
-    const salesByProduct: { [key: string]: number } = {};
+    // Top 5 produits par montant des ventes (revenus)
+    const salesByProduct: { [key: string]: { quantity: number, amount: number } } = {};
     this.sales.forEach(sale => {
       const product = sale.productDesignation || 'Produit Inconnu';
-      if (product && sale.quantitySold) {
-        salesByProduct[product] = (salesByProduct[product] || 0) + sale.quantitySold;
+      if (product && sale.quantitySold && sale.totalSaleAmount) {
+        if (!salesByProduct[product]) {
+          salesByProduct[product] = { quantity: 0, amount: 0 };
+        }
+        salesByProduct[product].quantity += sale.quantitySold;
+        salesByProduct[product].amount += sale.totalSaleAmount;
       }
     });
 
     const topSold = Object.entries(salesByProduct)
-      .sort((a, b) => b[1] - a[1])
+      .sort((a, b) => b[1].amount - a[1].amount)
       .slice(0, 5);
 
     // Vérifier s'il y a des données
@@ -285,8 +296,8 @@ export class DashboardComponent implements OnInit, AfterViewInit {
       data: {
         labels: topSold.map(p => p[0].substring(0, 25)),
         datasets: [{
-          label: 'Quantité Vendue',
-          data: topSold.map(p => p[1]),
+          label: 'Montant des Ventes (DNT)',
+          data: topSold.map(p => p[1].amount),
           backgroundColor: [
             'rgba(102, 126, 234, 0.8)',
             'rgba(46, 204, 113, 0.8)',
@@ -308,7 +319,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
           },
           title: {
             display: true,
-            text: 'Top 5 - Produits les Plus Vendus'
+            text: 'Top 5 - Produits les Plus Vendus (par Revenus)'
           }
         }
       }

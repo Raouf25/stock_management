@@ -48,6 +48,14 @@
   background: linear-gradient(90deg, #f39c12 0%, #e74c3c 100%);
 }
 
+.stat-card-info::before {
+  background: linear-gradient(90deg, #3498db 0%, #2980b9 100%);
+}
+
+.stat-card-danger::before {
+  background: linear-gradient(90deg, #e74c3c 0%, #c0392b 100%);
+}
+
 .stat-icon {
   font-size: 2.5rem;
   margin-bottom: 10px;

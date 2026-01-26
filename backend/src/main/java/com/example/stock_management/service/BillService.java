@@ -13,9 +13,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+
+import java.util.List;
+import java.util.HashMap;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -99,5 +103,53 @@ public class BillService {
 
     public void deleteById(Long id) {
         billRepository.deleteById(id);
+    }
+
+    public Map<String, Object> getInvoiceKPIs() {
+        List<Bill> bills = billRepository.findAll();
+        Map<String, Object> kpis = new HashMap<>();
+
+        // Total number of invoices
+        kpis.put("totalInvoices", bills.size());
+
+        // Total invoiced amount
+        double totalInvoiced = bills.stream().mapToDouble(Bill::getTotal).sum();
+        kpis.put("totalInvoicedAmount", totalInvoiced);
+
+        // Average invoice amount
+        double avgInvoice = bills.isEmpty() ? 0.0 : totalInvoiced / bills.size();
+        kpis.put("averageInvoiceAmount", avgInvoice);
+
+        // Number of unpaid invoices (amountDue > 0)
+        long unpaidInvoices = bills.stream().filter(b -> b.getAmountDue() > 0).count();
+        kpis.put("unpaidInvoices", unpaidInvoices);
+
+        // Total amount due
+        double totalAmountDue = bills.stream().mapToDouble(b -> b.getAmountDue()).sum();
+        kpis.put("totalAmountDue", totalAmountDue);
+
+        // Payment status distribution
+        Map<String, Long> statusDistribution = new HashMap<>();
+        for (Bill bill : bills) {
+            String status = bill.getPaymentStatus() != null ? bill.getPaymentStatus().name() : "UNKNOWN";
+            statusDistribution.put(status, statusDistribution.getOrDefault(status, 0L) + 1);
+        }
+        kpis.put("paymentStatusDistribution", statusDistribution);
+
+        // Invoices this month
+        LocalDate now = LocalDate.now();
+        long invoicesThisMonth = bills.stream()
+            .filter(b -> b.getDateBill() != null && b.getDateBill().getMonth() == now.getMonth() && b.getDateBill().getYear() == now.getYear())
+            .count();
+        kpis.put("invoicesThisMonth", invoicesThisMonth);
+
+        // Total revenue this month
+        double revenueThisMonth = bills.stream()
+            .filter(b -> b.getDateBill() != null && b.getDateBill().getMonth() == now.getMonth() && b.getDateBill().getYear() == now.getYear())
+            .mapToDouble(Bill::getTotal)
+            .sum();
+        kpis.put("revenueThisMonth", revenueThisMonth);
+
+        return kpis;
     }
 }
