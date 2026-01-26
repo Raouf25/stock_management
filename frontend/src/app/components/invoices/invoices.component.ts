@@ -38,7 +38,7 @@ export class InvoicesComponent implements OnInit {
   searchTerm: string = '';
   startDate: string = '';
   endDate: string = '';
-  sortField: 'date' | 'amount' = 'date';
+  sortField: 'date' | 'amount' | 'amountDue' = 'date';
   sortDirection: 'asc' | 'desc' = 'desc';
   loading: boolean = false;
   error: string = '';
@@ -92,8 +92,10 @@ export class InvoicesComponent implements OnInit {
       let comparison = 0;
       if (this.sortField === 'date') {
         comparison = new Date(a.billDate).getTime() - new Date(b.billDate).getTime();
-      } else {
+      } else if (this.sortField === 'amount') {
         comparison = a.totalAmount - b.totalAmount;
+      } else {
+        comparison = a.amountDue - b.amountDue;
       }
       return this.sortDirection === 'asc' ? comparison : -comparison;
     });
@@ -101,7 +103,7 @@ export class InvoicesComponent implements OnInit {
     this.filteredInvoices = filtered;
   }
 
-  setSortField(field: 'date' | 'amount') {
+  setSortField(field: 'date' | 'amount' | 'amountDue') {
     if (this.sortField === field) {
       this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
     } else {

@@ -40,27 +40,9 @@
                 (ngModelChange)="applyFilters()">
             </div>
             <div class="col-md-3 mb-3">
-              <label class="form-label fw-bold">Tri</label>
-              <div class="btn-group w-100" role="group">
-                <button 
-                  type="button" 
-                  class="btn btn-outline-primary"
-                  [class.active]="sortField === 'date'"
-                  (click)="setSortField('date')">
-                  <i class="bi" [class.bi-sort-down]="sortField === 'date' && sortDirection === 'desc'" 
-                                [class.bi-sort-up]="sortField === 'date' && sortDirection === 'asc'"></i>
-                  Date
-                </button>
-                <button 
-                  type="button" 
-                  class="btn btn-outline-primary"
-                  [class.active]="sortField === 'amount'"
-                  (click)="setSortField('amount')">
-                  <i class="bi" [class.bi-sort-down]="sortField === 'amount' && sortDirection === 'desc'" 
-                                [class.bi-sort-up]="sortField === 'amount' && sortDirection === 'asc'"></i>
-                  Montant
-                </button>
-              </div>
+              <!-- Tri déplacé dans les en-têtes de colonnes (chevrons) -->
+              <label class="form-label fw-bold">&nbsp;</label>
+              <div></div>
             </div>
           </div>
 
@@ -88,11 +70,26 @@
               <thead class="table-primary">
                 <tr>
                   <th class="text-center" style="width: 10%">N° Facture</th>
-                  <th style="width: 15%">Date</th>
+                  <th style="width: 15%; cursor: pointer;" (click)="setSortField('date')">
+                    Date
+                    <i class="bi ms-2"
+                      [class.bi-chevron-down]="sortField === 'date' && sortDirection === 'desc'"
+                      [class.bi-chevron-up]="sortField === 'date' && sortDirection === 'asc'"></i>
+                  </th>
                   <th style="width: 25%">Client</th>
                   <th class="text-center" style="width: 10%">Articles</th>
-                  <th class="text-end" style="width: 15%">Montant Total</th>
-                  <th class="text-end" style="width: 15%">Reste à payer</th>
+                  <th class="text-end" style="width: 15%; cursor: pointer;" (click)="setSortField('amount')">
+                    Montant Total
+                    <i class="bi ms-2"
+                      [class.bi-chevron-down]="sortField === 'amount' && sortDirection === 'desc'"
+                      [class.bi-chevron-up]="sortField === 'amount' && sortDirection === 'asc'"></i>
+                  </th>
+                  <th class="text-end" style="width: 15%; cursor: pointer;" (click)="setSortField('amountDue')">
+                    Reste à payer
+                    <i class="bi ms-2"
+                      [class.bi-chevron-down]="sortField === 'amountDue' && sortDirection === 'desc'"
+                      [class.bi-chevron-up]="sortField === 'amountDue' && sortDirection === 'asc'"></i>
+                  </th>
                   <th class="text-center" style="width: 10%">Actions</th>
                 </tr>
               </thead>
