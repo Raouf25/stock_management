@@ -260,7 +260,8 @@ VALUES
     
     -- Ventes Janvier 2026
     ('2026-01-05', 17, 1, 'FAC-2026-001', 15, 10.300, 154.50, 'Vente VALPRIMER 1KG janvier 2026'),
-    ('2026-01-10', 18, 10, 'FAC-2026-002', 10, 16.071, 160.71, 'Vente VALPRO MAT 5KG janvier 2026'),
+    ('2026-01-10', 18, 10, 'FAC-2026-002', 9, 16.071, 144.639, 'Vente VALPRO MAT 5KG janvier 2026 - ligne 1'),
+    ('2026-01-10', 18, 8, 'FAC-2026-002', 1, 16.071, 16.071, 'Vente VALTEX 1KG janvier 2026 - ligne 2'),
     ('2026-01-15', 19, 5, 'FAC-2026-003', 10, 33.015, 330.15, 'Vente VALFIX 4KG janvier 2026'),
     ('2026-01-20', 20, 4, 'FAC-2026-004', 8, 9.769, 78.15, 'Vente VALFIX 1KG janvier 2026');
 
@@ -358,7 +359,8 @@ VALUES
     (9, 8, '2025-12-25', 'SORTIE', 'VENTE', 76, 'FAC-2025-114'),
     -- Mouvements ventes Janvier 2026
     (1, 15, '2026-01-05', 'SORTIE', 'VENTE', 77, 'FAC-2026-001'),
-    (10, 10, '2026-01-10', 'SORTIE', 'VENTE', 78, 'FAC-2026-002'),
+    (10, 9, '2026-01-10', 'SORTIE', 'VENTE', 78, 'FAC-2026-002'),
+    (8, 1, '2026-01-10', 'SORTIE', 'VENTE', 78, 'FAC-2026-002'),
     (5, 10, '2026-01-15', 'SORTIE', 'VENTE', 79, 'FAC-2026-003'),
     (4, 8, '2026-01-20', 'SORTIE', 'VENTE', 80, 'FAC-2026-004');
 
@@ -505,7 +507,9 @@ VALUES
 INSERT INTO Bill (total, deposit, amount_due, date_bill, payment_status, customer_id)
 VALUES
     (154.50, 0.00, 154.50, '2026-01-05 11:00:00', 'UNPAID', 17),
-    (160.71, 0.00, 160.71, '2026-01-10 14:00:00', 'PAID', 18),
+    -- remise de 30 (appliquée au niveau ligne produit -> ici la 2e ligne devient 0),
+    -- la facture 78 passe donc de 160.71 à 144.639 (seulement la 1ère ligne conservée)
+    (144.639, 0.00, 144.639, '2026-01-10 14:00:00', 'PAID', 18),
     (330.15, 100.00, 230.15, '2026-01-15 10:00:00', 'PARTIALLY_PAID', 19),
     (78.15, 0.00, 78.15, '2026-01-20 13:00:00', 'PAID', 20);
 
@@ -614,6 +618,7 @@ VALUES
     
     -- Ventes Janvier 2026
     (77, 1, 15, 154.50),    -- FAC-2026-001: VALPRIMER 1KG
-    (78, 10, 10, 160.71),   -- FAC-2026-002: VALPRO MAT 5KG
+    (78, 10, 9, 144.639),   -- FAC-2026-002: VALPRO MAT 5KG (partie)
+    (78, 8, 1, 0.000),      -- FAC-2026-002: VALTEX 1KG (partie) remise appliquée (ligne à 0)
     (79, 5, 10, 330.15),    -- FAC-2026-003: VALFIX 4KG
     (80, 4, 8, 78.15);      -- FAC-2026-004: VALFIX 1KG

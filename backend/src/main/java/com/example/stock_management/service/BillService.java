@@ -68,15 +68,29 @@ public class BillService {
             return billProduct;
         }).toList();
 
-        if (bill.getDeposit()>0) {
-            bill.setAmountDue(bill.getTotal() - bill.getDeposit());
-            bill.setPaymentStatus(PaymentStatus.PARTIALLY_PAID);
-        } else {
-            bill.setAmountDue(bill.getTotal());
-            bill.setPaymentStatus(PaymentStatus.UNPAID);
-        }
-
+        // Attach products
         bill.setBillProducts(billProducts);
+
+        // Calculate deposit (may be null) and amount due
+        double deposit = bill.getDeposit() != null ? bill.getDeposit() : 0.0;
+        double amountDue = bill.getTotal() - deposit;
+        if (amountDue < 0) {
+            // protect against negative due (treat as zero)
+            amountDue = 0.0;
+        }
+        bill.setAmountDue(amountDue);
+
+        // Enforce paymentStatus rule: if amountDue != 0 then status must NOT be PAID
+        if (Double.compare(amountDue, 0.0) == 0) {
+            bill.setPaymentStatus(PaymentStatus.PAID);
+        } else {
+            // amountDue > 0 -> choose PARTIALLY_PAID when deposit > 0, otherwise UNPAID
+            if (deposit > 0.0 && deposit < bill.getTotal()) {
+                bill.setPaymentStatus(PaymentStatus.PARTIALLY_PAID);
+            } else {
+                bill.setPaymentStatus(PaymentStatus.UNPAID);
+            }
+        }
 
         // Sauvegarder la facture dans la base de données
         return billRepository.save(bill);

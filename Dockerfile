@@ -9,6 +9,9 @@ COPY mvnw .
 COPY mvnw.cmd .
 COPY .mvn .mvn
 
+# Limit JVM memory and disable JIT during dependency resolution to avoid native crashes
+ENV MAVEN_OPTS="-Xmx512m -XX:+UseSerialGC -Xint -Djava.awt.headless=true"
+
 # Télécharger les dépendances
 RUN ./mvnw dependency:resolve
 
