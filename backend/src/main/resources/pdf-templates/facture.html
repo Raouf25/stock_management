@@ -19,7 +19,7 @@
         }
 
         body {
-            font-family: Arial, Helvetica, sans-serif;
+            font-family: Arial, sans-serif;
             font-size: 10pt;
             line-height: 1.4;
             color: #1e293b;
@@ -31,10 +31,7 @@
             margin-bottom: 20px;
             border: 1px solid #e2e8f0;
             padding: 15px;
-            -fs-border-radius-top-left: 8px;
-            -fs-border-radius-top-right: 8px;
-            -fs-border-radius-bottom-left: 8px;
-            -fs-border-radius-bottom-right: 8px;
+            border-radius: 8px;
         }
         
         .header-table {
@@ -75,10 +72,7 @@
             padding: 12px 15px;
             background-color: #2563eb;
             color: white;
-            -fs-border-radius-top-left: 6px;
-            -fs-border-radius-top-right: 6px;
-            -fs-border-radius-bottom-left: 6px;
-            -fs-border-radius-bottom-right: 6px;
+            border-radius: 6px;
         }
         
         .invoice-details {
@@ -117,10 +111,7 @@
             padding: 12px;
             border: 1px solid #e2e8f0;
             background-color: #ffffff;
-            -fs-border-radius-top-left: 6px;
-            -fs-border-radius-top-right: 6px;
-            -fs-border-radius-bottom-left: 6px;
-            -fs-border-radius-bottom-right: 6px;
+            border-radius: 6px;
         }
         
         .billing-delivery h3 {
@@ -178,12 +169,12 @@
         }
         
         .products td.monospace {
-            font-family: 'Courier New', Courier, monospace;
+            font-family: Arial, sans-serif;
             font-weight: 500;
         }
         
         .products td.ref-column {
-            font-family: 'Courier New', Courier, monospace;
+            font-family: Arial, sans-serif;
             font-size: 8pt;
             color: #64748b;
         }
@@ -266,7 +257,7 @@
         .totals td.value {
             text-align: right;
             font-weight: 600;
-            font-family: 'Courier New', Courier, monospace;
+            font-family: Arial, sans-serif;
             font-size: 10pt;
             width: 50%;
         }
@@ -290,8 +281,7 @@
             padding: 10px 12px;
             background-color: #f8fafc;
             border-left: 3px solid #f59e0b;
-            -fs-border-radius-top-right: 6px;
-            -fs-border-radius-bottom-right: 6px;
+            border-radius: 6px;
         }
         
         /* Footer Signatures */
@@ -414,12 +404,12 @@
             <td class="ref-column" th:text="${product.productRef}">REF</td>
             <td th:text="${product.productName}">Nom</td>
             <td class="align-right monospace" th:text="${product.quantity}">0</td>
-            <td class="align-right monospace" th:text="${product.unitPriceFormatted}">0.000 DNT</td>
-            <td class="align-right monospace" th:text="${product.discountFormatted}">0.000 DNT</td>
-            <td class="align-right monospace" th:text="${product.totalPriceFormatted}">0.000 DNT</td>
+            <td class="align-right monospace" th:text="${product.unitPriceFormatted}">0.000</td>
+            <td class="align-right monospace" th:text="${product.discountFormatted}">0.000</td>
+            <td class="align-right monospace" th:text="${product.totalPriceFormatted}">0.000</td>
             <td class="align-right" th:text="${product.vatRate}">19%</td>
-            <td class="align-right monospace" th:text="${product.vatAmountFormatted}">0.000 DNT</td>
-            <td class="align-right monospace" th:text="${product.totalWithVatFormatted}">0.000 DNT</td>
+            <td class="align-right monospace" th:text="${product.vatAmountFormatted}">0.000</td>
+            <td class="align-right monospace" th:text="${product.totalWithVatFormatted}">0.000</td>
         </tr>
     </tbody>
 </table>
@@ -447,23 +437,23 @@
             <table class="totals">
                 <tr>
                     <td class="label">Total HT</td>
-                    <td class="value" th:text="${totalHTFormatted}">0.000 DNT</td>
+                    <td class="value" th:text="${totalHTFormatted}">0.000</td>
                 </tr>
                 <tr>
                     <td class="label">TVA</td>
-                    <td class="value" th:text="${tvaFormatted}">0.000 DNT</td>
+                    <td class="value" th:text="${tvaFormatted}">0.000</td>
                 </tr>
                 <tr>
                     <td class="label">Total TTC</td>
-                    <td class="value" th:text="${totalTTCFormatted}">0.000 DNT</td>
+                    <td class="value" th:text="${totalTTCFormatted}">0.000</td>
                 </tr>
                 <tr>
                     <td class="label">Acompte</td>
-                    <td class="value" th:text="${depositFormatted}">0.000 DNT</td>
+                    <td class="value" th:text="${depositFormatted}">0.000</td>
                 </tr>
                 <tr class="net-pay-row">
                     <td class="label">Net à payer</td>
-                    <td class="value" th:text="${amountDueFormatted}">0.000 DNT</td>
+                    <td class="value" th:text="${amountDueFormatted}">0.000</td>
                 </tr>
             </table>
         </td>

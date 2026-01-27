@@ -181,13 +181,13 @@ body {
 .products td:nth-child(9),
 .products td:nth-child(10) {
     text-align: right;
-    font-family: 'Courier New', monospace;
+    font-family: Arial, sans-serif;
     font-weight: 500;
 }
 
 /* Reference column - monospace for better readability */
 .products td:nth-child(2) {
-    font-family: 'Courier New', monospace;
+    font-family: Arial, sans-serif;
     font-size: 10px;
     color: #64748b;
 }

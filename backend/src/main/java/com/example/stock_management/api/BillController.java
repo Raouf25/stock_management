@@ -104,13 +104,13 @@ public class BillController {
                     m.put("quantity", qty);
                     m.put("unitPriceValue", unitPrice);
                     // totalPrice is the stored line HT (post-discount) -> expose as numeric for summation
-                    m.put("unitPriceFormatted", numberUtils.formatDecimal(unitPrice, 3, 3) + " DNT");
-                    m.put("totalPriceFormatted", numberUtils.formatDecimal(totalPrice, 3, 3) + " DNT");
+                    m.put("unitPriceFormatted", numberUtils.formatDecimal(unitPrice, 3, 3));
+                    m.put("totalPriceFormatted", numberUtils.formatDecimal(totalPrice, 3, 3));
                     m.put("discountValue", discount);
-                    m.put("discountFormatted", numberUtils.formatDecimal(discount, 3, 3) + " DNT");
+                    m.put("discountFormatted", numberUtils.formatDecimal(discount, 3, 3));
                     m.put("vatRate", "19%");
-                    m.put("vatAmountFormatted", numberUtils.formatDecimal(vatAmount, 3, 3) + " DNT");
-                    m.put("totalWithVatFormatted", numberUtils.formatDecimal(totalWithVat, 3, 3) + " DNT");
+                    m.put("vatAmountFormatted", numberUtils.formatDecimal(vatAmount, 3, 3));
+                    m.put("totalWithVatFormatted", numberUtils.formatDecimal(totalWithVat, 3, 3));
                     // also expose raw numeric values for later summation
                     m.put("vatAmountValue", vatAmount);
                     m.put("totalPriceValue", priceAfterDiscount);
@@ -159,13 +159,13 @@ public class BillController {
             data.put("amountDue", amountDue);
 
             // formatted totals
-            data.put("totalHTFormatted", numberUtils.formatDecimal(totalHT, 3, 3) + " DNT");
-            data.put("tvaFormatted", numberUtils.formatDecimal(tva, 3, 3) + " DNT");
-            data.put("totalTTCFormatted", numberUtils.formatDecimal(total, 3, 3) + " DNT");
-            data.put("totalGrossHTFormatted", numberUtils.formatDecimal((double)data.getOrDefault("totalGrossHT", 0.0), 3, 3) + " DNT");
-            data.put("totalDiscountFormatted", numberUtils.formatDecimal((double)data.getOrDefault("totalDiscount", 0.0), 3, 3) + " DNT");
-            data.put("depositFormatted", numberUtils.formatDecimal(deposit, 3, 3) + " DNT");
-            data.put("amountDueFormatted", numberUtils.formatDecimal(amountDue, 3, 3) + " DNT");
+            data.put("totalHTFormatted", numberUtils.formatDecimal(totalHT, 3, 3));
+            data.put("tvaFormatted", numberUtils.formatDecimal(tva, 3, 3));
+            data.put("totalTTCFormatted", numberUtils.formatDecimal(total, 3, 3) );
+            data.put("totalGrossHTFormatted", numberUtils.formatDecimal((double)data.getOrDefault("totalGrossHT", 0.0), 3, 3) );
+            data.put("totalDiscountFormatted", numberUtils.formatDecimal((double)data.getOrDefault("totalDiscount", 0.0), 3, 3));
+            data.put("depositFormatted", numberUtils.formatDecimal(deposit, 3, 3));
+            data.put("amountDueFormatted", numberUtils.formatDecimal(amountDue, 3, 3));
 
             // Formater le numéro de facture
             data.put("billNumber", "FAC-" + String.format("%04d", bill.getIdBill()));
