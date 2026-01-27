@@ -213,6 +213,7 @@ public class BillController {
         data.put("customerRef", "");
         data.put("paymentMethod", "Espèces / Virement / Chèque");
         data.put("paymentRef", "");
+        data.put("paymentTerms", "30 jours");
 
         pdfGenerateService.generatePdfFileAPI(data, response);
     }

@@ -1,143 +1,489 @@
-<!DOCTYPE HTML>
+<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8"></meta>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"></meta>
-    <title>Facture</title>
-    <link rel="stylesheet" href="facture.css" />
+    <meta charset="UTF-8"/>
+    <title th:text="'Facture - ' + ${billNumber}">Facture</title>
+    <style type="text/css">
+        /*<![CDATA[*/
+        /* PDF-Compatible Styles for Thymeleaf/Flying Saucer */
+        
+        @page {
+            size: A4;
+            margin: 15mm;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 10pt;
+            line-height: 1.4;
+            color: #1e293b;
+        }
+        
+        /* Header Section */
+        .header {
+            width: 100%;
+            margin-bottom: 20px;
+            border: 1px solid #e2e8f0;
+            padding: 15px;
+            -fs-border-radius-top-left: 8px;
+            -fs-border-radius-top-right: 8px;
+            -fs-border-radius-bottom-left: 8px;
+            -fs-border-radius-bottom-right: 8px;
+        }
+        
+        .header-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .header-table td {
+            vertical-align: top;
+            padding: 5px;
+        }
+        
+        .header-table td.company-info {
+            width: 55%;
+            padding-right: 20px;
+        }
+        
+        .header-table td.invoice-info {
+            width: 45%;
+            text-align: right;
+        }
+        
+        .company-info h1 {
+            margin: 0 0 8px 0;
+            font-size: 16pt;
+            font-weight: 700;
+            color: #2563eb;
+        }
+        
+        .company-info p {
+            margin: 3px 0;
+            font-size: 9pt;
+            color: #64748b;
+        }
+        
+        .invoice-details-container {
+            display: inline-block;
+            padding: 12px 15px;
+            background-color: #2563eb;
+            color: white;
+            -fs-border-radius-top-left: 6px;
+            -fs-border-radius-top-right: 6px;
+            -fs-border-radius-bottom-left: 6px;
+            -fs-border-radius-bottom-right: 6px;
+        }
+        
+        .invoice-details {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .invoice-details th {
+            padding: 4px 15px 4px 0;
+            text-align: left;
+            font-weight: 600;
+            color: white;
+            font-size: 8pt;
+            text-transform: uppercase;
+        }
+        
+        .invoice-details td {
+            padding: 4px 0;
+            text-align: left;
+            font-weight: 500;
+            font-size: 10pt;
+            color: white;
+        }
+        
+        /* Client & Delivery Information */
+        .billing-delivery {
+            width: 100%;
+            margin-bottom: 20px;
+            border-collapse: separate;
+            border-spacing: 10px 0;
+        }
+        
+        .billing-delivery td {
+            width: 50%;
+            vertical-align: top;
+            padding: 12px;
+            border: 1px solid #e2e8f0;
+            background-color: #ffffff;
+            -fs-border-radius-top-left: 6px;
+            -fs-border-radius-top-right: 6px;
+            -fs-border-radius-bottom-left: 6px;
+            -fs-border-radius-bottom-right: 6px;
+        }
+        
+        .billing-delivery h3 {
+            margin: 0 0 8px 0;
+            font-size: 11pt;
+            font-weight: 600;
+            color: #2563eb;
+            border-bottom: 2px solid #2563eb;
+            padding-bottom: 3px;
+        }
+        
+        .billing-delivery p {
+            margin: 4px 0;
+            font-size: 9pt;
+            color: #64748b;
+        }
+        
+        /* Products Table */
+        .products {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .products thead {
+            background-color: #2563eb;
+            color: white;
+        }
+        
+        .products th {
+            padding: 10px 6px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 8pt;
+            text-transform: uppercase;
+            border: 1px solid #1d4ed8;
+        }
+        
+        .products td {
+            padding: 8px 6px;
+            border: 1px solid #e2e8f0;
+            font-size: 9pt;
+            vertical-align: middle;
+        }
+        
+        .products tbody tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+        
+        /* Right align numeric columns */
+        .products th.align-right,
+        .products td.align-right {
+            text-align: right;
+        }
+        
+        .products td.monospace {
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: 500;
+        }
+        
+        .products td.ref-column {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 8pt;
+            color: #64748b;
+        }
+        
+        /* Payment & Totals Section */
+        .payment-totals {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 10px 0;
+            margin-bottom: 20px;
+        }
+        
+        .payment-totals td {
+            vertical-align: top;
+            padding: 0;
+        }
+        
+        .payment-totals td.payment-cell {
+            width: 55%;
+        }
+        
+        .payment-totals td.totals-cell {
+            width: 45%;
+            text-align: right;
+        }
+        
+        /* Payment Table */
+        .payment {
+            width: 100%;
+            border-collapse: collapse;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .payment thead {
+            background-color: #f8fafc;
+        }
+        
+        .payment th {
+            padding: 8px 10px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 9pt;
+            color: #1e293b;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .payment td {
+            padding: 8px 10px;
+            text-align: center;
+            font-size: 9pt;
+            color: #64748b;
+            border: 1px solid #e2e8f0;
+        }
+        
+        /* Totals Table */
+        .totals {
+            width: 280px;
+            border-collapse: collapse;
+            border: 2px solid #2563eb;
+            margin-left: auto;
+        }
+        
+        .totals tr {
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .totals td {
+            padding: 8px 12px;
+            font-size: 9pt;
+            border: none;
+        }
+        
+        .totals td.label {
+            font-weight: 500;
+            color: #64748b;
+            background-color: #f8fafc;
+            width: 50%;
+        }
+        
+        .totals td.value {
+            text-align: right;
+            font-weight: 600;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 10pt;
+            width: 50%;
+        }
+        
+        .totals tr.net-pay-row {
+            background-color: #10b981;
+        }
+        
+        .totals tr.net-pay-row td {
+            color: white;
+            font-weight: 700;
+            background-color: #10b981;
+        }
+        
+        /* Legal Mentions */
+        .match-payment-header {
+            font-size: 9pt;
+            font-weight: 500;
+            color: #64748b;
+            margin: 20px 0 15px 0;
+            padding: 10px 12px;
+            background-color: #f8fafc;
+            border-left: 3px solid #f59e0b;
+            -fs-border-radius-top-right: 6px;
+            -fs-border-radius-bottom-right: 6px;
+        }
+        
+        /* Footer Signatures */
+        .signatures {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .signatures td {
+            padding: 12px;
+            font-size: 9pt;
+            color: #64748b;
+            text-align: center;
+            border-right: 1px solid #e2e8f0;
+            width: 33.33%;
+        }
+        
+        .signatures td:first-child {
+            text-align: left;
+        }
+        
+        .signatures td:last-child {
+            text-align: right;
+            border-right: none;
+        }
+        
+        /* Utility classes */
+        strong {
+            font-weight: 600;
+        }
+        
+        address {
+            font-style: normal;
+        }
+        /*]]>*/
+    </style>
 </head>
 <body>
 
+<!-- Company Header -->
 <div class="header">
-    <div class="company-info">
-        <h2>{{companyName}}</h2>
-        <p>{{companyAddress}}</p>
-        <p>Tel: {{companyPhone}}</p>
-        <p>Matricule Fiscale: {{companyTaxId}}</p>
-        <p>RC: {{supplierRc}}</p>
-        <p>RIB: {{supplierRib}}</p>
-        <p>IBAN: {{supplierIban}}</p>
-    </div>
-
-    <div class="logo">
-        <!-- Invoice header box with number and date -->
-        <div class="invoice-details-container">
-            <table class="invoice-details">
-                <tr>
-                    <th>Facture N°</th>
-                    <td>{{billNumber}}</td>
-                </tr>
-                <tr>
-                    <th>Date</th>
-                    <td>{{billDate}}</td>
-                </tr>
-                <tr>
-                    <th>Conditions</th>
-                    <td>{{paymentTerms}}</td>
-                </tr>
-            </table>
-        </div>
-    </div>
+    <table class="header-table">
+        <tr>
+            <td class="company-info">
+                <h1 th:text="${companyName}">Nom de l'entreprise</h1>
+                <address>
+                    <p th:text="${companyAddress}">Adresse de l'entreprise</p>
+                    <p><strong>Tél:</strong> <span th:text="${companyPhone}">Phone</span></p>
+                    <p><strong>Matricule Fiscale:</strong> <span th:text="${companyTaxId}">Tax ID</span></p>
+                    <p><strong>RC:</strong> <span th:text="${supplierRc}"></span></p>
+                    <p><strong>RIB:</strong> <span th:text="${supplierRib}"></span></p>
+                    <p><strong>IBAN:</strong> <span th:text="${supplierIban}"></span></p>
+                </address>
+            </td>
+            <td class="invoice-info">
+                <div class="invoice-details-container">
+                    <table class="invoice-details">
+                        <tr>
+                            <th>Facture N°</th>
+                            <td th:text="${billNumber}">FAC-0000</td>
+                        </tr>
+                        <tr>
+                            <th>Date</th>
+                            <td th:text="${billDate}">01/01/2026</td>
+                        </tr>
+                        <tr>
+                            <th>Conditions</th>
+                            <td th:text="${paymentTerms}">30 jours</td>
+                        </tr>
+                    </table>
+                </div>
+            </td>
+        </tr>
+    </table>
 </div>
 
-<!-- Client & Delivery -->
-<div class="flex-container spaced-bottom">
-        <div class="left">
-        <h3>Facturé à / Client</h3>
-        <p>{{customerName}}</p>
-        <p>{{customerAddress}}</p>
-        <p>Tél: {{customerPhone}}</p>
-        <p>Matricule Fiscale: {{customerTva}}</p>
-    </div>
-    <div class="right">
-        <h3>Livré à</h3>
-        <p>{{deliveryAddress}}</p>
-        <p>Référence client: {{customerRef}}</p>
-    </div>
-</div>
+<!-- Billing & Delivery Information -->
+<table class="billing-delivery">
+    <tr>
+        <td>
+            <h3>Facturé à / Client</h3>
+            <address>
+                <p><strong th:text="${customerName}">Client Name</strong></p>
+                <p th:text="${customerAddress}">Client Address</p>
+                <p><strong>Tél:</strong> <span th:text="${customerPhone}">Phone</span></p>
+                <p><strong>Matricule Fiscale:</strong> <span th:text="${customerTva}">TVA</span></p>
+            </address>
+        </td>
+        <td>
+            <h3>Livré à</h3>
+            <address>
+                <p th:text="${deliveryAddress}">Adresse de livraison</p>
+                <p><strong>Référence client:</strong> <span th:text="${customerRef}">Ref</span></p>
+            </address>
+        </td>
+    </tr>
+</table>
 
 <!-- Products Table -->
 <table class="products">
     <thead>
-    <tr>
-        <th>N°</th>
-        <th>Référence</th>
-        <th>Désignation</th>
-        <th>Quantité</th>
-        <th>Prix Unitaire HT</th>
-        <th>Remise</th>
-        <th>Montant HT</th>
-        <th>Taux TVA</th>
-        <th>Montant TVA</th>
-        <th>Montant TTC</th>
-    </tr>
+        <tr>
+            <th>N°</th>
+            <th>Référence</th>
+            <th>Désignation</th>
+            <th class="align-right">Quantité</th>
+            <th class="align-right">Prix Unitaire HT</th>
+            <th class="align-right">Remise</th>
+            <th class="align-right">Montant HT</th>
+            <th class="align-right">Taux TVA</th>
+            <th class="align-right">Montant TVA</th>
+            <th class="align-right">Montant TTC</th>
+        </tr>
     </thead>
     <tbody>
-    {{PRODUCTS_ROWS}}
+        <tr th:each="product, iterStat : ${products}">
+            <td th:text="${iterStat.count}">1</td>
+            <td class="ref-column" th:text="${product.productRef}">REF</td>
+            <td th:text="${product.productName}">Nom</td>
+            <td class="align-right monospace" th:text="${product.quantity}">0</td>
+            <td class="align-right monospace" th:text="${product.unitPriceFormatted}">0.000 DNT</td>
+            <td class="align-right monospace" th:text="${product.discountFormatted}">0.000 DNT</td>
+            <td class="align-right monospace" th:text="${product.totalPriceFormatted}">0.000 DNT</td>
+            <td class="align-right" th:text="${product.vatRate}">19%</td>
+            <td class="align-right monospace" th:text="${product.vatAmountFormatted}">0.000 DNT</td>
+            <td class="align-right monospace" th:text="${product.totalWithVatFormatted}">0.000 DNT</td>
+        </tr>
     </tbody>
 </table>
 
-<div class="flex-container">
-    <div class="left">
-        <!-- Payment Method Table (kept simple) -->
-        <table class="payment">
-            <thead>
-            <tr>
-                <th>Mode de règlement</th>
-                <th>Référence paiement</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr>
-                <td th:text="${paymentMethod ?: 'Espèces / Virement / Chèque'}"></td>
-                <td th:text="${paymentRef ?: ''}"></td>
-            </tr>
-            </tbody>
-        </table>
-    </div>
+<!-- Payment & Totals Summary -->
+<table class="payment-totals">
+    <tr>
+        <td class="payment-cell">
+            <table class="payment">
+                <thead>
+                    <tr>
+                        <th>Mode de règlement</th>
+                        <th>Référence paiement</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td th:text="${paymentMethod}">Espèces / Virement / Chèque</td>
+                        <td th:text="${paymentRef}">-</td>
+                    </tr>
+                </tbody>
+            </table>
+        </td>
+        <td class="totals-cell">
+            <table class="totals">
+                <tr>
+                    <td class="label">Total HT</td>
+                    <td class="value" th:text="${totalHTFormatted}">0.000 DNT</td>
+                </tr>
+                <tr>
+                    <td class="label">TVA</td>
+                    <td class="value" th:text="${tvaFormatted}">0.000 DNT</td>
+                </tr>
+                <tr>
+                    <td class="label">Total TTC</td>
+                    <td class="value" th:text="${totalTTCFormatted}">0.000 DNT</td>
+                </tr>
+                <tr>
+                    <td class="label">Acompte</td>
+                    <td class="value" th:text="${depositFormatted}">0.000 DNT</td>
+                </tr>
+                <tr class="net-pay-row">
+                    <td class="label">Net à payer</td>
+                    <td class="value" th:text="${amountDueFormatted}">0.000 DNT</td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
 
-    <div class="right">
-        <!-- Totals Table -->
-        <table class="totals">
-            <tr>
-                <td>Total HT</td>
-                <td>{{totalHTFormatted}}</td>
-            </tr>
-            <tr>
-                <td>TVA</td>
-                <td>{{tvaFormatted}}</td>
-            </tr>
-            <tr>
-                <td>Total TTC</td>
-                <td>{{totalTTCFormatted}}</td>
-            </tr>
-            <tr>
-                <td>Acompte</td>
-                <td>{{depositFormatted}}</td>
-            </tr>
-            <tr class="net-pay-row">
-                <td>Net à payer</td>
-                <td>{{amountDueFormatted}}</td>
-            </tr>
-        </table>
-    </div>
+<!-- Legal Information -->
+<div class="match-payment-header">
+    <strong>Mentions légales :</strong> Cette facture est établie conformément aux dispositions de l'article 18 du code de la TVA.
+    Toute contestation doit être signalée dans un délai de 7 jours.
 </div>
 
-<!-- Legal mention and signatures -->
-<div class="mt-18">
-    <p class="match-payment-header"><strong>Mentions légales :</strong> Cette facture est établie conformément aux dispositions de l'article 18 du code de la TVA. Toute contestation doit être signalée dans un délai de 7 jours.</p>
-    <div class="footer">
-        <div class="footer-section left">
-            <p class="no-margin">Conditions de paiement : <span>{{paymentTerms}}</span></p>
-        </div>
-        <div class="footer-section center">
-            <p class="no-margin"><b>Signature client</b></p>
-        </div>
-        <div class="footer-section right">
-            <p class="no-margin"><b>Signature et cachet</b></p>
-        </div>
-    </div>
-</div>
+<!-- Signatures -->
+<table class="signatures">
+    <tr>
+        <td><strong>Conditions de paiement :</strong> <span th:text="${paymentTerms}">30 jours</span></td>
+        <td><strong>Signature client</strong></td>
+        <td><strong>Signature et cachet</strong></td>
+    </tr>
+</table>
 
 </body>
 </html>

@@ -52,42 +52,8 @@ public class PdfGenerateService {
         context.setVariable("numbers", numberUtils);
 
         String templateName = "facture";
-        // process template (no Thymeleaf expressions expected) and then substitute placeholders
+        // Process template with Thymeleaf
         String htmlContent = templateEngine.process(templateName, context);
-
-        // If products placeholder exists, build rows from data map
-        Object productsObj = data.get("products");
-        if (productsObj instanceof java.util.List) {
-            @SuppressWarnings("unchecked")
-            java.util.List<java.util.Map<String, Object>> products = (java.util.List<java.util.Map<String, Object>>) productsObj;
-            StringBuilder rows = new StringBuilder();
-            int idx = 1;
-            for (java.util.Map<String, Object> p : products) {
-                rows.append("<tr>");
-                rows.append("<td>").append(idx++).append("</td>");
-                rows.append("<td>").append(p.getOrDefault("productRef", "")).append("</td>");
-                rows.append("<td>").append(p.getOrDefault("productName", "")).append("</td>");
-                rows.append("<td>").append(p.getOrDefault("quantity", "")).append("</td>");
-                rows.append("<td>").append(p.getOrDefault("unitPriceFormatted", "")).append("</td>");
-                rows.append("<td>").append(p.getOrDefault("discountFormatted", "0.000 DNT")).append("</td>");
-                rows.append("<td>").append(p.getOrDefault("totalPriceFormatted", "")).append("</td>");
-                rows.append("<td>").append(p.getOrDefault("vatRate", "")).append("</td>");
-                rows.append("<td>").append(p.getOrDefault("vatAmountFormatted", "")).append("</td>");
-                rows.append("<td>").append(p.getOrDefault("totalWithVatFormatted", p.getOrDefault("totalPriceFormatted", ""))).append("</td>");
-                rows.append("</tr>");
-            }
-            htmlContent = htmlContent.replace("{{PRODUCTS_ROWS}}", rows.toString());
-        }
-
-        // Replace simple placeholders {{key}} with string values from data
-        for (java.util.Map.Entry<String, Object> e : data.entrySet()) {
-            String key = e.getKey();
-            Object val = e.getValue();
-            if (val == null) continue;
-            if (val instanceof String || val instanceof Number) {
-                htmlContent = htmlContent.replace("{{" + key + "}}", val.toString());
-            }
-        }
         
         // Debug: save HTML to file
         try {
