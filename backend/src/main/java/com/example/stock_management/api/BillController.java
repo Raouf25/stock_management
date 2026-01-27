@@ -3,13 +3,17 @@ package com.example.stock_management.api;
 import com.example.stock_management.dto.BillDTO;
 import com.example.stock_management.dto.BillMapper;
 import com.example.stock_management.dto.CreatedBillDTO;
+import com.example.stock_management.dto.InvoiceCreationDTO;
 import com.example.stock_management.service.BillService;
 import com.example.stock_management.service.PdfGenerateService;
 import com.example.stock_management.service.SupplierService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.*;
 import com.example.stock_management.util.NumberUtils;
@@ -48,6 +52,22 @@ public class BillController {
     @Operation(summary = "Créer une nouvelle Bill")
     public Optional<CreatedBillDTO> createBill(@RequestBody BillDTO billDTO) {
         return Optional.of(billService.save(billDTO)).map(billMapper::sourceToDestination);
+    }
+
+    @PostMapping("/create")
+    @Operation(summary = "Créer une nouvelle facture avec tous les détails")
+    public ResponseEntity<?> createInvoice(@Valid @RequestBody InvoiceCreationDTO invoiceDto) {
+        try {
+            var bill = billService.createInvoice(invoiceDto);
+            return ResponseEntity.status(HttpStatus.CREATED)
+                .body(billMapper.sourceToDestination(bill));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest()
+                .body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "Error creating invoice: " + e.getMessage()));
+        }
     }
 
     @GetMapping("/kpis")

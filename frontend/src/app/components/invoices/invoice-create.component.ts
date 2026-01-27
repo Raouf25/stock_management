@@ -1,0 +1,260 @@
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
+import { ApiService } from '../../services/api.service';
+
+interface Customer {
+  customerId: number;
+  name: string;
+  address?: string;
+  phone?: string;
+  email?: string;
+}
+
+interface Product {
+  productId: number;
+  reference: string;
+  name: string;
+  unitPrice: number;
+  stock: number;
+}
+
+interface InvoiceLineItem {
+  productId: number;
+  productName: string;
+  reference: string;
+  unitPrice: number;
+  quantity: number;
+  totalPrice: number;
+}
+
+@Component({
+  selector: 'app-invoice-create',
+  standalone: true,
+  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  templateUrl: './invoice-create.component.html',
+  styleUrls: ['./invoice-create.component.css']
+})
+export class InvoiceCreateComponent implements OnInit {
+  invoiceForm!: FormGroup;
+  customers: Customer[] = [];
+  products: Product[] = [];
+  lineItems: InvoiceLineItem[] = [];
+  
+  loading: boolean = false;
+  error: string = '';
+  success: string = '';
+  showProductSearch: boolean = false;
+  filteredProducts: Product[] = [];
+  searchProductTerm: string = '';
+  
+  // Calculation properties
+  totalHT: number = 0;
+  discountAmount: number = 0;
+  totalAfterDiscount: number = 0;
+  totalVAT: number = 0;
+  totalTTC: number = 0;
+  deposit: number = 0;
+  netAmountDue: number = 0;
+
+  constructor(
+    private formBuilder: FormBuilder,
+    private apiService: ApiService,
+    private router: Router
+  ) {}
+
+  ngOnInit() {
+    this.initializeForm();
+    this.loadCustomers();
+    this.loadProducts();
+  }
+
+  initializeForm() {
+    this.invoiceForm = this.formBuilder.group({
+      customerId: [null, [Validators.required]],
+      billDate: [this.getToday(), [Validators.required]],
+      paymentTerms: ['30 jours', [Validators.required]],
+      deliveryAddress: ['', [Validators.required]],
+      notes: [''],
+      discount: [0, [Validators.min(0), Validators.max(100)]],
+      deposit: [0, [Validators.min(0)]]
+    });
+  }
+
+  getToday(): string {
+    const today = new Date();
+    return today.toISOString().split('T')[0];
+  }
+
+  loadCustomers() {
+    this.apiService.getCustomers().subscribe({
+      next: (data) => {
+        this.customers = data.map((c: any) => ({
+          customerId: c.customerId,
+          name: c.name,
+          address: c.address,
+          phone: c.phone,
+          email: c.email
+        }));
+      },
+      error: (error) => {
+        console.error('Error loading customers:', error);
+        this.error = 'Erreur lors du chargement des clients';
+      }
+    });
+  }
+
+  loadProducts() {
+    this.apiService.getProducts().subscribe({
+      next: (data) => {
+        this.products = data.map((p: any) => ({
+          productId: p.idProduct ?? p.id,
+          reference: p.reference,
+          name: p.name,
+          unitPrice: p.unitPriceSold ?? p.unitPrice ?? 0,
+          stock: p.currentStockQuantity ?? p.stock ?? 0
+        }));
+        this.filteredProducts = this.products;
+      },
+      error: (error) => {
+        console.error('Error loading products:', error);
+        this.error = 'Erreur lors du chargement des produits';
+      }
+    });
+  }
+
+  filterProducts() {
+    if (this.searchProductTerm.trim() === '') {
+      this.filteredProducts = this.products;
+    } else {
+      const term = this.searchProductTerm.toLowerCase();
+      this.filteredProducts = this.products.filter(p =>
+        p.name.toLowerCase().includes(term) ||
+        String(p.reference).toLowerCase().includes(term)
+      );
+    }
+  }
+
+  addLineItem(product: Product) {
+    // Check if product already exists in line items
+    const existingItem = this.lineItems.find(item => item.productId === product.productId);
+    if (existingItem) {
+      existingItem.quantity += 1;
+      existingItem.totalPrice = existingItem.quantity * existingItem.unitPrice;
+    } else {
+      this.lineItems.push({
+        productId: product.productId,
+        productName: product.name,
+        reference: product.reference,
+        unitPrice: product.unitPrice,
+        quantity: 1,
+        totalPrice: product.unitPrice
+      });
+    }
+    this.showProductSearch = false;
+    this.searchProductTerm = '';
+    this.calculateTotals();
+  }
+
+  updateLineItemQuantity(index: number, quantity: number) {
+    if (quantity <= 0) {
+      this.removeLineItem(index);
+    } else {
+      this.lineItems[index].quantity = quantity;
+      this.lineItems[index].totalPrice = quantity * this.lineItems[index].unitPrice;
+      this.calculateTotals();
+    }
+  }
+
+  removeLineItem(index: number) {
+    this.lineItems.splice(index, 1);
+    this.calculateTotals();
+  }
+
+  calculateTotals() {
+    // Calculate total HT (before tax)
+    this.totalHT = this.lineItems.reduce((sum, item) => sum + item.totalPrice, 0);
+
+    // Apply discount if any
+    const discount = this.invoiceForm.get('discount')?.value || 0;
+    this.discountAmount = (this.totalHT * discount) / 100;
+    this.totalAfterDiscount = this.totalHT - this.discountAmount;
+
+    // Calculate VAT (19%)
+    const VAT_RATE = 0.19;
+    this.totalVAT = this.totalAfterDiscount * VAT_RATE;
+
+    // Calculate total TTC (total with tax)
+    this.totalTTC = this.totalAfterDiscount + this.totalVAT;
+
+    // Get deposit
+    this.deposit = this.invoiceForm.get('deposit')?.value || 0;
+
+    // Calculate net amount due
+    this.netAmountDue = this.totalTTC - this.deposit;
+  }
+
+  onDiscountChange() {
+    this.calculateTotals();
+  }
+
+  onDepositChange() {
+    this.calculateTotals();
+  }
+
+  submitForm() {
+    if (this.invoiceForm.invalid) {
+      this.error = 'Veuillez remplir tous les champs obligatoires';
+      return;
+    }
+
+    if (this.lineItems.length === 0) {
+      this.error = 'Veuillez ajouter au moins un produit';
+      return;
+    }
+
+    this.loading = true;
+    this.error = '';
+    this.success = '';
+
+    const customerId = this.invoiceForm.get('customerId')?.value;
+    const discount = this.invoiceForm.get('discount')?.value || 0;
+    const deposit = this.invoiceForm.get('deposit')?.value || 0;
+
+    const invoiceData = {
+      customerId: customerId ? Number(customerId) : null,
+      billDate: this.invoiceForm.get('billDate')?.value,
+      paymentTerms: this.invoiceForm.get('paymentTerms')?.value,
+      deliveryAddress: this.invoiceForm.get('deliveryAddress')?.value,
+      notes: this.invoiceForm.get('notes')?.value,
+      discount: Number(discount) || 0,
+      deposit: Number(deposit) || 0,
+      products: this.lineItems.map(item => ({
+        productId: item.productId,
+        quantity: item.quantity,
+        unitPrice: item.unitPrice
+      }))
+    };
+
+    this.apiService.createInvoice(invoiceData).subscribe({
+      next: (response) => {
+        this.loading = false;
+        this.success = 'Facture créée avec succès!';
+        // Navigate back to invoices list after 2 seconds
+        setTimeout(() => {
+          this.router.navigate(['/invoices']);
+        }, 2000);
+      },
+      error: (error) => {
+        this.loading = false;
+        console.error('Error creating invoice:', error);
+        this.error = error.error?.message || 'Erreur lors de la création de la facture';
+      }
+    });
+  }
+
+  cancel() {
+    this.router.navigate(['/invoices']);
+  }
+}

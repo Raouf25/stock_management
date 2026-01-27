@@ -1,6 +1,7 @@
 package com.example.stock_management.service;
 
 import com.example.stock_management.dto.BillDTO;
+import com.example.stock_management.dto.InvoiceCreationDTO;
 import com.example.stock_management.dto.PaymentStatus;
 import com.example.stock_management.model.Bill;
 import com.example.stock_management.model.BillProduct;
@@ -20,6 +21,8 @@ import java.util.List;
 import java.util.HashMap;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.math.BigDecimal;
 
 @Service
 @RequiredArgsConstructor
@@ -97,6 +100,89 @@ public class BillService {
         }
 
         // Sauvegarder la facture dans la base de données
+        return billRepository.save(bill);
+    }
+
+    /**
+     * Create an invoice with comprehensive invoice data including delivery address, payment terms, discount, etc.
+     */
+    @Transactional
+    public Bill createInvoice(InvoiceCreationDTO invoiceDto) {
+        // Verify customer exists
+        Customer customer = customerRepository.findById(invoiceDto.getCustomerId())
+            .orElseThrow(() -> new RuntimeException("Customer not found with ID: " + invoiceDto.getCustomerId()));
+
+        Bill bill = new Bill();
+        bill.setCustomer(customer);
+        
+        // Convert LocalDate to LocalDateTime
+        bill.setDateBill(invoiceDto.getBillDate()
+            .atStartOfDay(ZoneId.systemDefault())
+            .toLocalDateTime());
+        
+        // Set additional invoice details
+        bill.setDeliveryAddress(invoiceDto.getDeliveryAddress());
+        bill.setPaymentTerms(invoiceDto.getPaymentTerms());
+        bill.setNotes(invoiceDto.getNotes());
+        bill.setDiscount(invoiceDto.getDiscount().doubleValue());
+        bill.setDeposit(invoiceDto.getDeposit().doubleValue());
+
+        // Calculate total from line items
+        double totalHT = 0.0;
+        List<BillProduct> billProducts = new java.util.ArrayList<>();
+
+        for (InvoiceCreationDTO.InvoiceLineItemDTO lineItem : invoiceDto.getProducts()) {
+            Product product = productRepository.findById(lineItem.getProductId())
+                .orElseThrow(() -> new RuntimeException("Product not found with ID: " + lineItem.getProductId()));
+
+            // Calculate line total
+            double lineTotalHT = lineItem.getQuantity() * lineItem.getUnitPrice().doubleValue();
+            
+            // Apply discount to this line if discount is specified
+            if (invoiceDto.getDiscount().compareTo(BigDecimal.ZERO) > 0) {
+                BigDecimal discountPercent = invoiceDto.getDiscount().divide(new BigDecimal(100));
+                BigDecimal lineTotal = new BigDecimal(lineTotalHT);
+                BigDecimal discountedTotal = lineTotal.multiply(BigDecimal.ONE.subtract(discountPercent));
+                lineTotalHT = discountedTotal.doubleValue();
+            }
+
+            totalHT += lineTotalHT;
+
+            BillProduct billProduct = new BillProduct();
+            billProduct.setProduct(product);
+            billProduct.setQuantity(lineItem.getQuantity());
+            billProduct.setTotalProductPrice(lineTotalHT);
+            billProduct.setBill(bill);
+            billProducts.add(billProduct);
+
+            // Update stock
+            productRepository.updateStock(lineItem.getProductId(), lineItem.getQuantity());
+        }
+
+        bill.setBillProducts(billProducts);
+
+        // Calculate totals with VAT (19%)
+        double VAT_RATE = 0.19;
+        double totalWithVAT = totalHT * (1 + VAT_RATE);
+        bill.setTotal(totalWithVAT);
+
+        // Calculate amount due
+        double deposit = invoiceDto.getDeposit().doubleValue();
+        double amountDue = totalWithVAT - deposit;
+        if (amountDue < 0) {
+            amountDue = 0.0;
+        }
+        bill.setAmountDue(amountDue);
+
+        // Set payment status based on amount due
+        if (Double.compare(amountDue, 0.0) == 0) {
+            bill.setPaymentStatus(PaymentStatus.PAID);
+        } else if (deposit > 0.0 && deposit < totalWithVAT) {
+            bill.setPaymentStatus(PaymentStatus.PARTIALLY_PAID);
+        } else {
+            bill.setPaymentStatus(PaymentStatus.UNPAID);
+        }
+
         return billRepository.save(bill);
     }
 

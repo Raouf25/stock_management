@@ -34,7 +34,19 @@ public class Bill {
     @Column(name = "amount_due")
     private double amountDue;// "Net à payer"
 
+    @Column(nullable = true)
+    private Double discount; // Discount percentage (0-100)
+
+    @Column(name = "delivery_address", length = 500)
+    private String deliveryAddress;
+
+    @Column(name = "payment_terms", length = 100)
+    private String paymentTerms;
+
+    @Column(name = "notes", columnDefinition = "TEXT")
+    private String notes;
 
     @Enumerated(EnumType.STRING)
     private PaymentStatus paymentStatus;
 }
+

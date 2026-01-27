@@ -5,6 +5,7 @@ import { PurchasesComponent } from './components/purchases/purchases.component';
 import { SalesComponent } from './components/sales/sales.component';
 import { StockMovementComponent } from './components/stock-movement/stock-movement.component';
 import { InvoicesComponent } from './components/invoices/invoices.component';
+import { InvoiceCreateComponent } from './components/invoices/invoice-create.component';
 
 export const routes: Routes = [
   { path: '', component: DashboardComponent },
@@ -13,5 +14,6 @@ export const routes: Routes = [
   { path: 'sales', component: SalesComponent },
   { path: 'stock-movements', component: StockMovementComponent },
   { path: 'invoices', component: InvoicesComponent },
+  { path: 'invoices/create', component: InvoiceCreateComponent },
   { path: '**', redirectTo: '' }
 ];

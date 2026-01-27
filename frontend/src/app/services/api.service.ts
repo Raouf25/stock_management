@@ -117,6 +117,11 @@ export class ApiService {
     return this.http.post<any>(`${this.apiUrl}/bills`, bill);
   }
 
+  // Method for creating invoices with comprehensive invoice data
+  createInvoice(invoice: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/bills/create`, invoice);
+  }
+
   downloadInvoicePDF(id: number): Observable<Blob> {
     return this.http.get(`${this.apiUrl}/bills/generate/${id}`, {
       responseType: 'blob'
@@ -125,5 +130,10 @@ export class ApiService {
 
   getInvoiceKPIs(): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/bills/kpis`);
+  }
+
+  // Get all invoices (alias for getAllBills)
+  getInvoices(): Observable<any[]> {
+    return this.getAllBills();
   }
 }

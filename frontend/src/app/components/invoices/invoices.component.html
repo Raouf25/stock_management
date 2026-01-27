@@ -10,6 +10,10 @@
         <p class="text-muted mb-0">Suivez et gérez vos factures clients</p>
       </div>
       <div class="d-flex gap-2 flex-wrap">
+        <button class="btn btn-primary" [routerLink]="['/invoices/create']">
+          <i class="bi bi-plus-circle me-1"></i>
+          Nouvelle Facture
+        </button>
         <button class="btn btn-outline-primary" (click)="loadInvoices()" [disabled]="loading">
           <i class="bi bi-arrow-clockwise me-1" [class.spin]="loading"></i>
           Actualiser
