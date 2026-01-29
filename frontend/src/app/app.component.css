@@ -88,6 +88,47 @@
   text-align: center;
 }
 
+/* Styles pour le sous-menu */
+.has-submenu > .nav-link {
+  cursor: pointer;
+}
+
+.submenu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+  background-color: rgba(0, 0, 0, 0.15);
+}
+
+.submenu.show {
+  max-height: 200px;
+}
+
+.submenu li .nav-link {
+  padding: 10px 20px 10px 50px;
+  font-size: 0.9rem;
+  border-left: none;
+  margin: 0;
+  border-radius: 0;
+}
+
+.submenu li .nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  transform: none;
+}
+
+.submenu li .nav-link.active {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-left: 3px solid rgba(255, 255, 255, 0.7);
+}
+
+.submenu li .nav-link i {
+  font-size: 1rem;
+}
+
 .sidebar-footer {
   position: absolute;
   bottom: 0;

@@ -14,6 +14,7 @@ export class AppComponent implements OnInit {
   title = 'Stock Management System';
   sidebarCollapsed = false;
   currentRoute = '';
+  invoiceMenuOpen = false;
 
   constructor(private router: Router) {}
 
@@ -23,13 +24,30 @@ export class AppComponent implements OnInit {
       filter((event): event is NavigationEnd => event instanceof NavigationEnd)
     ).subscribe((event: NavigationEnd) => {
       this.currentRoute = event.urlAfterRedirects;
+      // Auto-ouvrir le menu Facturation si on est sur une route de facture
+      if (this.isInvoiceRouteActive()) {
+        this.invoiceMenuOpen = true;
+      }
     });
   }
 
   toggleSidebar() {
     this.sidebarCollapsed = !this.sidebarCollapsed;
-    // Sauvegarder l'état dans le localStorage
+    // Fermer les sous-menus quand on réduit la sidebar
+    if (this.sidebarCollapsed) {
+      this.invoiceMenuOpen = false;
+    }
     localStorage.setItem('sidebarCollapsed', this.sidebarCollapsed.toString());
+  }
+
+  toggleInvoiceMenu() {
+    if (!this.sidebarCollapsed) {
+      this.invoiceMenuOpen = !this.invoiceMenuOpen;
+    }
+  }
+
+  isInvoiceRouteActive(): boolean {
+    return this.currentRoute.startsWith('/invoices');
   }
 
   getCurrentPageTitle(): string {
@@ -39,14 +57,16 @@ export class AppComponent implements OnInit {
       '/purchases': 'Gestion des Achats',
       '/sales': 'Gestion des Ventes',
       '/stock-movements': 'Mouvements de Stock',
-      '/invoices': 'Gestion des Factures'
+      '/invoices': 'Gestion des Factures',
+      '/invoices/dashboard': 'Dashboard Facturation',
+      '/invoices/create': 'Créer Facture',
+      '/invoices/list': 'Liste des Factures'
     };
 
     return routeTitles[this.currentRoute] || 'Stock Management ERP';
   }
 
   refreshData() {
-    // Émettre un événement de rafraîchissement global
     window.location.reload();
   }
 }

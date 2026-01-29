@@ -42,11 +42,34 @@
           <span *ngIf="!sidebarCollapsed">Mouvements</span>
         </a>
       </li>
-      <li class="nav-item">
-        <a class="nav-link" routerLink="/invoices" routerLinkActive="active">
+      
+      <!-- Facturation avec sous-menu -->
+      <li class="nav-item has-submenu">
+        <a class="nav-link" (click)="toggleInvoiceMenu()" [class.active]="isInvoiceRouteActive()">
           <i class="bi bi-receipt me-2"></i>
-          <span *ngIf="!sidebarCollapsed">Factures</span>
+          <span *ngIf="!sidebarCollapsed">Facturation</span>
+          <i *ngIf="!sidebarCollapsed" class="bi ms-auto" [class.bi-chevron-down]="invoiceMenuOpen" [class.bi-chevron-right]="!invoiceMenuOpen"></i>
         </a>
+        <ul class="submenu" [class.show]="invoiceMenuOpen && !sidebarCollapsed">
+          <li>
+            <a class="nav-link" routerLink="/invoices/dashboard" routerLinkActive="active">
+              <i class="bi bi-graph-up-arrow me-2"></i>
+              Dashboard
+            </a>
+          </li>
+          <li>
+            <a class="nav-link" routerLink="/invoices/create" routerLinkActive="active">
+              <i class="bi bi-plus-circle me-2"></i>
+              Créer Facture
+            </a>
+          </li>
+          <li>
+            <a class="nav-link" routerLink="/invoices/list" routerLinkActive="active">
+              <i class="bi bi-list-ul me-2"></i>
+              Lister Factures
+            </a>
+          </li>
+        </ul>
       </li>
     </ul>
   </nav>

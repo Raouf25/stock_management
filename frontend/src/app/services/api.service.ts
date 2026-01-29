@@ -132,6 +132,10 @@ export class ApiService {
     return this.http.get<any>(`${this.apiUrl}/bills/kpis`);
   }
 
+  deleteBill(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/bills/${id}`);
+  }
+
   // Get all invoices (alias for getAllBills)
   getInvoices(): Observable<any[]> {
     return this.getAllBills();
