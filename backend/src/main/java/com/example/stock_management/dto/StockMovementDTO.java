@@ -12,6 +12,7 @@ import java.time.LocalDate;
 public class StockMovementDTO {
     private Long id;
     private Long productId;
+    private String productName;
     private String productDesignation;
     private Integer quantity;
     private LocalDate date;

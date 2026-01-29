@@ -13,6 +13,7 @@ public class SaleDTO {
     private Long id;
     private LocalDate dateSale;
     private Long productId;
+    private String productName;
     private String productDesignation;
     private Integer quantitySold;
     private Double unitSalePrice;

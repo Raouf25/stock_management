@@ -111,6 +111,7 @@ public class SaleService {
         dto.setId(sale.getId());
         dto.setDateSale(sale.getDateSale());
         dto.setProductId(sale.getProduct().getIdProduct());
+        dto.setProductName(sale.getProduct().getName());
         dto.setProductDesignation(sale.getProduct().getDesignation());
         dto.setQuantitySold(sale.getQuantitySold());
         dto.setUnitSalePrice(sale.getUnitSalePrice());

@@ -7,9 +7,13 @@ import com.example.stock_management.model.Bill;
 import com.example.stock_management.model.BillProduct;
 import com.example.stock_management.model.Customer;
 import com.example.stock_management.model.Product;
+import com.example.stock_management.model.Sale;
+import com.example.stock_management.model.StockMouvement;
 import com.example.stock_management.repository.BillRepository;
 import com.example.stock_management.repository.CustomerRepository;
 import com.example.stock_management.repository.ProductRepository;
+import com.example.stock_management.repository.SaleRepository;
+import com.example.stock_management.repository.StockMouvementRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,6 +37,10 @@ public class BillService {
     private final ProductRepository productRepository;
 
     private final CustomerRepository customerRepository;
+    
+    private final StockMouvementRepository stockMouvementRepository;
+    
+    private final SaleRepository saleRepository;
 
 
     public List<Bill> findAll() {
@@ -66,6 +74,13 @@ public class BillService {
             billProduct.setProduct(product);
             billProduct.setQuantity(billProductDTO.getQuantite());
             productRepository.updateStock(billProductDTO.getIdProduct(), billProductDTO.getQuantite());
+            
+            // Create stock movement for sale
+            createStockMovement(product, billProductDTO.getQuantite(), "VENTE");
+            
+            // Create sale record
+            createSaleRecord(customer, product, billProductDTO.getQuantite(), null);
+            
             billProduct.setTotalProductPrice(billProductDTO.getQuantite() * product.getUnitPriceBought());
 
             bill.setTotal(bill.getTotal() + billProduct.getTotalProductPrice());
@@ -155,6 +170,12 @@ public class BillService {
 
             // Update stock
             productRepository.updateStock(lineItem.getProductId(), lineItem.getQuantity());
+            
+            // Create stock movement for sale
+            createStockMovement(product, lineItem.getQuantity(), "VENTE");
+            
+            // Create sale record
+            createSaleRecord(customer, product, lineItem.getQuantity(), lineItem.getUnitPrice().doubleValue());
         }
 
         bill.setBillProducts(billProducts);
@@ -235,5 +256,40 @@ public class BillService {
         kpis.put("revenueThisMonth", revenueThisMonth);
 
         return kpis;
+    }
+
+    /**
+     * Create a stock movement record for tracking inventory changes
+     */
+    private void createStockMovement(Product product, Integer quantity, String operation) {
+        StockMouvement mouvement = new StockMouvement();
+        mouvement.setProduct(product);
+        mouvement.setQuantity(quantity);
+        mouvement.setDate(LocalDate.now());
+        mouvement.setType(StockMouvement.Type.SORTIE);
+        mouvement.setSource(StockMouvement.Source.VENTE);
+        mouvement.setReference("FACTURE-" + System.currentTimeMillis());
+        
+        stockMouvementRepository.save(mouvement);
+    }
+    
+    /**
+     * Create a sale record for tracking sales
+     */
+    private void createSaleRecord(Customer customer, Product product, Integer quantity, Double unitPrice) {
+        Sale sale = new Sale();
+        sale.setDateSale(LocalDate.now());
+        sale.setCustomer(customer);
+        sale.setProduct(product);
+        sale.setInvoiceNumber("INV-" + System.currentTimeMillis());
+        sale.setQuantitySold(quantity);
+        
+        // Use provided unit price or fallback to product's unit price sold
+        double salePrice = (unitPrice != null) ? unitPrice : product.getUnitPriceSold();
+        sale.setUnitSalePrice(salePrice);
+        sale.setTotalSaleAmount(quantity * salePrice);
+        sale.setComment("Vente automatique via facturation");
+        
+        saleRepository.save(sale);
     }
 }

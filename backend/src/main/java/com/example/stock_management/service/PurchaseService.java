@@ -123,6 +123,7 @@ public class PurchaseService {
         dto.setSupplierId(purchase.getSupplier().getId());
         dto.setSupplierName(purchase.getSupplier().getName());
         dto.setProductId(purchase.getProduct().getIdProduct());
+        dto.setProductName(purchase.getProduct().getName());
         dto.setProductDesignation(purchase.getProduct().getDesignation());
         dto.setInvoiceNumber(purchase.getInvoiceNumber());
         dto.setQuantity(purchase.getQuantity());

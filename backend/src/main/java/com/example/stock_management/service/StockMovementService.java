@@ -87,6 +87,7 @@ public class StockMovementService {
         StockMovementDTO dto = new StockMovementDTO();
         dto.setId(mouvement.getId());
         dto.setProductId(mouvement.getProduct().getIdProduct());
+        dto.setProductName(mouvement.getProduct().getName());
         dto.setProductDesignation(mouvement.getProduct().getDesignation());
         dto.setQuantity(mouvement.getQuantity());
         dto.setDate(mouvement.getDate());

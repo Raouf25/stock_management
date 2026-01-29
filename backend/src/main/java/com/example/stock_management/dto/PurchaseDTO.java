@@ -15,6 +15,7 @@ public class PurchaseDTO {
     private Long supplierId;
     private String supplierName;
     private Long productId;
+    private String productName;
     private String productDesignation;
     private String invoiceNumber;
     private Integer quantity;
