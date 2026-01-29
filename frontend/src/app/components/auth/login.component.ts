@@ -361,6 +361,7 @@ export class LoginComponent {
       },
       error: (err) => {
         this.isLoading = false;
+        console.log(err);
         this.errorMessage = err.error?.message || "Erreur lors de l'inscription";
       }
     });

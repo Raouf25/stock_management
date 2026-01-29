@@ -30,7 +30,7 @@ export interface LoginRequest {
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private readonly API_URL = '/api/auth';
+  private readonly API_URL = this.getApiUrl() + '/auth';
   private readonly TOKEN_KEY = 'auth_token';
   private readonly USER_KEY = 'user_info';
 
@@ -38,6 +38,21 @@ export class AuthService {
   currentUser$ = this.currentUserSubject.asObservable();
 
   constructor(private http: HttpClient, private router: Router) {}
+
+  private getApiUrl(): string {
+    const protocol = window.location.protocol;
+    const hostname = window.location.hostname;
+    
+    // En développement local (localhost ou 127.0.0.1)
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+      return 'http://localhost:8080/api';
+    }
+    
+    // En Codespaces ou environnement de production
+    // Le backend doit être accessible sur le même domaine
+    // Pour Codespaces, on utilise le port 8080 proxié
+    return `${protocol}//${hostname.replace('-4200.', '-8080.')}/api`;
+  }
 
   // === Authentification ===
 
