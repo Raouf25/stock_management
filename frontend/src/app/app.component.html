@@ -5,8 +5,11 @@
 
 <!-- Main app with sidebar -->
 <ng-container *ngIf="!isAuthRoute()">
+  <!-- Overlay pour mobile -->
+  <div class="sidebar-overlay" *ngIf="sidebarOpen" (click)="toggleSidebarOpen()" [@fadeInOut]></div>
+  
   <!-- Sidebar -->
-  <div class="sidebar" [class.collapsed]="sidebarCollapsed">
+  <div class="sidebar" [class.show]="sidebarOpen">
     <div class="sidebar-header">
       <div class="logo">
         <i class="bi bi-boxes me-2"></i>
@@ -20,31 +23,31 @@
     <nav class="sidebar-nav">
       <ul class="nav flex-column">
         <li class="nav-item">
-          <a class="nav-link" routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+          <a class="nav-link" routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="closeSidebarOnMobile()">
             <i class="bi bi-speedometer2 me-2"></i>
             <span *ngIf="!sidebarCollapsed">Dashboard</span>
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" routerLink="/products" routerLinkActive="active">
+          <a class="nav-link" routerLink="/products" routerLinkActive="active" (click)="closeSidebarOnMobile()">
             <i class="bi bi-box-seam me-2"></i>
             <span *ngIf="!sidebarCollapsed">Produits</span>
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" routerLink="/purchases" routerLinkActive="active">
+          <a class="nav-link" routerLink="/purchases" routerLinkActive="active" (click)="closeSidebarOnMobile()">
             <i class="bi bi-cart-plus me-2"></i>
             <span *ngIf="!sidebarCollapsed">Achats</span>
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" routerLink="/sales" routerLinkActive="active">
+          <a class="nav-link" routerLink="/sales" routerLinkActive="active" (click)="closeSidebarOnMobile()">
             <i class="bi bi-graph-up me-2"></i>
             <span *ngIf="!sidebarCollapsed">Ventes</span>
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" routerLink="/stock-movements" routerLinkActive="active">
+          <a class="nav-link" routerLink="/stock-movements" routerLinkActive="active" (click)="closeSidebarOnMobile()">
             <i class="bi bi-arrow-left-right me-2"></i>
             <span *ngIf="!sidebarCollapsed">Mouvements</span>
           </a>
@@ -59,19 +62,19 @@
           </a>
           <ul class="submenu" [class.show]="invoiceMenuOpen && !sidebarCollapsed">
             <li>
-              <a class="nav-link" routerLink="/invoices/dashboard" routerLinkActive="active">
+              <a class="nav-link" routerLink="/invoices/dashboard" routerLinkActive="active" (click)="closeSidebarOnMobile()">
                 <i class="bi bi-graph-up-arrow me-2"></i>
                 Dashboard
               </a>
             </li>
             <li>
-              <a class="nav-link" routerLink="/invoices/create" routerLinkActive="active">
+              <a class="nav-link" routerLink="/invoices/create" routerLinkActive="active" (click)="closeSidebarOnMobile()">
                 <i class="bi bi-plus-circle me-2"></i>
                 Créer Facture
               </a>
             </li>
             <li>
-              <a class="nav-link" routerLink="/invoices/list" routerLinkActive="active">
+              <a class="nav-link" routerLink="/invoices/list" routerLinkActive="active" (click)="closeSidebarOnMobile()">
                 <i class="bi bi-list-ul me-2"></i>
                 Lister Factures
               </a>
@@ -99,6 +102,10 @@
 
   <!-- Main Content -->
   <div class="main-content" [class.sidebar-collapsed]="sidebarCollapsed">
+    <!-- Mobile Hamburger Menu -->
+    <button class="mobile-hamburger" (click)="toggleSidebarOpen()">
+      <i class="bi bi-list"></i>
+    </button>
 
     <!-- Page Content -->
     <div class="page-content">

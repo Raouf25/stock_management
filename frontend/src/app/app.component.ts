@@ -14,6 +14,7 @@ import { AuthService } from './services/auth.service';
 export class AppComponent implements OnInit {
   title = 'Stock Management System';
   sidebarCollapsed = false;
+  sidebarOpen = false;
   currentRoute = '';
   invoiceMenuOpen = false;
 
@@ -32,6 +33,8 @@ export class AppComponent implements OnInit {
       if (this.isInvoiceRouteActive()) {
         this.invoiceMenuOpen = true;
       }
+      // Fermer la sidebar mobile après navigation
+      this.closeSidebarOnMobile();
     });
   }
 
@@ -42,6 +45,16 @@ export class AppComponent implements OnInit {
       this.invoiceMenuOpen = false;
     }
     localStorage.setItem('sidebarCollapsed', this.sidebarCollapsed.toString());
+  }
+
+  toggleSidebarOpen() {
+    this.sidebarOpen = !this.sidebarOpen;
+  }
+
+  closeSidebarOnMobile() {
+    if (window.innerWidth <= 768) {
+      this.sidebarOpen = false;
+    }
   }
 
   toggleInvoiceMenu() {

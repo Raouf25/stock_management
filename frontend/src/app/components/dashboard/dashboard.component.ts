@@ -58,7 +58,10 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     });
 
     this.apiService.getStockTotalValue().subscribe({
-      next: (data) => this.totalValue = data
+      next: (data) => {
+        // L'API retourne un objet avec une propriété totalValue
+        this.totalValue = typeof data === 'number' ? data : (data?.totalValue || 0);
+      }
     });
 
     this.apiService.getStockAlerts(20).subscribe({
@@ -89,7 +92,12 @@ export class DashboardComponent implements OnInit, AfterViewInit {
 
     this.apiService.getInvoiceKPIs().subscribe({
       next: (data) => {
-        this.invoiceKPIs = data;
+        // S'assurer que les valeurs numériques sont des nombres
+        this.invoiceKPIs = {
+          totalInvoicedAmount: typeof data?.totalInvoicedAmount === 'number' ? data.totalInvoicedAmount : 0,
+          totalAmountDue: typeof data?.totalAmountDue === 'number' ? data.totalAmountDue : 0,
+          ...data
+        };
       }
     });
   }
@@ -101,11 +109,19 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   }
 
   getTotalSales(): number {
-    return this.sales.reduce((sum, sale) => sum + sale.totalSaleAmount, 0);
+    if (!Array.isArray(this.sales)) return 0;
+    return this.sales.reduce((sum, sale) => {
+      const amount = sale?.totalSaleAmount || 0;
+      return sum + (typeof amount === 'number' ? amount : 0);
+    }, 0);
   }
 
   getTotalPurchases(): number {
-    return this.purchases.reduce((sum, purchase) => sum + purchase.totalAmountTTC, 0);
+    if (!Array.isArray(this.purchases)) return 0;
+    return this.purchases.reduce((sum, purchase) => {
+      const amount = purchase?.totalAmountTTC || 0;
+      return sum + (typeof amount === 'number' ? amount : 0);
+    }, 0);
   }
 
   createCharts(): void {
