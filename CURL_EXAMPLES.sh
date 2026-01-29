@@ -1,20 +1,20 @@
 #!/bin/bash
 
-# Stock Management API - Exemples de Requêtes cURL
+# Stock Management API - CURL Request Examples
 # 
 # Usage: source examples.sh
-# Ou exécuter directement : bash examples.sh
+# Or run directly: bash examples.sh
 
 BASE_URL="http://localhost:8080/api"
 
-# Couleurs
+# Colors
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
 
 echo -e "${YELLOW}===========================================\n"
-echo "Stock Management API - Exemples de Requêtes\n"
+echo "Stock Management API - Request Examples\n"
 echo "===========================================${NC}\n"
 
 # ==========================================

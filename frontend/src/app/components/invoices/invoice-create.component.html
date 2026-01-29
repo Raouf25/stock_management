@@ -206,14 +206,15 @@
         <!-- Line Items Table -->
         <div *ngIf="lineItems.length > 0" class="table-responsive">
           <table class="table table-hover">
-            <thead class="table-light">
+            <thead class="table-dark">
               <tr>
-                <th>Produit</th>
-                <th>Référence</th>
-                <th class="text-end">Prix Unitaire</th>
-                <th class="text-center">Quantité</th>
-                <th class="text-end">Montant</th>
-                <th class="text-center" style="width: 80px;">Actions</th>
+                <th class="fw-bold">Produit</th>
+                <th class="fw-bold">Référence</th>
+                <th class="text-end fw-bold">Prix Unitaire</th>
+                <th class="text-center fw-bold">Quantité</th>
+                <th class="text-center fw-bold">Remise (%)</th>
+                <th class="text-end fw-bold">Montant</th>
+                <th class="text-center fw-bold" style="width: 80px;">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -230,6 +231,18 @@
                     (input)="updateLineItemQuantity(i, $any($event.target).value)"
                     min="1"
                     style="max-width: 100px; margin: 0 auto;">
+                </td>
+                <td class="align-middle">
+                  <input 
+                    type="number" 
+                    class="form-control form-control-sm text-center"
+                    [ngModel]="item.discount"
+                    (ngModelChange)="updateLineItemDiscount(i, $event)"
+                    (input)="updateLineItemDiscount(i, $any($event.target).value)"
+                    min="0"
+                    max="100"
+                    step="0.1"
+                    style="max-width: 80px; margin: 0 auto;">
                 </td>
                 <td class="align-middle text-end fw-bold">{{ item.totalPrice | number:'1.2-2' }} DNT</td>
                 <td class="align-middle text-center">
@@ -255,33 +268,16 @@
 
     <!-- Summary Section -->
     <div class="row g-3 mb-4">
-      <!-- Left Column: Discount & Deposit -->
+      <!-- Left Column: Deposit -->
       <div class="col-md-6">
         <div class="card">
           <div class="card-header bg-light">
             <h6 class="mb-0">
-              <i class="bi bi-percent me-2"></i>
-              Réductions et Acomptes
+              <i class="bi bi-cash-coin me-2"></i>
+              Acompte
             </h6>
           </div>
           <div class="card-body">
-            <div class="mb-3">
-              <label class="form-label fw-bold">
-                <i class="bi bi-percent me-1"></i>
-                Remise (%)
-              </label>
-              <div class="input-group">
-                <input 
-                  type="number" 
-                  class="form-control form-control-modern"
-                  formControlName="discount"
-                  (change)="onDiscountChange()"
-                  (input)="onDiscountChange()"
-                  min="0"
-                  max="100">
-                <span class="input-group-text">%</span>
-              </div>
-            </div>
             <div>
               <label class="form-label fw-bold">
                 <i class="bi bi-cash-coin me-1"></i>
@@ -292,6 +288,7 @@
                 class="form-control form-control-modern"
                 formControlName="deposit"
                 (change)="onDepositChange()"
+                (input)="onDepositChange()"
                 min="0"
                 step="0.01">
             </div>
@@ -312,14 +309,6 @@
             <div class="summary-row mb-2">
               <span class="summary-label">Total HT :</span>
               <span class="summary-value">{{ totalHT | number:'1.2-2' }} DNT</span>
-            </div>
-            <div class="summary-row mb-2" *ngIf="discountAmount > 0">
-              <span class="summary-label">Remise ({{ invoiceForm.get('discount')?.value }}%) :</span>
-              <span class="summary-value text-warning">-{{ discountAmount | number:'1.2-2' }} DNT</span>
-            </div>
-            <div class="summary-row mb-2" *ngIf="discountAmount > 0">
-              <span class="summary-label">Total après remise :</span>
-              <span class="summary-value">{{ totalAfterDiscount | number:'1.2-2' }} DNT</span>
             </div>
             <div class="summary-row mb-2">
               <span class="summary-label">TVA (19%) :</span>

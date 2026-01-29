@@ -63,5 +63,9 @@ public class InvoiceCreationDTO {
         @NotNull(message = "Unit price is required")
         @DecimalMin(value = "0.0", inclusive = false, message = "Unit price must be greater than 0")
         private BigDecimal unitPrice;
+
+        @Min(value = 0, message = "Discount cannot be negative")
+        @Max(value = 100, message = "Discount cannot exceed 100%")
+        private BigDecimal discount = BigDecimal.ZERO;
     }
 }

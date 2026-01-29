@@ -1,6 +1,22 @@
-# 🚀 Démarrage du Projet Stock Management
+# 🚀 Stock Management Project Startup Guide
 
-## ✅ Étapes pour Démarrer
+## 🎯 Latest Updates (January 29, 2026)
+
+### ✨ New Features
+- ✅ **Per-item discounts**: Individual discount percentage (0-100%)
+- ✅ **Database storage**: New `discount_percentage` field in `bill_product`
+- ✅ **PDF display**: "Discount (%)" column in generated invoices
+- ✅ **User interface**: Discount input fields in the form
+- ✅ **Validation**: Client-side and server-side controls
+
+### 🔄 Database Migration
+- **Automatic** via Hibernate DDL (`ddl-auto=create`)
+- **Compatible** with existing data
+- **New schema**: `discount_percentage` column added
+
+---
+
+## ✅ Steps to Start
 
 ### 1️⃣ Démarrer PostgreSQL
 

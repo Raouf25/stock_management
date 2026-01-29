@@ -135,16 +135,13 @@ public class BillService {
             Product product = productRepository.findById(lineItem.getProductId())
                 .orElseThrow(() -> new RuntimeException("Product not found with ID: " + lineItem.getProductId()));
 
-            // Calculate line total
-            double lineTotalHT = lineItem.getQuantity() * lineItem.getUnitPrice().doubleValue();
+            // Calculate line total before discount
+            double subtotal = lineItem.getQuantity() * lineItem.getUnitPrice().doubleValue();
             
-            // Apply discount to this line if discount is specified
-            if (invoiceDto.getDiscount().compareTo(BigDecimal.ZERO) > 0) {
-                BigDecimal discountPercent = invoiceDto.getDiscount().divide(new BigDecimal(100));
-                BigDecimal lineTotal = new BigDecimal(lineTotalHT);
-                BigDecimal discountedTotal = lineTotal.multiply(BigDecimal.ONE.subtract(discountPercent));
-                lineTotalHT = discountedTotal.doubleValue();
-            }
+            // Apply per-item discount if specified
+            double lineDiscount = lineItem.getDiscount() != null ? lineItem.getDiscount().doubleValue() : 0.0;
+            double discountAmount = (subtotal * lineDiscount) / 100.0;
+            double lineTotalHT = subtotal - discountAmount;
 
             totalHT += lineTotalHT;
 
@@ -152,6 +149,7 @@ public class BillService {
             billProduct.setProduct(product);
             billProduct.setQuantity(lineItem.getQuantity());
             billProduct.setTotalProductPrice(lineTotalHT);
+            billProduct.setDiscountPercentage(lineDiscount); // Stocker la remise par article
             billProduct.setBill(bill);
             billProducts.add(billProduct);
 

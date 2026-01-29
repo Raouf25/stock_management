@@ -26,6 +26,7 @@ interface InvoiceLineItem {
   reference: string;
   unitPrice: number;
   quantity: number;
+  discount: number;
   totalPrice: number;
 }
 
@@ -51,8 +52,6 @@ export class InvoiceCreateComponent implements OnInit {
   
   // Calculation properties
   totalHT: number = 0;
-  discountAmount: number = 0;
-  totalAfterDiscount: number = 0;
   totalVAT: number = 0;
   totalTTC: number = 0;
   deposit: number = 0;
@@ -77,7 +76,6 @@ export class InvoiceCreateComponent implements OnInit {
       paymentTerms: ['30 jours', [Validators.required]],
       deliveryAddress: ['', [Validators.required]],
       notes: [''],
-      discount: [0, [Validators.min(0), Validators.max(100)]],
       deposit: [0, [Validators.min(0)]]
     });
   }
@@ -141,7 +139,9 @@ export class InvoiceCreateComponent implements OnInit {
     const existingItem = this.lineItems.find(item => item.productId === product.productId);
     if (existingItem) {
       existingItem.quantity += 1;
-      existingItem.totalPrice = existingItem.quantity * existingItem.unitPrice;
+      const subtotal = existingItem.quantity * existingItem.unitPrice;
+      const discountAmount = (subtotal * existingItem.discount) / 100;
+      existingItem.totalPrice = subtotal - discountAmount;
     } else {
       this.lineItems.push({
         productId: product.productId,
@@ -149,6 +149,7 @@ export class InvoiceCreateComponent implements OnInit {
         reference: product.reference,
         unitPrice: product.unitPrice,
         quantity: 1,
+        discount: 0,
         totalPrice: product.unitPrice
       });
     }
@@ -158,13 +159,25 @@ export class InvoiceCreateComponent implements OnInit {
   }
 
   updateLineItemQuantity(index: number, quantity: number) {
-    if (quantity <= 0) {
+    const quantityValue = isNaN(quantity) ? 1 : Math.max(1, Math.floor(quantity));
+    if (quantityValue <= 0) {
       this.removeLineItem(index);
     } else {
-      this.lineItems[index].quantity = quantity;
-      this.lineItems[index].totalPrice = quantity * this.lineItems[index].unitPrice;
+      this.lineItems[index].quantity = quantityValue;
+      const subtotal = quantityValue * this.lineItems[index].unitPrice;
+      const discountAmount = (subtotal * (this.lineItems[index].discount || 0)) / 100;
+      this.lineItems[index].totalPrice = subtotal - discountAmount;
       this.calculateTotals();
     }
+  }
+
+  updateLineItemDiscount(index: number, discount: number) {
+    const discountValue = isNaN(discount) ? 0 : Math.max(0, Math.min(100, discount));
+    this.lineItems[index].discount = discountValue;
+    const subtotal = this.lineItems[index].quantity * this.lineItems[index].unitPrice;
+    const discountAmount = (subtotal * discountValue) / 100;
+    this.lineItems[index].totalPrice = subtotal - discountAmount;
+    this.calculateTotals();
   }
 
   removeLineItem(index: number) {
@@ -173,30 +186,21 @@ export class InvoiceCreateComponent implements OnInit {
   }
 
   calculateTotals() {
-    // Calculate total HT (before tax)
+    // Calculate total HT (already includes per-item discounts)
     this.totalHT = this.lineItems.reduce((sum, item) => sum + item.totalPrice, 0);
-
-    // Apply discount if any
-    const discount = this.invoiceForm.get('discount')?.value || 0;
-    this.discountAmount = (this.totalHT * discount) / 100;
-    this.totalAfterDiscount = this.totalHT - this.discountAmount;
 
     // Calculate VAT (19%)
     const VAT_RATE = 0.19;
-    this.totalVAT = this.totalAfterDiscount * VAT_RATE;
+    this.totalVAT = this.totalHT * VAT_RATE;
 
     // Calculate total TTC (total with tax)
-    this.totalTTC = this.totalAfterDiscount + this.totalVAT;
+    this.totalTTC = this.totalHT + this.totalVAT;
 
     // Get deposit
     this.deposit = this.invoiceForm.get('deposit')?.value || 0;
 
     // Calculate net amount due
     this.netAmountDue = this.totalTTC - this.deposit;
-  }
-
-  onDiscountChange() {
-    this.calculateTotals();
   }
 
   onDepositChange() {
@@ -219,7 +223,6 @@ export class InvoiceCreateComponent implements OnInit {
     this.success = '';
 
     const customerId = this.invoiceForm.get('customerId')?.value;
-    const discount = this.invoiceForm.get('discount')?.value || 0;
     const deposit = this.invoiceForm.get('deposit')?.value || 0;
 
     const invoiceData = {
@@ -228,12 +231,12 @@ export class InvoiceCreateComponent implements OnInit {
       paymentTerms: this.invoiceForm.get('paymentTerms')?.value,
       deliveryAddress: this.invoiceForm.get('deliveryAddress')?.value,
       notes: this.invoiceForm.get('notes')?.value,
-      discount: Number(discount) || 0,
       deposit: Number(deposit) || 0,
       products: this.lineItems.map(item => ({
         productId: item.productId,
         quantity: item.quantity,
-        unitPrice: item.unitPrice
+        unitPrice: item.unitPrice,
+        discount: item.discount || 0
       }))
     };
 

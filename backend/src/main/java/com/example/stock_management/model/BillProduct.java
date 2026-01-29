@@ -21,5 +21,8 @@ public class BillProduct {
 
     private Integer quantity;
     private Double totalProductPrice;
+    
+    @Column(name = "discount_percentage")
+    private Double discountPercentage; // Remise en pourcentage (0-100)
 
 }

@@ -114,6 +114,12 @@ public class BillController {
                     double expectedGross = unitPrice * qty;
                     double discount = expectedGross - totalPrice;
                     if (discount < 0) discount = 0.0;
+                    
+                    // Use stored discount percentage if available, otherwise calculate it
+                    double discountPercentage = bp.getDiscountPercentage() != null ? bp.getDiscountPercentage() : 0.0;
+                    if (discountPercentage == 0.0 && expectedGross > 0) {
+                        discountPercentage = (discount / expectedGross) * 100;
+                    }
 
                     // totalPrice is considered the post-discount line HT (as stored in DB)
                     double priceAfterDiscount = totalPrice;
@@ -128,6 +134,7 @@ public class BillController {
                     m.put("totalPriceFormatted", numberUtils.formatDecimal(totalPrice, 3, 3));
                     m.put("discountValue", discount);
                     m.put("discountFormatted", numberUtils.formatDecimal(discount, 3, 3));
+                    m.put("discountPercentage", numberUtils.formatDecimal(discountPercentage, 1, 1));
                     m.put("vatRate", "19%");
                     m.put("vatAmountFormatted", numberUtils.formatDecimal(vatAmount, 3, 3));
                     m.put("totalWithVatFormatted", numberUtils.formatDecimal(totalWithVat, 3, 3));

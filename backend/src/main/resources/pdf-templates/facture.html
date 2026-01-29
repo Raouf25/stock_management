@@ -469,30 +469,22 @@
 <table class="products">
     <thead>
         <tr>
-            <th>N°</th>
+            <th>Produit</th>
             <th>Référence</th>
-            <th>Désignation</th>
+            <th class="align-right">Prix Unitaire</th>
             <th class="align-right">Quantité</th>
-            <th class="align-right">Prix Unitaire HT</th>
-            <th class="align-right">Remise</th>
-            <th class="align-right">Montant HT</th>
-            <th class="align-right">Taux TVA</th>
-            <th class="align-right">Montant TVA</th>
-            <th class="align-right">Montant TTC</th>
+            <th class="align-right">Remise (%)</th>
+            <th class="align-right">Montant</th>
         </tr>
     </thead>
     <tbody>
         <tr th:each="product, iterStat : ${products}">
-            <td th:text="${iterStat.count}">1</td>
-            <td class="ref-column" th:text="${product.productRef}">REF</td>
             <td th:text="${product.productName}">Nom</td>
-            <td class="align-right monospace" th:text="${product.quantity}">0</td>
+            <td class="ref-column" th:text="${product.productRef}">REF</td>
             <td class="align-right monospace" th:text="${product.unitPriceFormatted}">0.000 DNT</td>
-            <td class="align-right monospace" th:text="${product.discountFormatted}">0.000 DNT</td>
+            <td class="align-right monospace" th:text="${product.quantity}">0</td>
+            <td class="align-right monospace" th:text="${product.discountPercentage}">0%</td>
             <td class="align-right monospace" th:text="${product.totalPriceFormatted}">0.000 DNT</td>
-            <td class="align-right" th:text="${product.vatRate}">19%</td>
-            <td class="align-right monospace" th:text="${product.vatAmountFormatted}">0.000 DNT</td>
-            <td class="align-right monospace" th:text="${product.totalWithVatFormatted}">0.000 DNT</td>
         </tr>
     </tbody>
 </table>
