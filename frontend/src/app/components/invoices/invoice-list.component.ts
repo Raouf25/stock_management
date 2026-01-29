@@ -130,8 +130,8 @@ import { ApiService } from '../../services/api.service';
                       <button class="btn btn-outline-success" title="Télécharger PDF" (click)="downloadPDF(invoice.billId)">
                         <i class="bi bi-download"></i>
                       </button>
-                      <button class="btn btn-outline-danger" title="Supprimer" (click)="deleteInvoice(invoice.billId)">
-                        <i class="bi bi-trash"></i>
+                      <button class="btn btn-outline-info" title="Envoyer par Email" (click)="sendInvoiceByEmail(invoice)" [disabled]="sendingEmail === invoice.billId">
+                        <i class="bi" [ngClass]="sendingEmail === invoice.billId ? 'bi-hourglass-split' : 'bi-envelope'"></i>
                       </button>
                     </div>
                   </td>
@@ -343,6 +343,10 @@ export class InvoiceListComponent implements OnInit {
   filterClient = '';
   filterDateFrom = '';
   filterDateTo = '';
+  
+  sendingEmail: number | null = null;
+  emailSuccess = '';
+  emailError = '';
 
   constructor(private apiService: ApiService) {}
 
@@ -431,14 +435,29 @@ export class InvoiceListComponent implements OnInit {
     });
   }
 
-  deleteInvoice(invoiceId: number): void {
-    if (confirm('Êtes-vous sûr de vouloir supprimer cette facture ?')) {
-      this.apiService.deleteBill(invoiceId).subscribe({
+  sendInvoiceByEmail(invoice: any): void {
+    if (!invoice.clientEmail) {
+      alert('❌ Ce client n\'a pas d\'adresse email enregistrée.');
+      return;
+    }
+    
+    if (confirm(`Envoyer la facture #${invoice.billId} par email à ${invoice.clientEmail} ?`)) {
+      this.sendingEmail = invoice.billId;
+      this.emailError = '';
+      this.emailSuccess = '';
+      
+      this.apiService.sendInvoiceByEmail(invoice.billId).subscribe({
         next: () => {
-          this.loadInvoices();
+          this.sendingEmail = null;
+          this.emailSuccess = `✅ Facture #${invoice.billId} envoyée avec succès à ${invoice.clientEmail}`;
+          alert(this.emailSuccess);
+          setTimeout(() => this.emailSuccess = '', 5000);
         },
         error: (error: any) => {
-          console.error('Erreur lors de la suppression:', error);
+          this.sendingEmail = null;
+          this.emailError = `❌ Erreur lors de l'envoi de la facture: ${error.message || 'Erreur inconnue'}`;
+          alert(this.emailError);
+          console.error('Erreur lors de l\'envoi par email:', error);
         }
       });
     }

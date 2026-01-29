@@ -136,6 +136,11 @@ export class ApiService {
     return this.http.delete<void>(`${this.apiUrl}/bills/${id}`);
   }
 
+  // Send invoice by email to client
+  sendInvoiceByEmail(id: number): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/bills/${id}/send-email`, {});
+  }
+
   // Get all invoices (alias for getAllBills)
   getInvoices(): Observable<any[]> {
     return this.getAllBills();

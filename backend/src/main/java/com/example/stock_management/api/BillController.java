@@ -5,6 +5,7 @@ import com.example.stock_management.dto.BillMapper;
 import com.example.stock_management.dto.CreatedBillDTO;
 import com.example.stock_management.dto.InvoiceCreationDTO;
 import com.example.stock_management.service.BillService;
+import com.example.stock_management.service.EmailService;
 import com.example.stock_management.service.PdfGenerateService;
 import com.example.stock_management.service.SupplierService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -25,6 +26,7 @@ import com.example.stock_management.util.NumberUtils;
 public class BillController {
 
     private final PdfGenerateService pdfGenerateService;
+    private final EmailService emailService;
 
     private final SupplierService supplierService;
     private final BillService billService;
@@ -74,6 +76,239 @@ public class BillController {
     @Operation(summary = "Obtenir les KPIs des factures")
     public Map<String, Object> getInvoiceKPIs() {
         return billService.getInvoiceKPIs();
+    }
+
+    @PostMapping("/{id}/send-email")
+    @Operation(summary = "Envoyer la facture par email au client")
+    public ResponseEntity<?> sendInvoiceByEmail(@PathVariable Long id) {
+        try {
+            // Récupérer la facture
+            var billOpt = billService.findById(id);
+            if (billOpt.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+            
+            var bill = billOpt.get();
+            
+            // Vérifier que le client a un email
+            if (bill.getCustomer() == null || bill.getCustomer().getEmail() == null || bill.getCustomer().getEmail().isBlank()) {
+                return ResponseEntity.badRequest()
+                    .body(Map.of("error", "Le client n'a pas d'adresse email configurée"));
+            }
+
+            // Préparer les données pour le PDF (même logique que generatePdf)
+            Map<String, Object> data = preparePdfData(id);
+
+            // Générer le PDF en bytes
+            byte[] pdfBytes = pdfGenerateService.generatePdfToBytes(data);
+
+            // Préparer le contenu de l'email
+            String billNumber = "FAC-" + String.format("%04d", bill.getIdBill());
+            String customerName = bill.getCustomer().getName();
+            String customerEmail = bill.getCustomer().getEmail();
+
+            String subject = "Votre facture " + billNumber;
+            String body = buildEmailBody(billNumber, customerName, data);
+
+            // Envoyer l'email
+            emailService.sendEmailWithPdfAttachment(
+                customerEmail,
+                subject,
+                body,
+                pdfBytes,
+                billNumber + ".pdf"
+            );
+
+            return ResponseEntity.ok(Map.of(
+                "message", "Facture envoyée avec succès à " + customerEmail,
+                "billNumber", billNumber,
+                "customerEmail", customerEmail
+            ));
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "Erreur lors de l'envoi de l'email: " + e.getMessage()));
+        }
+    }
+
+    private String buildEmailBody(String billNumber, String customerName, Map<String, Object> data) {
+        return """
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <style>
+                    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                    .header { background-color: #4361ee; color: white; padding: 20px; text-align: center; }
+                    .content { padding: 20px; }
+                    .footer { background-color: #f8f9fa; padding: 15px; text-align: center; font-size: 12px; color: #666; }
+                    .amount { font-size: 18px; font-weight: bold; color: #4361ee; }
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <h1>📄 Facture %s</h1>
+                </div>
+                <div class="content">
+                    <p>Bonjour <strong>%s</strong>,</p>
+                    <p>Veuillez trouver ci-joint votre facture <strong>%s</strong>.</p>
+                    <p class="amount">Montant Total TTC: %s TND</p>
+                    <p>Merci pour votre confiance.</p>
+                    <p>Cordialement,<br>L'équipe de facturation</p>
+                </div>
+                <div class="footer">
+                    <p>Ce message a été généré automatiquement. Merci de ne pas y répondre.</p>
+                </div>
+            </body>
+            </html>
+            """.formatted(
+                billNumber,
+                customerName,
+                billNumber,
+                data.getOrDefault("totalTTCFormatted", "N/A")
+            );
+    }
+
+    private Map<String, Object> preparePdfData(Long id) {
+        Map<String, Object> data = new HashMap<>();
+        
+        // Ajouter le fournisseur (supplier)
+        supplierService.findById(3L).ifPresent(supplier -> data.put("supplier", supplier));
+        
+        // Ajouter les données de la facture
+        billService.findById(id).ifPresent(bill -> {
+            data.put("customer", bill.getCustomer());
+
+            // transform products to a list of maps with preformatted values
+            java.util.List<java.util.Map<String, Object>> productsList = new java.util.ArrayList<>();
+            if (bill.getBillProducts() != null) {
+                for (var bp : bill.getBillProducts()) {
+                    java.util.Map<String, Object> m = new java.util.HashMap<>();
+                    String productName = bp.getProduct() != null ? bp.getProduct().getName() : "";
+                    String productRef = bp.getProduct() != null ? String.valueOf(bp.getProduct().getReference()) : "";
+                    int qty = bp.getQuantity() != null ? bp.getQuantity() : 0;
+                    double totalPrice = bp.getTotalProductPrice() != null ? bp.getTotalProductPrice() : 0.0;
+                    double unitPrice = 0.0;
+                    if (totalPrice > 0.0 && qty > 0) {
+                        unitPrice = totalPrice / qty;
+                    } else if (bp.getProduct() != null && bp.getProduct().getUnitPriceSold() != null) {
+                        unitPrice = bp.getProduct().getUnitPriceSold();
+                    }
+                    double vatRate = 0.19;
+                    double expectedGross = unitPrice * qty;
+                    double discount = expectedGross - totalPrice;
+                    if (discount < 0) discount = 0.0;
+                    double discountPercentage = bp.getDiscountPercentage() != null ? bp.getDiscountPercentage() : 0.0;
+                    if (discountPercentage == 0.0 && expectedGross > 0) {
+                        discountPercentage = (discount / expectedGross) * 100;
+                    }
+                    double priceAfterDiscount = totalPrice;
+                    double vatAmount = priceAfterDiscount * vatRate;
+                    double totalWithVat = priceAfterDiscount + vatAmount;
+                    
+                    m.put("productRef", productRef);
+                    m.put("productName", productName);
+                    m.put("quantity", qty);
+                    m.put("unitPriceValue", unitPrice);
+                    m.put("unitPriceFormatted", numberUtils.formatDecimal(unitPrice, 3, 3));
+                    m.put("totalPriceFormatted", numberUtils.formatDecimal(totalPrice, 3, 3));
+                    m.put("discountValue", discount);
+                    m.put("discountFormatted", numberUtils.formatDecimal(discount, 3, 3));
+                    m.put("discountPercentage", numberUtils.formatDecimal(discountPercentage, 1, 1));
+                    m.put("vatRate", "19%");
+                    m.put("vatAmountFormatted", numberUtils.formatDecimal(vatAmount, 3, 3));
+                    m.put("totalWithVatFormatted", numberUtils.formatDecimal(totalWithVat, 3, 3));
+                    m.put("vatAmountValue", vatAmount);
+                    m.put("totalPriceValue", priceAfterDiscount);
+                    productsList.add(m);
+                }
+            }
+            data.put("products", productsList);
+
+            double sumTotalHT = productsList.stream()
+                .mapToDouble(p -> p.getOrDefault("totalPriceValue", 0.0) instanceof Number ? ((Number)p.getOrDefault("totalPriceValue", 0.0)).doubleValue() : 0.0)
+                .sum();
+            double sumVat = productsList.stream()
+                .mapToDouble(p -> p.getOrDefault("vatAmountValue", 0.0) instanceof Number ? ((Number)p.getOrDefault("vatAmountValue", 0.0)).doubleValue() : 0.0)
+                .sum();
+            double sumGrossHT = productsList.stream()
+                .mapToDouble(p -> {
+                    Number up = (Number)p.getOrDefault("unitPriceValue", 0.0);
+                    Number q = (Number)p.getOrDefault("quantity", 0);
+                    return up.doubleValue() * q.doubleValue();
+                })
+                .sum();
+            double sumDiscount = productsList.stream()
+                .mapToDouble(p -> p.getOrDefault("discountValue", 0.0) instanceof Number ? ((Number)p.getOrDefault("discountValue", 0.0)).doubleValue() : 0.0)
+                .sum();
+
+            double totalHT = sumTotalHT;
+            double tva = sumVat;
+            double total = totalHT + tva;
+
+            data.put("total", total);
+            data.put("totalHT", totalHT);
+            data.put("tva", tva);
+            data.put("totalGrossHT", sumGrossHT);
+            data.put("totalDiscount", sumDiscount);
+            
+            double deposit = bill.getDeposit() != null ? bill.getDeposit() : 0.0;
+            double amountDue = total - deposit;
+            data.put("deposit", deposit);
+            data.put("amountDue", amountDue);
+
+            data.put("totalHTFormatted", numberUtils.formatDecimal(totalHT, 3, 3));
+            data.put("tvaFormatted", numberUtils.formatDecimal(tva, 3, 3));
+            data.put("totalTTCFormatted", numberUtils.formatDecimal(total, 3, 3));
+            data.put("totalGrossHTFormatted", numberUtils.formatDecimal(sumGrossHT, 3, 3));
+            data.put("totalDiscountFormatted", numberUtils.formatDecimal(sumDiscount, 3, 3));
+            data.put("depositFormatted", numberUtils.formatDecimal(deposit, 3, 3));
+            data.put("amountDueFormatted", numberUtils.formatDecimal(amountDue, 3, 3));
+
+            data.put("billNumber", "FAC-" + String.format("%04d", bill.getIdBill()));
+            java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            data.put("billDate", bill.getDateBill().format(formatter));
+        });
+
+        // Ajouter les données de l'entreprise
+        Map<String, String> company = new HashMap<>();
+        company.put("name", "Nom de l'entreprise");
+        company.put("address", "Adresse de l'entreprise");
+        company.put("phone", "(+216) XX XXX XXX");
+        company.put("taxId", "123456789");
+        data.put("company", company);
+
+        data.put("companyName", company.get("name"));
+        data.put("companyAddress", company.get("address"));
+        data.put("companyPhone", company.get("phone"));
+        data.put("companyTaxId", company.get("taxId"));
+        data.put("supplierRc", company.getOrDefault("rc", ""));
+        data.put("supplierRib", company.getOrDefault("rib", ""));
+        data.put("supplierIban", company.getOrDefault("iban", ""));
+
+        // Ajouter les données du client
+        billService.findById(id).ifPresent(bill -> {
+            if (bill.getCustomer() != null) {
+                Map<String, String> client = new HashMap<>();
+                client.put("name", bill.getCustomer().getName());
+                client.put("address", bill.getCustomer().getAddress());
+                client.put("taxId", bill.getCustomer().getTvaCode() != null ? bill.getCustomer().getTvaCode() : "N/A");
+                data.put("client", client);
+
+                data.put("customerName", bill.getCustomer().getName());
+                data.put("customerAddress", bill.getCustomer().getAddress());
+                data.put("customerPhone", bill.getCustomer().getPhone() != null ? bill.getCustomer().getPhone() : "");
+                data.put("customerTva", bill.getCustomer().getTvaCode() != null ? bill.getCustomer().getTvaCode() : "N/A");
+            }
+        });
+
+        data.put("deliveryAddress", "");
+        data.put("customerRef", "");
+        data.put("paymentMethod", "Espèces / Virement / Chèque");
+        data.put("paymentRef", "");
+        data.put("paymentTerms", "30 jours");
+
+        return data;
     }
 
 

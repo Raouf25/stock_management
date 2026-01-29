@@ -2,6 +2,8 @@ package com.example.stock_management.service;
 
 import jakarta.servlet.http.HttpServletResponse;
 
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
 import java.util.Map;
 
 import com.lowagie.text.DocumentException;
@@ -19,88 +21,98 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class PdfGenerateService {
 
+    private static final String TEMPLATE_NAME = "facture";
+    private static final String PDF_TEMPLATES_PATH = "pdf-templates/";
+
     private final TemplateEngine templateEngine;
     private final com.example.stock_management.util.NumberUtils numberUtils;
-//
-//    @Value("${pdf.directory}")
-//    private String pdfDirectory;
-//
-//    public void generatePdfFile(String templateName, Map<String, Object> data, String pdfFileName) {
-//        Context context = new Context();
-//        context.setVariables(data);
-//
-//        String htmlContent = templateEngine.process(templateName, context);
-//        try {
-//            FileOutputStream fileOutputStream = new FileOutputStream(pdfDirectory + pdfFileName);
-//            ITextRenderer renderer = new ITextRenderer();
-//            renderer.setDocumentFromString(htmlContent);
-//            renderer.layout();
-//            renderer.createPDF(fileOutputStream, false);
-//            renderer.finishPDF();
-//        } catch (FileNotFoundException e) {
-//            logger.error(e.getMessage(), e);
-//        } catch (DocumentException e) {
-//            logger.error(e.getMessage(), e);
-//        }
-//    }
 
-
-    public void generatePdfFileAPI( Map<String, Object> data, HttpServletResponse response) {
-        Context context = new Context();
-        context.setVariables(data);
-        // expose NumberUtils to template as 'numbers' variable
-        context.setVariable("numbers", numberUtils);
-
-        String templateName = "facture";
-        // Process template with Thymeleaf
-        String htmlContent = templateEngine.process(templateName, context);
-        
-        // Debug: save HTML to file
-        try {
-            java.nio.file.Files.writeString(
-                java.nio.file.Paths.get("/tmp/facture_generated.html"), 
-                htmlContent
-            );
-            log.info("=== HTML saved to /tmp/facture_generated.html ===");
-            log.info("=== Total HTML length: {} chars, {} lines ===", 
-                htmlContent.length(), 
-                htmlContent.split("\n").length);
-        } catch (Exception e) {
-            log.error("Failed to save HTML", e);
-        }
-        
+    /**
+     * Génère un PDF et l'écrit directement dans la réponse HTTP
+     */
+    public void generatePdfFileAPI(Map<String, Object> data, HttpServletResponse response) {
         try {
             response.setContentType("application/pdf");
-            response.setHeader("Content-Disposition", "attachment; filename=\"" + templateName + ".pdf\"");
-            ITextRenderer renderer = new ITextRenderer();
-
-            // Resolve base URL to allow relative links (like facture.css) to be loaded
-            String baseUrl = null;
-            try {
-                java.net.URL res = this.getClass().getClassLoader().getResource("pdf-templates/");
-                if (res != null) {
-                    baseUrl = res.toExternalForm();
-                    log.info("Using baseUrl for PDF resources: {}", baseUrl);
-                } else {
-                    log.warn("Could not resolve pdf-templates resource directory on classpath; relative links may not load.");
-                }
-            } catch (Exception ex) {
-                log.warn("Failed to resolve baseUrl for pdf resources", ex);
-            }
-
-            if (baseUrl != null) {
-                renderer.setDocumentFromString(htmlContent, baseUrl);
-            } else {
-                renderer.setDocumentFromString(htmlContent);
-            }
-
-            renderer.layout();
-            renderer.createPDF(response.getOutputStream(), false);
-            renderer.finishPDF();
+            response.setHeader("Content-Disposition", "attachment; filename=\"" + TEMPLATE_NAME + ".pdf\"");
+            
+            generatePdf(data, response.getOutputStream());
         } catch (IOException e) {
-            log.error(e.getMessage(), e);
-        } catch (DocumentException e) {
-            log.error(e.getMessage(), e);
+            log.error("Erreur lors de l'écriture du PDF dans la réponse: {}", e.getMessage(), e);
         }
+    }
+
+    /**
+     * Génère un PDF et retourne les bytes (pour envoi par email)
+     */
+    public byte[] generatePdfToBytes(Map<String, Object> data) {
+        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+            generatePdf(data, outputStream);
+            return outputStream.toByteArray();
+        } catch (IOException e) {
+            log.error("Erreur lors de la génération du PDF en bytes: {}", e.getMessage(), e);
+            throw new RuntimeException("Erreur lors de la génération du PDF", e);
+        }
+    }
+
+    /**
+     * Méthode centrale pour la génération du PDF
+     */
+    private void generatePdf(Map<String, Object> data, OutputStream outputStream) {
+        String htmlContent = processTemplate(data);
+        
+        try {
+            ITextRenderer renderer = createRenderer(htmlContent);
+            renderer.createPDF(outputStream, false);
+            renderer.finishPDF();
+        } catch (DocumentException e) {
+            log.error("Erreur lors du rendu PDF: {}", e.getMessage(), e);
+            throw new RuntimeException("Erreur lors de la génération du PDF", e);
+        }
+    }
+
+    /**
+     * Traite le template Thymeleaf et retourne le HTML
+     */
+    private String processTemplate(Map<String, Object> data) {
+        Context context = new Context();
+        context.setVariables(data);
+        context.setVariable("numbers", numberUtils);
+
+        return templateEngine.process(TEMPLATE_NAME, context);
+    }
+
+    /**
+     * Crée et configure le renderer PDF
+     */
+    private ITextRenderer createRenderer(String htmlContent) {
+        ITextRenderer renderer = new ITextRenderer();
+        String baseUrl = resolveBaseUrl();
+
+        if (baseUrl != null) {
+            renderer.setDocumentFromString(htmlContent, baseUrl);
+        } else {
+            renderer.setDocumentFromString(htmlContent);
+        }
+
+        renderer.layout();
+        return renderer;
+    }
+
+    /**
+     * Résout l'URL de base pour les ressources (CSS, images)
+     */
+    private String resolveBaseUrl() {
+        try {
+            java.net.URL res = this.getClass().getClassLoader().getResource(PDF_TEMPLATES_PATH);
+            if (res != null) {
+                String baseUrl = res.toExternalForm();
+                log.debug("Using baseUrl for PDF resources: {}", baseUrl);
+                return baseUrl;
+            }
+            log.warn("Could not resolve pdf-templates resource directory on classpath");
+        } catch (Exception ex) {
+            log.warn("Failed to resolve baseUrl for pdf resources", ex);
+        }
+        return null;
     }
 }
