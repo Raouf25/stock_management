@@ -9,25 +9,52 @@ import { ApiService } from '../../services/api.service';
   standalone: true,
   imports: [CommonModule, RouterModule, FormsModule],
   template: `
-    <div class="container-fluid py-4">
-      <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>
-          <i class="bi bi-list-ul me-2"></i>
-          Liste des Factures ({{ filteredInvoices.length }})
-        </h2>
-        <a routerLink="/invoices/create" class="btn btn-primary">
-          <i class="bi bi-plus-circle me-2"></i>
-          Nouvelle Facture
+    <div class="invoice-list-page">
+      <h1 class="mb-4">📋 Liste des Factures</h1>
+
+      <!-- KPIs Row -->
+      <div class="row mb-4">
+        <div class="col-md-4">
+          <div class="stat-card stat-card-blue">
+            <div class="stat-icon">📄</div>
+            <div class="stat-number">{{ filteredInvoices.length }}</div>
+            <div class="stat-label">Total Factures</div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="stat-card stat-card-green">
+            <div class="stat-icon">💰</div>
+            <div class="stat-number">{{ getTotalAmount() | number:'1.2-2' }}</div>
+            <div class="stat-label">Montant Total (DNT)</div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="stat-card stat-card-warning">
+            <div class="stat-icon">⏳</div>
+            <div class="stat-number">{{ getTotalDue() | number:'1.2-2' }}</div>
+            <div class="stat-label">Total Dû (DNT)</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="mb-4">
+        <a routerLink="/invoices/create" class="btn btn-success btn-lg btn-action">
+          ➕ Nouvelle Facture
         </a>
       </div>
 
-      <!-- Filters -->
-      <div class="card border-0 shadow-sm mb-4">
+      <!-- Filters Card -->
+      <div class="card filter-card mb-4">
+        <div class="card-header">
+          <i class="bi bi-funnel me-2"></i>
+          Filtres
+        </div>
         <div class="card-body">
           <div class="row g-3">
             <div class="col-md-3">
-              <label class="form-label fw-semibold">Statut de Paiement</label>
-              <select class="form-select" [(ngModel)]="filterStatus" (change)="applyFilters()">
+              <label class="form-label fw-bold">Statut de Paiement</label>
+              <select class="form-control form-control-modern" [(ngModel)]="filterStatus" (change)="applyFilters()">
                 <option value="">Tous les statuts</option>
                 <option value="PAID">Payé</option>
                 <option value="UNPAID">Impayé</option>
@@ -35,28 +62,31 @@ import { ApiService } from '../../services/api.service';
               </select>
             </div>
             <div class="col-md-3">
-              <label class="form-label fw-semibold">Client</label>
-              <input type="text" class="form-control" placeholder="Rechercher client..." 
+              <label class="form-label fw-bold">Client</label>
+              <input type="text" class="form-control form-control-modern" placeholder="Rechercher client..." 
                      [(ngModel)]="filterClient" (keyup)="applyFilters()">
             </div>
             <div class="col-md-3">
-              <label class="form-label fw-semibold">Date de</label>
-              <input type="date" class="form-control" [(ngModel)]="filterDateFrom" (change)="applyFilters()">
+              <label class="form-label fw-bold">Date de</label>
+              <input type="date" class="form-control form-control-modern" [(ngModel)]="filterDateFrom" (change)="applyFilters()">
             </div>
             <div class="col-md-3">
-              <label class="form-label fw-semibold">Date à</label>
-              <input type="date" class="form-control" [(ngModel)]="filterDateTo" (change)="applyFilters()">
+              <label class="form-label fw-bold">Date à</label>
+              <input type="date" class="form-control form-control-modern" [(ngModel)]="filterDateTo" (change)="applyFilters()">
             </div>
           </div>
         </div>
       </div>
 
       <!-- Invoices Table -->
-      <div class="card border-0 shadow-sm">
+      <div class="card table-card">
+        <div class="card-header">
+          📋 Liste des Factures ({{ filteredInvoices.length }})
+        </div>
         <div class="card-body p-0">
           <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
-              <thead class="table-light">
+              <thead>
                 <tr>
                   <th class="px-4">N° Facture</th>
                   <th>Date</th>
@@ -120,11 +150,188 @@ import { ApiService } from '../../services/api.service';
     </div>
   `,
   styles: [`
+    .invoice-list-page {
+      padding: 20px;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      min-height: 100vh;
+    }
+
+    /* Stat Cards */
+    .stat-card {
+      background: white;
+      padding: 25px;
+      border-radius: 15px;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+    }
+
+    .stat-card-blue::before {
+      background: linear-gradient(90deg, #3498db 0%, #2980b9 100%);
+    }
+
+    .stat-card-green::before {
+      background: linear-gradient(90deg, #2ecc71 0%, #27ae60 100%);
+    }
+
+    .stat-card-warning::before {
+      background: linear-gradient(90deg, #f39c12 0%, #e67e22 100%);
+    }
+
+    .stat-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+    }
+
+    .stat-icon {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+      opacity: 0.8;
+    }
+
+    .stat-number {
+      font-size: 2.2rem;
+      font-weight: bold;
+      color: #2c3e50;
+      margin: 10px 0;
+    }
+
+    .stat-label {
+      color: #7f8c8d;
+      font-size: 0.95rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Action Button */
+    .btn-action {
+      box-shadow: 0 5px 15px rgba(46, 204, 113, 0.3);
+      transition: all 0.3s ease;
+      border-radius: 25px;
+      padding: 12px 30px;
+      font-weight: 600;
+    }
+
+    .btn-action:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(46, 204, 113, 0.4);
+    }
+
+    /* Filter Card */
+    .filter-card {
+      border: none;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+
+    .filter-card .card-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      font-weight: 600;
+      font-size: 1.1rem;
+      padding: 15px 20px;
+      border: none;
+    }
+
+    .form-control-modern {
+      border-radius: 10px;
+      border: 2px solid #e0e0e0;
+      padding: 10px 15px;
+      transition: all 0.3s ease;
+    }
+
+    .form-control-modern:focus {
+      border-color: #667eea;
+      box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+
+    /* Table Card */
+    .table-card {
+      border: none;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+
+    .table-card .card-header {
+      background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+      color: white;
+      font-weight: 600;
+      font-size: 1.1rem;
+      padding: 15px 20px;
+      border: none;
+    }
+
+    .table {
+      margin-bottom: 0;
+    }
+
+    .table thead {
+      background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    }
+
+    .table thead th {
+      color: white;
+      border: none;
+      font-weight: 600;
+      padding: 1rem;
+    }
+
     .table > tbody > tr {
       transition: background-color 0.15s ease;
     }
+
     .table > tbody > tr:hover {
       background-color: rgba(102, 126, 234, 0.05);
+    }
+
+    .table-responsive {
+      border-radius: 0 0 15px 15px;
+      overflow: hidden;
+    }
+
+    /* Badges */
+    .badge {
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-weight: 500;
+      font-size: 0.85rem;
+    }
+
+    /* Card */
+    .card {
+      border: none;
+      border-radius: 15px;
+      overflow: hidden;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .invoice-list-page {
+        padding: 10px;
+      }
+      
+      .stat-number {
+        font-size: 1.8rem;
+      }
+      
+      .stat-icon {
+        font-size: 2rem;
+      }
     }
   `]
 })
@@ -141,6 +348,14 @@ export class InvoiceListComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadInvoices();
+  }
+
+  getTotalAmount(): number {
+    return this.filteredInvoices.reduce((sum, inv) => sum + (inv.totalAmount || 0), 0);
+  }
+
+  getTotalDue(): number {
+    return this.filteredInvoices.reduce((sum, inv) => sum + (inv.amountDue || 0), 0);
   }
 
   loadInvoices(): void {
