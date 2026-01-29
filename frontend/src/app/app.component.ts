@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet, RouterLink, RouterLinkActive, Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
+import { AuthService } from './services/auth.service';
 
 @Component({
   selector: 'app-root',
@@ -16,7 +17,10 @@ export class AppComponent implements OnInit {
   currentRoute = '';
   invoiceMenuOpen = false;
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    public authService: AuthService
+  ) {}
 
   ngOnInit() {
     // Écouter les changements de route pour mettre à jour le titre
@@ -50,6 +54,10 @@ export class AppComponent implements OnInit {
     return this.currentRoute.startsWith('/invoices');
   }
 
+  isAuthRoute(): boolean {
+    return ['/login', '/forgot-password', '/reset-password'].some(r => this.currentRoute.startsWith(r));
+  }
+
   getCurrentPageTitle(): string {
     const routeTitles: { [key: string]: string } = {
       '/': 'Tableau de Bord',
@@ -68,5 +76,10 @@ export class AppComponent implements OnInit {
 
   refreshData() {
     window.location.reload();
+  }
+
+  logout(): void {
+    this.authService.logout();
+    this.router.navigate(['/login']);
   }
 }

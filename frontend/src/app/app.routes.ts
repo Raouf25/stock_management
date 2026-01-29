@@ -8,19 +8,30 @@ import { InvoicesComponent } from './components/invoices/invoices.component';
 import { InvoiceCreateComponent } from './components/invoices/invoice-create.component';
 import { InvoiceDashboardComponent } from './components/invoices/invoice-dashboard.component';
 import { InvoiceListComponent } from './components/invoices/invoice-list.component';
+import { LoginComponent } from './components/auth/login.component';
+import { ForgotPasswordComponent } from './components/auth/forgot-password.component';
+import { ResetPasswordComponent } from './components/auth/reset-password.component';
+import { authGuard } from './services/auth.guard';
 
 export const routes: Routes = [
-  { path: '', component: DashboardComponent },
-  { path: 'products', component: ProductsComponent },
-  { path: 'purchases', component: PurchasesComponent },
-  { path: 'sales', component: SalesComponent },
-  { path: 'stock-movements', component: StockMovementComponent },
+  // Auth routes (public)
+  { path: 'login', component: LoginComponent },
+  { path: 'forgot-password', component: ForgotPasswordComponent },
+  { path: 'reset-password', component: ResetPasswordComponent },
   
-  // Facturation - Navigation hiérarchique
+  // Protected routes
+  { path: '', component: DashboardComponent, canActivate: [authGuard] },
+  { path: 'dashboard', component: DashboardComponent, canActivate: [authGuard] },
+  { path: 'products', component: ProductsComponent, canActivate: [authGuard] },
+  { path: 'purchases', component: PurchasesComponent, canActivate: [authGuard] },
+  { path: 'sales', component: SalesComponent, canActivate: [authGuard] },
+  { path: 'stock-movements', component: StockMovementComponent, canActivate: [authGuard] },
+  
+  // Facturation - Navigation hiérarchique (protected)
   { path: 'invoices', redirectTo: 'invoices/dashboard', pathMatch: 'full' },
-  { path: 'invoices/dashboard', component: InvoiceDashboardComponent },
-  { path: 'invoices/create', component: InvoiceCreateComponent },
-  { path: 'invoices/list', component: InvoiceListComponent },
+  { path: 'invoices/dashboard', component: InvoiceDashboardComponent, canActivate: [authGuard] },
+  { path: 'invoices/create', component: InvoiceCreateComponent, canActivate: [authGuard] },
+  { path: 'invoices/list', component: InvoiceListComponent, canActivate: [authGuard] },
   
-  { path: '**', redirectTo: '' }
+  { path: '**', redirectTo: 'login' }
 ];
