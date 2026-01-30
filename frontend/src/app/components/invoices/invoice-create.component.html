@@ -72,24 +72,6 @@
             </div>
           </div>
 
-          <!-- Delivery Address -->
-          <div class="col-md-6">
-            <label class="form-label fw-bold">
-              <i class="bi bi-geo-alt me-1"></i>
-              Adresse de Livraison
-              <span class="text-danger">*</span>
-            </label>
-            <input 
-              type="text" 
-              class="form-control form-control-modern"
-              formControlName="deliveryAddress"
-              placeholder="Adresse complète de livraison"
-              [class.is-invalid]="invoiceForm.get('deliveryAddress')?.invalid && invoiceForm.get('deliveryAddress')?.touched">
-            <div class="invalid-feedback" *ngIf="invoiceForm.get('deliveryAddress')?.invalid && invoiceForm.get('deliveryAddress')?.touched">
-              Veuillez entrer une adresse de livraison
-            </div>
-          </div>
-
           <!-- Payment Terms -->
           <div class="col-md-6">
             <label class="form-label fw-bold">
@@ -107,19 +89,6 @@
               <option value="60 jours">60 jours</option>
               <option value="Autre">Autre (à spécifier dans les notes)</option>
             </select>
-          </div>
-
-          <!-- Notes -->
-          <div class="col-12">
-            <label class="form-label fw-bold">
-              <i class="bi bi-pencil me-1"></i>
-              Notes (Optionnel)
-            </label>
-            <textarea 
-              class="form-control form-control-modern"
-              formControlName="notes"
-              rows="3"
-              placeholder="Ajouter des notes supplémentaires pour cette facture..."></textarea>
           </div>
         </div>
       </div>

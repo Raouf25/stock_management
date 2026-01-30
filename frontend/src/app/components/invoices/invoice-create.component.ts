@@ -74,8 +74,6 @@ export class InvoiceCreateComponent implements OnInit {
       customerId: [null, [Validators.required]],
       billDate: [this.getToday(), [Validators.required]],
       paymentTerms: ['30 jours', [Validators.required]],
-      deliveryAddress: ['', [Validators.required]],
-      notes: [''],
       deposit: [0, [Validators.min(0)]]
     });
   }
@@ -229,8 +227,6 @@ export class InvoiceCreateComponent implements OnInit {
       customerId: customerId ? Number(customerId) : null,
       billDate: this.invoiceForm.get('billDate')?.value,
       paymentTerms: this.invoiceForm.get('paymentTerms')?.value,
-      deliveryAddress: this.invoiceForm.get('deliveryAddress')?.value,
-      notes: this.invoiceForm.get('notes')?.value,
       deposit: Number(deposit) || 0,
       products: this.lineItems.map(item => ({
         productId: item.productId,

@@ -29,7 +29,6 @@ public class InvoiceCreationDTO {
     @NotBlank(message = "Payment terms are required")
     private String paymentTerms;
 
-    @NotBlank(message = "Delivery address is required")
     private String deliveryAddress;
 
     private String notes;
