@@ -29,6 +29,8 @@ interface InvoiceLineItem {
   quantity: number;
   discount: number;
   totalPrice: number;
+  maxStock?: number;
+  stockError?: boolean;
 }
 
 @Component({
@@ -140,10 +142,15 @@ export class InvoiceCreateComponent implements OnInit {
     // Check if product already exists in line items
     const existingItem = this.lineItems.find(item => item.productId === product.productId);
     if (existingItem) {
-      existingItem.quantity += 1;
-      const subtotal = existingItem.quantity * existingItem.unitPrice;
-      const discountAmount = (subtotal * existingItem.discount) / 100;
-      existingItem.totalPrice = subtotal - discountAmount;
+      if (existingItem.quantity < product.stock) {
+        existingItem.quantity += 1;
+        existingItem.stockError = false;
+        const subtotal = existingItem.quantity * existingItem.unitPrice;
+        const discountAmount = (subtotal * existingItem.discount) / 100;
+        existingItem.totalPrice = subtotal - discountAmount;
+      } else {
+        existingItem.stockError = true;
+      }
     } else {
       this.lineItems.push({
         productId: product.productId,
@@ -152,7 +159,9 @@ export class InvoiceCreateComponent implements OnInit {
         unitPrice: product.unitPrice,
         quantity: 1,
         discount: 0,
-        totalPrice: product.unitPrice
+        totalPrice: product.unitPrice,
+        maxStock: product.stock,
+        stockError: false
       });
     }
     this.calculateTotals();
@@ -177,9 +186,18 @@ export class InvoiceCreateComponent implements OnInit {
 
   updateLineItemQuantity(index: number, quantity: number) {
     const quantityValue = isNaN(quantity) ? 1 : Math.max(1, Math.floor(quantity));
+    const maxStock = this.lineItems[index].maxStock ?? 999999;
     if (quantityValue <= 0) {
       this.removeLineItem(index);
+    } else if (quantityValue > maxStock) {
+      this.lineItems[index].quantity = maxStock;
+      this.lineItems[index].stockError = true;
+      const subtotal = maxStock * this.lineItems[index].unitPrice;
+      const discountAmount = (subtotal * (this.lineItems[index].discount || 0)) / 100;
+      this.lineItems[index].totalPrice = subtotal - discountAmount;
+      this.calculateTotals();
     } else {
+      this.lineItems[index].stockError = false;
       this.lineItems[index].quantity = quantityValue;
       const subtotal = quantityValue * this.lineItems[index].unitPrice;
       const discountAmount = (subtotal * (this.lineItems[index].discount || 0)) / 100;
