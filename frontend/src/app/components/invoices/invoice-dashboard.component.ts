@@ -31,7 +31,7 @@ import { ApiService } from '../../services/api.service';
         <div class="col-md-3">
           <div class="stat-card stat-card-green">
             <div class="stat-icon">💰</div>
-            <div class="stat-number">{{ (kpis?.totalInvoicedAmount || 0) | number:'1.2-2' }}</div>
+            <div class="stat-number">{{ (kpis?.totalInvoicedAmount || 0) | number:'1.3-3' }}</div>
             <div class="stat-label">Chiffre d'Affaires (DNT)</div>
           </div>
         </div>
@@ -84,13 +84,13 @@ import { ApiService } from '../../services/api.service';
               <div class="row text-center mb-4">
                 <div class="col-6">
                   <div class="financial-stat">
-                    <h3 class="text-success mb-1">{{ (kpis?.revenueThisMonth || 0) | number:'1.2-2' }}</h3>
+                    <h3 class="text-success mb-1">{{ (kpis?.revenueThisMonth || 0) | number:'1.3-3' }}</h3>
                     <p class="text-muted mb-0">CA ce Mois (DNT)</p>
                   </div>
                 </div>
                 <div class="col-6">
                   <div class="financial-stat">
-                    <h3 class="text-danger mb-1">{{ (kpis?.totalAmountDue || 0) | number:'1.2-2' }}</h3>
+                    <h3 class="text-danger mb-1">{{ (kpis?.totalAmountDue || 0) | number:'1.3-3' }}</h3>
                     <p class="text-muted mb-0">Total Dû (DNT)</p>
                   </div>
                 </div>
@@ -98,7 +98,7 @@ import { ApiService } from '../../services/api.service';
               <hr>
               <div class="text-center">
                 <div class="financial-stat">
-                  <h3 class="text-info mb-1">{{ (kpis?.averageInvoiceAmount || 0) | number:'1.2-2' }} DNT</h3>
+                  <h3 class="text-info mb-1">{{ (kpis?.averageInvoiceAmount || 0) | number:'1.3-3' }} DNT</h3>
                   <p class="text-muted mb-0">Panier Moyen</p>
                 </div>
               </div>

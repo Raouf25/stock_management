@@ -46,7 +46,7 @@
           <div class="stat-icon">
             <i class="bi bi-cash-stack"></i>
           </div>
-          <div class="stat-number">{{ totalValue | number: '1.2-2' }}</div>
+          <div class="stat-number">{{ totalValue | number: '1.3-3' }}</div>
           <div class="stat-label">Valeur Total Stock (DNT)</div>
           <div class="stat-trend">
             <i class="bi bi-arrow-up-circle-fill text-success me-1"></i>
@@ -59,7 +59,7 @@
           <div class="stat-icon">
             <i class="bi bi-graph-up-arrow"></i>
           </div>
-          <div class="stat-number">{{ getTotalSales() | number: '1.2-2' }}</div>
+          <div class="stat-number">{{ getTotalSales() | number: '1.3-3' }}</div>
           <div class="stat-label">Total Ventes (DNT)</div>
           <div class="stat-trend">
             <i class="bi bi-arrow-up-circle-fill text-success me-1"></i>
@@ -102,7 +102,7 @@
           <div class="stat-icon">
             <i class="bi bi-currency-dollar"></i>
           </div>
-          <div class="stat-number">{{ invoiceKPIs.totalInvoicedAmount | number: '1.2-2' }}</div>
+          <div class="stat-number">{{ invoiceKPIs.totalInvoicedAmount | number: '1.3-3' }}</div>
           <div class="stat-label">Montant Total Facturé (DNT)</div>
           <div class="stat-trend">
             <i class="bi bi-arrow-up-circle-fill text-success me-1"></i>
@@ -128,7 +128,7 @@
           <div class="stat-icon">
             <i class="bi bi-cash"></i>
           </div>
-          <div class="stat-number">{{ invoiceKPIs.totalAmountDue | number: '1.2-2' }}</div>
+          <div class="stat-number">{{ invoiceKPIs.totalAmountDue | number: '1.3-3' }}</div>
           <div class="stat-label">Montant Restant (DNT)</div>
           <div class="stat-trend">
             <i class="bi bi-info-circle-fill text-info me-1"></i>
@@ -262,10 +262,10 @@
                       {{ item.finalQuantity }}
                     </span>
                   </td>
-                  <td>{{ item.totalPurchasesAmount | number: '1.2-2' }}</td>
-                  <td>{{ item.totalSalesAmount | number: '1.2-2' }}</td>
-                  <td><strong>{{ item.finalStockValue | number: '1.2-2' }}</strong></td>
-                  <td>{{ item.cmp | number: '1.2-2' }}</td>
+                  <td>{{ item.totalPurchasesAmount | number: '1.3-3' }}</td>
+                  <td>{{ item.totalSalesAmount | number: '1.3-3' }}</td>
+                  <td><strong>{{ item.finalStockValue | number: '1.3-3' }}</strong></td>
+                  <td>{{ item.cmp | number: '1.3-3' }}</td>
                 </tr>
               </tbody>
             </table>

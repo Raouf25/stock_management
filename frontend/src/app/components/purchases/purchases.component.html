@@ -6,7 +6,7 @@
     <div class="col-md-3">
       <div class="stat-card stat-card-red">
         <div class="stat-icon">💵</div>
-        <div class="stat-number">{{ getTotalAmount() | number: '1.2-2' }}</div>
+        <div class="stat-number">{{ getTotalAmount() | number: '1.3-3' }}</div>
         <div class="stat-label">Total Achats (DNT)</div>
       </div>
     </div>
@@ -27,7 +27,7 @@
     <div class="col-md-3">
       <div class="stat-card stat-card-orange">
         <div class="stat-icon">💰</div>
-        <div class="stat-number">{{ getAveragePrice() | number: '1.2-2' }}</div>
+        <div class="stat-number">{{ getAveragePrice() | number: '1.3-3' }}</div>
         <div class="stat-label">Prix Moyen (DNT)</div>
       </div>
     </div>
@@ -144,8 +144,8 @@
               <td><strong>{{ p.supplierName }}</strong></td>
               <td>{{ p.productDesignation }}</td>
               <td><span class="badge bg-info">{{ p.quantity }}</span></td>
-              <td>{{ p.unitPriceTTC | number: '1.2-2' }}</td>
-              <td><strong class="text-danger">{{ p.totalAmountTTC | number: '1.2-2' }}</strong></td>
+              <td>{{ p.unitPriceTTC | number: '1.3-3' }}</td>
+              <td><strong class="text-danger">{{ p.totalAmountTTC | number: '1.3-3' }}</strong></td>
               <td><span class="badge bg-primary">{{ p.invoiceNumber }}</span></td>
             </tr>
             <tr *ngIf="purchases.length === 0">

@@ -24,14 +24,14 @@ import { ApiService } from '../../services/api.service';
         <div class="col-md-4">
           <div class="stat-card stat-card-green">
             <div class="stat-icon">💰</div>
-            <div class="stat-number">{{ getTotalAmount() | number:'1.2-2' }}</div>
+            <div class="stat-number">{{ getTotalAmount() | number:'1.3-3' }}</div>
             <div class="stat-label">Montant Total (DNT)</div>
           </div>
         </div>
         <div class="col-md-4">
           <div class="stat-card stat-card-warning">
             <div class="stat-icon">⏳</div>
-            <div class="stat-number">{{ getTotalDue() | number:'1.2-2' }}</div>
+            <div class="stat-number">{{ getTotalDue() | number:'1.3-3' }}</div>
             <div class="stat-label">Total Dû (DNT)</div>
           </div>
         </div>
@@ -110,11 +110,11 @@ import { ApiService } from '../../services/api.service';
                     <div class="fw-semibold">{{ invoice.clientName }}</div>
                     <small class="text-muted">{{ invoice.clientPhone }}</small>
                   </td>
-                  <td class="text-end fw-bold">{{ invoice.totalAmount | number:'1.2-2' }} DNT</td>
-                  <td class="text-end text-success">{{ invoice.deposit | number:'1.2-2' }} DNT</td>
+                  <td class="text-end fw-bold">{{ invoice.totalAmount | number:'1.3-3' }} DNT</td>
+                  <td class="text-end text-success">{{ invoice.deposit | number:'1.3-3' }} DNT</td>
                   <td class="text-end">
                     <span class="fw-bold" [class]="invoice.amountDue > 0 ? 'text-danger' : 'text-success'">
-                      {{ invoice.amountDue | number:'1.2-2' }} DNT
+                      {{ invoice.amountDue | number:'1.3-3' }} DNT
                     </span>
                   </td>
                   <td class="text-center">
