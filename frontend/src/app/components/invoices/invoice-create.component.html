@@ -125,11 +125,22 @@
               </div>
               <div 
                 *ngFor="let product of filteredProducts" 
-                class="catalogue-item p-2 mb-2 border rounded d-flex justify-content-between align-items-center"
+                class="catalogue-item p-2 mb-2 border rounded d-flex align-items-center"
                 [class.bg-light]="isProductInCart(product.productId)"
                 [class.border-success]="isProductInCart(product.productId)"
                 style="cursor: pointer;"
                 (click)="getAvailableStock(product) > 0 ? addLineItem(product) : null">
+                
+                <!-- Product Image -->
+                <div class="me-3">
+                  <img 
+                    [src]="product.imageUrl" 
+                    [alt]="product.name"
+                    class="rounded"
+                    style="width: 60px; height: 60px; object-fit: cover; border: 2px solid #dee2e6;"
+                    onerror="this.src='https://via.placeholder.com/60?text=🎨'">
+                </div>
+                
                 <div class="flex-grow-1">
                   <div class="fw-bold small">{{ product.name }}</div>
                   <small class="text-muted">

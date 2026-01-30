@@ -45,18 +45,18 @@ VALUES
 
 -- Insertion de products (colonnes corrigées pour correspondre aux entités JPA)
 -- Réduit à 10 produits pour simplifier les tests
-INSERT INTO product (category, name, designation, unit, unit_price_bought, unit_price_sold, supplier_id, reference)
+INSERT INTO product (category, name, designation, unit, unit_price_bought, unit_price_sold, supplier_id, reference, image_url)
 VALUES
-    ('Impressions','VALPRIMER','Primaire d''accrochage pour surfaces lisses', '1.000 KG',8.656,10.300, 1, trunc(random()*10000000000000)),
-    ('Impressions','VALPRIMER','Primaire d''accrochage pour surfaces lisses', '4.000 KG',30.311,36.071, 1, trunc(random()*10000000000000)),
-    ('Impressions','VALPRIMER','Primaire d''accrochage pour surfaces lisses', '18.000 KG',126.450,150.476, 1, trunc(random()*10000000000000)),
-    ('Impressions','VALFIX','Fixateur de fond pour peintures', '1.000 KG',8.209,9.769, 1, trunc(random()*10000000000000)),
-    ('Impressions','VALFIX','Fixateur de fond pour peintures', '4.000 KG',27.744,33.015, 3, trunc(random()*10000000000000)),
-    ('Impressions','FISSATIVO 30G','Enduit de rebouchage pour fissures', '0.800 LT',15.236,18.131, 3, trunc(random()*10000000000000)),
-    ('FINITIONS','VALMAT','Peinture mate intérieure de qualité', '1.000 KG',3.343,3.978, 3, trunc(random()*10000000000000)),
-    ('FINITIONS','VALTEX','Peinture satinée lavable haute résistance', '1.000 KG',3.730,4.439, 2, trunc(random()*10000000000000)),
-    ('FINITIONS','VALBLANC','Peinture blanche universelle multi-supports', '1.000 KG',4.832,5.750, 2, trunc(random()*10000000000000)),
-    ('FINITIONS','VALPRO MAT','Peinture professionnelle mate premium', '5.000 KG',23.705,28.210, 2, trunc(random()*10000000000000));
+    ('Impressions','VALPRIMER','Primaire d''accrochage pour surfaces lisses', '1.000 KG',8.656,10.300, 1, trunc(random()*10000000000000), 'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=100&h=100&fit=crop'),
+    ('Impressions','VALPRIMER','Primaire d''accrochage pour surfaces lisses', '4.000 KG',30.311,36.071, 1, trunc(random()*10000000000000), 'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=100&h=100&fit=crop'),
+    ('Impressions','VALPRIMER','Primaire d''accrochage pour surfaces lisses', '18.000 KG',126.450,150.476, 1, trunc(random()*10000000000000), 'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=100&h=100&fit=crop'),
+    ('Impressions','VALFIX','Fixateur de fond pour peintures', '1.000 KG',8.209,9.769, 1, trunc(random()*10000000000000), 'https://images.unsplash.com/photo-1562259949-e8e7689d7828?w=100&h=100&fit=crop'),
+    ('Impressions','VALFIX','Fixateur de fond pour peintures', '4.000 KG',27.744,33.015, 3, trunc(random()*10000000000000), 'https://images.unsplash.com/photo-1562259949-e8e7689d7828?w=100&h=100&fit=crop'),
+    ('Impressions','FISSATIVO 30G','Enduit de rebouchage pour fissures', '0.800 LT',15.236,18.131, 3, trunc(random()*10000000000000), 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=100&h=100&fit=crop'),
+    ('FINITIONS','VALMAT','Peinture mate intérieure de qualité', '1.000 KG',3.343,3.978, 3, trunc(random()*10000000000000), 'https://images.unsplash.com/photo-1572297794908-f2ee5a2930d6?w=100&h=100&fit=crop'),
+    ('FINITIONS','VALTEX','Peinture satinée lavable haute résistance', '1.000 KG',3.730,4.439, 2, trunc(random()*10000000000000), 'https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?w=100&h=100&fit=crop'),
+    ('FINITIONS','VALBLANC','Peinture blanche universelle multi-supports', '1.000 KG',4.832,5.750, 2, trunc(random()*10000000000000), 'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=100&h=100&fit=crop'),
+    ('FINITIONS','VALPRO MAT','Peinture professionnelle mate premium', '5.000 KG',23.705,28.210, 2, trunc(random()*10000000000000), 'https://images.unsplash.com/photo-1562259949-e8e7689d7828?w=100&h=100&fit=crop');
 
 
 -- Insertion d'achats (basés sur les produits existants et leurs fournisseurs)

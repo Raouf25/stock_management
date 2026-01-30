@@ -19,6 +19,9 @@ public class Product {
     private Double unitPriceSold;
     private Double unitPriceBought;
     
+    // Image URL du produit
+    private String imageUrl;
+    
     // Stock initial
     private Integer initialStockQuantity;
     private Double initialUnitPrice; // prix unitaire initial TTC

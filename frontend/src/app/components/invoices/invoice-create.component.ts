@@ -18,6 +18,7 @@ interface Product {
   name: string;
   unitPrice: number;
   stock: number;
+  imageUrl?: string;
 }
 
 interface InvoiceLineItem {
@@ -102,6 +103,8 @@ export class InvoiceCreateComponent implements OnInit {
   }
 
   loadProducts() {
+    const defaultImage = 'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=100&h=100&fit=crop';
+
     this.apiService.getProducts().subscribe({
       next: (data) => {
         this.products = data.map((p: any) => ({
@@ -109,7 +112,8 @@ export class InvoiceCreateComponent implements OnInit {
           reference: p.reference,
           name: p.name,
           unitPrice: p.unitPriceSold ?? p.unitPrice ?? 0,
-          stock: p.currentStockQuantity ?? p.stock ?? 0
+          stock: p.currentStockQuantity ?? p.stock ?? 0,
+          imageUrl: p.imageUrl || defaultImage
         }));
         this.filteredProducts = this.products;
       },

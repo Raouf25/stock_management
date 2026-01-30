@@ -360,6 +360,54 @@
   }
 }
 
+/* Catalogue Item with Image */
+.catalogue-item {
+  transition: all 0.2s ease;
+  background-color: white;
+}
+
+.catalogue-item:hover {
+  background-color: #e8f4fd !important;
+  border-color: #0d6efd !important;
+  transform: translateX(3px);
+  box-shadow: 0 2px 8px rgba(13, 110, 253, 0.15);
+}
+
+.catalogue-item img {
+  transition: all 0.3s ease;
+}
+
+.catalogue-item:hover img {
+  transform: scale(1.1);
+  border-color: #0d6efd !important;
+}
+
+.catalogue-item.bg-light {
+  background-color: #d4edda !important;
+}
+
+.catalogue-item.border-success {
+  border-width: 2px !important;
+}
+
+.catalogue-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.catalogue-list::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.catalogue-list::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 10px;
+}
+
+.catalogue-list::-webkit-scrollbar-thumb:hover {
+  background: #a1a1a1;
+}
+
 /* Print Styles */
 @media print {
   .page-header,
