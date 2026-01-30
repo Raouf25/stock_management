@@ -151,9 +151,24 @@ export class InvoiceCreateComponent implements OnInit {
         totalPrice: product.unitPrice
       });
     }
-    this.showProductSearch = false;
-    this.searchProductTerm = '';
     this.calculateTotals();
+  }
+
+  // Vérifie si un produit est déjà dans le panier
+  isProductInCart(productId: number): boolean {
+    return this.lineItems.some(item => item.productId === productId);
+  }
+
+  // Retourne la quantité d'un produit dans le panier
+  getProductQuantityInCart(productId: number): number {
+    const item = this.lineItems.find(item => item.productId === productId);
+    return item ? item.quantity : 0;
+  }
+
+  // Retourne le stock disponible (stock initial - quantité dans le panier)
+  getAvailableStock(product: Product): number {
+    const quantityInCart = this.getProductQuantityInCart(product.productId);
+    return product.stock - quantityInCart;
   }
 
   updateLineItemQuantity(index: number, quantity: number) {

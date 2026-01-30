@@ -94,135 +94,147 @@
       </div>
     </div>
 
-    <!-- Products Section -->
-    <div class="card mb-4">
-      <div class="card-header bg-light">
-        <div class="d-flex justify-content-between align-items-center">
-          <h5 class="mb-0">
-            <i class="bi bi-box-seam me-2"></i>
-            Produits
-          </h5>
-          <button 
-            type="button" 
-            class="btn btn-sm btn-primary" 
-            (click)="showProductSearch = !showProductSearch">
-            <i class="bi bi-plus-circle me-1"></i>
-            Ajouter un Produit
-          </button>
-        </div>
-      </div>
-      <div class="card-body">
-        <!-- Product Search Section -->
-        <div *ngIf="showProductSearch" class="mb-4 p-3 bg-light rounded">
-          <div class="row g-3">
-            <div class="col-md-6">
+    <!-- Two Column Layout: Catalogue + Selected Products -->
+    <div class="row">
+      <!-- Product Catalogue -->
+      <div class="col-md-5">
+        <div class="card mb-4">
+          <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">
+              <i class="bi bi-grid me-2"></i>
+              Catalogue Produits
+            </h5>
+          </div>
+          <div class="card-body p-2">
+            <!-- Search -->
+            <div class="mb-3">
               <input 
                 type="text" 
-                class="form-control form-control-modern"
+                class="form-control form-control-sm"
                 [(ngModel)]="searchProductTerm"
+                [ngModelOptions]="{standalone: true}"
                 (ngModelChange)="filterProducts()"
-                placeholder="Rechercher par nom ou référence..."
+                placeholder="🔍 Rechercher un produit..."
                 autocomplete="off">
             </div>
-            <div class="col-md-6">
-              <button 
-                type="button" 
-                class="btn btn-outline-secondary w-100"
-                (click)="showProductSearch = false">
-                <i class="bi bi-x-lg me-1"></i>
-                Fermer la Recherche
-              </button>
-            </div>
-          </div>
 
-          <!-- Product List -->
-          <div class="mt-3">
-            <div *ngIf="filteredProducts.length === 0" class="text-center text-muted py-3">
-              <i class="bi bi-inbox"></i> Aucun produit trouvé
-            </div>
-            <div 
-              *ngFor="let product of filteredProducts" 
-              class="product-item mb-2">
-              <div class="d-flex justify-content-between align-items-center p-2 border rounded hover-bg">
+            <!-- Product List -->
+            <div class="catalogue-list" style="max-height: 400px; overflow-y: auto;">
+              <div *ngIf="filteredProducts.length === 0" class="text-center text-muted py-3">
+                <i class="bi bi-inbox"></i> Aucun produit trouvé
+              </div>
+              <div 
+                *ngFor="let product of filteredProducts" 
+                class="catalogue-item p-2 mb-2 border rounded d-flex justify-content-between align-items-center"
+                [class.bg-light]="isProductInCart(product.productId)"
+                [class.border-success]="isProductInCart(product.productId)"
+                style="cursor: pointer;"
+                (click)="getAvailableStock(product) > 0 ? addLineItem(product) : null">
                 <div class="flex-grow-1">
-                  <h6 class="mb-1">{{ product.name }}</h6>
+                  <div class="fw-bold small">{{ product.name }}</div>
                   <small class="text-muted">
-                    Réf: {{ product.reference }} | Stock: {{ product.stock }} | 
-                    <span class="text-primary fw-bold">{{ product.unitPrice | number:'1.2-2' }} DNT</span>
+                    Réf: {{ product.reference }} | 
+                    <span [class.text-danger]="getAvailableStock(product) <= 0" [class.text-success]="getAvailableStock(product) > 0">
+                      Stock: {{ getAvailableStock(product) }}
+                    </span>
                   </small>
+                  <div class="text-primary fw-bold small">{{ product.unitPrice | number:'1.3-3' }} DNT</div>
                 </div>
-                <button 
-                  type="button" 
-                  class="btn btn-sm btn-success"
-                  (click)="addLineItem(product)"
-                  [disabled]="product.stock <= 0">
-                  <i class="bi bi-plus-lg me-1"></i>
-                  Ajouter
-                </button>
+                <div class="text-end">
+                  <span *ngIf="isProductInCart(product.productId)" class="badge bg-success me-1">
+                    {{ getProductQuantityInCart(product.productId) }}
+                  </span>
+                  <button 
+                    type="button" 
+                    class="btn btn-sm btn-outline-primary"
+                    [disabled]="getAvailableStock(product) <= 0">
+                    <i class="bi bi-plus"></i>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         </div>
+      </div>
 
-        <!-- Line Items Table -->
-        <div *ngIf="lineItems.length > 0" class="table-responsive">
-          <table class="table table-hover">
-            <thead class="table-dark">
-              <tr>
-                <th class="fw-bold">Produit</th>
-                <th class="fw-bold">Référence</th>
-                <th class="text-end fw-bold">Prix Unitaire</th>
-                <th class="text-center fw-bold">Quantité</th>
-                <th class="text-center fw-bold">Remise (%)</th>
-                <th class="text-end fw-bold">Montant</th>
-                <th class="text-center fw-bold" style="width: 80px;">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let item of lineItems; let i = index">
-                <td class="align-middle">{{ item.productName }}</td>
-                <td class="align-middle text-muted">{{ item.reference }}</td>
-                <td class="align-middle text-end">{{ item.unitPrice | number:'1.2-2' }} DNT</td>
-                <td class="align-middle">
-                  <input 
-                    type="number" 
-                    class="form-control form-control-sm text-center"
-                    [ngModel]="item.quantity"
-                    (ngModelChange)="updateLineItemQuantity(i, $event)"
-                    (input)="updateLineItemQuantity(i, $any($event.target).value)"
-                    min="1"
-                    style="max-width: 100px; margin: 0 auto;">
-                </td>
-                <td class="align-middle">
-                  <input 
-                    type="number" 
-                    class="form-control form-control-sm text-center"
-                    [ngModel]="item.discount"
-                    (ngModelChange)="updateLineItemDiscount(i, $event)"
-                    (input)="updateLineItemDiscount(i, $any($event.target).value)"
-                    min="0"
-                    max="100"
-                    step="0.1"
-                    style="max-width: 80px; margin: 0 auto;">
-                </td>
-                <td class="align-middle text-end fw-bold">{{ item.totalPrice | number:'1.2-2' }} DNT</td>
-                <td class="align-middle text-center">
-                  <button 
-                    type="button" 
-                    class="btn btn-sm btn-outline-danger"
-                    (click)="removeLineItem(i)"
-                    title="Supprimer">
-                    <i class="bi bi-trash"></i>
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+      <!-- Selected Products -->
+      <div class="col-md-7">
+        <div class="card mb-4">
+          <div class="card-header bg-success text-white">
+            <div class="d-flex justify-content-between align-items-center">
+              <h5 class="mb-0">
+                <i class="bi bi-cart me-2"></i>
+                Produits Sélectionnés ({{ lineItems.length }})
+              </h5>
+              <span class="badge bg-white text-success" *ngIf="lineItems.length > 0">
+                Total: {{ totalHT | number:'1.3-3' }} DNT
+              </span>
+            </div>
+          </div>
+          <div class="card-body p-2">
+            <!-- Empty State -->
+            <div *ngIf="lineItems.length === 0" class="text-center text-muted py-5">
+              <i class="bi bi-cart3" style="font-size: 3rem;"></i>
+              <p class="mt-2">Cliquez sur un produit du catalogue pour l'ajouter.</p>
+            </div>
 
-        <div *ngIf="lineItems.length === 0" class="text-center text-muted py-5">
-          <i class="bi bi-inbox" style="font-size: 3rem; opacity: 0.5;"></i>
-          <p class="mt-3">Aucun produit ajouté. Cliquez sur "Ajouter un Produit" pour commencer.</p>
+            <!-- Line Items Table -->
+            <div *ngIf="lineItems.length > 0" class="table-responsive">
+              <table class="table table-sm table-hover mb-0">
+                <thead class="table-dark">
+                  <tr>
+                    <th class="fw-bold">Produit</th>
+                    <th class="text-end fw-bold">P.U.</th>
+                    <th class="text-center fw-bold" style="width: 80px;">Qté</th>
+                    <th class="text-center fw-bold" style="width: 70px;">Rem.%</th>
+                    <th class="text-end fw-bold">Total</th>
+                    <th style="width: 40px;"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let item of lineItems; let i = index">
+                    <td class="align-middle small">
+                      {{ item.productName }}
+                      <br><small class="text-muted">{{ item.reference }}</small>
+                    </td>
+                    <td class="align-middle text-end small">{{ item.unitPrice | number:'1.3-3' }}</td>
+                    <td class="align-middle">
+                      <input 
+                        type="number" 
+                        class="form-control form-control-sm text-center p-1"
+                        [ngModel]="item.quantity"
+                        [ngModelOptions]="{standalone: true}"
+                        (ngModelChange)="updateLineItemQuantity(i, $event)"
+                        min="1"
+                        style="width: 60px;">
+                    </td>
+                    <td class="align-middle">
+                      <input 
+                        type="number" 
+                        class="form-control form-control-sm text-center p-1"
+                        [ngModel]="item.discount"
+                        [ngModelOptions]="{standalone: true}"
+                        (ngModelChange)="updateLineItemDiscount(i, $event)"
+                        min="0"
+                        max="100"
+                        step="0.1"
+                        style="width: 55px;">
+                    </td>
+                    <td class="align-middle text-end fw-bold small">{{ item.totalPrice | number:'1.3-3' }}</td>
+                    <td class="align-middle text-center">
+                      <button 
+                        type="button" 
+                        class="btn btn-sm btn-outline-danger p-1"
+                        (click)="removeLineItem(i)"
+                        title="Supprimer">
+                        <i class="bi bi-x"></i>
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </div>
     </div>
