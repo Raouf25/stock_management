@@ -287,20 +287,7 @@ public class BillController {
         data.put("supplierIban", company.getOrDefault("iban", ""));
 
         // Ajouter les données du client
-        billService.findById(id).ifPresent(bill -> {
-            if (bill.getCustomer() != null) {
-                Map<String, String> client = new HashMap<>();
-                client.put("name", bill.getCustomer().getName());
-                client.put("address", bill.getCustomer().getAddress());
-                client.put("taxId", bill.getCustomer().getTvaCode() != null ? bill.getCustomer().getTvaCode() : "N/A");
-                data.put("client", client);
-
-                data.put("customerName", bill.getCustomer().getName());
-                data.put("customerAddress", bill.getCustomer().getAddress());
-                data.put("customerPhone", bill.getCustomer().getPhone() != null ? bill.getCustomer().getPhone() : "");
-                data.put("customerTva", bill.getCustomer().getTvaCode() != null ? bill.getCustomer().getTvaCode() : "N/A");
-            }
-        });
+        billService.findById(id).ifPresent(bill -> populateCustomerData(bill, data));
 
         data.put("deliveryAddress", "");
         data.put("customerRef", "");
@@ -454,21 +441,8 @@ public class BillController {
         data.put("supplierRib", company.getOrDefault("rib", ""));
         data.put("supplierIban", company.getOrDefault("iban", ""));
 
-        // Ajouter les données du client (client) and flattened fields
-        billService.findById(id).ifPresent(bill -> {
-            if (bill.getCustomer() != null) {
-                Map<String, String> client = new HashMap<>();
-                client.put("name", bill.getCustomer().getName());
-                client.put("address", bill.getCustomer().getAddress());
-                client.put("taxId", bill.getCustomer().getTvaCode() != null ? bill.getCustomer().getTvaCode() : "N/A");
-                data.put("client", client);
-
-                data.put("customerName", bill.getCustomer().getName());
-                data.put("customerAddress", bill.getCustomer().getAddress());
-                data.put("customerPhone", bill.getCustomer().getPhone() != null ? bill.getCustomer().getPhone() : "");
-                data.put("customerTva", bill.getCustomer().getTvaCode() != null ? bill.getCustomer().getTvaCode() : "N/A");
-            }
-        });
+        // Ajouter les données du client
+        billService.findById(id).ifPresent(bill -> populateCustomerData(bill, data));
 
         // default placeholders for delivery and payment
         data.put("deliveryAddress", "");
@@ -480,4 +454,54 @@ public class BillController {
         pdfGenerateService.generatePdfFileAPI(data, response);
     }
 
+    /**
+     * Remplit les données du client dans le Map pour le template PDF
+     */
+    private void populateCustomerData(com.example.stock_management.model.Bill bill, Map<String, Object> data) {
+        if (bill.getCustomer() == null) return;
+        
+        var customer = bill.getCustomer();
+        
+        // Données client de base
+        Map<String, String> client = new HashMap<>();
+        client.put("name", customer.getName());
+        client.put("address", customer.getAddress());
+        client.put("taxId", defaultIfNull(customer.getTvaCode(), "N/A"));
+        data.put("client", client);
+
+        data.put("customerName", customer.getName());
+        data.put("customerAddress", customer.getAddress());
+        data.put("customerPhone", defaultIfNull(customer.getPhone(), ""));
+        data.put("customerTva", defaultIfNull(customer.getTvaCode(), "N/A"));
+        
+        // Données pour la section "Livré à"
+        data.put("deliveryFullName", defaultIfNull(customer.getFullName(), ""));
+        data.put("deliveryCin", defaultIfNull(customer.getCin(), ""));
+        
+        // Extraire les composants de la plaque d'immatriculation (format: "Y تونس X")
+        parseLicensePlate(customer.getLicensePlate(), data);
+    }
+    
+    /**
+     * Parse la plaque d'immatriculation tunisienne et extrait Y et X
+     */
+    private void parseLicensePlate(String licensePlate, Map<String, Object> data) {
+        if (licensePlate != null && !licensePlate.isEmpty()) {
+            String[] parts = licensePlate.split("\\s+");
+            if (parts.length >= 3) {
+                data.put("licensePlateY", parts[0]);
+                data.put("licensePlateX", parts[2]);
+                return;
+            }
+        }
+        data.put("licensePlateY", "");
+        data.put("licensePlateX", "");
+    }
+    
+    /**
+     * Retourne la valeur ou une valeur par défaut si null
+     */
+    private String defaultIfNull(String value, String defaultValue) {
+        return value != null ? value : defaultValue;
+    }
 }

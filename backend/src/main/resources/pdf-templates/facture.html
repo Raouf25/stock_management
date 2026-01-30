@@ -458,8 +458,10 @@
         <td>
             <h3>Livré à</h3>
             <address>
-                <p th:text="${deliveryAddress}">Adresse de livraison</p>
-                <p><strong>Référence client:</strong> <span th:text="${customerRef}">Ref</span></p>
+                <p><strong>Nom et Prénom:</strong> <span th:text="${deliveryFullName}">Nom Prénom</span></p>
+                <p><strong>CIN:</strong> <span th:text="${deliveryCin}">00000000</span></p>
+                <p><strong>Immatriculation:</strong> <span th:text="${licensePlateX}">000</span> TN <span th:text="${licensePlateY}">0000</span></p>
+                <p th:if="${deliveryAddress != null and deliveryAddress != ''}"><strong>Adresse:</strong> <span th:text="${deliveryAddress}">Adresse de livraison</span></p>
             </address>
         </td>
     </tr>
@@ -536,10 +538,10 @@
 </table>
 
 <!-- Legal Information -->
-<div class="match-payment-header">
+<!-- <div class="match-payment-header">
     <strong>Mentions légales :</strong> Cette facture est établie conformément aux dispositions de l'article 18 du code de la TVA.
     Toute contestation doit être signalée dans un délai de 7 jours.
-</div>
+</div> -->
 
 <!-- Signatures -->
 <table class="signatures">
