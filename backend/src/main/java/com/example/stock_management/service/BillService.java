@@ -292,4 +292,35 @@ public class BillService {
         
         saleRepository.save(sale);
     }
+
+    @Transactional
+    public Bill registerPayment(Long billId, double amount) {
+        Bill bill = billRepository.findById(billId)
+            .orElseThrow(() -> new RuntimeException("Facture non trouvée avec l'ID: " + billId));
+        if (amount <= 0) {
+            throw new RuntimeException("Le montant doit être positif.");
+        }
+        if (bill.getAmountDue() <= 0) {
+            throw new RuntimeException("La facture est déjà totalement payée.");
+        }
+        if (amount > bill.getAmountDue()) {
+            throw new RuntimeException("Le montant dépasse le montant dû.");
+        }
+        // Met à jour l'acompte
+        double newDeposit = (bill.getDeposit() != null ? bill.getDeposit() : 0.0) + amount;
+        bill.setDeposit(newDeposit);
+        // Recalcule le montant dû
+        double newAmountDue = bill.getTotal() - newDeposit;
+        bill.setAmountDue(Math.max(0.0, newAmountDue));
+        // Met à jour le statut de paiement
+        if (bill.getAmountDue() == 0.0) {
+            bill.setPaymentStatus(PaymentStatus.PAID);
+        } else if (newDeposit > 0.0 && newDeposit < bill.getTotal()) {
+            bill.setPaymentStatus(PaymentStatus.PARTIALLY_PAID);
+        } else {
+            bill.setPaymentStatus(PaymentStatus.UNPAID);
+        }
+        // Sauvegarde
+        return billRepository.save(bill);
+    }
 }

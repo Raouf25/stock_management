@@ -133,6 +133,9 @@ import { ApiService } from '../../services/api.service';
                       <button class="btn btn-outline-info" title="Envoyer par Email" (click)="sendInvoiceByEmail(invoice)" [disabled]="sendingEmail === invoice.billId">
                         <i class="bi" [ngClass]="sendingEmail === invoice.billId ? 'bi-hourglass-split' : 'bi-envelope'"></i>
                       </button>
+                      <button *ngIf="invoice.paymentStatus === 'UNPAID' || invoice.paymentStatus === 'PARTIALLY_PAID'" class="btn btn-outline-warning" title="Enregistrer Paiement" (click)="openPaymentModal(invoice)">
+                        <i class="bi bi-cash-coin"></i>
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -461,5 +464,45 @@ export class InvoiceListComponent implements OnInit {
         }
       });
     }
+  }
+
+  // Ajout de la logique du paiement
+  paymentModalInvoice: any = null;
+  paymentAmount: number = 0;
+  paymentError: string = '';
+
+  openPaymentModal(invoice: any) {
+    this.paymentModalInvoice = invoice;
+    this.paymentAmount = invoice.amountDue;
+    this.paymentError = '';
+    // Affichage simple : prompt, peut être remplacé par un vrai modal
+    const montant = prompt(`Montant à enregistrer pour la facture #${invoice.billId} (max: ${invoice.amountDue} DNT)`, invoice.amountDue);
+    if (montant !== null) {
+      const value = Number(montant);
+      if (isNaN(value) || value <= 0 || value > invoice.amountDue) {
+        alert('Montant invalide ou supérieur au montant dû.');
+        return;
+      }
+      this.registerPayment(invoice, value);
+    }
+  }
+
+  registerPayment(invoice: any, amount: number) {
+    // Appel API à implémenter côté backend
+    this.apiService.registerInvoicePayment(invoice.billId, amount).subscribe({
+      next: (updatedInvoice: any) => {
+        // Met à jour la facture dans la liste
+        const idx = this.invoices.findIndex(inv => inv.billId === invoice.billId);
+        if (idx !== -1) {
+          this.invoices[idx] = updatedInvoice;
+          this.applyFilters();
+        }
+        alert('Paiement enregistré avec succès !');
+      },
+      error: (error: any) => {
+        alert('Erreur lors de l\'enregistrement du paiement.');
+        console.error(error);
+      }
+    });
   }
 }

@@ -160,4 +160,9 @@ export class ApiService {
   getInvoices(): Observable<any[]> {
     return this.getAllBills();
   }
+
+  // Register invoice payment
+  registerInvoicePayment(invoiceId: number, amount: number): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/bills/${invoiceId}/register-payment`, { amount });
+  }
 }

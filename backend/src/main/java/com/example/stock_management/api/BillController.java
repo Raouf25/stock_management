@@ -188,28 +188,36 @@ public class BillController {
                     String productRef = bp.getProduct() != null ? String.valueOf(bp.getProduct().getReference()) : "";
                     int qty = bp.getQuantity() != null ? bp.getQuantity() : 0;
                     double totalPrice = bp.getTotalProductPrice() != null ? bp.getTotalProductPrice() : 0.0;
+                    // Prefer the recorded line unit price (total/qty) when available (shows actual sale price).
+                    // Otherwise fall back to the product default selling price.
                     double unitPrice = 0.0;
                     if (totalPrice > 0.0 && qty > 0) {
                         unitPrice = totalPrice / qty;
                     } else if (bp.getProduct() != null && bp.getProduct().getUnitPriceSold() != null) {
                         unitPrice = bp.getProduct().getUnitPriceSold();
                     }
-                    double vatRate = 0.19;
+                    double vatRate = 0.19; // default 19%
+
+                    // Derive discount from stored line total: expectedGross - storedTotal
                     double expectedGross = unitPrice * qty;
                     double discount = expectedGross - totalPrice;
                     if (discount < 0) discount = 0.0;
+                    
+                    // Use stored discount percentage if available, otherwise calculate it
                     double discountPercentage = bp.getDiscountPercentage() != null ? bp.getDiscountPercentage() : 0.0;
                     if (discountPercentage == 0.0 && expectedGross > 0) {
                         discountPercentage = (discount / expectedGross) * 100;
                     }
+
+                    // totalPrice is considered the post-discount line HT (as stored in DB)
                     double priceAfterDiscount = totalPrice;
                     double vatAmount = priceAfterDiscount * vatRate;
                     double totalWithVat = priceAfterDiscount + vatAmount;
-                    
                     m.put("productRef", productRef);
                     m.put("productName", productName);
                     m.put("quantity", qty);
                     m.put("unitPriceValue", unitPrice);
+                    // totalPrice is the stored line HT (post-discount) -> expose as numeric for summation
                     m.put("unitPriceFormatted", numberUtils.formatDecimal(unitPrice, 3, 3));
                     m.put("totalPriceFormatted", numberUtils.formatDecimal(totalPrice, 3, 3));
                     m.put("discountValue", discount);
@@ -218,6 +226,7 @@ public class BillController {
                     m.put("vatRate", "19%");
                     m.put("vatAmountFormatted", numberUtils.formatDecimal(vatAmount, 3, 3));
                     m.put("totalWithVatFormatted", numberUtils.formatDecimal(totalWithVat, 3, 3));
+                    // also expose raw numeric values for later summation
                     m.put("vatAmountValue", vatAmount);
                     m.put("totalPriceValue", priceAfterDiscount);
                     productsList.add(m);
@@ -225,52 +234,63 @@ public class BillController {
             }
             data.put("products", productsList);
 
-            double sumTotalHT = productsList.stream()
-                .mapToDouble(p -> p.getOrDefault("totalPriceValue", 0.0) instanceof Number ? ((Number)p.getOrDefault("totalPriceValue", 0.0)).doubleValue() : 0.0)
-                .sum();
-            double sumVat = productsList.stream()
-                .mapToDouble(p -> p.getOrDefault("vatAmountValue", 0.0) instanceof Number ? ((Number)p.getOrDefault("vatAmountValue", 0.0)).doubleValue() : 0.0)
-                .sum();
-            double sumGrossHT = productsList.stream()
-                .mapToDouble(p -> {
-                    Number up = (Number)p.getOrDefault("unitPriceValue", 0.0);
-                    Number q = (Number)p.getOrDefault("quantity", 0);
-                    return up.doubleValue() * q.doubleValue();
-                })
-                .sum();
-            double sumDiscount = productsList.stream()
-                .mapToDouble(p -> p.getOrDefault("discountValue", 0.0) instanceof Number ? ((Number)p.getOrDefault("discountValue", 0.0)).doubleValue() : 0.0)
-                .sum();
+                // Compute totals by summing product lines (safer when discounts applied in DB)
+                // sum of stored line HT (post-discount)
+                double sumTotalHT = productsList.stream()
+                    .mapToDouble(p -> p.getOrDefault("totalPriceValue", 0.0) instanceof Number ? ((Number)p.getOrDefault("totalPriceValue", 0.0)).doubleValue() : 0.0)
+                    .sum();
+                // sum of VAT amounts (calculated on post-discount prices)
+                double sumVat = productsList.stream()
+                    .mapToDouble(p -> p.getOrDefault("vatAmountValue", 0.0) instanceof Number ? ((Number)p.getOrDefault("vatAmountValue", 0.0)).doubleValue() : 0.0)
+                    .sum();
 
-            double totalHT = sumTotalHT;
-            double tva = sumVat;
-            double total = totalHT + tva;
+                // sum of expected gross (unitPrice * qty) before discounts -> used to show "Total Remise"
+                double sumGrossHT = productsList.stream()
+                    .mapToDouble(p -> {
+                        Number up = (Number)p.getOrDefault("unitPriceValue", 0.0);
+                        Number q = (Number)p.getOrDefault("quantity", 0);
+                        return up.doubleValue() * q.doubleValue();
+                    })
+                    .sum();
 
-            data.put("total", total);
-            data.put("totalHT", totalHT);
-            data.put("tva", tva);
-            data.put("totalGrossHT", sumGrossHT);
-            data.put("totalDiscount", sumDiscount);
-            
+                // total discount applied
+                double sumDiscount = productsList.stream()
+                    .mapToDouble(p -> p.getOrDefault("discountValue", 0.0) instanceof Number ? ((Number)p.getOrDefault("discountValue", 0.0)).doubleValue() : 0.0)
+                    .sum();
+
+                double totalHT = sumTotalHT; // net HT after discounts (sum of stored line HT)
+                double tva = sumVat;
+                double total = totalHT + tva;
+
+                data.put("total", total);
+                data.put("totalHT", totalHT);
+                data.put("tva", tva);
+                // expose gross and discounts for template
+                data.put("totalGrossHT", sumGrossHT);
+                data.put("totalDiscount", sumDiscount);
             double deposit = bill.getDeposit() != null ? bill.getDeposit() : 0.0;
-            double amountDue = total - deposit;
+            double amountDue = total - deposit; // Net à payer = Total TTC - Acompte
             data.put("deposit", deposit);
             data.put("amountDue", amountDue);
 
+            // formatted totals
             data.put("totalHTFormatted", numberUtils.formatDecimal(totalHT, 3, 3));
             data.put("tvaFormatted", numberUtils.formatDecimal(tva, 3, 3));
-            data.put("totalTTCFormatted", numberUtils.formatDecimal(total, 3, 3));
-            data.put("totalGrossHTFormatted", numberUtils.formatDecimal(sumGrossHT, 3, 3));
-            data.put("totalDiscountFormatted", numberUtils.formatDecimal(sumDiscount, 3, 3));
+            data.put("totalTTCFormatted", numberUtils.formatDecimal(total, 3, 3) );
+            data.put("totalGrossHTFormatted", numberUtils.formatDecimal((double)data.getOrDefault("totalGrossHT", 0.0), 3, 3) );
+            data.put("totalDiscountFormatted", numberUtils.formatDecimal((double)data.getOrDefault("totalDiscount", 0.0), 3, 3));
             data.put("depositFormatted", numberUtils.formatDecimal(deposit, 3, 3));
             data.put("amountDueFormatted", numberUtils.formatDecimal(amountDue, 3, 3));
 
+            // Formater le numéro de facture
             data.put("billNumber", "FAC-" + String.format("%04d", bill.getIdBill()));
+
+            // Formater la date
             java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy");
             data.put("billDate", bill.getDateBill().format(formatter));
         });
 
-        // Ajouter les données de l'entreprise
+        // Ajouter les données de l'entreprise (company)
         Map<String, String> company = new HashMap<>();
         company.put("name", "Nom de l'entreprise");
         company.put("address", "Adresse de l'entreprise");
@@ -278,6 +298,7 @@ public class BillController {
         company.put("taxId", "123456789");
         data.put("company", company);
 
+        // flattened company fields for template placeholders
         data.put("companyName", company.get("name"));
         data.put("companyAddress", company.get("address"));
         data.put("companyPhone", company.get("phone"));
@@ -289,6 +310,7 @@ public class BillController {
         // Ajouter les données du client
         billService.findById(id).ifPresent(bill -> populateCustomerData(bill, data));
 
+        // default placeholders for delivery and payment
         data.put("deliveryAddress", "");
         data.put("customerRef", "");
         data.put("paymentMethod", "Espèces / Virement / Chèque");
@@ -504,4 +526,22 @@ public class BillController {
     private String defaultIfNull(String value, String defaultValue) {
         return value != null ? value : defaultValue;
     }
+
+
+@PostMapping("/{id}/register-payment")
+@Operation(summary = "Enregistrer un paiement sur une facture")
+public ResponseEntity<?> registerPayment(@PathVariable Long id, @RequestBody Map<String, Object> payload) {
+    try {
+        double amount = Double.parseDouble(payload.getOrDefault("amount", 0).toString());
+        var updatedBill = billService.registerPayment(id, amount);
+        return ResponseEntity.ok(updatedBill);
+    } catch (RuntimeException e) {
+        return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+    } catch (Exception e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .body(Map.of("error", "Erreur lors de l'enregistrement du paiement: " + e.getMessage()));
+    }
+}
+
+
 }
