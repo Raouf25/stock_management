@@ -11,18 +11,16 @@ export class ApiService {
   constructor(private http: HttpClient) { }
 
   private getApiUrl(): string {
-    const protocol = window.location.protocol;
     const hostname = window.location.hostname;
     
     // En développement local (localhost ou 127.0.0.1)
     if (hostname === 'localhost' || hostname === '127.0.0.1') {
-      return 'http://localhost:8080/api';
+      return '/api';  // Use proxy configuration
     }
     
-    // En Codespaces ou environnement de production
-    // Le backend doit être accessible sur le même domaine
-    // Pour Codespaces, on utilise le port 8080 proxié
-    return `${protocol}//${hostname.replace('-4200.', '-8080.')}/api`;
+    // En Codespaces ou devtunnel - utiliser le proxy Angular
+    // Le proxy redirigera vers localhost:8080
+    return '/api';
   }
 
   // === PRODUCTS ===

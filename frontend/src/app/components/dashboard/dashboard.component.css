@@ -437,7 +437,183 @@
   font-size: 1rem;
 }
 
-/* Responsive Design */
+/* ========================================
+   RESPONSIVE & MOBILE IMPROVEMENTS
+   ======================================== */
+
+/* Mobile-first responsive design */
+@media (max-width: 991px) {
+  .dashboard-page {
+    padding: 15px 10px;
+  }
+
+  /* Stack stat cards on mobile */
+  .stat-card {
+    margin-bottom: 15px;
+  }
+
+  /* Adjust font sizes */
+  .stat-number {
+    font-size: 2rem;
+  }
+
+  .stat-icon {
+    font-size: 2.2rem;
+  }
+
+  .stat-label {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-page {
+    padding: 10px 5px;
+  }
+
+  .page-header {
+    padding: 15px 10px;
+  }
+
+  .page-header h2 {
+    font-size: 1.5rem;
+  }
+
+  /* Compact stat cards */
+  .stat-card {
+    padding: 18px;
+    margin-bottom: 12px;
+  }
+
+  .stat-number {
+    font-size: 1.8rem;
+    margin: 8px 0;
+  }
+
+  .stat-icon {
+    font-size: 2rem;
+  }
+
+  .stat-label {
+    font-size: 0.85rem;
+  }
+
+  /* Charts responsive */
+  .chart-container,
+  .chart-container-small {
+    height: 280px;
+    margin-bottom: 20px;
+  }
+
+  /* Table cards */
+  .table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  table {
+    min-width: 600px;
+  }
+}
+
+@media (max-width: 576px) {
+  .dashboard-page {
+    padding: 10px 8px;
+  }
+
+  .dashboard-container {
+    padding: 0 5px;
+  }
+
+  .page-header {
+    padding: 12px 8px;
+  }
+
+  .page-header h2 {
+    font-size: 1.3rem;
+  }
+
+  /* Ultra-compact for small phones */
+  .stat-card {
+    padding: 15px 12px;
+    margin-bottom: 10px;
+  }
+
+  .stat-number {
+    font-size: 1.6rem;
+    margin: 6px 0;
+  }
+
+  .stat-icon {
+    font-size: 1.8rem;
+    margin-bottom: 8px;
+  }
+
+  .stat-label {
+    font-size: 0.8rem;
+  }
+
+  .stat-trend {
+    font-size: 0.75rem;
+  }
+
+  /* Compact charts */
+  .chart-container,
+  .chart-container-small {
+    height: 240px;
+    margin-bottom: 15px;
+  }
+
+  /* Button improvements */
+  .btn-action {
+    padding: 10px 20px;
+    font-size: 0.9rem;
+  }
+}
+
+/* Tablet landscape optimization */
+@media (min-width: 768px) and (max-width: 1024px) and (orientation: landscape) {
+  .stat-card {
+    padding: 20px 15px;
+  }
+
+  .stat-number {
+    font-size: 1.9rem;
+  }
+
+  .chart-container {
+    height: 320px;
+  }
+}
+
+/* High-resolution displays */
+@media (min-width: 1400px) {
+  .dashboard-page {
+    padding: 25px;
+  }
+
+  .stat-card {
+    padding: 30px;
+  }
+
+  .stat-number {
+    font-size: 2.5rem;
+  }
+
+  .stat-icon {
+    font-size: 3rem;
+  }
+
+  .chart-container {
+    height: 450px;
+  }
+
+  .chart-container-small {
+    height: 380px;
+  }
+}
+
+/* Responsive Design - Original */
 @media (max-width: 768px) {
   .page-header {
     padding: 20px;

@@ -95,4 +95,17 @@ export class AppComponent implements OnInit {
     this.authService.logout();
     this.router.navigate(['/login']);
   }
+
+  getUserInitials(): string {
+    const name = this.authService.currentUser?.name || 'U';
+    return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+  }
+
+  getTruncatedEmail(): string {
+    const email = this.authService.currentUser?.email || '';
+    if (email.length > 20) {
+      return email.substring(0, 20) + '...';
+    }
+    return email;
+  }
 }
