@@ -32,10 +32,7 @@ public class StockMovementController {
     @Operation(summary = "Récupérer tous les mouvements de stock")
     public ResponseEntity<List<StockMovementDTO>> getAllMovements() {
         List<StockMouvement> mouvements = stockMovementService.getAllMovements();
-        List<StockMovementDTO> dtos = mouvements.stream()
-            .map(stockMovementService::convertToDTO)
-            .collect(Collectors.toList());
-        return ResponseEntity.ok(dtos);
+        return ResponseEntity.ok(stockMovementService.convertToDTO(mouvements));
     }
 
     /**
@@ -66,10 +63,7 @@ public class StockMovementController {
         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDate dateTo) {
 
         List<StockMouvement> mouvements = stockMovementService.getMovementsByFilter(productId, type, dateFrom, dateTo);
-        List<StockMovementDTO> dtos = mouvements.stream()
-            .map(stockMovementService::convertToDTO)
-            .collect(Collectors.toList());
-        return ResponseEntity.ok(dtos);
+        return ResponseEntity.ok(stockMovementService.convertToDTO(mouvements));
     }
 
     /**
@@ -79,10 +73,7 @@ public class StockMovementController {
     @Operation(summary = "Récupérer les mouvements pour un produit spécifique")
     public ResponseEntity<List<StockMovementDTO>> getMovementsByProduct(@PathVariable Long productId) {
         List<StockMouvement> mouvements = stockMovementService.getMovementsByProduct(productId);
-        List<StockMovementDTO> dtos = mouvements.stream()
-            .map(stockMovementService::convertToDTO)
-            .collect(Collectors.toList());
-        return ResponseEntity.ok(dtos);
+        return ResponseEntity.ok(stockMovementService.convertToDTO(mouvements));
     }
 
     /**
@@ -93,10 +84,7 @@ public class StockMovementController {
     public ResponseEntity<?> getMovementsByType(@PathVariable String type) {
         try {
             List<StockMouvement> mouvements = stockMovementService.getMovementsByType(type);
-            List<StockMovementDTO> dtos = mouvements.stream()
-                .map(stockMovementService::convertToDTO)
-                .collect(Collectors.toList());
-            return ResponseEntity.ok(dtos);
+            return ResponseEntity.ok(stockMovementService.convertToDTO(mouvements));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body("Type de mouvement invalide. Utilisez ENTREE ou SORTIE");
@@ -111,10 +99,7 @@ public class StockMovementController {
     public ResponseEntity<?> getMovementsBySource(@PathVariable String source) {
         try {
             List<StockMouvement> mouvements = stockMovementService.getMovementsBySource(source);
-            List<StockMovementDTO> dtos = mouvements.stream()
-                .map(stockMovementService::convertToDTO)
-                .collect(Collectors.toList());
-            return ResponseEntity.ok(dtos);
+            return ResponseEntity.ok(stockMovementService.convertToDTO(mouvements));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body("Source invalide. Utilisez ACHAT, VENTE ou AJUSTEMENT");

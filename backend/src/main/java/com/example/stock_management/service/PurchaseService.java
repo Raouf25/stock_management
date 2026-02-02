@@ -134,6 +134,15 @@ public class PurchaseService {
     }
 
     /**
+     * Convertir une liste d'entités Purchase en liste de DTOs
+     */
+    public List<PurchaseDTO> convertToDTO(List<Purchase> purchases) {
+        return purchases.stream()
+                .map(this::convertToDTO)
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    /**
      * Mettre à jour le stock et la valeur du produit
      */
     private void updateProductStock(Product product, Integer quantity, Double unitPrice, boolean isEntry) {

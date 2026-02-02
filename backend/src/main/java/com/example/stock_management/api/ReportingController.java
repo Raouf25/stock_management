@@ -31,42 +31,12 @@ public class ReportingController {
     public ResponseEntity<Map<String, Object>> getGlobalStockSummary() {
         List<StockSummaryDTO> summaries = stockService.getGlobalStockSummary();
 
+        // Déléguer le calcul des totaux au service
+        Map<String, Object> totals = stockService.calculateGlobalTotals(summaries);
+
         Map<String, Object> response = new HashMap<>();
         response.put("products", summaries);
-        
-        // Calculer les totaux
-        int totalInitialQuantity = summaries.stream()
-            .mapToInt(StockSummaryDTO::getInitialQuantity)
-            .sum();
-        
-        double totalInitialValue = summaries.stream()
-            .mapToDouble(StockSummaryDTO::getInitialValue)
-            .sum();
-        
-        double totalPurchasesAmount = summaries.stream()
-            .mapToDouble(StockSummaryDTO::getTotalPurchasesAmount)
-            .sum();
-        
-        double totalSalesAmount = summaries.stream()
-            .mapToDouble(StockSummaryDTO::getTotalSalesAmount)
-            .sum();
-        
-        int totalFinalQuantity = summaries.stream()
-            .mapToInt(StockSummaryDTO::getFinalQuantity)
-            .sum();
-        
-        double totalFinalStockValue = summaries.stream()
-            .mapToDouble(StockSummaryDTO::getFinalStockValue)
-            .sum();
-
-        response.put("totals", Map.of(
-            "initialQuantity", totalInitialQuantity,
-            "initialValue", totalInitialValue,
-            "totalPurchasesAmount", totalPurchasesAmount,
-            "totalSalesAmount", totalSalesAmount,
-            "finalQuantity", totalFinalQuantity,
-            "finalStockValue", totalFinalStockValue
-        ));
+        response.put("totals", totals);
 
         return ResponseEntity.ok(response);
     }

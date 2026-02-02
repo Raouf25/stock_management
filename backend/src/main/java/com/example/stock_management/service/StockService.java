@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -160,5 +161,44 @@ public class StockService {
             }
             productRepository.save(product);
         });
+    }
+
+    /**
+     * Calculer les totaux globaux pour un résumé de stock
+     * Logique métier : agrégation des valeurs pour un dashboard
+     */
+    public Map<String, Object> calculateGlobalTotals(List<StockSummaryDTO> summaries) {
+        int totalInitialQuantity = summaries.stream()
+                .mapToInt(StockSummaryDTO::getInitialQuantity)
+                .sum();
+
+        double totalInitialValue = summaries.stream()
+                .mapToDouble(StockSummaryDTO::getInitialValue)
+                .sum();
+
+        double totalPurchasesAmount = summaries.stream()
+                .mapToDouble(StockSummaryDTO::getTotalPurchasesAmount)
+                .sum();
+
+        double totalSalesAmount = summaries.stream()
+                .mapToDouble(StockSummaryDTO::getTotalSalesAmount)
+                .sum();
+
+        int totalFinalQuantity = summaries.stream()
+                .mapToInt(StockSummaryDTO::getFinalQuantity)
+                .sum();
+
+        double totalFinalStockValue = summaries.stream()
+                .mapToDouble(StockSummaryDTO::getFinalStockValue)
+                .sum();
+
+        return java.util.Map.of(
+                "initialQuantity", totalInitialQuantity,
+                "initialValue", totalInitialValue,
+                "totalPurchasesAmount", totalPurchasesAmount,
+                "totalSalesAmount", totalSalesAmount,
+                "finalQuantity", totalFinalQuantity,
+                "finalStockValue", totalFinalStockValue
+        );
     }
 }

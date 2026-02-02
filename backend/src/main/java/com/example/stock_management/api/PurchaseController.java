@@ -47,10 +47,7 @@ public class PurchaseController {
     @Operation(summary = "Récupérer tous les achats")
     public ResponseEntity<List<PurchaseDTO>> getAllPurchases() {
         List<Purchase> purchases = purchaseService.getAllPurchases();
-        List<PurchaseDTO> dtos = purchases.stream()
-            .map(purchaseService::convertToDTO)
-            .collect(Collectors.toList());
-        return ResponseEntity.ok(dtos);
+        return ResponseEntity.ok(purchaseService.convertToDTO(purchases));
     }
 
     /**
@@ -80,10 +77,7 @@ public class PurchaseController {
         @RequestParam(required = false) Long supplierId) {
 
         List<Purchase> purchases = purchaseService.getPurchasesByFilter(dateFrom, dateTo, supplierId);
-        List<PurchaseDTO> dtos = purchases.stream()
-            .map(purchaseService::convertToDTO)
-            .collect(Collectors.toList());
-        return ResponseEntity.ok(dtos);
+        return ResponseEntity.ok(purchaseService.convertToDTO(purchases));
     }
 
     /**
@@ -93,9 +87,6 @@ public class PurchaseController {
     @Operation(summary = "Récupérer les achats pour un produit spécifique")
     public ResponseEntity<List<PurchaseDTO>> getPurchasesByProduct(@PathVariable Long productId) {
         List<Purchase> purchases = purchaseService.getPurchasesByProduct(productId);
-        List<PurchaseDTO> dtos = purchases.stream()
-            .map(purchaseService::convertToDTO)
-            .collect(Collectors.toList());
-        return ResponseEntity.ok(dtos);
+        return ResponseEntity.ok(purchaseService.convertToDTO(purchases));
     }
 }

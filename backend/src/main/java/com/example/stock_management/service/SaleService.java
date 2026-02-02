@@ -120,6 +120,15 @@ public class SaleService {
     }
 
     /**
+     * Convertir une liste d'entités Sale en liste de DTOs
+     */
+    public List<SaleDTO> convertToDTO(List<Sale> sales) {
+        return sales.stream()
+                .map(this::convertToDTO)
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    /**
      * Mettre à jour le stock du produit lors d'une sortie
      */
     private void updateProductStock(Product product, Integer quantity, boolean isAdjustment) {

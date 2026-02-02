@@ -96,4 +96,13 @@ public class StockMovementService {
         dto.setReference(mouvement.getReference());
         return dto;
     }
+
+    /**
+     * Convertir une liste d'entités StockMouvement en liste de DTOs
+     */
+    public List<StockMovementDTO> convertToDTO(List<StockMouvement> mouvements) {
+        return mouvements.stream()
+                .map(this::convertToDTO)
+                .collect(java.util.stream.Collectors.toList());
+    }
 }

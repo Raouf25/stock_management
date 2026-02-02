@@ -47,10 +47,7 @@ public class SaleController {
     @Operation(summary = "Récupérer toutes les ventes")
     public ResponseEntity<List<SaleDTO>> getAllSales() {
         List<Sale> sales = saleService.getAllSales();
-        List<SaleDTO> dtos = sales.stream()
-            .map(saleService::convertToDTO)
-            .collect(Collectors.toList());
-        return ResponseEntity.ok(dtos);
+        return ResponseEntity.ok(saleService.convertToDTO(sales));
     }
 
     /**
@@ -64,7 +61,7 @@ public class SaleController {
             return ResponseEntity.ok(saleService.convertToDTO(sale.get()));
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body("Vente non trouvée avec l'ID : " + id);
+                    .body("Vente non trouvée avec l'ID : " + id);
         }
     }
 
@@ -79,10 +76,7 @@ public class SaleController {
         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDate dateTo) {
 
         List<Sale> sales = saleService.getSalesByFilter(dateFrom, dateTo);
-        List<SaleDTO> dtos = sales.stream()
-            .map(saleService::convertToDTO)
-            .collect(Collectors.toList());
-        return ResponseEntity.ok(dtos);
+        return ResponseEntity.ok(saleService.convertToDTO(sales));
     }
 
     /**
@@ -92,9 +86,6 @@ public class SaleController {
     @Operation(summary = "Récupérer les ventes pour un produit spécifique")
     public ResponseEntity<List<SaleDTO>> getSalesByProduct(@PathVariable Long productId) {
         List<Sale> sales = saleService.getSalesByProduct(productId);
-        List<SaleDTO> dtos = sales.stream()
-            .map(saleService::convertToDTO)
-            .collect(Collectors.toList());
-        return ResponseEntity.ok(dtos);
+        return ResponseEntity.ok(saleService.convertToDTO(sales));
     }
 }
