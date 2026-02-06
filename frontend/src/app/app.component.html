@@ -9,9 +9,9 @@
   <div class="sidebar-overlay" *ngIf="sidebarOpen" (click)="toggleSidebarOpen()" [@fadeInOut]></div>
   
   <!-- Sidebar -->
-  <div class="sidebar" [class.show]="sidebarOpen">
+  <div class="sidebar" [class.show]="sidebarOpen" [class.collapsed]="sidebarCollapsed">
     <div class="sidebar-header">
-      <div class="logo-wrapper">
+      <div class="logo-wrapper" (click)="toggleSidebar()">
         <div class="logo-icon">
           <i class="bi bi-gear-fill"></i>
         </div>

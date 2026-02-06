@@ -39,12 +39,18 @@ export class AppComponent implements OnInit {
   }
 
   toggleSidebar() {
-    this.sidebarCollapsed = !this.sidebarCollapsed;
-    // Fermer les sous-menus quand on réduit la sidebar
-    if (this.sidebarCollapsed) {
-      this.invoiceMenuOpen = false;
+    // Sur mobile (< 992px), fermer le sidebar off-canvas
+    if (window.innerWidth < 992) {
+      this.sidebarOpen = false;
+    } else {
+      // Sur desktop, toggle collapsed mode
+      this.sidebarCollapsed = !this.sidebarCollapsed;
+      // Fermer les sous-menus quand on réduit la sidebar
+      if (this.sidebarCollapsed) {
+        this.invoiceMenuOpen = false;
+      }
+      localStorage.setItem('sidebarCollapsed', this.sidebarCollapsed.toString());
     }
-    localStorage.setItem('sidebarCollapsed', this.sidebarCollapsed.toString());
   }
 
   toggleSidebarOpen() {
