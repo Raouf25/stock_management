@@ -79,7 +79,6 @@ export class AppComponent implements OnInit {
       '/sales': 'Gestion des Ventes',
       '/stock-movements': 'Mouvements de Stock',
       '/invoices': 'Gestion des Factures',
-      '/invoices/dashboard': 'Dashboard Facturation',
       '/invoices/create': 'Créer Facture',
       '/invoices/list': 'Liste des Factures'
     };

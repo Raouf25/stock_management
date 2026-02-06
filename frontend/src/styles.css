@@ -17,6 +17,127 @@ body {
   font-size: 14px;
 }
 
+/* ====================================
+   SHARED INVOICE & DASHBOARD STYLES
+   ==================================== */
+
+/* Page Container */
+.invoice-page-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  padding: 1rem;
+}
+
+/* Page Header */
+.invoice-page-header {
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.invoice-page-title {
+  color: #1f2937;
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+/* Stat Cards */
+.invoice-stat-card {
+  background: white;
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+.invoice-stat-card.border-blue {
+  border-top: 3px solid #3498db;
+}
+
+.invoice-stat-card.border-green {
+  border-top: 3px solid #2ecc71;
+}
+
+.invoice-stat-card.border-red {
+  border-top: 3px solid #e74c3c;
+}
+
+.invoice-stat-card.border-orange {
+  border-top: 3px solid #f39c12;
+}
+
+/* Card with gradient header */
+.invoice-card {
+  background: white;
+  border-radius: 0.75rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  border: 0;
+}
+
+.invoice-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+}
+
+.invoice-card-header.gradient-purple {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+}
+
+.invoice-card-header.gradient-green {
+  background: linear-gradient(135deg, #22c55e 0%, #4ade80 100%);
+}
+
+.invoice-card-header.gradient-blue {
+  background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+}
+
+.invoice-card-header.gradient-indigo {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+}
+
+.invoice-card-header.gradient-orange {
+  background: linear-gradient(135deg, #f97316 0%, #fb923c 100%);
+}
+
+.invoice-card-header-icon {
+  width: 1rem;
+  height: 1rem;
+  color: white;
+}
+
+.invoice-card-header-title {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: white;
+}
+
+/* Responsive Grids */
+.invoice-stats-grid {
+  margin-bottom: 1.5rem;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+}
+
+.invoice-info-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.invoice-charts-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
 /* Enhanced Focus States for Accessibility */
 .btn:focus,
 .form-control:focus,
@@ -26,6 +147,30 @@ textarea:focus {
   outline: 2px solid #0d6efd;
   outline-offset: 2px;
   box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+/* Responsive Breakpoints */
+@media (min-width: 640px) {
+  .invoice-stats-grid {
+    gap: 1rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .invoice-stats-grid.stats-3-cols {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .invoice-stats-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  
+  .invoice-info-grid,
+  .invoice-charts-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 /* Improved Button Styles */
@@ -468,4 +613,43 @@ textarea:focus {
     color: #ffffff;
     border-color: #555;
   }
+}
+
+/* ====================================
+   ADDITIONAL INVOICE LIST STYLES
+   ==================================== */
+
+/* Responsive table/cards toggle */
+.desktop-table {
+  display: none;
+}
+
+.mobile-cards {
+  display: block;
+}
+
+@media (min-width: 1024px) {
+  .desktop-table {
+    display: block;
+  }
+  
+  .mobile-cards {
+    display: none;
+  }
+}
+
+/* Status Badge Background Colors */
+.bg-success {
+  background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+  color: white;
+}
+
+.bg-danger {
+  background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+  color: white;
+}
+
+.bg-warning {
+  background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+  color: white;
 }

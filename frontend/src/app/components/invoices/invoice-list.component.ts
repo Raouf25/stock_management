@@ -9,18 +9,18 @@ import { ApiService } from '../../services/api.service';
   standalone: true,
   imports: [CommonModule, RouterModule, FormsModule],
   template: `
-    <div style="min-height: 100vh; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); padding: 1rem;">
+    <div class="invoice-page-container">
       
       <!-- Header - Responsive -->
-      <div style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+      <div class="invoice-page-header">
         <span style="font-size: 2rem;">📁</span>
-        <h1 style="color: #1f2937; font-size: 1.5rem; font-weight: 700; margin: 0;">Liste des Factures</h1>
+        <h1 class="invoice-page-title">Liste des Factures</h1>
       </div>
 
       <!-- Stats Cards - Responsive Grid -->
-      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-bottom: 1.5rem;">
+      <div class="invoice-stats-grid stats-3-cols">
         <!-- Total Factures -->
-        <div style="background: white; border-radius: 0.75rem; padding: 0.75rem; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); border-top: 3px solid #3498db; overflow: hidden;">
+        <div class="invoice-stat-card border-blue">
           <div style="display: flex; align-items: center; gap: 0.5rem;">
             <div style="display: none; width: 2.5rem; height: 2.5rem; background: #eff6ff; border-radius: 9999px; padding: 0.5rem; align-items: center; justify-content: center;">
               <span style="font-size: 1.25rem;">📄</span>
@@ -33,7 +33,7 @@ import { ApiService } from '../../services/api.service';
         </div>
         
         <!-- Montant Total -->
-        <div style="background: white; border-radius: 0.75rem; padding: 0.75rem; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); border-top: 3px solid #2ecc71; overflow: hidden;">
+        <div class="invoice-stat-card border-green">
           <div style="display: flex; align-items: center; gap: 0.5rem;">
             <div style="display: none; width: 2.5rem; height: 2.5rem; background: #dcfce7; border-radius: 9999px; padding: 0.5rem; align-items: center; justify-content: center;">
               <span style="font-size: 1.25rem;">💵</span>
@@ -46,7 +46,7 @@ import { ApiService } from '../../services/api.service';
         </div>
         
         <!-- Total Dû -->
-        <div style="background: white; border-radius: 0.75rem; padding: 0.75rem; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); border-top: 3px solid #f39c12; overflow: hidden;">
+        <div class="invoice-stat-card border-orange">
           <div style="display: flex; align-items: center; gap: 0.5rem;">
             <div style="display: none; width: 2.5rem; height: 2.5rem; background: #fef3c7; border-radius: 9999px; padding: 0.5rem; align-items: center; justify-content: center;">
               <span style="font-size: 1.25rem;">💰</span>
@@ -60,11 +60,11 @@ import { ApiService } from '../../services/api.service';
       </div>
       
       <!-- Filtres Card - Compact & Responsive -->
-      <div style="background: white; border-radius: 0.75rem; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); margin-bottom: 1.5rem; overflow: hidden; border: 0;">
-        <div style="display: flex; align-items: center; justify-content: space-between; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); padding: 0.75rem 1rem;">
+      <div class="invoice-card">
+        <div class="invoice-card-header gradient-purple">
           <div style="display: flex; align-items: center; gap: 0.5rem; color: white;">
             <span style="font-size: 1rem;">🔍</span>
-            <span style="font-size: 0.875rem; font-weight: 600;">Filtres</span>
+            <span class="invoice-card-header-title">Filtres</span>
           </div>
         </div>
         <div style="padding: 0.75rem 1rem;">
@@ -108,11 +108,11 @@ import { ApiService } from '../../services/api.service';
       </div>
       
       <!-- Invoices List Card -->
-      <div style="background: white; border-radius: 0.75rem; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); overflow: hidden; border: 0;">
-        <div style="background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%); padding: 0.75rem 1rem;">
+      <div class="invoice-card">
+        <div class="invoice-card-header gradient-blue">
           <div style="display: flex; align-items: center; gap: 0.5rem; color: white;">
             <span style="font-size: 1.125rem;">📁</span>
-            <span style="font-weight: 600; font-size: 0.875rem;">Liste des Factures ({{ filteredInvoices.length }})</span>
+            <span class="invoice-card-header-title">Liste des Factures ({{ filteredInvoices.length }})</span>
           </div>
         </div>
         
@@ -248,71 +248,7 @@ import { ApiService } from '../../services/api.service';
         </div>
       </div>
     </div>
-  `,
-  styles: [`
-    /* Responsive table/cards toggle */
-    .desktop-table {
-      display: none;
-    }
-    
-    .mobile-cards {
-      display: block;
-    }
-    
-    @media (min-width: 1024px) {
-      .desktop-table {
-        display: block;
-      }
-      
-      .mobile-cards {
-        display: none;
-      }
-    }
-    
-    .bg-success {
-      background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
-      color: white;
-    }
-
-    .bg-danger {
-      background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
-      color: white;
-    }
-
-    .bg-warning {
-      background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
-      color: white;
-    }
-
-    /* Responsive utilities */
-    @media (min-width: 640px) {
-      /* Show icons on larger screens */
-      .stat-icon {
-        display: flex !important;
-      }
-      /* Adjust text alignment */
-      .stat-content {
-        text-align: left !important;
-      }
-    }
-
-    @media (min-width: 768px) {
-      /* Larger fonts on tablets */
-      .stat-value {
-        font-size: 1.5rem !important;
-      }
-      .stat-label {
-        font-size: 0.75rem !important;
-      }
-    }
-
-    @media (min-width: 1024px) {
-      /* Even larger on desktop */
-      .stat-value {
-        font-size: 1.875rem !important;
-      }
-    }
-  `]
+  `
 })
 export class InvoiceListComponent implements OnInit {
   invoices: any[] = [];

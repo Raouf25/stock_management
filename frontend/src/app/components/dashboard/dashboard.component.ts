@@ -10,483 +10,187 @@ Chart.register(...registerables);
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="min-h-full bg-slate-50">
-      <div class="p-4 sm:p-6 lg:p-8">
-        <!-- Header -->
-        <div class="mb-6">
-          <h1 class="flex items-center gap-2 text-2xl font-bold text-gray-800 sm:text-3xl">
-            <span class="text-2xl">📊</span>
-            <span class="dashboard-gradient-text">Dashboard Facturation</span>
-          </h1>
-        </div>
+    <div class="invoice-page-container">
+      
+      <!-- Header - Responsive -->
+      <div class="invoice-page-header">
+        <span style="font-size: 2rem;">📊</span>
+        <h1 class="invoice-page-title">Dashboard Facturation</h1>
+      </div>
 
-        <!-- Stats Cards - Compact -->
-        <div class="mb-6 grid grid-cols-2 gap-2 sm:gap-4 lg:grid-cols-4">
+        <!-- Stats Cards - Compact 2 cols mobile, 4 cols desktop -->
+        <div class="invoice-stats-grid">
           <!-- Total Factures -->
-          <div class="stat-card border-t-blue">
-            <div class="stat-content">
-              <div class="stat-icon-wrapper bg-gray-100 hidden sm:flex">
-                <svg class="stat-icon text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div class="invoice-stat-card border-blue">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <div class="stat-icon-desktop" style="display: none; width: 2.5rem; height: 2.5rem; background: #f3f4f6; border-radius: 9999px; padding: 0.5rem; align-items: center; justify-content: center;">
+                <svg style="width: 1.25rem; height: 1.25rem; color: #4b5563;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                 </svg>
               </div>
-              <p class="stat-value">{{ invoiceKPIs.totalInvoices || 0 }}</p>
-              <p class="stat-label">TOTAL FACTURES</p>
+              <div style="flex: 1; min-width: 0; text-align: center;" class="stat-text">
+                <p style="font-size: 1.125rem; font-weight: 700; color: #111827; margin: 0; line-height: 1.2;">{{ invoiceKPIs.totalInvoices || 0 }}</p>
+                <p style="font-size: 0.625rem; font-weight: 600; color: #6b7280; text-transform: uppercase; margin: 0.125rem 0 0; letter-spacing: 0.025em;">Total Factures</p>
+              </div>
             </div>
           </div>
 
           <!-- Chiffre d'Affaires -->
-          <div class="stat-card border-t-green">
-            <div class="stat-content">
-              <div class="stat-icon-wrapper bg-amber-100 hidden sm:flex">
-                <svg class="stat-icon text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div class="invoice-stat-card border-green">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <div class="stat-icon-desktop" style="display: none; width: 2.5rem; height: 2.5rem; background: #fef3c7; border-radius: 9999px; padding: 0.5rem; align-items: center; justify-content: center;">
+                <svg style="width: 1.25rem; height: 1.25rem; color: #d97706;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
               </div>
-              <p class="stat-value">{{ invoiceKPIs.totalInvoicedAmount || 0 | number: '1.0-0' }}</p>
-              <p class="stat-label">CHIFFRE D'AFFAIRES (DNT)</p>
+              <div style="flex: 1; min-width: 0; text-align: center;" class="stat-text">
+                <p style="font-size: 1.125rem; font-weight: 700; color: #111827; margin: 0; line-height: 1.2;">{{ invoiceKPIs.totalInvoicedAmount || 0 | number: '1.0-0' }}</p>
+                <p style="font-size: 0.625rem; font-weight: 600; color: #6b7280; text-transform: uppercase; margin: 0.125rem 0 0; letter-spacing: 0.025em;">CA Total (DNT)</p>
+              </div>
             </div>
           </div>
 
           <!-- Factures Impayées -->
-          <div class="stat-card border-t-red">
-            <div class="stat-content">
-              <div class="stat-icon-wrapper bg-amber-100 hidden sm:flex">
-                <svg class="stat-icon text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div class="invoice-stat-card border-red">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <div class="stat-icon-desktop" style="display: none; width: 2.5rem; height: 2.5rem; background: #fef3c7; border-radius: 9999px; padding: 0.5rem; align-items: center; justify-content: center;">
+                <svg style="width: 1.25rem; height: 1.25rem; color: #d97706;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
                 </svg>
               </div>
-              <p class="stat-value">{{ invoiceKPIs.unpaidInvoices || 0 }}</p>
-              <p class="stat-label">FACTURES IMPAYEES</p>
+              <div style="flex: 1; min-width: 0; text-align: center;" class="stat-text">
+                <p style="font-size: 1.125rem; font-weight: 700; color: #111827; margin: 0; line-height: 1.2;">{{ invoiceKPIs.unpaidInvoices || 0 }}</p>
+                <p style="font-size: 0.625rem; font-weight: 600; color: #6b7280; text-transform: uppercase; margin: 0.125rem 0 0; letter-spacing: 0.025em;">Impayées</p>
+              </div>
             </div>
           </div>
 
           <!-- Ce Mois -->
-          <div class="stat-card border-t-purple">
-            <div class="stat-content">
-              <div class="stat-icon-wrapper bg-red-100 hidden sm:flex">
-                <svg class="stat-icon text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div class="invoice-stat-card border-orange">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <div class="stat-icon-desktop" style="display: none; width: 2.5rem; height: 2.5rem; background: #fee2e2; border-radius: 9999px; padding: 0.5rem; align-items: center; justify-content: center;">
+                <svg style="width: 1.25rem; height: 1.25rem; color: #dc2626;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                 </svg>
               </div>
-              <p class="stat-value">{{ invoiceKPIs.thisMonthInvoices || 0 }}</p>
-              <p class="stat-label">CE MOIS</p>
+              <div style="flex: 1; min-width: 0; text-align: center;" class="stat-text">
+                <p style="font-size: 1.125rem; font-weight: 700; color: #111827; margin: 0; line-height: 1.2;">{{ invoiceKPIs.invoicesThisMonth || 0 }}</p>
+                <p style="font-size: 0.625rem; font-weight: 600; color: #6b7280; text-transform: uppercase; margin: 0.125rem 0 0; letter-spacing: 0.025em;">Ce Mois</p>
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- Statuts & Resume -->
-        <div class="grid gap-4 lg:grid-cols-2">
+        <!-- Statuts & Resume - 1 col mobile, 2 cols desktop -->
+        <div class="invoice-info-grid">
           <!-- Statuts de Paiement -->
-          <div class="card-container">
-            <div class="card-header gradient-purple">
-              <svg class="card-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div class="invoice-card">
+            <div class="invoice-card-header gradient-purple">
+              <svg class="invoice-card-header-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
               </svg>
-              <span class="card-title">Statuts de Paiement</span>
+              <span class="invoice-card-header-title">Statuts de Paiement</span>
             </div>
-            <div class="card-body">
-              <div class="status-list">
-                <div class="status-item">
-                  <span class="status-badge bg-amber-500">Partiellement Payé</span>
-                  <span class="status-count">{{ invoiceKPIs.partiallyPaidInvoices || 0 }}</span>
-                </div>
-                <div class="status-item">
-                  <span class="status-badge bg-emerald-500">Payé</span>
-                  <span class="status-count">{{ invoiceKPIs.paidInvoices || 0 }}</span>
-                </div>
+            <div>
+              <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; border-bottom: 1px solid #e5e7eb;">
+                <span style="color: white; font-size: 0.75rem; padding: 0.25rem 0.75rem; border-radius: 0.25rem; background: #f59e0b;">Partiellement Payé</span>
+                <span style="font-size: 1.125rem; font-weight: 600; color: #374151;">{{ invoiceKPIs.paymentStatusDistribution?.PARTIALLY_PAID || 0 }}</span>
+              </div>
+              <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; border-bottom: 1px solid #e5e7eb;">
+                <span style="color: white; font-size: 0.75rem; padding: 0.25rem 0.75rem; border-radius: 0.25rem; background: #10b981;">Payé</span>
+                <span style="font-size: 1.125rem; font-weight: 600; color: #374151;">{{ invoiceKPIs.paymentStatusDistribution?.PAID || 0 }}</span>
+              </div>
+              <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem;">
+                <span style="color: white; font-size: 0.75rem; padding: 0.25rem 0.75rem; border-radius: 0.25rem; background: #ef4444;">Impayé</span>
+                <span style="font-size: 1.125rem; font-weight: 600; color: #374151;">{{ invoiceKPIs.paymentStatusDistribution?.UNPAID || 0 }}</span>
               </div>
             </div>
           </div>
 
           <!-- Resume Financier -->
-          <div class="card-container">
-            <div class="card-header gradient-green">
-              <svg class="card-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div class="invoice-card">
+            <div class="invoice-card-header gradient-green">
+              <svg class="invoice-card-header-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
               </svg>
-              <span class="card-title">Résumé Financier</span>
+              <span class="invoice-card-header-title">Résumé Financier</span>
             </div>
-            <div class="card-body p-3 sm:p-4">
-              <div class="grid grid-cols-2 gap-3 sm:gap-4">
-                <div class="text-center">
-                  <p class="financial-value">{{ invoiceKPIs.thisMonthAmount || 0 | number: '1.0-0' }}</p>
-                  <p class="financial-label">CA ce Mois (DNT)</p>
+            <div style="padding: 0.75rem 1rem;">
+              <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; margin-bottom: 0.75rem;">
+                <div style="text-align: center;">
+                  <p style="font-size: 1.25rem; font-weight: 700; color: #111827; margin: 0;">{{ invoiceKPIs.revenueThisMonth || 0 | number: '1.0-0' }}</p>
+                  <p style="font-size: 0.625rem; color: #6b7280; text-transform: uppercase; letter-spacing: 0.025em; margin: 0.25rem 0 0;">CA ce Mois (DNT)</p>
                 </div>
-                <div class="text-center">
-                  <p class="financial-value text-red-500">{{ invoiceKPIs.totalAmountDue || 0 | number: '1.0-0' }}</p>
-                  <p class="financial-label">Total Dû (DNT)</p>
+                <div style="text-align: center;">
+                  <p style="font-size: 1.25rem; font-weight: 700; color: #ef4444; margin: 0;">{{ invoiceKPIs.totalAmountDue || 0 | number: '1.0-0' }}</p>
+                  <p style="font-size: 0.625rem; color: #6b7280; text-transform: uppercase; letter-spacing: 0.025em; margin: 0.25rem 0 0;">Total Dû (DNT)</p>
                 </div>
               </div>
-              <div class="financial-separator">
-                <p class="financial-average">{{ getAverageBasket() | number: '1.0-0' }}</p>
-                <p class="financial-average-label">Panier Moyen (DNT)</p>
+              <div style="border-top: 1px solid #e5e7eb; padding-top: 0.75rem; text-align: center;">
+                <p style="font-size: 1.5rem; font-weight: 700; color: #10b981; margin: 0;">{{ getAverageBasket() | number: '1.0-0' }}</p>
+                <p style="font-size: 0.75rem; color: #6b7280; text-transform: uppercase; letter-spacing: 0.025em; margin: 0.25rem 0 0;">Panier Moyen (DNT)</p>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Charts Section (old dashboard) -->
-        <div class="mt-8 grid gap-4 lg:grid-cols-2">
+        <!-- Charts Section - 1 col mobile, 2 cols desktop -->
+        <div class="invoice-charts-grid">
           <!-- Stock Chart -->
-          <div class="card-container">
-            <div class="card-header gradient-blue">
-              <svg class="card-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div class="invoice-card">
+            <div class="invoice-card-header gradient-blue">
+              <svg class="invoice-card-header-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
               </svg>
-              <span class="card-title">Valeur du Stock</span>
+              <span class="invoice-card-header-title">Valeur du Stock</span>
             </div>
-            <div class="card-body">
-              <div class="chart-wrapper">
-                <canvas #stockChartCanvas></canvas>
-              </div>
+            <div style="padding: 1rem; height: 300px; position: relative;">
+              <canvas #stockChartCanvas></canvas>
             </div>
           </div>
 
           <!-- Sales Chart -->
-          <div class="card-container">
-            <div class="card-header gradient-purple">
-              <svg class="card-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div class="invoice-card">
+            <div class="invoice-card-header gradient-indigo">
+              <svg class="invoice-card-header-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/>
               </svg>
-              <span class="card-title">Ventes vs Achats</span>
+              <span class="invoice-card-header-title">Ventes vs Achats</span>
             </div>
-            <div class="card-body">
-              <div class="chart-wrapper">
-                <canvas #salesChartCanvas></canvas>
-              </div>
+            <div style="padding: 1rem; height: 300px; position: relative;">
+              <canvas #salesChartCanvas></canvas>
             </div>
           </div>
 
           <!-- Top Products Chart -->
-          <div class="card-container">
-            <div class="card-header gradient-green">
-              <svg class="card-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div class="invoice-card">
+            <div class="invoice-card-header gradient-green">
+              <svg class="invoice-card-header-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"/>
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"/>
               </svg>
-              <span class="card-title">Top 5 Produits</span>
+              <span class="invoice-card-header-title">Top 5 Produits</span>
             </div>
-            <div class="card-body">
-              <div class="chart-wrapper">
-                <canvas #topProductsChartCanvas></canvas>
-              </div>
+            <div style="padding: 1rem; height: 300px; position: relative;">
+              <canvas #topProductsChartCanvas></canvas>
             </div>
           </div>
 
           <!-- Category Chart -->
-          <div class="card-container">
-            <div class="card-header gradient-orange">
-              <svg class="card-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div class="invoice-card">
+            <div class="invoice-card-header gradient-orange">
+              <svg class="invoice-card-header-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
               </svg>
-              <span class="card-title">Catégories</span>
+              <span class="invoice-card-header-title">Catégories</span>
             </div>
-            <div class="card-body">
-              <div class="chart-wrapper">
-                <canvas #categoryChartCanvas></canvas>
-              </div>
+            <div style="padding: 1rem; height: 300px; position: relative;">
+              <canvas #categoryChartCanvas></canvas>
             </div>
           </div>
         </div>
-      </div>
     </div>
-  `,
-  styles: [`
-    .min-h-full {
-      min-height: 100vh;
-    }
-
-    .bg-slate-50 {
-      background-color: rgb(248 250 252);
-    }
-
-    .p-4 { padding: 1rem; }
-    .p-3 { padding: 0.75rem; }
-    .sm\\:p-4 { padding: 1rem; }
-    .sm\\:p-6 { padding: 1.5rem; }
-    .lg\\:p-8 { padding: 2rem; }
-
-    .mb-6 { margin-bottom: 1.5rem; }
-    .mt-8 { margin-top: 2rem; }
-
-    .flex { display: flex; }
-    .items-center { align-items: center; }
-    .gap-2 { gap: 0.5rem; }
-    .gap-3 { gap: 0.75rem; }
-    .gap-4 { gap: 1rem; }
-
-    .text-2xl { font-size: 1.5rem; line-height: 2rem; }
-    .text-3xl { font-size: 1.875rem; line-height: 2.25rem; }
-    .font-bold { font-weight: 700; }
-    .text-gray-800 { color: rgb(31 41 55); }
-
-    .dashboard-gradient-text {
-      background: linear-gradient(to right, rgb(79 70 229), rgb(124 58 237));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    /* Grid System */
-    .grid { display: grid; }
-    .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-
-    /* Stats Cards */
-    .stat-card {
-      background: white;
-      border-radius: 0.5rem;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-      overflow: hidden;
-      border-top: 3px solid;
-    }
-
-    .border-t-blue { border-top-color: rgb(96 165 250); }
-    .border-t-green { border-top-color: rgb(74 222 128); }
-    .border-t-red { border-top-color: rgb(248 113 113); }
-    .border-t-purple { border-top-color: rgb(192 132 252); }
-
-    .stat-content {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 0.75rem;
-    }
-
-    .stat-icon-wrapper {
-      margin-bottom: 0.5rem;
-      border-radius: 9999px;
-      padding: 0.5rem;
-      display: none;
-    }
-
-    .bg-gray-100 { background-color: rgb(243 244 246); }
-    .bg-amber-100 { background-color: rgb(254 243 199); }
-    .bg-red-100 { background-color: rgb(254 226 226); }
-
-    .stat-icon {
-      width: 1.25rem;
-      height: 1.25rem;
-    }
-
-    .text-gray-600 { color: rgb(75 85 99); }
-    .text-amber-600 { color: rgb(217 119 6); }
-    .text-red-600 { color: rgb(220 38 38); }
-
-    .stat-value {
-      font-size: 1.25rem;
-      font-weight: 700;
-      color: rgb(17 24 39);
-      margin: 0;
-    }
-
-    .stat-label {
-      text-align: center;
-      font-size: 0.563rem;
-      font-weight: 500;
-      color: rgb(107 114 128);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      margin: 0;
-    }
-
-    /* Card Containers */
-    .card-container {
-      background: white;
-      border-radius: 0.5rem;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-      overflow: hidden;
-      border: none;
-    }
-
-    .card-header {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.5rem 0.75rem;
-    }
-
-    .gradient-purple {
-      background: linear-gradient(to right, rgb(99 102 241), rgb(139 92 246));
-    }
-
-    .gradient-green {
-      background: linear-gradient(to right, rgb(34 197 94), rgb(74 222 128));
-    }
-
-    .gradient-blue {
-      background: linear-gradient(to right, rgb(59 130 246), rgb(96 165 250));
-    }
-
-    .gradient-orange {
-      background: linear-gradient(to right, rgb(249 115 22), rgb(251 146 60));
-    }
-
-    .card-icon {
-      width: 1rem;
-      height: 1rem;
-      color: white;
-    }
-
-    .card-title {
-      font-size: 0.875rem;
-      font-weight: 500;
-      color: white;
-    }
-
-    .card-body {
-      padding: 0;
-    }
-
-    /* Status List */
-    .status-list {
-      border-top: 1px solid rgb(229 231 235);
-    }
-
-    .status-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0.75rem;
-      border-bottom: 1px solid rgb(229 231 235);
-    }
-
-    .status-item:last-child {
-      border-bottom: none;
-    }
-
-    .status-badge {
-      color: white;
-      font-size: 0.75rem;
-      padding: 0.25rem 0.75rem;
-      border-radius: 0.25rem;
-    }
-
-    .bg-amber-500 { background-color: rgb(245 158 11); }
-    .bg-emerald-500 { background-color: rgb(16 185 129); }
-
-    .status-count {
-      font-size: 1.125rem;
-      font-weight: 600;
-      color: rgb(55 65 81);
-    }
-
-    /* Financial Summary */
-    .financial-value {
-      font-size: 1.25rem;
-      font-weight: 700;
-      color: rgb(17 24 39);
-      margin: 0;
-    }
-
-    .financial-label {
-      font-size: 0.625rem;
-      color: rgb(107 114 128);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      margin: 0.25rem 0 0;
-    }
-
-    .financial-separator {
-      margin-top: 1rem;
-      border-top: 1px solid rgb(229 231 235);
-      padding-top: 1rem;
-      text-align: center;
-    }
-
-    .financial-average {
-      font-size: 1.5rem;
-      font-weight: 700;
-      color: rgb(16 185 129);
-      margin: 0;
-    }
-
-    .financial-average-label {
-      font-size: 0.75rem;
-      color: rgb(107 114 128);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      margin: 0.25rem 0 0;
-    }
-
-    .text-center { text-align: center; }
-    .text-red-500 { color: rgb(239 68 68); }
-
-    /* Chart Wrapper */
-    .chart-wrapper {
-      padding: 1rem;
-      height: 300px;
-      position: relative;
-    }
-
-    /* Responsive */
-    @media (min-width: 640px) {
-      .sm\\:p-4 { padding: 1rem; }
-      .sm\\:p-6 { padding: 1.5rem; }
-      .sm\\:gap-4 { gap: 1rem; }
-      .sm\\:text-3xl { font-size: 1.875rem; line-height: 2.25rem; }
-      .sm\\:flex { display: flex; }
-      
-      .stat-icon-wrapper.hidden.sm\\:flex {
-        display: flex;
-      }
-
-      .stat-value {
-        font-size: 1.5rem;
-      }
-
-      .stat-label {
-        font-size: 0.75rem;
-      }
-
-      .card-header {
-        padding: 0.75rem 1rem;
-      }
-
-      .card-icon {
-        width: 1.25rem;
-        height: 1.25rem;
-      }
-
-      .card-title {
-        font-size: 1rem;
-      }
-
-      .status-item {
-        padding: 1rem;
-      }
-
-      .status-badge {
-        font-size: 0.875rem;
-      }
-
-      .status-count {
-        font-size: 1.25rem;
-      }
-
-      .financial-value {
-        font-size: 1.5rem;
-      }
-
-      .financial-label {
-        font-size: 0.75rem;
-      }
-
-      .financial-average {
-        font-size: 1.875rem;
-      }
-
-      .financial-average-label {
-        font-size: 0.875rem;
-      }
-    }
-
-    @media (min-width: 1024px) {
-      .lg\\:p-8 { padding: 2rem; }
-      .lg\\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-      .lg\\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    }
-  `]
+  `
 })
 export class DashboardComponent implements OnInit, AfterViewInit {
   @ViewChild('stockChartCanvas') stockChartCanvas!: ElementRef<HTMLCanvasElement>;

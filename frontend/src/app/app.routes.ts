@@ -6,7 +6,6 @@ import { SalesComponent } from './components/sales/sales.component';
 import { StockMovementComponent } from './components/stock-movement/stock-movement.component';
 import { InvoicesComponent } from './components/invoices/invoices.component';
 import { InvoiceCreateComponent } from './components/invoices/invoice-create.component';
-import { InvoiceDashboardComponent } from './components/invoices/invoice-dashboard.component';
 import { InvoiceListComponent } from './components/invoices/invoice-list.component';
 import { LoginComponent } from './components/auth/login.component';
 import { ForgotPasswordComponent } from './components/auth/forgot-password.component';
@@ -28,8 +27,7 @@ export const routes: Routes = [
   { path: 'stock-movements', component: StockMovementComponent, canActivate: [authGuard] },
   
   // Facturation - Navigation hiérarchique (protected)
-  { path: 'invoices', redirectTo: 'invoices/dashboard', pathMatch: 'full' },
-  { path: 'invoices/dashboard', component: InvoiceDashboardComponent, canActivate: [authGuard] },
+  { path: 'invoices', redirectTo: 'invoices/list', pathMatch: 'full' },
   { path: 'invoices/create', component: InvoiceCreateComponent, canActivate: [authGuard] },
   { path: 'invoices/list', component: InvoiceListComponent, canActivate: [authGuard] },
   
