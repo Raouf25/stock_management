@@ -237,7 +237,7 @@ public class InvoicePdfDataService {
         double totalHT = sumTotalHT;
         double tva = sumVat;
         double totalTTC = totalHT + tva;
-        double deposit = bill.getDeposit() != null ? bill.getDeposit() : 0.0;
+        double deposit = bill.getDeposit() != null ? bill.getDeposit().doubleValue() : 0.0;
         double amountDue = totalTTC - deposit;
         
         return new BillTotals(totalHT, tva, totalTTC, sumGrossHT, sumDiscount, deposit, amountDue);

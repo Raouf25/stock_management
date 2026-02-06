@@ -2,6 +2,7 @@ package com.example.stock_management.dto;
 
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -14,9 +15,9 @@ public class CreatedBillDTO {
     private String clientPhone;
     private String clientFax;
     private String clientEmail;
-    private Double totalAmount;
-    private Double deposit;
-    private Double amountDue;
+    private BigDecimal totalAmount;
+    private BigDecimal deposit;
+    private BigDecimal amountDue;
     private List<CreatedBillProduct> products;
     private PaymentStatus paymentStatus;
 }

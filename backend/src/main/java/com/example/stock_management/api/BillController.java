@@ -141,7 +141,9 @@ public class BillController {
         try {
             double amount = Double.parseDouble(payload.getOrDefault("amount", 0).toString());
             var updatedBill = billService.registerPayment(id, amount);
-            return ResponseEntity.ok(updatedBill);
+            // Convertir l'entité Bill en DTO pour éviter les problèmes de sérialisation
+            var responseDTO = billMapper.sourceToDestination(updatedBill);
+            return ResponseEntity.ok(responseDTO);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest()
                     .body(Map.of("error", e.getMessage()));

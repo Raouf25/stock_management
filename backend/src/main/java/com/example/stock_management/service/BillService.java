@@ -27,6 +27,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 @Service
 @RequiredArgsConstructor
@@ -63,6 +64,8 @@ public class BillService {
         // Mettre à jour la date de la facture à l'heure actuelle
         bill.setDateBill(LocalDateTime.now());
 
+        // Initialize total
+        BigDecimal runningTotal = BigDecimal.ZERO;
 
         // Traiter les produits associés (BillProduct)
         List<BillProduct> billProducts = billDto.getProducts().stream().map(billProductDTO -> {
@@ -81,33 +84,41 @@ public class BillService {
             // Create sale record
             createSaleRecord(customer, product, billProductDTO.getQuantite(), null);
             
-            billProduct.setTotalProductPrice(billProductDTO.getQuantite() * product.getUnitPriceBought());
+            double productTotal = billProductDTO.getQuantite() * product.getUnitPriceBought();
+            billProduct.setTotalProductPrice(productTotal);
 
-            bill.setTotal(bill.getTotal() + billProduct.getTotalProductPrice());
             // Associer la facture aux produits
             billProduct.setBill(bill);
 
             return billProduct;
         }).toList();
 
+        // Calculate total from all products
+        runningTotal = billProducts.stream()
+            .map(bp -> BigDecimal.valueOf(bp.getTotalProductPrice()))
+            .reduce(BigDecimal.ZERO, BigDecimal::add)
+            .setScale(3, RoundingMode.HALF_UP);
+        
+        bill.setTotal(runningTotal);
+
         // Attach products
         bill.setBillProducts(billProducts);
 
         // Calculate deposit (may be null) and amount due
-        double deposit = bill.getDeposit() != null ? bill.getDeposit() : 0.0;
-        double amountDue = bill.getTotal() - deposit;
-        if (amountDue < 0) {
+        BigDecimal deposit = bill.getDeposit() != null ? bill.getDeposit() : BigDecimal.ZERO;
+        BigDecimal amountDue = bill.getTotal().subtract(deposit);
+        if (amountDue.compareTo(BigDecimal.ZERO) < 0) {
             // protect against negative due (treat as zero)
-            amountDue = 0.0;
+            amountDue = BigDecimal.ZERO;
         }
         bill.setAmountDue(amountDue);
 
         // Enforce paymentStatus rule: if amountDue != 0 then status must NOT be PAID
-        if (Double.compare(amountDue, 0.0) == 0) {
+        if (amountDue.compareTo(BigDecimal.ZERO) == 0) {
             bill.setPaymentStatus(PaymentStatus.PAID);
         } else {
             // amountDue > 0 -> choose PARTIALLY_PAID when deposit > 0, otherwise UNPAID
-            if (deposit > 0.0 && deposit < bill.getTotal()) {
+            if (deposit.compareTo(BigDecimal.ZERO) > 0 && deposit.compareTo(bill.getTotal()) < 0) {
                 bill.setPaymentStatus(PaymentStatus.PARTIALLY_PAID);
             } else {
                 bill.setPaymentStatus(PaymentStatus.UNPAID);
@@ -139,8 +150,8 @@ public class BillService {
         bill.setDeliveryAddress(invoiceDto.getDeliveryAddress());
         bill.setPaymentTerms(invoiceDto.getPaymentTerms());
         bill.setNotes(invoiceDto.getNotes());
-        bill.setDiscount(invoiceDto.getDiscount().doubleValue());
-        bill.setDeposit(invoiceDto.getDeposit().doubleValue());
+        bill.setDiscount(invoiceDto.getDiscount());
+        bill.setDeposit(invoiceDto.getDeposit());
 
         // Calculate total from line items
         double totalHT = 0.0;
@@ -181,22 +192,22 @@ public class BillService {
         bill.setBillProducts(billProducts);
 
         // Calculate totals with VAT (19%)
-        double VAT_RATE = 0.19;
-        double totalWithVAT = totalHT * (1 + VAT_RATE);
+        BigDecimal VAT_RATE = new BigDecimal("0.19");
+        BigDecimal totalWithVAT = new BigDecimal(totalHT).multiply(BigDecimal.ONE.add(VAT_RATE)).setScale(3, RoundingMode.HALF_UP);
         bill.setTotal(totalWithVAT);
 
         // Calculate amount due
-        double deposit = invoiceDto.getDeposit().doubleValue();
-        double amountDue = totalWithVAT - deposit;
-        if (amountDue < 0) {
-            amountDue = 0.0;
+        BigDecimal deposit = invoiceDto.getDeposit();
+        BigDecimal amountDue = totalWithVAT.subtract(deposit);
+        if (amountDue.compareTo(BigDecimal.ZERO) < 0) {
+            amountDue = BigDecimal.ZERO;
         }
         bill.setAmountDue(amountDue);
 
         // Set payment status based on amount due
-        if (Double.compare(amountDue, 0.0) == 0) {
+        if (amountDue.compareTo(BigDecimal.ZERO) == 0) {
             bill.setPaymentStatus(PaymentStatus.PAID);
-        } else if (deposit > 0.0 && deposit < totalWithVAT) {
+        } else if (deposit.compareTo(BigDecimal.ZERO) > 0 && deposit.compareTo(totalWithVAT) < 0) {
             bill.setPaymentStatus(PaymentStatus.PARTIALLY_PAID);
         } else {
             bill.setPaymentStatus(PaymentStatus.UNPAID);
@@ -218,19 +229,26 @@ public class BillService {
         kpis.put("totalInvoices", bills.size());
 
         // Total invoiced amount
-        double totalInvoiced = bills.stream().mapToDouble(Bill::getTotal).sum();
+        BigDecimal totalInvoiced = bills.stream()
+            .map(Bill::getTotal)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
         kpis.put("totalInvoicedAmount", totalInvoiced);
 
         // Average invoice amount
-        double avgInvoice = bills.isEmpty() ? 0.0 : totalInvoiced / bills.size();
+        BigDecimal avgInvoice = bills.isEmpty() ? BigDecimal.ZERO : 
+            totalInvoiced.divide(new BigDecimal(bills.size()), 3, RoundingMode.HALF_UP);
         kpis.put("averageInvoiceAmount", avgInvoice);
 
         // Number of unpaid invoices (amountDue > 0)
-        long unpaidInvoices = bills.stream().filter(b -> b.getAmountDue() > 0).count();
+        long unpaidInvoices = bills.stream()
+            .filter(b -> b.getAmountDue().compareTo(BigDecimal.ZERO) > 0)
+            .count();
         kpis.put("unpaidInvoices", unpaidInvoices);
 
         // Total amount due
-        double totalAmountDue = bills.stream().mapToDouble(b -> b.getAmountDue()).sum();
+        BigDecimal totalAmountDue = bills.stream()
+            .map(Bill::getAmountDue)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
         kpis.put("totalAmountDue", totalAmountDue);
 
         // Payment status distribution
@@ -249,10 +267,10 @@ public class BillService {
         kpis.put("invoicesThisMonth", invoicesThisMonth);
 
         // Total revenue this month
-        double revenueThisMonth = bills.stream()
+        BigDecimal revenueThisMonth = bills.stream()
             .filter(b -> b.getDateBill() != null && b.getDateBill().getMonth() == now.getMonth() && b.getDateBill().getYear() == now.getYear())
-            .mapToDouble(Bill::getTotal)
-            .sum();
+            .map(Bill::getTotal)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
         kpis.put("revenueThisMonth", revenueThisMonth);
 
         return kpis;
@@ -297,29 +315,40 @@ public class BillService {
     public Bill registerPayment(Long billId, double amount) {
         Bill bill = billRepository.findById(billId)
             .orElseThrow(() -> new RuntimeException("Facture non trouvée avec l'ID: " + billId));
-        if (amount <= 0) {
+        
+        BigDecimal paymentAmount = BigDecimal.valueOf(amount).setScale(3, RoundingMode.HALF_UP);
+        
+        if (paymentAmount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new RuntimeException("Le montant doit être positif.");
         }
-        if (bill.getAmountDue() <= 0) {
+        if (bill.getAmountDue().compareTo(BigDecimal.ZERO) <= 0) {
             throw new RuntimeException("La facture est déjà totalement payée.");
         }
-        if (amount > bill.getAmountDue()) {
+        if (paymentAmount.compareTo(bill.getAmountDue()) > 0) {
             throw new RuntimeException("Le montant dépasse le montant dû.");
         }
+        
         // Met à jour l'acompte
-        double newDeposit = (bill.getDeposit() != null ? bill.getDeposit() : 0.0) + amount;
+        BigDecimal currentDeposit = bill.getDeposit() != null ? bill.getDeposit() : BigDecimal.ZERO;
+        BigDecimal newDeposit = currentDeposit.add(paymentAmount);
         bill.setDeposit(newDeposit);
+        
         // Recalcule le montant dû
-        double newAmountDue = bill.getTotal() - newDeposit;
-        bill.setAmountDue(Math.max(0.0, newAmountDue));
+        BigDecimal newAmountDue = bill.getTotal().subtract(newDeposit);
+        if (newAmountDue.compareTo(BigDecimal.ZERO) < 0) {
+            newAmountDue = BigDecimal.ZERO;
+        }
+        bill.setAmountDue(newAmountDue);
+        
         // Met à jour le statut de paiement
-        if (bill.getAmountDue() == 0.0) {
+        if (newAmountDue.compareTo(BigDecimal.ZERO) == 0) {
             bill.setPaymentStatus(PaymentStatus.PAID);
-        } else if (newDeposit > 0.0 && newDeposit < bill.getTotal()) {
+        } else if (newDeposit.compareTo(BigDecimal.ZERO) > 0 && newDeposit.compareTo(bill.getTotal()) < 0) {
             bill.setPaymentStatus(PaymentStatus.PARTIALLY_PAID);
         } else {
             bill.setPaymentStatus(PaymentStatus.UNPAID);
         }
+        
         // Sauvegarde
         return billRepository.save(bill);
     }

@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.ToString;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -26,16 +27,17 @@ public class Bill {
     @ToString.Exclude // Exclusion de la relation pour éviter la récursion infinie
     private List<BillProduct> billProducts;
 
-    private double total;
+    @Column(precision = 19, scale = 3)
+    private BigDecimal total;
     
-    @Column(nullable = true)
-    private Double deposit;// "Acompte"
+    @Column(nullable = true, precision = 19, scale = 3)
+    private BigDecimal deposit;// "Acompte"
 
-    @Column(name = "amount_due")
-    private double amountDue;// "Net à payer"
+    @Column(name = "amount_due", precision = 19, scale = 3)
+    private BigDecimal amountDue;// "Net à payer"
 
-    @Column(nullable = true)
-    private Double discount; // Discount percentage (0-100)
+    @Column(nullable = true, precision = 19, scale = 3)
+    private BigDecimal discount; // Discount percentage (0-100)
 
     @Column(name = "delivery_address", length = 500)
     private String deliveryAddress;

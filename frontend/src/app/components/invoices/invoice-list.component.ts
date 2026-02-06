@@ -44,7 +44,7 @@ import { ApiService } from '../../services/api.service';
           <div style="width: 3.5rem; height: 3.5rem; background: linear-gradient(135deg, #2ecc7120, #27ae6020); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; font-size: 1.8rem;">💵</div>
           <div style="flex: 1;">
             <div style="font-size: 0.85rem; color: #7f8c8d; font-weight: 600; text-transform: uppercase; margin-bottom: 0.25rem;">Montant Total</div>
-            <div style="font-size: 1.5rem; font-weight: 700; color: #2c3e50;">{{ getTotalAmount() | number:'1.2-2' }} DNT</div>
+            <div style="font-size: 1.5rem; font-weight: 700; color: #2c3e50;">{{ getTotalAmount() | number:'1.3-3' }} DNT</div>
           </div>
         </div>
         <div style="background: white; border-radius: 1rem; padding: 1.5rem; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08); display: flex; align-items: center; gap: 1rem; border-left: 5px solid #f39c12; transition: all 0.3s ease;"
@@ -53,7 +53,7 @@ import { ApiService } from '../../services/api.service';
           <div style="width: 3.5rem; height: 3.5rem; background: linear-gradient(135deg, #f39c1220, #e67e2220); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; font-size: 1.8rem;">⏳</div>
           <div style="flex: 1;">
             <div style="font-size: 0.85rem; color: #7f8c8d; font-weight: 600; text-transform: uppercase; margin-bottom: 0.25rem;">Total Dû</div>
-            <div style="font-size: 1.5rem; font-weight: 700; color: #2c3e50;">{{ getTotalDue() | number:'1.2-2' }} DNT</div>
+            <div style="font-size: 1.5rem; font-weight: 700; color: #2c3e50;">{{ getTotalDue() | number:'1.3-3' }} DNT</div>
           </div>
         </div>
       </div>
@@ -132,15 +132,15 @@ import { ApiService } from '../../services/api.service';
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.75rem; margin-bottom: 0.75rem;">
               <div style="background: white; padding: 0.75rem; border-radius: 0.5rem; text-align: center;">
                 <div style="font-size: 0.8rem; color: #7f8c8d; font-weight: 600; margin-bottom: 0.25rem;">TOTAL</div>
-                <div style="font-size: 1.1rem; font-weight: 700; color: #2c3e50;">{{ invoice.totalAmount | number:'1.2-2' }}</div>
+                <div style="font-size: 1.1rem; font-weight: 700; color: #2c3e50;">{{ invoice.totalAmount | number:'1.3-3' }}</div>
               </div>
               <div style="background: white; padding: 0.75rem; border-radius: 0.5rem; text-align: center;">
                 <div style="font-size: 0.8rem; color: #7f8c8d; font-weight: 600; margin-bottom: 0.25rem;">ACOMPTE</div>
-                <div style="font-size: 1.1rem; font-weight: 700; color: #1abc9c;">{{ invoice.deposit | number:'1.2-2' }}</div>
+                <div style="font-size: 1.1rem; font-weight: 700; color: #1abc9c;">{{ invoice.deposit | number:'1.3-3' }}</div>
               </div>
               <div style="background: white; padding: 0.75rem; border-radius: 0.5rem; text-align: center;">
                 <div style="font-size: 0.8rem; color: #7f8c8d; font-weight: 600; margin-bottom: 0.25rem;">DÛ</div>
-                <div style="font-size: 1.1rem; font-weight: 700; color: #2ecc71;">{{ invoice.amountDue | number:'1.2-2' }}</div>
+                <div style="font-size: 1.1rem; font-weight: 700; color: #2ecc71;">{{ invoice.amountDue | number:'1.3-3' }}</div>
               </div>
             </div>
             
@@ -333,7 +333,8 @@ export class InvoiceListComponent implements OnInit {
     this.paymentModalInvoice = invoice;
     this.paymentAmount = invoice.amountDue;
     this.paymentError = '';
-    const montant = prompt(`Montant à enregistrer pour la facture #${invoice.billId} (max: ${invoice.amountDue} DNT)`, invoice.amountDue);
+    const amountDueFormatted = invoice.amountDue.toFixed(3);
+    const montant = prompt(`Montant à enregistrer pour la facture #${invoice.billId} (max: ${amountDueFormatted} DNT)`, amountDueFormatted);
     if (montant !== null) {
       const value = Number(montant);
       if (isNaN(value) || value <= 0 || value > invoice.amountDue) {
