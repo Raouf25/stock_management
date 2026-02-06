@@ -131,6 +131,12 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<jvmArguments>
+						-Xmx2048m
+						-XX:+UseSerialGC
+					</jvmArguments>
+				</configuration>
 			</plugin>
 
 			<!-- Ensure annotation processors (Lombok, MapStruct) are available during compile -->
