@@ -9,165 +9,234 @@ import { ApiService } from '../../services/api.service';
   standalone: true,
   imports: [CommonModule, RouterModule, FormsModule],
   template: `
-    <div style="min-height: 100vh; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); padding: 1.5rem;">
+    <div style="min-height: 100vh; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); padding: 1rem;">
       
-      <!-- Header -->
-      <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 1rem; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 10px 40px rgba(102, 126, 234, 0.3);">
-        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
-          <div>
-            <h1 style="color: white; font-size: 1.8rem; font-weight: 700; margin: 0;">📁 Liste des Factures</h1>
-            <p style="color: rgba(255, 255, 255, 0.9); margin: 0.5rem 0 0 0; font-size: 0.95rem;">Gestion de vos factures</p>
-          </div>
-          <a routerLink="/invoices/create"
-             style="background: white; color: #667eea; padding: 0.75rem 1.5rem; border-radius: 0.5rem; border: none; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); transition: all 0.3s ease;"
-             onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 12px rgba(0, 0, 0, 0.15)'"
-             onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px rgba(0, 0, 0, 0.1)'">
-            ➕ Nouvelle Facture
-          </a>
-        </div>
+      <!-- Header - Responsive -->
+      <div style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+        <span style="font-size: 2rem;">📁</span>
+        <h1 style="color: #1f2937; font-size: 1.5rem; font-weight: 700; margin: 0;">Liste des Factures</h1>
       </div>
 
-      <!-- Stats Cards -->
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
-        <div style="background: white; border-radius: 1rem; padding: 1.5rem; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08); display: flex; align-items: center; gap: 1rem; border-left: 5px solid #3498db; transition: all 0.3s ease;"
-             onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 25px rgba(0, 0, 0, 0.12)'"
-             onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(0, 0, 0, 0.08)'">
-          <div style="width: 3.5rem; height: 3.5rem; background: linear-gradient(135deg, #3498db20, #2980b920); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; font-size: 1.8rem;">📄</div>
-          <div style="flex: 1;">
-            <div style="font-size: 0.85rem; color: #7f8c8d; font-weight: 600; text-transform: uppercase; margin-bottom: 0.25rem;">Total Factures</div>
-            <div style="font-size: 1.8rem; font-weight: 700; color: #2c3e50;">{{ filteredInvoices.length }}</div>
+      <!-- Stats Cards - Responsive Grid -->
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-bottom: 1.5rem;">
+        <!-- Total Factures -->
+        <div style="background: white; border-radius: 0.75rem; padding: 0.75rem; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); border-top: 3px solid #3498db; overflow: hidden;">
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <div style="display: none; width: 2.5rem; height: 2.5rem; background: #eff6ff; border-radius: 9999px; padding: 0.5rem; align-items: center; justify-content: center;">
+              <span style="font-size: 1.25rem;">📄</span>
+            </div>
+            <div style="flex: 1; min-width: 0; text-align: center;">
+              <div style="font-size: 1.125rem; font-weight: 700; color: #1f2937;">{{ filteredInvoices.length }}</div>
+              <div style="font-size: 0.625rem; font-weight: 600; color: #6b7280; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Total Factures</div>
+            </div>
           </div>
-        </div>
-        <div style="background: white; border-radius: 1rem; padding: 1.5rem; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08); display: flex; align-items: center; gap: 1rem; border-left: 5px solid #2ecc71; transition: all 0.3s ease;"
-             onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 25px rgba(0, 0, 0, 0.12)'"
-             onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(0, 0, 0, 0.08)'">
-          <div style="width: 3.5rem; height: 3.5rem; background: linear-gradient(135deg, #2ecc7120, #27ae6020); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; font-size: 1.8rem;">💵</div>
-          <div style="flex: 1;">
-            <div style="font-size: 0.85rem; color: #7f8c8d; font-weight: 600; text-transform: uppercase; margin-bottom: 0.25rem;">Montant Total</div>
-            <div style="font-size: 1.5rem; font-weight: 700; color: #2c3e50;">{{ getTotalAmount() | number:'1.3-3' }} DNT</div>
-          </div>
-        </div>
-        <div style="background: white; border-radius: 1rem; padding: 1.5rem; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08); display: flex; align-items: center; gap: 1rem; border-left: 5px solid #f39c12; transition: all 0.3s ease;"
-             onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 25px rgba(0, 0, 0, 0.12)'"
-             onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(0, 0, 0, 0.08)'">
-          <div style="width: 3.5rem; height: 3.5rem; background: linear-gradient(135deg, #f39c1220, #e67e2220); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; font-size: 1.8rem;">⏳</div>
-          <div style="flex: 1;">
-            <div style="font-size: 0.85rem; color: #7f8c8d; font-weight: 600; text-transform: uppercase; margin-bottom: 0.25rem;">Total Dû</div>
-            <div style="font-size: 1.5rem; font-weight: 700; color: #2c3e50;">{{ getTotalDue() | number:'1.3-3' }} DNT</div>
-          </div>
-        </div>
-      </div>
-
-
-      <!-- Filters -->
-      <div style="background: white; border-radius: 1rem; padding: 1.5rem; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08); margin-bottom: 1.5rem;">
-        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 0.75rem; padding: 1rem; margin: -1.5rem -1.5rem 1.5rem -1.5rem;">
-          <h3 style="color: white; font-size: 1.1rem; font-weight: 600; margin: 0; display: flex; align-items: center; gap: 0.5rem;">🔍 Filtres</h3>
-        </div>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-          <div>
-            <label style="display: block; color: #2c3e50; font-size: 0.9rem; font-weight: 600; margin-bottom: 0.5rem;">Statut</label>
-            <select [(ngModel)]="filterStatus" (change)="applyFilters()"
-                    style="width: 100%; padding: 0.75rem; border: 2px solid #e0e0e0; border-radius: 0.5rem; font-size: 0.95rem; transition: all 0.3s; outline: none;"
-                    onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.1)'"
-                    onblur="this.style.borderColor='#e0e0e0'; this.style.boxShadow='none'">
-              <option value="">Tous les statuts</option>
-              <option value="PAID">Payé</option>
-              <option value="UNPAID">Impayé</option>
-              <option value="PARTIALLY_PAID">Partiel</option>
-            </select>
-          </div>
-          <div>
-            <label style="display: block; color: #2c3e50; font-size: 0.9rem; font-weight: 600; margin-bottom: 0.5rem;">Client</label>
-            <input type="text" [(ngModel)]="filterClient" (keyup)="applyFilters()" placeholder="Rechercher..."
-                   style="width: 100%; padding: 0.75rem; border: 2px solid #e0e0e0; border-radius: 0.5rem; font-size: 0.95rem; transition: all 0.3s; outline: none;"
-                   onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.1)'"
-                   onblur="this.style.borderColor='#e0e0e0'; this.style.boxShadow='none'">
-          </div>
-          <div>
-            <label style="display: block; color: #2c3e50; font-size: 0.9rem; font-weight: 600; margin-bottom: 0.5rem;">Date de</label>
-            <input type="date" [(ngModel)]="filterDateFrom" (change)="applyFilters()"
-                   style="width: 100%; padding: 0.75rem; border: 2px solid #e0e0e0; border-radius: 0.5rem; font-size: 0.95rem; transition: all 0.3s; outline: none;"
-                   onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.1)'"
-                   onblur="this.style.borderColor='#e0e0e0'; this.style.boxShadow='none'">
-          </div>
-          <div>
-            <label style="display: block; color: #2c3e50; font-size: 0.9rem; font-weight: 600; margin-bottom: 0.5rem;">Date à</label>
-            <input type="date" [(ngModel)]="filterDateTo" (change)="applyFilters()"
-                   style="width: 100%; padding: 0.75rem; border: 2px solid #e0e0e0; border-radius: 0.5rem; font-size: 0.95rem; transition: all 0.3s; outline: none;"
-                   onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.1)'"
-                   onblur="this.style.borderColor='#e0e0e0'; this.style.boxShadow='none'">
-          </div>
-        </div>
-      </div>
-
-      <!-- Invoices List -->
-      <div style="background: white; border-radius: 1rem; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08); overflow: hidden;">
-        <div style="background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); padding: 1rem 1.5rem;">
-          <h3 style="color: white; font-size: 1.1rem; font-weight: 600; margin: 0; display: flex; align-items: center; gap: 0.5rem;">📁 Factures ({{ filteredInvoices.length }})</h3>
         </div>
         
-        <!-- Invoice Cards (No columns, stacked) -->
-        <div style="padding: 1rem;">
+        <!-- Montant Total -->
+        <div style="background: white; border-radius: 0.75rem; padding: 0.75rem; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); border-top: 3px solid #2ecc71; overflow: hidden;">
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <div style="display: none; width: 2.5rem; height: 2.5rem; background: #dcfce7; border-radius: 9999px; padding: 0.5rem; align-items: center; justify-content: center;">
+              <span style="font-size: 1.25rem;">💵</span>
+            </div>
+            <div style="flex: 1; min-width: 0; text-align: center;">
+              <div style="font-size: 1.125rem; font-weight: 700; color: #1f2937;">{{ getTotalAmount() | number:'1.3-3' }}</div>
+              <div style="font-size: 0.625rem; font-weight: 600; color: #6b7280; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Montant (DNT)</div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Total Dû -->
+        <div style="background: white; border-radius: 0.75rem; padding: 0.75rem; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); border-top: 3px solid #f39c12; overflow: hidden;">
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <div style="display: none; width: 2.5rem; height: 2.5rem; background: #fef3c7; border-radius: 9999px; padding: 0.5rem; align-items: center; justify-content: center;">
+              <span style="font-size: 1.25rem;">💰</span>
+            </div>
+            <div style="flex: 1;">
+              <div style="font-size: 0.625rem; color: #f59e0b; font-weight: 600; margin-bottom: 0.125rem; text-transform: uppercase;">Total Dû</div>
+              <div style="font-size: 1rem; font-weight: 700; color: #1f2937;">{{ getTotalDue() | number:'1.3-3' }} DNT</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Filtres Card - Compact & Responsive -->
+      <div style="background: white; border-radius: 0.75rem; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); margin-bottom: 1.5rem; overflow: hidden; border: 0;">
+        <div style="display: flex; align-items: center; justify-content: space-between; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); padding: 0.75rem 1rem;">
+          <div style="display: flex; align-items: center; gap: 0.5rem; color: white;">
+            <span style="font-size: 1rem;">🔍</span>
+            <span style="font-size: 0.875rem; font-weight: 600;">Filtres</span>
+          </div>
+        </div>
+        <div style="padding: 0.75rem 1rem;">
+          <div style="display: grid; grid-template-columns: 1fr; gap: 0.75rem;">
+            <!-- Statut -->
+            <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+              <label style="font-size: 0.625rem; font-weight: 600; color: #6b7280; text-transform: uppercase;">Statut</label>
+              <select [(ngModel)]="filterStatus" (change)="applyFilters()"
+                      style="height: 2.25rem; width: 100%; background: white; font-size: 0.875rem; padding: 0 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem; outline: none;"
+                      onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e5e7eb'">
+                <option value="">Tous les statuts</option>
+                <option value="PAID">Payé</option>
+                <option value="UNPAID">Impayé</option>
+                <option value="PARTIALLY_PAID">Partiel</option>
+              </select>
+            </div>
+            <!-- Client -->
+            <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+              <label style="font-size: 0.625rem; font-weight: 600; color: #6b7280; text-transform: uppercase;">Client</label>
+              <input type="text" [(ngModel)]="filterClient" (keyup)="applyFilters()" placeholder="Rechercher..."
+                     style="height: 2.25rem; width: 100%; background: white; font-size: 0.875rem; padding: 0 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem; outline: none;"
+                     onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e5e7eb'">
+            </div>
+            <!-- Dates - Grid 2 columns on larger screens -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+              <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                <label style="font-size: 0.625rem; font-weight: 600; color: #6b7280; text-transform: uppercase;">Date de</label>
+                <input type="date" [(ngModel)]="filterDateFrom" (change)="applyFilters()"
+                       style="height: 2.25rem; width: 100%; background: white; font-size: 0.875rem; padding: 0 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem; outline: none;"
+                       onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e5e7eb'">
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                <label style="font-size: 0.625rem; font-weight: 600; color: #6b7280; text-transform: uppercase;">Date à</label>
+                <input type="date" [(ngModel)]="filterDateTo" (change)="applyFilters()"
+                       style="height: 2.25rem; width: 100%; background: white; font-size: 0.875rem; padding: 0 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem; outline: none;"
+                       onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e5e7eb'">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Invoices List Card -->
+      <div style="background: white; border-radius: 0.75rem; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); overflow: hidden; border: 0;">
+        <div style="background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%); padding: 0.75rem 1rem;">
+          <div style="display: flex; align-items: center; gap: 0.5rem; color: white;">
+            <span style="font-size: 1.125rem;">📁</span>
+            <span style="font-weight: 600; font-size: 0.875rem;">Liste des Factures ({{ filteredInvoices.length }})</span>
+          </div>
+        </div>
+        
+        <!-- Desktop Table -->
+        <div class="desktop-table" style="overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+              <tr style="background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);">
+                <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: left;">N° FACTURE</th>
+                <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: left;">DATE</th>
+                <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: left;">CLIENT</th>
+                <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: right;">MONTANT TOTAL</th>
+                <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: right;">ACOMPTE</th>
+                <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: right;">MONTANT DÛ</th>
+                <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: center;">STATUT</th>
+                <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: center;">ACTIONS</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let invoice of filteredInvoices; trackBy: trackByInvoiceId"
+                  style="border-bottom: 1px solid #e5e7eb; transition: background 0.2s;"
+                  onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">
+                <td style="padding: 0.75rem 1rem;">
+                  <span style="display: inline-block; padding: 0.25rem 0.75rem; background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; border-radius: 0.375rem; font-weight: 600; font-size: 0.875rem;">
+                    #{{ invoice.billId }}
+                  </span>
+                </td>
+                <td style="padding: 0.75rem 1rem; color: #6b7280;">{{ invoice.billDate | date:'dd/MM/yyyy' }}</td>
+                <td style="padding: 0.75rem 1rem;">
+                  <div style="font-weight: 500; color: #1f2937;">{{ invoice.clientName }}</div>
+                  <div style="font-size: 0.875rem; color: #6b7280;">{{ invoice.clientPhone }}</div>
+                </td>
+                <td style="padding: 0.75rem 1rem; text-align: right; font-weight: 500; color: #1f2937;">{{ invoice.totalAmount | number:'1.3-3' }}</td>
+                <td style="padding: 0.75rem 1rem; text-align: right; color: #0891b2;">{{ invoice.deposit | number:'1.3-3' }}</td>
+                <td style="padding: 0.75rem 1rem; text-align: right; font-weight: 500; color: #16a34a;">{{ invoice.amountDue | number:'1.3-3' }}</td>
+                <td style="padding: 0.75rem 1rem; text-align: center;">
+                  <span [ngClass]="getPaymentStatusClass(invoice.paymentStatus)"
+                        style="padding: 0.375rem 0.75rem; border-radius: 0.375rem; font-weight: 600; font-size: 0.875rem; display: inline-block;">
+                    {{ getPaymentStatusLabel(invoice.paymentStatus) }}
+                  </span>
+                </td>
+                <td style="padding: 0.75rem 1rem;">
+                  <div style="display: flex; align-items: center; justify-content: center; gap: 0.25rem;">
+                    <button (click)="viewInvoice(invoice.billId)" title="Voir"
+                            style="width: 2rem; height: 2rem; border-radius: 0.375rem; border: 1px solid #bfdbfe; background: #eff6ff; color: #1e40af; cursor: pointer; font-size: 0.875rem; display: flex; align-items: center; justify-content: center; transition: all 0.2s;"
+                            onmouseover="this.style.background='#dbeafe'" onmouseout="this.style.background='#eff6ff'">👁️</button>
+                    <button (click)="downloadPDF(invoice.billId)" title="Télécharger"
+                            style="width: 2rem; height: 2rem; border-radius: 0.375rem; border: 1px solid #bbf7d0; background: #dcfce7; color: #166534; cursor: pointer; font-size: 0.875rem; display: flex; align-items: center; justify-content: center; transition: all 0.2s;"
+                            onmouseover="this.style.background='#bbf7d0'" onmouseout="this.style.background='#dcfce7'">⬇️</button>
+                    <button (click)="sendInvoiceByEmail(invoice)" [disabled]="sendingEmail === invoice.billId" title="Email"
+                            style="width: 2rem; height: 2rem; border-radius: 0.375rem; border: 1px solid #a5f3fc; background: #cffafe; color: #155e75; cursor: pointer; font-size: 0.875rem; display: flex; align-items: center; justify-content: center; transition: all 0.2s;"
+                            [style.opacity]="sendingEmail === invoice.billId ? '0.5' : '1'"
+                            onmouseover="if(!this.disabled) this.style.background='#a5f3fc'" onmouseout="this.style.background='#cffafe'">
+                      {{ sendingEmail === invoice.billId ? '⏳' : '✉️' }}
+                    </button>
+                    <button *ngIf="invoice.paymentStatus === 'UNPAID' || invoice.paymentStatus === 'PARTIALLY_PAID'"
+                            (click)="openPaymentModal(invoice)" title="Paiement"
+                            style="width: 2rem; height: 2rem; border-radius: 0.375rem; border: 1px solid #fcd34d; background: #fde047; color: white; cursor: pointer; font-size: 0.875rem; display: flex; align-items: center; justify-content: center; transition: all 0.2s;"
+                            onmouseover="this.style.background='#facc15'" onmouseout="this.style.background='#fde047'">💰</button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        
+        <!-- Mobile Cards -->
+        <div class="mobile-cards">
           <div *ngFor="let invoice of filteredInvoices; trackBy: trackByInvoiceId"
-               style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 0.75rem; padding: 1rem; margin-bottom: 1rem; border-left: 4px solid #667eea; transition: all 0.3s ease;"
-               onmouseover="this.style.transform='translateX(4px)'; this.style.boxShadow='0 4px 15px rgba(0, 0, 0, 0.1)'"
-               onmouseout="this.style.transform='translateX(0)'; this.style.boxShadow='none'">
-            
-            <!-- Header -->
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
-              <span style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 0.4rem 0.9rem; border-radius: 1.5rem; font-weight: 600; font-size: 0.9rem;">
-                #{{ invoice.billId }}
+               style="border-bottom: 1px solid #e5e7eb; padding: 1rem; background: white;">
+            <!-- Invoice ID with Badge and Date -->
+            <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 0.75rem;">
+              <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <span style="display: inline-block; padding: 0.25rem 0.75rem; background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; border-radius: 0.375rem; font-weight: 600; font-size: 0.75rem;">
+                  #{{ invoice.billId }}
+                </span>
+                <span style="color: #6b7280; font-size: 0.875rem;">{{ invoice.billDate | date:'dd/MM/yyyy' }}</span>
+              </div>
+              <span [ngClass]="getPaymentStatusClass(invoice.paymentStatus)"
+                    style="padding: 0.25rem 0.75rem; border-radius: 0.375rem; font-weight: 600; font-size: 0.75rem; display: inline-block;">
+                {{ getPaymentStatusLabel(invoice.paymentStatus) }}
               </span>
-              <span style="color: #7f8c8d; font-size: 0.9rem;">{{ invoice.billDate | date:'dd/MM/yyyy' }}</span>
             </div>
             
             <!-- Client Info -->
-            <div style="margin-bottom: 0.75rem; padding-bottom: 0.75rem; border-bottom: 1px solid #dee2e6;">
-              <div style="font-weight: 600; color: #2c3e50; font-size: 1rem; margin-bottom: 0.25rem;">{{ invoice.clientName }}</div>
-              <div style="color: #7f8c8d; font-size: 0.9rem;">{{ invoice.clientPhone }}</div>
+            <div style="margin-bottom: 0.75rem;">
+              <div style="font-weight: 600; color: #1f2937; font-size: 0.875rem; margin-bottom: 0.125rem;">{{ invoice.clientName }}</div>
+              <div style="color: #6b7280; font-size: 0.875rem;">{{ invoice.clientPhone }}</div>
             </div>
             
-            <!-- Amounts -->
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.75rem; margin-bottom: 0.75rem;">
-              <div style="background: white; padding: 0.75rem; border-radius: 0.5rem; text-align: center;">
-                <div style="font-size: 0.8rem; color: #7f8c8d; font-weight: 600; margin-bottom: 0.25rem;">TOTAL</div>
-                <div style="font-size: 1.1rem; font-weight: 700; color: #2c3e50;">{{ invoice.totalAmount | number:'1.3-3' }}</div>
+            <!-- Amounts - 3 Columns Grid -->
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-bottom: 1rem; font-size: 0.875rem;">
+              <div style="background: #f8fafc; padding: 0.5rem; border-radius: 0.5rem; text-align: center;">
+                <div style="font-size: 0.75rem; color: #6b7280; margin-bottom: 0.125rem;">Total</div>
+                <div style="font-weight: 600; color: #1f2937; font-size: 0.875rem;">{{ invoice.totalAmount | number:'1.3-3' }}</div>
               </div>
-              <div style="background: white; padding: 0.75rem; border-radius: 0.5rem; text-align: center;">
-                <div style="font-size: 0.8rem; color: #7f8c8d; font-weight: 600; margin-bottom: 0.25rem;">ACOMPTE</div>
-                <div style="font-size: 1.1rem; font-weight: 700; color: #1abc9c;">{{ invoice.deposit | number:'1.3-3' }}</div>
+              <div style="background: #f8fafc; padding: 0.5rem; border-radius: 0.5rem; text-align: center;">
+                <div style="font-size: 0.75rem; color: #6b7280; margin-bottom: 0.125rem;">Acompte</div>
+                <div style="font-weight: 600; color: #0891b2; font-size: 0.875rem;">{{ invoice.deposit | number:'1.3-3' }}</div>
               </div>
-              <div style="background: white; padding: 0.75rem; border-radius: 0.5rem; text-align: center;">
-                <div style="font-size: 0.8rem; color: #7f8c8d; font-weight: 600; margin-bottom: 0.25rem;">DÛ</div>
-                <div style="font-size: 1.1rem; font-weight: 700; color: #2ecc71;">{{ invoice.amountDue | number:'1.3-3' }}</div>
+              <div style="background: #f8fafc; padding: 0.5rem; border-radius: 0.5rem; text-align: center;">
+                <div style="font-size: 0.75rem; color: #6b7280; margin-bottom: 0.125rem;">Dû</div>
+                <div style="font-weight: 600; color: #16a34a; font-size: 0.875rem;">{{ invoice.amountDue | number:'1.3-3' }}</div>
               </div>
             </div>
             
-            <!-- Status & Actions -->
-            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
-              <span [ngClass]="getPaymentStatusClass(invoice.paymentStatus)"
-                    style="padding: 0.4rem 0.9rem; border-radius: 1.5rem; font-weight: 600; font-size: 0.85rem; display: inline-block;">
-                {{ getPaymentStatusLabel(invoice.paymentStatus) }}
-              </span>
-              <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                <button (click)="viewInvoice(invoice.billId)" title="Voir"
-                        style="width: 2.2rem; height: 2.2rem; border-radius: 0.5rem; border: none; background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); color: white; cursor: pointer; font-size: 1rem; transition: all 0.2s;"
-                        onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">👁️</button>
-                <button (click)="downloadPDF(invoice.billId)" title="Télécharger"
-                        style="width: 2.2rem; height: 2.2rem; border-radius: 0.5rem; border: none; background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%); color: white; cursor: pointer; font-size: 1rem; transition: all 0.2s;"
-                        onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">⬇️</button>
-                <button (click)="sendInvoiceByEmail(invoice)" [disabled]="sendingEmail === invoice.billId" title="Email"
-                        style="width: 2.2rem; height: 2.2rem; border-radius: 0.5rem; border: none; background: linear-gradient(135deg, #1abc9c 0%, #16a085 100%); color: white; cursor: pointer; font-size: 1rem; transition: all 0.2s;"
-                        [style.opacity]="sendingEmail === invoice.billId ? '0.5' : '1'"
-                        onmouseover="if(!this.disabled) this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
-                  {{ sendingEmail === invoice.billId ? '⏳' : '✉️' }}
-                </button>
-                <button *ngIf="invoice.paymentStatus === 'UNPAID' || invoice.paymentStatus === 'PARTIALLY_PAID'"
-                        (click)="openPaymentModal(invoice)" title="Paiement"
-                        style="width: 2.2rem; height: 2.2rem; border-radius: 0.5rem; border: none; background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%); color: white; cursor: pointer; font-size: 1rem; transition: all 0.2s;"
-                        onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">💰</button>
-              </div>
+            <!-- Actions - Compact Buttons -->
+            <div style="display: flex; flex-wrap: wrap; align-items: center; justify-end: flex-end; gap: 0.25rem; border-top: 1px solid #e5e7eb; padding-top: 0.75rem;">
+              <button (click)="viewInvoice(invoice.billId)" title="Voir"
+                      style="width: 2rem; height: 2rem; border-radius: 0.375rem; border: 1px solid #bfdbfe; background: #eff6ff; color: #1e40af; cursor: pointer; font-size: 0.875rem; display: flex; align-items: center; justify-content: center; transition: all 0.2s;"
+                      onmouseover="this.style.background='#dbeafe'" onmouseout="this.style.background='#eff6ff'">👁️</button>
+              <button (click)="downloadPDF(invoice.billId)" title="Télécharger"
+                      style="width: 2rem; height: 2rem; border-radius: 0.375rem; border: 1px solid #bbf7d0; background: #dcfce7; color: #166534; cursor: pointer; font-size: 0.875rem; display: flex; align-items: center; justify-content: center; transition: all 0.2s;"
+                      onmouseover="this.style.background='#bbf7d0'" onmouseout="this.style.background='#dcfce7'">⬇️</button>
+              <button (click)="sendInvoiceByEmail(invoice)" [disabled]="sendingEmail === invoice.billId" title="Email"
+                      style="width: 2rem; height: 2rem; border-radius: 0.375rem; border: 1px solid #a5f3fc; background: #cffafe; color: #155e75; cursor: pointer; font-size: 0.875rem; display: flex; align-items: center; justify-content: center; transition: all 0.2s;"
+                      [style.opacity]="sendingEmail === invoice.billId ? '0.5' : '1'"
+                      onmouseover="if(!this.disabled) this.style.background='#a5f3fc'" onmouseout="this.style.background='#cffafe'">
+                {{ sendingEmail === invoice.billId ? '⏳' : '✉️' }}
+              </button>
+              <button *ngIf="invoice.paymentStatus === 'UNPAID' || invoice.paymentStatus === 'PARTIALLY_PAID'"
+                      (click)="openPaymentModal(invoice)" title="Paiement"
+                      style="width: 2rem; height: 2rem; border-radius: 0.375rem; border: 1px solid #fcd34d; background: #fde047; color: white; cursor: pointer; font-size: 0.875rem; display: flex; align-items: center; justify-content: center; transition: all 0.2s;"
+                      onmouseover="this.style.background='#facc15'" onmouseout="this.style.background='#fde047'">💰</button>
             </div>
           </div>
           
@@ -181,6 +250,25 @@ import { ApiService } from '../../services/api.service';
     </div>
   `,
   styles: [`
+    /* Responsive table/cards toggle */
+    .desktop-table {
+      display: none;
+    }
+    
+    .mobile-cards {
+      display: block;
+    }
+    
+    @media (min-width: 1024px) {
+      .desktop-table {
+        display: block;
+      }
+      
+      .mobile-cards {
+        display: none;
+      }
+    }
+    
     .bg-success {
       background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
       color: white;
@@ -194,6 +282,35 @@ import { ApiService } from '../../services/api.service';
     .bg-warning {
       background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
       color: white;
+    }
+
+    /* Responsive utilities */
+    @media (min-width: 640px) {
+      /* Show icons on larger screens */
+      .stat-icon {
+        display: flex !important;
+      }
+      /* Adjust text alignment */
+      .stat-content {
+        text-align: left !important;
+      }
+    }
+
+    @media (min-width: 768px) {
+      /* Larger fonts on tablets */
+      .stat-value {
+        font-size: 1.5rem !important;
+      }
+      .stat-label {
+        font-size: 0.75rem !important;
+      }
+    }
+
+    @media (min-width: 1024px) {
+      /* Even larger on desktop */
+      .stat-value {
+        font-size: 1.875rem !important;
+      }
     }
   `]
 })
