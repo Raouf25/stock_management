@@ -1,5 +1,6 @@
 package com.example.stock_management.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -13,6 +14,7 @@ public class BillProduct {
 
     @ManyToOne
     @JoinColumn(name = "id_bill")
+    @JsonIgnore
     private Bill bill;
 
     @ManyToOne

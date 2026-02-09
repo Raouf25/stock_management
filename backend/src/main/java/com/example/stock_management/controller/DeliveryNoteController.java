@@ -89,13 +89,18 @@ public class DeliveryNoteController {
     }
 
     @PostMapping("/convert-to-invoice")
-    public ResponseEntity<Bill> convertToInvoice(@RequestBody Map<String, List<Long>> request) {
+    public ResponseEntity<?> convertToInvoice(@RequestBody Map<String, List<Long>> request) {
         try {
             List<Long> deliveryNoteIds = request.get("deliveryNoteIds");
+            if (deliveryNoteIds == null || deliveryNoteIds.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", "deliveryNoteIds is required"));
+            }
             Bill bill = deliveryNoteService.convertToInvoice(deliveryNoteIds);
             return ResponseEntity.ok(bill);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Map.of("error", e.getMessage()));
         }
     }
 
