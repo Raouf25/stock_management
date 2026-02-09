@@ -1,18 +1,20 @@
-<div class="products-page">
-  <h1 class="mb-4">📦 Gestion des Produits</h1>
+<div class="invoice-page-container">
+  <div class="invoice-page-header">
+    <span style="font-size: 2rem;">📦</span>
+    <h1 class="invoice-page-title">Gestion des Produits</h1>
+    <button class="btn btn-primary btn-refresh" style="margin-left: auto;" (click)="loadProducts()">
+      🔄 Rafraîchir
+    </button>
+  </div>
 
   <!-- Search Bar -->
-  <div class="row mb-4">
-    <div class="col-md-10">
+  <div class="invoice-card" style="margin-bottom: 1.5rem;">
+    <div style="padding: 1rem;">
       <input type="text" 
-             class="form-control search-input" 
+             class="form-control" 
              placeholder="🔍 Rechercher par nom, désignation ou catégorie..." 
-             [(ngModel)]="searchText">
-    </div>
-    <div class="col-md-2">
-      <button class="btn btn-primary w-100 btn-refresh" (click)="loadProducts()">
-        🔄 Rafraîchir
-      </button>
+             [(ngModel)]="searchText"
+             style="width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 0.5rem;">
     </div>
   </div>
 
@@ -23,71 +25,58 @@
   </div>
 
   <!-- KPIs Row -->
-  <div *ngIf="!loading && products.length > 0" class="row mb-4">
-    <div class="col-md-3">
-      <div class="stat-card stat-card-blue">
-        <div class="stat-icon">📦</div>
-        <div class="stat-number">{{ getFilteredProducts().length }}</div>
-        <div class="stat-label">Total Produits</div>
-      </div>
+  <div *ngIf="!loading && products.length > 0" class="invoice-stats-grid">
+    <div class="invoice-stat-card border-blue">
+      <div class="stat-number">{{ getFilteredProducts().length }}</div>
+      <div class="stat-label">Total Produits</div>
     </div>
-    <div class="col-md-3">
-      <div class="stat-card stat-card-purple">
-        <div class="stat-icon">📊</div>
-        <div class="stat-number">{{ getTotalStock() }}</div>
-        <div class="stat-label">Quantité Totale</div>
-      </div>
+    <div class="invoice-stat-card border-purple">
+      <div class="stat-number">{{ getTotalStock() }}</div>
+      <div class="stat-label">Quantité Totale</div>
     </div>
-    <div class="col-md-3">
-      <div class="stat-card stat-card-green">
-        <div class="stat-icon">💰</div>
-        <div class="stat-number">{{ getTotalValue() | number: '1.3-3' }}</div>
-        <div class="stat-label">Valeur Totale (DNT)</div>
-      </div>
+    <div class="invoice-stat-card border-green">
+      <div class="stat-number">{{ getTotalValue() | number: '1.0-0' }}</div>
+      <div class="stat-label">Valeur Totale (DNT)</div>
     </div>
-    <div class="col-md-3">
-      <div class="stat-card stat-card-warning">
-        <div class="stat-icon">⚠️</div>
-        <div class="stat-number">{{ getLowStockCount() }}</div>
-        <div class="stat-label">Stock Faible</div>
-      </div>
+    <div class="invoice-stat-card border-orange">
+      <div class="stat-number">{{ getLowStockCount() }}</div>
+      <div class="stat-label">Stock Faible</div>
     </div>
   </div>
 
   <!-- Charts Row -->
-  <div class="row mb-4" *ngIf="!loading && products.length > 0">
-    <div class="col-lg-8">
-      <div class="card chart-card">
-        <div class="card-header bg-gradient-primary">
-          <i class="fas fa-chart-bar"></i> Distribution du Stock
-        </div>
-        <div class="card-body">
-          <div class="chart-container">
-            <canvas #stockDistributionChart></canvas>
-          </div>
+  <div class="invoice-info-grid" *ngIf="!loading && products.length > 0">
+    <div class="invoice-card">
+      <div class="invoice-card-header gradient-blue">
+        <span>📊</span>
+        <span class="invoice-card-header-title">Distribution du Stock</span>
+      </div>
+      <div style="padding: 1rem;">
+        <div class="chart-container">
+          <canvas #stockDistributionChart></canvas>
         </div>
       </div>
     </div>
-    <div class="col-lg-4">
-      <div class="card chart-card">
-        <div class="card-header bg-gradient-success">
-          <i class="fas fa-chart-pie"></i> Par Catégorie
-        </div>
-        <div class="card-body">
-          <div class="chart-container-small">
-            <canvas #categoryChart></canvas>
-          </div>
+    <div class="invoice-card">
+      <div class="invoice-card-header gradient-green">
+        <span>🥧</span>
+        <span class="invoice-card-header-title">Par Catégorie</span>
+      </div>
+      <div style="padding: 1rem;">
+        <div class="chart-container-small">
+          <canvas #categoryChart></canvas>
         </div>
       </div>
     </div>
   </div>
 
   <!-- Products Table -->
-  <div class="card table-card">
-    <div class="card-header bg-gradient-info">
-      📋 Liste des Produits ({{ getFilteredProducts().length }})
+  <div class="invoice-card">
+    <div class="invoice-card-header gradient-purple">
+      <span>📋</span>
+      <span class="invoice-card-header-title">Liste des Produits ({{ getFilteredProducts().length }})</span>
     </div>
-    <div class="card-body" *ngIf="products.length > 0">
+    <div style="padding: 1rem;" *ngIf="products.length > 0">
       <div class="table-responsive">
         <table class="table table-hover table-striped">
           <thead class="table-dark">

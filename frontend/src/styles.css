@@ -113,22 +113,24 @@ body {
   opacity: 0.8;
 }
 
-/* Stat number / value */
+/* Stat number / value — compact for invoice-stat-card */
 .stat-number,
 .stat-value {
-  font-size: 2.2rem;
-  font-weight: bold;
-  color: #2c3e50;
-  margin: 10px 0;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+  line-height: 1.2;
 }
 
-/* Stat label */
+/* Stat label — compact for invoice-stat-card */
 .stat-label {
-  color: #7f8c8d;
-  font-size: 0.95rem;
-  font-weight: 500;
+  font-size: 0.625rem;
+  font-weight: 600;
+  color: #6b7280;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  margin: 0.125rem 0 0;
+  letter-spacing: 0.025em;
 }
 
 /* Card with gradient header */
