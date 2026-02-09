@@ -44,29 +44,91 @@ body {
   margin: 0;
 }
 
-/* Stat Cards */
+/* =============================================
+   Stat Cards — unified styles for all pages
+   ============================================= */
+
+/* Base stat card */
+.stat-card,
 .invoice-stat-card {
   background: white;
-  border-radius: 0.75rem;
-  padding: 0.75rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border-radius: 15px;
+  padding: 25px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+  transition: all 0.3s ease;
+  position: relative;
   overflow: hidden;
 }
 
-.invoice-stat-card.border-blue {
-  border-top: 3px solid #3498db;
+/* Compact variant for invoice-stat-card */
+.invoice-stat-card {
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  margin-bottom: 0;
 }
 
-.invoice-stat-card.border-green {
-  border-top: 3px solid #2ecc71;
+.stat-card:hover,
+.invoice-stat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
 }
 
-.invoice-stat-card.border-red {
-  border-top: 3px solid #e74c3c;
+.invoice-stat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
 
-.invoice-stat-card.border-orange {
-  border-top: 3px solid #f39c12;
+/* Top gradient bar (::before) */
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+}
+
+/* Color variants — gradient bar */
+.stat-card-blue::before  { background: linear-gradient(90deg, #3498db 0%, #2980b9 100%); }
+.stat-card-green::before { background: linear-gradient(90deg, #2ecc71 0%, #27ae60 100%); }
+.stat-card-red::before   { background: linear-gradient(90deg, #e74c3c 0%, #c0392b 100%); }
+.stat-card-orange::before{ background: linear-gradient(90deg, #f39c12 0%, #e67e22 100%); }
+.stat-card-purple::before{ background: linear-gradient(90deg, #9b59b6 0%, #8e44ad 100%); }
+.stat-card-warning::before { background: linear-gradient(90deg, #f39c12 0%, #e74c3c 100%); }
+
+/* Color variants — solid border-top (invoice-stat-card) */
+.invoice-stat-card.border-blue   { border-top: 3px solid #3498db; }
+.invoice-stat-card.border-green  { border-top: 3px solid #2ecc71; }
+.invoice-stat-card.border-red    { border-top: 3px solid #e74c3c; }
+.invoice-stat-card.border-orange { border-top: 3px solid #f39c12; }
+.invoice-stat-card.border-purple { border-top: 3px solid #9b59b6; }
+
+/* Stat icon */
+.stat-icon {
+  font-size: 2.5rem;
+  margin-bottom: 10px;
+  opacity: 0.8;
+}
+
+/* Stat number / value */
+.stat-number,
+.stat-value {
+  font-size: 2.2rem;
+  font-weight: bold;
+  color: #2c3e50;
+  margin: 10px 0;
+}
+
+/* Stat label */
+.stat-label {
+  color: #7f8c8d;
+  font-size: 0.95rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 /* Card with gradient header */

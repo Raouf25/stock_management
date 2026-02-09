@@ -21,41 +21,20 @@ import { ApiService } from '../../services/api.service';
       <div class="invoice-stats-grid stats-3-cols">
         <!-- Total Factures -->
         <div class="invoice-stat-card border-blue">
-          <div style="display: flex; align-items: center; gap: 0.5rem;">
-            <div style="display: none; width: 2.5rem; height: 2.5rem; background: #eff6ff; border-radius: 9999px; padding: 0.5rem; align-items: center; justify-content: center;">
-              <span style="font-size: 1.25rem;">📄</span>
-            </div>
-            <div style="flex: 1; min-width: 0; text-align: center;">
-              <div style="font-size: 1.125rem; font-weight: 700; color: #1f2937;">{{ filteredInvoices.length }}</div>
-              <div style="font-size: 0.625rem; font-weight: 600; color: #6b7280; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Total Factures</div>
-            </div>
-          </div>
+          <div class="stat-number">{{ filteredInvoices.length }}</div>
+          <div class="stat-label">Total Factures</div>
         </div>
         
         <!-- Montant Total -->
         <div class="invoice-stat-card border-green">
-          <div style="display: flex; align-items: center; gap: 0.5rem;">
-            <div style="display: none; width: 2.5rem; height: 2.5rem; background: #dcfce7; border-radius: 9999px; padding: 0.5rem; align-items: center; justify-content: center;">
-              <span style="font-size: 1.25rem;">💵</span>
-            </div>
-            <div style="flex: 1; min-width: 0; text-align: center;">
-              <div style="font-size: 1.125rem; font-weight: 700; color: #1f2937;">{{ getTotalAmount() | number:'1.3-3' }}</div>
-              <div style="font-size: 0.625rem; font-weight: 600; color: #6b7280; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Montant (DNT)</div>
-            </div>
-          </div>
+          <div class="stat-number">{{ getTotalAmount() | number:'1.3-3' }}</div>
+          <div class="stat-label">Montant (DNT)</div>
         </div>
         
         <!-- Total Dû -->
         <div class="invoice-stat-card border-orange">
-          <div style="display: flex; align-items: center; gap: 0.5rem;">
-            <div style="display: none; width: 2.5rem; height: 2.5rem; background: #fef3c7; border-radius: 9999px; padding: 0.5rem; align-items: center; justify-content: center;">
-              <span style="font-size: 1.25rem;">💰</span>
-            </div>
-            <div style="flex: 1;">
-              <div style="font-size: 0.625rem; color: #f59e0b; font-weight: 600; margin-bottom: 0.125rem; text-transform: uppercase;">Total Dû</div>
-              <div style="font-size: 1rem; font-weight: 700; color: #1f2937;">{{ getTotalDue() | number:'1.3-3' }} DNT</div>
-            </div>
-          </div>
+          <div class="stat-number">{{ getTotalDue() | number:'1.3-3' }}</div>
+          <div class="stat-label">Total Dû (DNT)</div>
         </div>
       </div>
       

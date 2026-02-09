@@ -50,22 +50,29 @@ interface DeliveryNoteKPIs {
       </div>
 
       <!-- KPIs -->
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
-        <div class="invoice-stat-card" style="border-left: 4px solid #22c55e;">
-          <div class="invoice-stat-value">{{ kpis.totalDeliveryNotes }}</div>
-          <div class="invoice-stat-label">Total BL</div>
+      <div class="invoice-stats-grid">
+        <!-- Total BL -->
+        <div class="invoice-stat-card border-green">
+          <div class="stat-number">{{ kpis.totalDeliveryNotes }}</div>
+          <div class="stat-label">Total BL</div>
         </div>
-        <div class="invoice-stat-card" style="border-left: 4px solid #f59e0b;">
-          <div class="invoice-stat-value">{{ kpis.notInvoiced }}</div>
-          <div class="invoice-stat-label">Non Facturés</div>
+
+        <!-- Non Facturés -->
+        <div class="invoice-stat-card border-orange">
+          <div class="stat-number">{{ kpis.notInvoiced }}</div>
+          <div class="stat-label">Non Facturés</div>
         </div>
-        <div class="invoice-stat-card" style="border-left: 4px solid #3b82f6;">
-          <div class="invoice-stat-value">{{ kpis.pendingDelivery }}</div>
-          <div class="invoice-stat-label">En Attente</div>
+
+        <!-- En Attente -->
+        <div class="invoice-stat-card border-blue">
+          <div class="stat-number">{{ kpis.pendingDelivery }}</div>
+          <div class="stat-label">En Attente</div>
         </div>
-        <div class="invoice-stat-card" style="border-left: 4px solid #10b981;">
-          <div class="invoice-stat-value">{{ kpis.totalAmountNotInvoiced | number:'1.3-3' }} DNT</div>
-          <div class="invoice-stat-label">Montant Non Facturé</div>
+
+        <!-- Montant Non Facturé -->
+        <div class="invoice-stat-card border-green">
+          <div class="stat-number">{{ kpis.totalAmountNotInvoiced | number:'1.3-3' }}</div>
+          <div class="stat-label">Montant Non Facturé (DNT)</div>
         </div>
       </div>
 
