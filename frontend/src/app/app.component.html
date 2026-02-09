@@ -51,6 +51,12 @@
             <span>Mouvements</span>
           </a>
         </li>
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/customers" routerLinkActive="active" (click)="closeSidebarOnMobile()">
+            <i class="bi bi-people"></i>
+            <span>Clients</span>
+          </a>
+        </li>
         
         <!-- Facturation avec sous-menu -->
         <li class="nav-item has-submenu" [class.open]="invoiceMenuOpen">

@@ -9,6 +9,9 @@ import { InvoiceCreateComponent } from './components/invoices/invoice-create.com
 import { InvoiceListComponent } from './components/invoices/invoice-list.component';
 import { DeliveryNoteCreateComponent } from './components/delivery-notes/delivery-note-create.component';
 import { DeliveryNoteListComponent } from './components/delivery-notes/delivery-note-list.component';
+import { CustomerListComponent } from './components/customers/customer-list.component';
+import { CustomerCreateComponent } from './components/customers/customer-create.component';
+import { CustomerEditComponent } from './components/customers/customer-edit.component';
 import { LoginComponent } from './components/auth/login.component';
 import { ForgotPasswordComponent } from './components/auth/forgot-password.component';
 import { ResetPasswordComponent } from './components/auth/reset-password.component';
@@ -27,6 +30,11 @@ export const routes: Routes = [
   { path: 'purchases', component: PurchasesComponent, canActivate: [authGuard] },
   { path: 'sales', component: SalesComponent, canActivate: [authGuard] },
   { path: 'stock-movements', component: StockMovementComponent, canActivate: [authGuard] },
+  
+  // Clients (protected)
+  { path: 'customers', component: CustomerListComponent, canActivate: [authGuard] },
+  { path: 'customers/create', component: CustomerCreateComponent, canActivate: [authGuard] },
+  { path: 'customers/edit/:id', component: CustomerEditComponent, canActivate: [authGuard] },
   
   // Facturation - Navigation hiérarchique (protected)
   { path: 'invoices', redirectTo: 'invoices/list', pathMatch: 'full' },

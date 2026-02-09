@@ -1,0 +1,320 @@
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
+import { ApiService } from '../../services/api.service';
+
+@Component({
+  selector: 'app-customer-create',
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule],
+  template: `
+    <div class="invoice-page-container">
+      <!-- Header -->
+      <div class="invoice-page-header">
+        <div style="display: flex; align-items: center; gap: 1rem;">
+          <span style="font-size: 2rem;">👤</span>
+          <h1 class="invoice-page-title">Créer un Nouveau Client</h1>
+        </div>
+        <button (click)="goBack()" 
+                style="padding: 0.75rem 1.5rem; background: #6b7280; color: white; border: none; border-radius: 0.5rem; cursor: pointer; font-weight: 600;">
+          ← Retour
+        </button>
+      </div>
+
+      <!-- Formulaire -->
+      <div class="invoice-card">
+        <div class="invoice-card-header gradient-purple">
+          <span style="font-size: 1rem;">📝</span>
+          <span class="invoice-card-header-title">Informations Client</span>
+        </div>
+        
+        <div style="padding: 2rem;">
+          <form [formGroup]="customerForm" (ngSubmit)="onSubmit()">
+            <!-- Section: Informations de Base -->
+            <div style="margin-bottom: 2rem;">
+              <h3 style="color: #374151; font-size: 1.125rem; font-weight: 600; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid #e5e7eb;">
+                Informations de Base
+              </h3>
+              <div class="form-grid">
+                <div class="form-field">
+                  <label class="field-label">
+                    Nom de l'Entreprise <span style="color: #ef4444;">*</span>
+                  </label>
+                  <input type="text" formControlName="name" class="form-input" placeholder="Ex: Société ABC">
+                  <div *ngIf="customerForm.get('name')?.invalid && customerForm.get('name')?.touched" 
+                       style="color: #ef4444; font-size: 0.75rem; margin-top: 0.25rem;">
+                    Le nom est requis
+                  </div>
+                </div>
+
+                <div class="form-field">
+                  <label class="field-label">
+                    Nom Complet du Contact
+                  </label>
+                  <input type="text" formControlName="fullName" class="form-input" placeholder="Ex: Ahmed Ben Ali">
+                </div>
+
+                <div class="form-field">
+                  <label class="field-label">
+                    Email <span style="color: #ef4444;">*</span>
+                  </label>
+                  <input type="email" formControlName="email" class="form-input" placeholder="contact@exemple.tn">
+                  <div *ngIf="customerForm.get('email')?.invalid && customerForm.get('email')?.touched" 
+                       style="color: #ef4444; font-size: 0.75rem; margin-top: 0.25rem;">
+                    Email invalide
+                  </div>
+                </div>
+
+                <div class="form-field">
+                  <label class="field-label">
+                    Téléphone <span style="color: #ef4444;">*</span>
+                  </label>
+                  <input type="tel" formControlName="phone" class="form-input" placeholder="+216 XX XXX XXX">
+                  <div *ngIf="customerForm.get('phone')?.invalid && customerForm.get('phone')?.touched" 
+                       style="color: #ef4444; font-size: 0.75rem; margin-top: 0.25rem;">
+                    Le téléphone est requis
+                  </div>
+                </div>
+
+                <div class="form-field">
+                  <label class="field-label">Fax</label>
+                  <input type="tel" formControlName="fax" class="form-input" placeholder="+216 XX XXX XXX">
+                </div>
+
+                <div class="form-field">
+                  <label class="field-label">
+                    Statut <span style="color: #ef4444;">*</span>
+                  </label>
+                  <select formControlName="status" class="form-input">
+                    <option value="ACTIVE">Actif</option>
+                    <option value="INACTIVE">Inactif</option>
+                    <option value="BLOCKED">Bloqué</option>
+                    <option value="PROSPECT">Prospect</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Section: Adresse -->
+            <div style="margin-bottom: 2rem;">
+              <h3 style="color: #374151; font-size: 1.125rem; font-weight: 600; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid #e5e7eb;">
+                Adresse
+              </h3>
+              <div class="form-grid">
+                <div class="form-field full-width">
+                  <label class="field-label">Adresse Complète</label>
+                  <textarea formControlName="address" class="form-input" rows="3" 
+                            placeholder="Ex: 123 Avenue Habib Bourguiba, Tunis"></textarea>
+                </div>
+
+                <div class="form-field">
+                  <label class="field-label">Ville</label>
+                  <input type="text" formControlName="city" class="form-input" placeholder="Ex: Tunis">
+                </div>
+              </div>
+            </div>
+
+            <!-- Section: Informations Fiscales -->
+            <div style="margin-bottom: 2rem;">
+              <h3 style="color: #374151; font-size: 1.125rem; font-weight: 600; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid #e5e7eb;">
+                Informations Fiscales
+              </h3>
+              <div class="form-grid">
+                <div class="form-field">
+                  <label class="field-label">Code TVA</label>
+                  <input type="text" formControlName="tvaCode" class="form-input" placeholder="Ex: TN123456789">
+                </div>
+
+                <div class="form-field">
+                  <label class="field-label">
+                    CIN (Carte d'Identité Nationale)
+                  </label>
+                  <input type="text" formControlName="cin" class="form-input" 
+                         placeholder="Ex: 01234567" maxlength="8"
+                         pattern="[0-9]{8}">
+                  <div *ngIf="customerForm.get('cin')?.invalid && customerForm.get('cin')?.touched" 
+                       style="color: #ef4444; font-size: 0.75rem; margin-top: 0.25rem;">
+                    Le CIN doit contenir 8 chiffres
+                  </div>
+                </div>
+
+                <div class="form-field">
+                  <label class="field-label">
+                    Plaque d'Immatriculation
+                  </label>
+                  <input type="text" formControlName="licensePlate" class="form-input" 
+                         placeholder="Ex: 123 تونس 4567">
+                </div>
+              </div>
+            </div>
+
+            <!-- Messages d'erreur et succès -->
+            <div *ngIf="errorMessage" 
+                 style="padding: 1rem; background: #fee2e2; border: 1px solid #ef4444; border-radius: 0.5rem; color: #991b1b; margin-bottom: 1rem;">
+              {{ errorMessage }}
+            </div>
+
+            <div *ngIf="successMessage" 
+                 style="padding: 1rem; background: #d1fae5; border: 1px solid #10b981; border-radius: 0.5rem; color: #065f46; margin-bottom: 1rem;">
+              {{ successMessage }}
+            </div>
+
+            <!-- Boutons d'action -->
+            <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+              <button type="button" (click)="resetForm()" 
+                      style="padding: 0.75rem 1.5rem; background: #f3f4f6; color: #374151; border: 1px solid #d1d5db; border-radius: 0.5rem; cursor: pointer; font-weight: 600;">
+                Réinitialiser
+              </button>
+              <button type="submit" [disabled]="customerForm.invalid || isSubmitting"
+                      style="padding: 0.75rem 2rem; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; border: none; border-radius: 0.5rem; cursor: pointer; font-weight: 600;"
+                      [style.opacity]="customerForm.invalid || isSubmitting ? '0.5' : '1'"
+                      [style.cursor]="customerForm.invalid || isSubmitting ? 'not-allowed' : 'pointer'">
+                {{ isSubmitting ? 'Création...' : 'Créer le Client' }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  `,
+  styles: [`
+    .invoice-page-container {
+      padding: 2rem;
+      background: #f3f4f6;
+      min-height: 100vh;
+    }
+
+    .invoice-page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+
+    .invoice-page-title {
+      font-size: 1.875rem;
+      font-weight: 700;
+      color: #111827;
+      margin: 0;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .form-field {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .form-field.full-width {
+      grid-column: 1 / -1;
+    }
+
+    .field-label {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 0.5rem;
+    }
+
+    .form-input {
+      padding: 0.75rem;
+      border: 1px solid #d1d5db;
+      border-radius: 0.5rem;
+      font-size: 0.875rem;
+      transition: all 0.2s;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .form-input:disabled {
+      background: #f3f4f6;
+      cursor: not-allowed;
+    }
+
+    textarea.form-input {
+      resize: vertical;
+      min-height: 80px;
+    }
+  `]
+})
+export class CustomerCreateComponent implements OnInit {
+  customerForm!: FormGroup;
+  isSubmitting = false;
+  errorMessage = '';
+  successMessage = '';
+
+  constructor(
+    private fb: FormBuilder,
+    private apiService: ApiService,
+    private router: Router
+  ) {}
+
+  ngOnInit(): void {
+    this.initForm();
+  }
+
+  initForm(): void {
+    this.customerForm = this.fb.group({
+      name: ['', Validators.required],
+      fullName: [''],
+      email: ['', [Validators.required, Validators.email]],
+      phone: ['', Validators.required],
+      fax: [''],
+      address: [''],
+      city: [''],
+      tvaCode: [''],
+      cin: ['', [Validators.pattern('[0-9]{8}')]],
+      licensePlate: [''],
+      status: ['ACTIVE', Validators.required]
+    });
+  }
+
+  onSubmit(): void {
+    if (this.customerForm.invalid) {
+      Object.keys(this.customerForm.controls).forEach(key => {
+        this.customerForm.get(key)?.markAsTouched();
+      });
+      return;
+    }
+
+    this.isSubmitting = true;
+    this.errorMessage = '';
+    this.successMessage = '';
+
+    this.apiService.createCustomer(this.customerForm.value).subscribe({
+      next: (response) => {
+        this.successMessage = 'Client créé avec succès!';
+        this.isSubmitting = false;
+        setTimeout(() => {
+          this.router.navigate(['/customers']);
+        }, 1500);
+      },
+      error: (error) => {
+        console.error('Error creating customer:', error);
+        this.errorMessage = 'Erreur lors de la création du client. Veuillez réessayer.';
+        this.isSubmitting = false;
+      }
+    });
+  }
+
+  resetForm(): void {
+    this.customerForm.reset({
+      status: 'ACTIVE'
+    });
+    this.errorMessage = '';
+    this.successMessage = '';
+  }
+
+  goBack(): void {
+    this.router.navigate(['/customers']);
+  }
+}

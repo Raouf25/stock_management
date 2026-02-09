@@ -647,13 +647,17 @@ export class InvoiceCreateComponent implements OnInit {
   loadCustomers() {
     this.apiService.getCustomers().subscribe({
       next: (data) => {
-        this.customers = data.map((c: any) => ({
-          customerId: c.customerId,
-          name: c.name,
-          address: c.address,
-          phone: c.phone,
-          email: c.email
-        }));
+        this.customers = data.map((item: any) => {
+          // L'API retourne maintenant CustomerWithStatsDTO: {customer: {...}, totalCA, unpaidAmount}
+          const c = item.customer || item;
+          return {
+            customerId: c.customerId,
+            name: c.name,
+            address: c.address,
+            phone: c.phone,
+            email: c.email
+          };
+        });
       },
       error: (error) => {
         console.error('Error loading customers:', error);

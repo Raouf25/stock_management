@@ -117,6 +117,34 @@ export class ApiService {
     return this.http.get<any[]>(`${this.apiUrl}/customers`);
   }
 
+  searchCustomers(query?: string, status?: string, city?: string): Observable<any[]> {
+    let params = new HttpParams();
+    if (query) params = params.set('q', query);
+    if (status) params = params.set('status', status);
+    if (city) params = params.set('city', city);
+    return this.http.get<any[]>(`${this.apiUrl}/customers/search`, { params });
+  }
+
+  getCustomerKPIs(): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/customers/kpis`);
+  }
+
+  getCustomerById(id: number): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/customers/${id}`);
+  }
+
+  createCustomer(customer: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/customers`, customer);
+  }
+
+  updateCustomer(id: number, customer: any): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/customers/${id}`, customer);
+  }
+
+  deleteCustomer(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/customers/${id}`);
+  }
+
   // === INVOICES / BILLS ===
   getAllBills(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/bills`);

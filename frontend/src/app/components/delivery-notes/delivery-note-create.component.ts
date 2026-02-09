@@ -204,8 +204,9 @@ export class DeliveryNoteCreateComponent implements OnInit {
 
   loadCustomers(): void {
     this.apiService.getCustomers().subscribe({
-      next: (data: Customer[]) => {
-        this.customers = data;
+      next: (data: any[]) => {
+        // L'API retourne CustomerWithStatsDTO: {customer: {...}, totalCA, unpaidAmount}
+        this.customers = data.map((item: any) => item.customer || item);
       },
       error: (error: any) => {
         console.error('Error loading customers:', error);

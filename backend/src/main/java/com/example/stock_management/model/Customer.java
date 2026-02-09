@@ -1,11 +1,9 @@
 package com.example.stock_management.model;
 
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.Data;
+import java.time.LocalDateTime;
 
 @Data
 @Entity
@@ -29,4 +27,22 @@ public class Customer {
     
     // Plaque d'immatriculation tunisienne (format: "Y تونس X")
     private String licensePlate;
+    
+    @Enumerated(EnumType.STRING)
+    private CustomerStatus status;
+    
+    private String city;
+    
+    @Column(updatable = false)
+    private LocalDateTime createdAt;
+    
+    @PrePersist
+    protected void onCreate() {
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
+        if (status == null) {
+            status = CustomerStatus.ACTIVE;
+        }
+    }
 }
