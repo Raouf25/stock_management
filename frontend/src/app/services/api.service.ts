@@ -163,4 +163,46 @@ export class ApiService {
   registerInvoicePayment(invoiceId: number, amount: number): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/bills/${invoiceId}/register-payment`, { amount });
   }
+
+  // ============= Delivery Notes API =============
+  
+  getAllDeliveryNotes(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/delivery-notes`);
+  }
+
+  getDeliveryNoteById(id: number): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/delivery-notes/${id}`);
+  }
+
+  getDeliveryNotesByCustomer(customerId: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/delivery-notes/customer/${customerId}`);
+  }
+
+  getNotInvoicedDeliveryNotes(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/delivery-notes/not-invoiced`);
+  }
+
+  getPendingInvoicingDeliveryNotes(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/delivery-notes/pending-invoicing`);
+  }
+
+  createDeliveryNote(deliveryNoteData: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/delivery-notes`, deliveryNoteData);
+  }
+
+  updateDeliveryNoteStatus(id: number, status: string): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/delivery-notes/${id}/status`, { status });
+  }
+
+  deleteDeliveryNote(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/delivery-notes/${id}`);
+  }
+
+  convertDeliveryNotesToInvoice(deliveryNoteIds: number[]): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/delivery-notes/convert-to-invoice`, { deliveryNoteIds });
+  }
+
+  getDeliveryNoteKPIs(): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/delivery-notes/kpis`);
+  }
 }

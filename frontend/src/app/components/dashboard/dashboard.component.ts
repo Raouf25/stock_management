@@ -81,6 +81,40 @@ Chart.register(...registerables);
           </div>
         </div>
 
+        <!-- Bons de Livraison KPIs -->
+        <div style="margin: 1.5rem 0;">
+          <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem;">
+            <span style="font-size: 1.5rem;">📦</span>
+            <h2 style="font-size: 1.25rem; font-weight: 700; color: #111827; margin: 0;">Bons de Livraison</h2>
+          </div>
+          <div class="invoice-stats-grid">
+            <div class="invoice-stat-card border-blue">
+              <div style="flex: 1; min-width: 0; text-align: center;" class="stat-text">
+                <p style="font-size: 1.125rem; font-weight: 700; color: #111827; margin: 0; line-height: 1.2;">{{ deliveryNoteKPIs.totalDeliveryNotes || 0 }}</p>
+                <p style="font-size: 0.625rem; font-weight: 600; color: #6b7280; text-transform: uppercase; margin: 0.125rem 0 0; letter-spacing: 0.025em;">Total BL</p>
+              </div>
+            </div>
+            <div class="invoice-stat-card border-orange">
+              <div style="flex: 1; min-width: 0; text-align: center;" class="stat-text">
+                <p style="font-size: 1.125rem; font-weight: 700; color: #111827; margin: 0; line-height: 1.2;">{{ deliveryNoteKPIs.notInvoiced || 0 }}</p>
+                <p style="font-size: 0.625rem; font-weight: 600; color: #6b7280; text-transform: uppercase; margin: 0.125rem 0 0; letter-spacing: 0.025em;">Non Facturés</p>
+              </div>
+            </div>
+            <div class="invoice-stat-card border-purple" style="border-left-color: #8b5cf6;">
+              <div style="flex: 1; min-width: 0; text-align: center;" class="stat-text">
+                <p style="font-size: 1.125rem; font-weight: 700; color: #111827; margin: 0; line-height: 1.2;">{{ deliveryNoteKPIs.pendingDelivery || 0 }}</p>
+                <p style="font-size: 0.625rem; font-weight: 600; color: #6b7280; text-transform: uppercase; margin: 0.125rem 0 0; letter-spacing: 0.025em;">En Attente</p>
+              </div>
+            </div>
+            <div class="invoice-stat-card border-green">
+              <div style="flex: 1; min-width: 0; text-align: center;" class="stat-text">
+                <p style="font-size: 1.125rem; font-weight: 700; color: #111827; margin: 0; line-height: 1.2;">{{ deliveryNoteKPIs.totalAmountNotInvoiced || 0 | number: '1.0-0' }}</p>
+                <p style="font-size: 0.625rem; font-weight: 600; color: #6b7280; text-transform: uppercase; margin: 0.125rem 0 0; letter-spacing: 0.025em;">Montant Non Facturé (DNT)</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Statuts & Resume - 1 col mobile, 2 cols desktop -->
         <div class="invoice-info-grid">
           <!-- Statuts de Paiement -->
@@ -206,6 +240,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   sales: any[] = [];
   purchases: any[] = [];
   invoiceKPIs: any = {};
+  deliveryNoteKPIs: any = {};
   loading = true;
   showTable = false;
 
@@ -278,6 +313,16 @@ export class DashboardComponent implements OnInit, AfterViewInit {
           totalAmountDue: typeof data?.totalAmountDue === 'number' ? data.totalAmountDue : 0,
           ...data
         };
+      }
+    });
+
+    this.apiService.getDeliveryNoteKPIs().subscribe({
+      next: (data) => {
+        this.deliveryNoteKPIs = data || {};
+      },
+      error: (error) => {
+        console.error('Error loading delivery note KPIs:', error);
+        this.deliveryNoteKPIs = {};
       }
     });
   }

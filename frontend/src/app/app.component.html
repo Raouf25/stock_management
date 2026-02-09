@@ -74,6 +74,29 @@
             </li>
           </ul>
         </li>
+        
+        <!-- Bons de Livraison avec sous-menu -->
+        <li class="nav-item has-submenu" [class.open]="deliveryMenuOpen">
+          <a class="nav-link" (click)="toggleDeliveryMenu()" [class.active]="isDeliveryRouteActive()">
+            <i class="bi bi-truck"></i>
+            <span>Bons de Livraison</span>
+            <i class="bi chevron-icon" [class.bi-chevron-down]="!deliveryMenuOpen" [class.bi-chevron-up]="deliveryMenuOpen"></i>
+          </a>
+          <ul class="submenu" [class.show]="deliveryMenuOpen">
+            <li>
+              <a class="submenu-link" routerLink="/delivery-notes/create" routerLinkActive="active" (click)="closeSidebarOnMobile()">
+                <i class="bi bi-plus-circle"></i>
+                <span>Créer BL</span>
+              </a>
+            </li>
+            <li>
+              <a class="submenu-link" routerLink="/delivery-notes/list" routerLinkActive="active" (click)="closeSidebarOnMobile()">
+                <i class="bi bi-list-ul"></i>
+                <span>Lister BL</span>
+              </a>
+            </li>
+          </ul>
+        </li>
       </ul>
     </nav>
 

@@ -17,6 +17,7 @@ export class AppComponent implements OnInit {
   sidebarOpen = false;
   currentRoute = '';
   invoiceMenuOpen = false;
+  deliveryMenuOpen = false;
 
   constructor(
     private router: Router,
@@ -33,6 +34,10 @@ export class AppComponent implements OnInit {
       if (this.isInvoiceRouteActive()) {
         this.invoiceMenuOpen = true;
       }
+      // Auto-ouvrir le menu BL si on est sur une route de BL
+      if (this.isDeliveryRouteActive()) {
+        this.deliveryMenuOpen = true;
+      }
       // Fermer la sidebar mobile après navigation
       this.closeSidebarOnMobile();
     });
@@ -48,6 +53,7 @@ export class AppComponent implements OnInit {
       // Fermer les sous-menus quand on réduit la sidebar
       if (this.sidebarCollapsed) {
         this.invoiceMenuOpen = false;
+        this.deliveryMenuOpen = false;
       }
       localStorage.setItem('sidebarCollapsed', this.sidebarCollapsed.toString());
     }
@@ -69,8 +75,18 @@ export class AppComponent implements OnInit {
     }
   }
 
+  toggleDeliveryMenu() {
+    if (!this.sidebarCollapsed) {
+      this.deliveryMenuOpen = !this.deliveryMenuOpen;
+    }
+  }
+
   isInvoiceRouteActive(): boolean {
     return this.currentRoute.startsWith('/invoices');
+  }
+
+  isDeliveryRouteActive(): boolean {
+    return this.currentRoute.startsWith('/delivery-notes');
   }
 
   isAuthRoute(): boolean {
@@ -86,7 +102,10 @@ export class AppComponent implements OnInit {
       '/stock-movements': 'Mouvements de Stock',
       '/invoices': 'Gestion des Factures',
       '/invoices/create': 'Créer Facture',
-      '/invoices/list': 'Liste des Factures'
+      '/invoices/list': 'Liste des Factures',
+      '/delivery-notes': 'Gestion des BL',
+      '/delivery-notes/create': 'Créer BL',
+      '/delivery-notes/list': 'Liste des BL'
     };
 
     return routeTitles[this.currentRoute] || 'Stock Management ERP';

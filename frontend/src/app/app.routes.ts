@@ -7,6 +7,8 @@ import { StockMovementComponent } from './components/stock-movement/stock-moveme
 import { InvoicesComponent } from './components/invoices/invoices.component';
 import { InvoiceCreateComponent } from './components/invoices/invoice-create.component';
 import { InvoiceListComponent } from './components/invoices/invoice-list.component';
+import { DeliveryNoteCreateComponent } from './components/delivery-notes/delivery-note-create.component';
+import { DeliveryNoteListComponent } from './components/delivery-notes/delivery-note-list.component';
 import { LoginComponent } from './components/auth/login.component';
 import { ForgotPasswordComponent } from './components/auth/forgot-password.component';
 import { ResetPasswordComponent } from './components/auth/reset-password.component';
@@ -30,6 +32,11 @@ export const routes: Routes = [
   { path: 'invoices', redirectTo: 'invoices/list', pathMatch: 'full' },
   { path: 'invoices/create', component: InvoiceCreateComponent, canActivate: [authGuard] },
   { path: 'invoices/list', component: InvoiceListComponent, canActivate: [authGuard] },
+  
+  // Bons de Livraison (protected)
+  { path: 'delivery-notes', redirectTo: 'delivery-notes/list', pathMatch: 'full' },
+  { path: 'delivery-notes/create', component: DeliveryNoteCreateComponent, canActivate: [authGuard] },
+  { path: 'delivery-notes/list', component: DeliveryNoteListComponent, canActivate: [authGuard] },
   
   { path: '**', redirectTo: 'login' }
 ];

@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
+import { ProductCatalogComponent } from '../shared/product-catalog.component';
+import { SelectedProductsComponent, SelectedProduct } from '../shared/selected-products.component';
 
 interface Customer {
   customerId: number;
@@ -13,11 +15,14 @@ interface Customer {
 }
 
 interface Product {
-  productId: number;
+  productId?: number;
+  idProduct?: number;
   reference: string;
   name: string;
-  unitPrice: number;
-  stock: number;
+  unitPrice?: number;
+  unitPriceSold?: number;
+  stock?: number;
+  quantity?: number;
   imageUrl?: string;
 }
 
@@ -36,7 +41,7 @@ interface InvoiceLineItem {
 @Component({
   selector: 'app-invoice-create',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, ProductCatalogComponent, SelectedProductsComponent],
   template: `
     <div class="invoice-create-page">
       <!-- Header -->
@@ -93,108 +98,25 @@ interface InvoiceLineItem {
       <!-- Catalogue & Produits Sélectionnés -->
       <div class="products-grid">
         <!-- Catalogue Produits -->
-        <div class="section-card">
-          <div class="section-header header-orange">
-            <span class="section-icon">📦</span>
-            <span>Catalogue Produits</span>
-          </div>
-          <div class="section-body-no-padding">
-            <div class="search-wrapper">
-              <div class="search-input-wrapper">
-                <span class="search-icon">🔍</span>
-                <input
-                  type="text"
-                  class="search-input"
-                  placeholder="Rechercher un produit..."
-                  [(ngModel)]="searchProductTerm"
-                  (keyup)="filterProducts()"
-                >
-              </div>
-            </div>
-            <div class="product-list">
-              <div *ngFor="let product of filteredProducts" class="product-item">
-                <div class="product-image">
-                  <img [src]="product.imageUrl || '/placeholder.svg'" [alt]="product.name">
-                </div>
-                <div class="product-info">
-                  <p class="product-name">{{ product.name }}</p>
-                  <p class="product-meta">
-                    Ref: {{ product.reference }} | <span class="stock-info">Stock: {{ getAvailableStock(product) }}</span>
-                  </p>
-                  <p class="product-price">{{ product.unitPrice | number:'1.3-3' }} DNT</p>
-                </div>
-                <button class="btn-add-product" (click)="addLineItem(product)" type="button" [disabled]="getAvailableStock(product) <= 0">
-                  ➕
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <app-product-catalog 
+          [products]="products"
+          [reservedQuantities]="getReservedQuantities()"
+          (productSelected)="addLineItem($event)">
+        </app-product-catalog>
 
         <!-- Produits Sélectionnés -->
-        <div class="section-card">
-          <div class="section-header header-purple">
-            <span class="section-icon">🛒</span>
-            <span>Produits Sélectionnés ({{ lineItems.length }})</span>
-          </div>
-          <div class="section-body-no-padding">
-            <div *ngIf="lineItems.length === 0" class="empty-cart">
-              <span class="empty-icon">🛒</span>
-              <p>Cliquez sur un produit du catalogue pour l'ajouter.</p>
-            </div>
-            <div *ngIf="lineItems.length > 0" class="selected-products-list">
-              <div *ngFor="let item of lineItems; let i = index" class="selected-product-item">
-                <div class="selected-product-image">
-                  <img [src]="getProductImage(item.productId)" [alt]="item.productName">
-                </div>
-                <div class="selected-product-content">
-                  <div class="selected-product-header">
-                    <div>
-                      <p class="selected-product-name">{{ item.productName }}</p>
-                      <p class="selected-product-unit-price">{{ item.unitPrice | number:'1.3-3' }} DNT/u</p>
-                    </div>
-                    <button class="btn-remove-product" (click)="removeLineItem(i)" type="button">
-                      🗑️
-                    </button>
-                  </div>
-                  
-                  <!-- Quantité et Remise -->
-                  <div class="product-controls">
-                    <!-- Quantité -->
-                    <div class="quantity-control">
-                      <span class="control-label">Qté:</span>
-                      <button class="btn-qty" (click)="updateLineItemQuantity(i, item.quantity - 1)" type="button">➖</button>
-                      <span class="qty-value">{{ item.quantity }}</span>
-                      <button class="btn-qty" (click)="updateLineItemQuantity(i, item.quantity + 1)" type="button">➕</button>
-                    </div>
-                    
-                    <!-- Remise -->
-                    <div class="discount-control">
-                      <span class="discount-icon">💸</span>
-                      <input
-                        type="number"
-                        [value]="item.discount"
-                        (input)="updateLineItemDiscount(i, $any($event.target).value)"
-                        class="discount-input"
-                        min="0"
-                        max="100"
-                      >
-                      <span class="control-label">%</span>
-                    </div>
-                  </div>
-
-                  <!-- Total ligne -->
-                  <div class="product-total">
-                    <span *ngIf="item.discount > 0" class="discount-applied">
-                      -{{ item.discount }}%
-                    </span>
-                    <span class="total-price">{{ item.totalPrice | number:'1.3-3' }} DNT</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <app-selected-products
+          [products]="lineItems"
+          [title]="'Produits Sélectionnés'"
+          [icon]="'🛒'"
+          [emptyIcon]="'🛒'"
+          [emptyMessage]="&quot;Cliquez sur un produit du catalogue pour l'ajouter.&quot;"
+          [headerClass]="'header-purple'"
+          [productImages]="getProductImagesMap()"
+          (productRemoved)="removeLineItem($event)"
+          (quantityUpdated)="updateLineItemQuantity($event.index, $event.quantity)"
+          (discountUpdated)="updateLineItemDiscount($event.index, $event.discount)">
+        </app-selected-products>
       </div>
 
       <!-- Acompte & Récapitulatif -->
@@ -524,191 +446,6 @@ interface InvoiceLineItem {
       margin-bottom: 1rem;
     }
 
-    .empty-cart {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 3rem 1rem;
-      color: rgb(156 163 175);
-    }
-
-    .empty-icon {
-      font-size: 3rem;
-      margin-bottom: 0.75rem;
-    }
-
-    .empty-cart p {
-      text-align: center;
-      font-size: 0.875rem;
-      margin: 0;
-    }
-
-    .selected-products-list {
-      max-height: 280px;
-      overflow-y: auto;
-    }
-
-    .selected-product-item {
-      display: flex;
-      gap: 0.75rem;
-      padding: 0.75rem;
-      border-bottom: 1px solid rgb(243 244 246);
-    }
-
-    .selected-product-image {
-      width: 2.5rem;
-      height: 2.5rem;
-      flex-shrink: 0;
-      border-radius: 0.375rem;
-      background: rgb(243 244 246);
-      overflow: hidden;
-    }
-
-    .selected-product-image img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .selected-product-content {
-      flex: 1;
-      min-width: 0;
-    }
-
-    .selected-product-header {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 0.5rem;
-    }
-
-    .selected-product-name {
-      font-size: 0.875rem;
-      font-weight: 600;
-      color: rgb(17 24 39);
-      margin: 0;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .selected-product-unit-price {
-      font-size: 0.75rem;
-      color: rgb(107 114 128);
-      margin: 0.125rem 0 0;
-    }
-
-    .btn-remove-product {
-      width: 1.75rem;
-      height: 1.75rem;
-      flex-shrink: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: transparent;
-      border: none;
-      color: rgb(239 68 68);
-      border-radius: 0.375rem;
-      cursor: pointer;
-      transition: all 0.15s ease;
-      font-size: 1rem;
-    }
-
-    .btn-remove-product:hover {
-      background: rgb(254 242 242);
-      color: rgb(220 38 38);
-    }
-
-    .product-controls {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 0.75rem;
-      margin-top: 0.5rem;
-    }
-
-    .quantity-control {
-      display: flex;
-      align-items: center;
-      gap: 0.25rem;
-    }
-
-    .control-label {
-      font-size: 0.75rem;
-      color: rgb(107 114 128);
-    }
-
-    .btn-qty {
-      width: 1.5rem;
-      height: 1.5rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: white;
-      border: 1px solid rgb(209 213 219);
-      border-radius: 0.25rem;
-      cursor: pointer;
-      transition: all 0.15s ease;
-      font-size: 0.75rem;
-    }
-
-    .btn-qty:hover {
-      background: rgb(243 244 246);
-    }
-
-    .qty-value {
-      width: 1.5rem;
-      text-align: center;
-      font-size: 0.875rem;
-      font-weight: 500;
-    }
-
-    .discount-control {
-      display: flex;
-      align-items: center;
-      gap: 0.25rem;
-    }
-
-    .discount-icon {
-      font-size: 0.75rem;
-      color: rgb(245 158 11);
-    }
-
-    .discount-input {
-      width: 3.5rem;
-      height: 1.5rem;
-      background: white;
-      border: 1px solid rgb(209 213 219);
-      border-radius: 0.25rem;
-      padding: 0 0.25rem;
-      text-align: center;
-      font-size: 0.75rem;
-    }
-
-    .discount-input:focus {
-      outline: none;
-      border-color: rgb(99 102 241);
-    }
-
-    .product-total {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-top: 0.5rem;
-    }
-
-    .discount-applied {
-      font-size: 0.75rem;
-      color: rgb(245 158 11);
-    }
-
-    .total-price {
-      font-size: 0.875rem;
-      font-weight: 700;
-      color: rgb(37 99 235);
-    }
-
     .summary-grid {
       display: grid;
       grid-template-columns: repeat(1, 1fr);
@@ -840,11 +577,6 @@ interface InvoiceLineItem {
       .form-grid {
         grid-template-columns: repeat(2, 1fr);
       }
-
-      .product-list,
-      .selected-products-list {
-        max-height: 400px;
-      }
     }
 
     @media (min-width: 1024px) {
@@ -965,10 +697,14 @@ export class InvoiceCreateComponent implements OnInit {
   }
 
   addLineItem(product: Product) {
+    const productId = product.productId ?? product.idProduct ?? 0;
+    const unitPrice = product.unitPrice ?? product.unitPriceSold ?? 0;
+    const stock = product.stock ?? product.quantity ?? 0;
+    
     // Check if product already exists in line items
-    const existingItem = this.lineItems.find(item => item.productId === product.productId);
+    const existingItem = this.lineItems.find(item => item.productId === productId);
     if (existingItem) {
-      if (existingItem.quantity < product.stock) {
+      if (existingItem.quantity < stock) {
         existingItem.quantity += 1;
         existingItem.stockError = false;
         const subtotal = existingItem.quantity * existingItem.unitPrice;
@@ -979,14 +715,14 @@ export class InvoiceCreateComponent implements OnInit {
       }
     } else {
       this.lineItems.push({
-        productId: product.productId,
+        productId: productId,
         productName: product.name,
         reference: product.reference,
-        unitPrice: product.unitPrice,
+        unitPrice: unitPrice,
         quantity: 1,
         discount: 0,
-        totalPrice: product.unitPrice,
-        maxStock: product.stock,
+        totalPrice: unitPrice,
+        maxStock: stock,
         stockError: false
       });
     }
@@ -999,15 +735,27 @@ export class InvoiceCreateComponent implements OnInit {
   }
 
   // Retourne la quantité d'un produit dans le panier
-  getProductQuantityInCart(productId: number): number {
+  getProductQuantityInCart(productId?: number): number {
+    if (!productId) return 0;
     const item = this.lineItems.find(item => item.productId === productId);
     return item ? item.quantity : 0;
   }
 
   // Retourne le stock disponible (stock initial - quantité dans le panier)
   getAvailableStock(product: Product): number {
-    const quantityInCart = this.getProductQuantityInCart(product.productId);
-    return product.stock - quantityInCart;
+    const productId = product.productId ?? product.idProduct ?? 0;
+    const stock = product.stock ?? product.quantity ?? 0;
+    const quantityInCart = this.getProductQuantityInCart(productId);
+    return stock - quantityInCart;
+  }
+
+  // Retourne une Map des quantités réservées pour le catalogue
+  getReservedQuantities(): Map<number, number> {
+    const reserved = new Map<number, number>();
+    this.lineItems.forEach(item => {
+      reserved.set(item.productId, item.quantity);
+    });
+    return reserved;
   }
 
   updateLineItemQuantity(index: number, quantity: number) {
@@ -1137,5 +885,14 @@ export class InvoiceCreateComponent implements OnInit {
   getProductImage(productId: number): string {
     const product = this.products.find(p => p.productId === productId);
     return product?.imageUrl || '/placeholder.svg';
+  }
+
+  getProductImagesMap(): Map<number, string> {
+    const imagesMap = new Map<number, string>();
+    this.products.forEach(product => {
+      const productId = product.productId ?? product.idProduct ?? 0;
+      imagesMap.set(productId, product.imageUrl || '/placeholder.svg');
+    });
+    return imagesMap;
   }
 }
