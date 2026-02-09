@@ -194,6 +194,11 @@ interface DeliveryNoteKPIs {
                 </td>
                 <td style="padding: 1rem;">
                   <div style="display: flex; gap: 0.5rem; justify-content: center;">
+                    <button (click)="downloadPDF(dn.idDeliveryNote, dn.deliveryNoteNumber)"
+                            title="Télécharger PDF"
+                            style="padding: 0.5rem; background: #e0e7ff; color: #4338ca; border: none; border-radius: 0.375rem; cursor: pointer; font-weight: 600;">
+                      📥
+                    </button>
                     <button *ngIf="!dn.invoiced && dn.status === 'PENDING'" 
                             (click)="updateStatus(dn.idDeliveryNote, 'DELIVERED')"
                             title="Marquer comme livré"
@@ -424,6 +429,23 @@ export class DeliveryNoteListComponent implements OnInit {
       error: (error: any) => {
         console.error('Error deleting delivery note:', error);
         this.showError('Erreur lors de la suppression');
+      }
+    });
+  }
+
+  downloadPDF(id: number, deliveryNoteNumber: string): void {
+    this.apiService.downloadDeliveryNotePDF(id).subscribe({
+      next: (blob: Blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `${deliveryNoteNumber}.pdf`;
+        link.click();
+        window.URL.revokeObjectURL(url);
+      },
+      error: (error: any) => {
+        console.error('Erreur lors du téléchargement PDF:', error);
+        this.showError('Erreur lors du téléchargement du PDF');
       }
     });
   }

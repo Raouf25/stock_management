@@ -5,6 +5,9 @@ import com.example.stock_management.dto.DeliveryNoteStatus;
 import com.example.stock_management.model.Bill;
 import com.example.stock_management.model.DeliveryNote;
 import com.example.stock_management.service.DeliveryNoteService;
+import com.example.stock_management.service.DeliveryNotePdfDataService;
+import com.example.stock_management.service.PdfGenerateService;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +23,8 @@ import java.util.Map;
 public class DeliveryNoteController {
 
     private final DeliveryNoteService deliveryNoteService;
+    private final DeliveryNotePdfDataService deliveryNotePdfDataService;
+    private final PdfGenerateService pdfGenerateService;
 
     @GetMapping
     public ResponseEntity<List<DeliveryNote>> getAllDeliveryNotes() {
@@ -97,5 +102,11 @@ public class DeliveryNoteController {
     @GetMapping("/kpis")
     public ResponseEntity<Map<String, Object>> getKPIs() {
         return ResponseEntity.ok(deliveryNoteService.getKPIs());
+    }
+
+    @GetMapping("/generate/{id}")
+    public void generatePdf(@PathVariable Long id, HttpServletResponse response) {
+        Map<String, Object> data = deliveryNotePdfDataService.preparePdfData(id);
+        pdfGenerateService.generatePdfFileAPI(data, response, "bon-livraison");
     }
 }

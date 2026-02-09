@@ -2,9 +2,7 @@ package com.example.stock_management.service;
 
 import com.example.stock_management.model.Bill;
 import com.example.stock_management.model.BillProduct;
-import com.example.stock_management.model.Customer;
 import com.example.stock_management.util.NumberUtils;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.format.DateTimeFormatter;
@@ -15,18 +13,22 @@ import java.util.Map;
 
 /**
  * Service dédié à la préparation des données pour la génération de PDF de facture.
- * Sépare la logique métier de préparation des données du contrôleur.
+ * Hérite de AbstractPdfDataService pour les méthodes utilitaires communes.
  */
 @Service
-@RequiredArgsConstructor
-public class InvoicePdfDataService {
+public class InvoicePdfDataService extends AbstractPdfDataService {
 
     private final BillService billService;
     private final SupplierService supplierService;
-    private final NumberUtils numberUtils;
     
     private static final double VAT_RATE = 0.19;
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+    public InvoicePdfDataService(BillService billService, SupplierService supplierService, NumberUtils numberUtils) {
+        super(numberUtils);
+        this.billService = billService;
+        this.supplierService = supplierService;
+    }
 
     /**
      * Prépare toutes les données nécessaires pour générer le PDF d'une facture
@@ -34,18 +36,9 @@ public class InvoicePdfDataService {
     public Map<String, Object> preparePdfData(Long billId) {
         Map<String, Object> data = new HashMap<>();
         
-        // Ajouter le fournisseur (supplier)
         supplierService.findById(3L).ifPresent(supplier -> data.put("supplier", supplier));
-        
-        // Ajouter les données de la facture
-        billService.findById(billId).ifPresent(bill -> {
-            populateBillData(bill, data);
-        });
-
-        // Ajouter les données de l'entreprise
-        populateCompanyData(data);
-
-        // Ajouter les placeholders par défaut
+        billService.findById(billId).ifPresent(bill -> populateBillData(bill, data));
+        populateCompanyData(data);  // Méthode héritée
         addDefaultPlaceholders(data);
 
         return data;
@@ -98,14 +91,29 @@ public class InvoicePdfDataService {
     private void populateBillData(Bill bill, Map<String, Object> data) {
         data.put("customer", bill.getCustomer());
 
-        // Transform products to a list of maps with preformatted values
         List<Map<String, Object>> productsList = buildProductsList(bill);
         data.put("products", productsList);
 
-        // Calculate totals
         BillTotals totals = calculateTotals(productsList, bill);
-        
-        // Add totals to data
+        populateTotals(data, totals);
+
+        data.put("billNumber", "FAC-" + String.format("%04d", bill.getIdBill()));
+        data.put("billDate", bill.getDateBill().format(DATE_FORMATTER));
+
+        // Utilise la méthode héritée pour le client
+        populateCustomerData(bill.getCustomer(), data);
+
+        // Ajouts spécifiques facture
+        if (bill.getCustomer() != null) {
+            Map<String, String> client = new HashMap<>();
+            client.put("name", bill.getCustomer().getName());
+            client.put("address", bill.getCustomer().getAddress());
+            client.put("taxId", defaultIfNull(bill.getCustomer().getTvaCode(), "N/A"));
+            data.put("client", client);
+        }
+    }
+
+    private void populateTotals(Map<String, Object> data, BillTotals totals) {
         data.put("total", totals.totalTTC);
         data.put("totalHT", totals.totalHT);
         data.put("tva", totals.tva);
@@ -114,21 +122,13 @@ public class InvoicePdfDataService {
         data.put("deposit", totals.deposit);
         data.put("amountDue", totals.amountDue);
 
-        // Add formatted totals
-        data.put("totalHTFormatted", numberUtils.formatDecimal(totals.totalHT, 3, 3));
-        data.put("tvaFormatted", numberUtils.formatDecimal(totals.tva, 3, 3));
-        data.put("totalTTCFormatted", numberUtils.formatDecimal(totals.totalTTC, 3, 3));
-        data.put("totalGrossHTFormatted", numberUtils.formatDecimal(totals.totalGrossHT, 3, 3));
-        data.put("totalDiscountFormatted", numberUtils.formatDecimal(totals.totalDiscount, 3, 3));
-        data.put("depositFormatted", numberUtils.formatDecimal(totals.deposit, 3, 3));
-        data.put("amountDueFormatted", numberUtils.formatDecimal(totals.amountDue, 3, 3));
-
-        // Format bill number and date
-        data.put("billNumber", "FAC-" + String.format("%04d", bill.getIdBill()));
-        data.put("billDate", bill.getDateBill().format(DATE_FORMATTER));
-
-        // Populate customer data
-        populateCustomerData(bill, data);
+        data.put("totalHTFormatted", formatDecimal(totals.totalHT, 3, 3));
+        data.put("tvaFormatted", formatDecimal(totals.tva, 3, 3));
+        data.put("totalTTCFormatted", formatDecimal(totals.totalTTC, 3, 3));
+        data.put("totalGrossHTFormatted", formatDecimal(totals.totalGrossHT, 3, 3));
+        data.put("totalDiscountFormatted", formatDecimal(totals.totalDiscount, 3, 3));
+        data.put("depositFormatted", formatDecimal(totals.deposit, 3, 3));
+        data.put("amountDueFormatted", formatDecimal(totals.amountDue, 3, 3));
     }
 
     /**
@@ -137,49 +137,46 @@ public class InvoicePdfDataService {
     private List<Map<String, Object>> buildProductsList(Bill bill) {
         List<Map<String, Object>> productsList = new ArrayList<>();
         
-        if (bill.getBillProducts() == null) {
-            return productsList;
-        }
+        if (bill.getBillProducts() == null) return productsList;
 
         for (BillProduct bp : bill.getBillProducts()) {
-            Map<String, Object> productData = new HashMap<>();
-            
-            String productName = bp.getProduct() != null ? bp.getProduct().getName() : "";
-            String productRef = bp.getProduct() != null ? String.valueOf(bp.getProduct().getReference()) : "";
-            int qty = bp.getQuantity() != null ? bp.getQuantity() : 0;
-            double totalPrice = bp.getTotalProductPrice() != null ? bp.getTotalProductPrice() : 0.0;
-            
-            // Calculate unit price
-            double unitPrice = calculateUnitPrice(bp, totalPrice, qty);
-            
-            // Calculate discount
-            ProductDiscount discount = calculateDiscount(bp, unitPrice, qty, totalPrice);
-            
-            // Calculate VAT and total with VAT
-            double priceAfterDiscount = totalPrice;
-            double vatAmount = priceAfterDiscount * VAT_RATE;
-            double totalWithVat = priceAfterDiscount + vatAmount;
-            
-            // Populate product data
-            productData.put("productRef", productRef);
-            productData.put("productName", productName);
-            productData.put("quantity", qty);
-            productData.put("unitPriceValue", unitPrice);
-            productData.put("unitPriceFormatted", numberUtils.formatDecimal(unitPrice, 3, 3));
-            productData.put("totalPriceFormatted", numberUtils.formatDecimal(totalPrice, 3, 3));
-            productData.put("discountValue", discount.amount);
-            productData.put("discountFormatted", numberUtils.formatDecimal(discount.amount, 3, 3));
-            productData.put("discountPercentage", numberUtils.formatDecimal(discount.percentage, 1, 1));
-            productData.put("vatRate", "19%");
-            productData.put("vatAmountFormatted", numberUtils.formatDecimal(vatAmount, 3, 3));
-            productData.put("totalWithVatFormatted", numberUtils.formatDecimal(totalWithVat, 3, 3));
-            productData.put("vatAmountValue", vatAmount);
-            productData.put("totalPriceValue", priceAfterDiscount);
-            
-            productsList.add(productData);
+            productsList.add(buildProductData(bp));
         }
         
         return productsList;
+    }
+
+    private Map<String, Object> buildProductData(BillProduct bp) {
+        Map<String, Object> productData = new HashMap<>();
+        
+        String productName = bp.getProduct() != null ? bp.getProduct().getName() : "";
+        String productRef = bp.getProduct() != null ? String.valueOf(bp.getProduct().getReference()) : "";
+        int qty = bp.getQuantity() != null ? bp.getQuantity() : 0;
+        double totalPrice = bp.getTotalProductPrice() != null ? bp.getTotalProductPrice() : 0.0;
+        
+        double unitPrice = calculateUnitPrice(bp, totalPrice, qty);
+        ProductDiscount discount = calculateDiscount(bp, unitPrice, qty, totalPrice);
+        
+        double priceAfterDiscount = totalPrice;
+        double vatAmount = priceAfterDiscount * VAT_RATE;
+        double totalWithVat = priceAfterDiscount + vatAmount;
+        
+        productData.put("productRef", productRef);
+        productData.put("productName", productName);
+        productData.put("quantity", qty);
+        productData.put("unitPriceValue", unitPrice);
+        productData.put("unitPriceFormatted", formatDecimal(unitPrice, 3, 3));
+        productData.put("totalPriceFormatted", formatDecimal(totalPrice, 3, 3));
+        productData.put("discountValue", discount.amount);
+        productData.put("discountFormatted", formatDecimal(discount.amount, 3, 3));
+        productData.put("discountPercentage", formatDecimal(discount.percentage, 1, 1));
+        productData.put("vatRate", "19%");
+        productData.put("vatAmountFormatted", formatDecimal(vatAmount, 3, 3));
+        productData.put("totalWithVatFormatted", formatDecimal(totalWithVat, 3, 3));
+        productData.put("vatAmountValue", vatAmount);
+        productData.put("totalPriceValue", priceAfterDiscount);
+        
+        return productData;
     }
 
     /**
@@ -199,8 +196,7 @@ public class InvoicePdfDataService {
      */
     private ProductDiscount calculateDiscount(BillProduct bp, double unitPrice, int qty, double totalPrice) {
         double expectedGross = unitPrice * qty;
-        double discountAmount = expectedGross - totalPrice;
-        if (discountAmount < 0) discountAmount = 0.0;
+        double discountAmount = Math.max(expectedGross - totalPrice, 0.0);
         
         double discountPercentage = bp.getDiscountPercentage() != null ? bp.getDiscountPercentage() : 0.0;
         if (discountPercentage == 0.0 && expectedGross > 0) {
@@ -234,62 +230,13 @@ public class InvoicePdfDataService {
             .mapToDouble(p -> getDoubleValue(p.get("discountValue")))
             .sum();
         
-        double totalHT = sumTotalHT;
-        double tva = sumVat;
-        double totalTTC = totalHT + tva;
+        double totalTTC = sumTotalHT + sumVat;
         double deposit = bill.getDeposit() != null ? bill.getDeposit().doubleValue() : 0.0;
         double amountDue = totalTTC - deposit;
         
-        return new BillTotals(totalHT, tva, totalTTC, sumGrossHT, sumDiscount, deposit, amountDue);
+        return new BillTotals(sumTotalHT, sumVat, totalTTC, sumGrossHT, sumDiscount, deposit, amountDue);
     }
 
-    /**
-     * Remplit les données du client dans le Map
-     */
-    private void populateCustomerData(Bill bill, Map<String, Object> data) {
-        if (bill.getCustomer() == null) return;
-        
-        Customer customer = bill.getCustomer();
-        
-        Map<String, String> client = new HashMap<>();
-        client.put("name", customer.getName());
-        client.put("address", customer.getAddress());
-        client.put("taxId", defaultIfNull(customer.getTvaCode(), "N/A"));
-        data.put("client", client);
-
-        data.put("customerName", customer.getName());
-        data.put("customerAddress", customer.getAddress());
-        data.put("customerPhone", defaultIfNull(customer.getPhone(), ""));
-        data.put("customerTva", defaultIfNull(customer.getTvaCode(), "N/A"));
-        data.put("deliveryFullName", defaultIfNull(customer.getFullName(), ""));
-        data.put("deliveryCin", defaultIfNull(customer.getCin(), ""));
-        
-        parseLicensePlate(customer.getLicensePlate(), data);
-    }
-
-    /**
-     * Ajoute les données de l'entreprise
-     */
-    private void populateCompanyData(Map<String, Object> data) {
-        Map<String, String> company = new HashMap<>();
-        company.put("name", "Nom de l'entreprise");
-        company.put("address", "Adresse de l'entreprise");
-        company.put("phone", "(+216) XX XXX XXX");
-        company.put("taxId", "123456789");
-        data.put("company", company);
-
-        data.put("companyName", company.get("name"));
-        data.put("companyAddress", company.get("address"));
-        data.put("companyPhone", company.get("phone"));
-        data.put("companyTaxId", company.get("taxId"));
-        data.put("supplierRc", company.getOrDefault("rc", ""));
-        data.put("supplierRib", company.getOrDefault("rib", ""));
-        data.put("supplierIban", company.getOrDefault("iban", ""));
-    }
-
-    /**
-     * Ajoute les placeholders par défaut
-     */
     private void addDefaultPlaceholders(Map<String, Object> data) {
         data.put("deliveryAddress", "");
         data.put("customerRef", "");
@@ -298,49 +245,11 @@ public class InvoicePdfDataService {
         data.put("paymentTerms", "30 jours");
     }
 
-    /**
-     * Parse la plaque d'immatriculation tunisienne (format: "Y تونس X")
-     */
-    private void parseLicensePlate(String licensePlate, Map<String, Object> data) {
-        if (licensePlate != null && !licensePlate.isEmpty()) {
-            String[] parts = licensePlate.split("\\s+");
-            if (parts.length >= 3) {
-                data.put("licensePlateY", parts[0]);
-                data.put("licensePlateX", parts[2]);
-                return;
-            }
-        }
-        data.put("licensePlateY", "");
-        data.put("licensePlateX", "");
-    }
-
-    /**
-     * Retourne la valeur ou une valeur par défaut si null
-     */
-    private String defaultIfNull(String value, String defaultValue) {
-        return value != null ? value : defaultValue;
-    }
-
-    /**
-     * Extrait une valeur double d'un objet
-     */
-    private double getDoubleValue(Object value) {
-        if (value instanceof Number) {
-            return ((Number) value).doubleValue();
-        }
-        return 0.0;
-    }
-
-    // Classes internes pour structurer les données
+    // Records internes pour structurer les données
     private record ProductDiscount(double amount, double percentage) {}
     
     private record BillTotals(
-        double totalHT,
-        double tva,
-        double totalTTC,
-        double totalGrossHT,
-        double totalDiscount,
-        double deposit,
-        double amountDue
+        double totalHT, double tva, double totalTTC,
+        double totalGrossHT, double totalDiscount, double deposit, double amountDue
     ) {}
 }

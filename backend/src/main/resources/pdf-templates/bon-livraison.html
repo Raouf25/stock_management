@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title th:text="'Bon de Livraison - ' + ${deliveryNoteNumber}">Bon de Livraison</title>
+    <style type="text/css">
+        /*<![CDATA[*/
+        @page {
+            size: A4;
+            margin: 15mm;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 10pt;
+            line-height: 1.4;
+            color: #1e293b;
+        }
+        
+        /* Header Section */
+        .header {
+            width: 100%;
+            margin-bottom: 20px;
+            border: 1px solid #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        
+        .header-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .header-table td {
+            vertical-align: top;
+            padding: 5px;
+        }
+        
+        .header-table td.company-info {
+            width: 55%;
+            padding-right: 20px;
+        }
+        
+        .header-table td.doc-info {
+            width: 45%;
+            text-align: right;
+        }
+        
+        .company-info h1 {
+            margin: 0 0 8px 0;
+            font-size: 16pt;
+            font-weight: 700;
+            color: #16a34a;
+        }
+        
+        .company-info p {
+            margin: 3px 0;
+            font-size: 9pt;
+            color: #64748b;
+        }
+        
+        .doc-details-container {
+            display: inline-block;
+            padding: 12px 15px;
+            background-color: #16a34a;
+            color: white;
+            border-radius: 6px;
+        }
+        
+        .doc-details {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .doc-details th {
+            padding: 4px 15px 4px 0;
+            text-align: left;
+            font-weight: 600;
+            color: white;
+            font-size: 8pt;
+            text-transform: uppercase;
+        }
+        
+        .doc-details td {
+            padding: 4px 0;
+            text-align: left;
+            font-weight: 500;
+            font-size: 10pt;
+            color: white;
+        }
+        
+        /* Client & Delivery Information */
+        .billing-delivery {
+            width: 100%;
+            margin-bottom: 20px;
+            border-collapse: separate;
+            border-spacing: 10px 0;
+        }
+        
+        .billing-delivery td {
+            width: 50%;
+            vertical-align: top;
+            padding: 12px;
+            border: 1px solid #e2e8f0;
+            background-color: #ffffff;
+            border-radius: 6px;
+        }
+        
+        .billing-delivery h3 {
+            margin: 0 0 8px 0;
+            font-size: 11pt;
+            font-weight: 600;
+            color: #16a34a;
+            border-bottom: 2px solid #16a34a;
+            padding-bottom: 3px;
+        }
+        
+        .billing-delivery p {
+            margin: 4px 0;
+            font-size: 9pt;
+            color: #64748b;
+        }
+        
+        /* Status Badge */
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 9pt;
+            font-weight: 600;
+            color: white;
+        }
+        
+        .status-pending {
+            background-color: #f59e0b;
+        }
+        
+        .status-delivered {
+            background-color: #22c55e;
+        }
+        
+        /* Products Table */
+        .products {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-bottom: 20px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .products thead {
+            background-color: #16a34a;
+            color: white;
+        }
+        
+        .products th {
+            padding: 10px 6px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 8pt;
+            text-transform: uppercase;
+            border-right: 1px solid #15803d;
+            border-bottom: 1px solid #15803d;
+        }
+        
+        .products th:first-child {
+            border-top-left-radius: 8px;
+        }
+        
+        .products th:last-child {
+            border-right: none;
+            border-top-right-radius: 8px;
+        }
+        
+        .products td {
+            padding: 8px 6px;
+            border-right: 1px solid #e2e8f0;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 9pt;
+            vertical-align: middle;
+        }
+        
+        .products td:last-child {
+            border-right: none;
+        }
+        
+        .products tbody tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .products tbody tr:last-child td:first-child {
+            border-bottom-left-radius: 8px;
+        }
+        
+        .products tbody tr:last-child td:last-child {
+            border-bottom-right-radius: 8px;
+        }
+        
+        .products th.align-right,
+        .products td.align-right {
+            text-align: right;
+        }
+        
+        .products td.monospace {
+            font-family: Arial, sans-serif;
+            font-weight: 500;
+        }
+        
+        .products td.ref-column {
+            font-family: Arial, sans-serif;
+            font-size: 8pt;
+            color: #64748b;
+        }
+        
+        /* Totals Section */
+        .totals-section {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        
+        .totals {
+            width: 280px;
+            border-collapse: separate;
+            border-spacing: 0;
+            border: 2px solid #16a34a;
+            margin-left: auto;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .totals tr {
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .totals td {
+            padding: 8px 12px;
+            font-size: 9pt;
+            border: none;
+        }
+        
+        .totals td.label {
+            font-weight: 500;
+            color: #64748b;
+            background-color: #f8fafc;
+            width: 50%;
+        }
+        
+        .totals td.value {
+            text-align: right;
+            font-weight: 600;
+            font-family: Arial, sans-serif;
+            font-size: 10pt;
+            width: 50%;
+        }
+        
+        .totals tr.total-row {
+            background-color: #16a34a;
+        }
+        
+        .totals tr.total-row td {
+            color: white;
+            font-weight: 700;
+            background-color: #16a34a;
+        }
+        
+        /* Notes */
+        .notes-section {
+            margin-bottom: 15px;
+            padding: 10px 12px;
+            background-color: #f8fafc;
+            border-left: 3px solid #16a34a;
+            border-radius: 6px;
+            font-size: 9pt;
+            color: #64748b;
+        }
+        
+        /* Signatures */
+        .signatures {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 15px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        
+        .signatures td {
+            padding: 12px;
+            font-size: 9pt;
+            color: #64748b;
+            text-align: center;
+            border-right: 1px solid #e2e8f0;
+            width: 33.33%;
+        }
+        
+        .signatures td:last-child {
+            border-right: none;
+        }
+        
+        .signatures td.align-left {
+            text-align: left;
+        }
+        
+        .signatures td.align-right {
+            text-align: right;
+        }
+        
+        strong {
+            font-weight: 600;
+        }
+        
+        address {
+            font-style: normal;
+        }
+        /*]]>*/
+    </style>
+</head>
+<body>
+
+<!-- Company Header -->
+<div class="header">
+    <table class="header-table">
+        <tr>
+            <td class="company-info">
+                <h1 th:text="${companyName}">Nom de l'entreprise</h1>
+                <address>
+                    <p th:text="${companyAddress}">Adresse de l'entreprise</p>
+                    <p><strong>Tél:</strong> <span th:text="${companyPhone}">Phone</span></p>
+                    <p><strong>Matricule Fiscale:</strong> <span th:text="${companyTaxId}">Tax ID</span></p>
+                </address>
+            </td>
+            <td class="doc-info">
+                <div class="doc-details-container">
+                    <table class="doc-details">
+                        <tr>
+                            <th>Bon de Livraison N°</th>
+                            <td th:text="${deliveryNoteNumber}">BL-00000000-0000</td>
+                        </tr>
+                        <tr>
+                            <th>Date</th>
+                            <td th:text="${deliveryDate}">01/01/2026</td>
+                        </tr>
+                        <tr>
+                            <th>Statut</th>
+                            <td th:text="${statusLabel}">En attente</td>
+                        </tr>
+                    </table>
+                </div>
+            </td>
+        </tr>
+    </table>
+</div>
+
+<!-- Client & Delivery Information -->
+<table class="billing-delivery">
+    <tr>
+        <td>
+            <h3>Client</h3>
+            <address>
+                <p><strong th:text="${customerName}">Client Name</strong></p>
+                <p th:text="${customerAddress}">Client Address</p>
+                <p><strong>Tél:</strong> <span th:text="${customerPhone}">Phone</span></p>
+                <p><strong>Matricule Fiscale:</strong> <span th:text="${customerTva}">TVA</span></p>
+            </address>
+        </td>
+        <td>
+            <h3>Livré à</h3>
+            <address>
+                <p><strong>Nom et Prénom:</strong> <span th:text="${deliveryFullName}">Nom Prénom</span></p>
+                <p><strong>CIN:</strong> <span th:text="${deliveryCin}">00000000</span></p>
+                <p><strong>Immatriculation:</strong> <span th:text="${licensePlateX}">000</span> TN <span th:text="${licensePlateY}">0000</span></p>
+                <p th:if="${deliveryAddress != null and deliveryAddress != ''}"><strong>Adresse:</strong> <span th:text="${deliveryAddress}">Adresse de livraison</span></p>
+            </address>
+        </td>
+    </tr>
+</table>
+
+<!-- Products Table -->
+<table class="products">
+    <thead>
+        <tr>
+            <th>Produit</th>
+            <th>Référence</th>
+            <th class="align-right">Prix Unitaire</th>
+            <th class="align-right">Quantité</th>
+            <th class="align-right">Remise (%)</th>
+            <th class="align-right">Montant</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr th:each="product, iterStat : ${products}">
+            <td th:text="${product.productName}">Nom</td>
+            <td class="ref-column" th:text="${product.productRef}">REF</td>
+            <td class="align-right monospace" th:text="${product.unitPriceFormatted}">0.000</td>
+            <td class="align-right monospace" th:text="${product.quantity}">0</td>
+            <td class="align-right monospace" th:text="${product.discountPercentage}">0</td>
+            <td class="align-right monospace" th:text="${product.totalPriceFormatted}">0.000</td>
+        </tr>
+    </tbody>
+</table>
+
+<!-- Totals -->
+<div class="totals-section">
+    <table class="totals">
+        <tr>
+            <td class="label">Total HT</td>
+            <td class="value" th:text="${totalHTFormatted}">0.000 DNT</td>
+        </tr>
+        <tr>
+            <td class="label">Remise globale</td>
+            <td class="value" th:text="${totalDiscountFormatted}">0.000 DNT</td>
+        </tr>
+        <tr class="total-row">
+            <td class="label">Total</td>
+            <td class="value" th:text="${totalFormatted}">0.000 DNT</td>
+        </tr>
+    </table>
+</div>
+
+<!-- Notes -->
+<div th:if="${notes != null and notes != ''}" class="notes-section">
+    <strong>Notes :</strong> <span th:text="${notes}">Notes</span>
+</div>
+
+<!-- Signatures -->
+<table class="signatures">
+    <tr>
+        <td class="align-left"><strong>Date de livraison :</strong> <span th:text="${deliveryDate}">01/01/2026</span></td>
+        <td><strong>Signature client</strong></td>
+        <td class="align-right"><strong>Signature et cachet</strong></td>
+    </tr>
+</table>
+
+</body>
+</html>

@@ -31,11 +31,18 @@ public class PdfGenerateService {
      * Génère un PDF et l'écrit directement dans la réponse HTTP
      */
     public void generatePdfFileAPI(Map<String, Object> data, HttpServletResponse response) {
+        generatePdfFileAPI(data, response, TEMPLATE_NAME);
+    }
+
+    /**
+     * Génère un PDF avec un template spécifique et l'écrit dans la réponse HTTP
+     */
+    public void generatePdfFileAPI(Map<String, Object> data, HttpServletResponse response, String templateName) {
         try {
             response.setContentType("application/pdf");
-            response.setHeader("Content-Disposition", "attachment; filename=\"" + TEMPLATE_NAME + ".pdf\"");
+            response.setHeader("Content-Disposition", "attachment; filename=\"" + templateName + ".pdf\"");
             
-            generatePdf(data, response.getOutputStream());
+            generatePdf(data, response.getOutputStream(), templateName);
         } catch (IOException e) {
             log.error("Erreur lors de l'écriture du PDF dans la réponse: {}", e.getMessage(), e);
         }
@@ -55,10 +62,17 @@ public class PdfGenerateService {
     }
 
     /**
-     * Méthode centrale pour la génération du PDF
+     * Méthode centrale pour la génération du PDF (template par défaut)
      */
     private void generatePdf(Map<String, Object> data, OutputStream outputStream) {
-        String htmlContent = processTemplate(data);
+        generatePdf(data, outputStream, TEMPLATE_NAME);
+    }
+
+    /**
+     * Méthode centrale pour la génération du PDF avec template spécifique
+     */
+    private void generatePdf(Map<String, Object> data, OutputStream outputStream, String templateName) {
+        String htmlContent = processTemplate(data, templateName);
         
         try {
             ITextRenderer renderer = createRenderer(htmlContent);
@@ -74,11 +88,18 @@ public class PdfGenerateService {
      * Traite le template Thymeleaf et retourne le HTML
      */
     private String processTemplate(Map<String, Object> data) {
+        return processTemplate(data, TEMPLATE_NAME);
+    }
+
+    /**
+     * Traite un template Thymeleaf spécifique et retourne le HTML
+     */
+    private String processTemplate(Map<String, Object> data, String templateName) {
         Context context = new Context();
         context.setVariables(data);
         context.setVariable("numbers", numberUtils);
 
-        return templateEngine.process(TEMPLATE_NAME, context);
+        return templateEngine.process(templateName, context);
     }
 
     /**

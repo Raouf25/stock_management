@@ -205,4 +205,10 @@ export class ApiService {
   getDeliveryNoteKPIs(): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/delivery-notes/kpis`);
   }
+
+  downloadDeliveryNotePDF(id: number): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/delivery-notes/generate/${id}`, {
+      responseType: 'blob'
+    });
+  }
 }
