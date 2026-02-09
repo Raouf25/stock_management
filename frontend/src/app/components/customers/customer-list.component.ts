@@ -61,8 +61,8 @@ interface CustomerKPIs {
           <div class="stat-label">Nouveaux ce Mois</div>
         </div>
         <div class="invoice-stat-card border-red">
-          <div class="stat-number">{{ kpis.totalOutstanding | number:'1.0-0' }} DNT</div>
-          <div class="stat-label">Impayés Total</div>
+          <div class="stat-number">{{ kpis.totalOutstanding | number:'1.0-0' }}</div>
+          <div class="stat-label">Impayés (DNT)</div>
         </div>
       </div>
 
@@ -115,63 +115,118 @@ interface CustomerKPIs {
           <span style="font-size: 1rem;">📋</span>
           <span class="invoice-card-header-title">Liste des Clients ({{ filteredCustomers.length }})</span>
         </div>
-        <div style="overflow-x: auto;">
+        
+        <!-- Desktop Table -->
+        <div class="desktop-table" style="overflow-x: auto;">
           <table style="width: 100%; border-collapse: collapse;">
             <thead>
-              <tr style="background: #f9fafb; border-bottom: 2px solid #e5e7eb;">
-                <th style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;">Client</th>
-                <th style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;">Contact</th>
-                <th style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;">Ville</th>
-                <th style="padding: 1rem; text-align: right; font-weight: 600; color: #374151;">CA Total</th>
-                <th style="padding: 1rem; text-align: right; font-weight: 600; color: #374151;">Impayés</th>
-                <th style="padding: 1rem; text-align: center; font-weight: 600; color: #374151;">Statut</th>
-                <th style="padding: 1rem; text-align: center; font-weight: 600; color: #374151;">Actions</th>
+              <tr style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);">
+                <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: left;">CLIENT</th>
+                <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: left;">CONTACT</th>
+                <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: left;">VILLE</th>
+                <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: right;">CA TOTAL</th>
+                <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: right;">IMPAYÉS</th>
+                <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: center;">STATUT</th>
+                <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: center;">ACTIONS</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let item of filteredCustomers" 
-                  style="border-bottom: 1px solid #e5e7eb;">
-                <td style="padding: 1rem;">
+                  style="border-bottom: 1px solid #e5e7eb; transition: background 0.2s;"
+                  onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">
+                <td style="padding: 0.75rem 1rem;">
                   <div style="font-weight: 600; color: #111827;">{{ item.customer.name }}</div>
                 </td>
-                <td style="padding: 1rem;">
+                <td style="padding: 0.75rem 1rem;">
                   <div *ngIf="item.customer.fullName" style="font-weight: 600; color: #111827;">{{ item.customer.fullName }}</div>
                   <div style="color: #111827;">{{ item.customer.phone || '-' }}</div>
                   <div style="font-size: 0.75rem; color: #6b7280;">{{ item.customer.email || '-' }}</div>
                 </td>
-                <td style="padding: 1rem; color: #6b7280;">{{ item.customer.city || '-' }}</td>
-                <td style="padding: 1rem; text-align: right; font-weight: 600; color: #059669;">
+                <td style="padding: 0.75rem 1rem; color: #6b7280;">{{ item.customer.city || '-' }}</td>
+                <td style="padding: 0.75rem 1rem; text-align: right; font-weight: 600; color: #059669;">
                   {{ item.totalCA | number:'1.0-0' }} DNT
                 </td>
-                <td style="padding: 1rem; text-align: right;">
+                <td style="padding: 0.75rem 1rem; text-align: right;">
                   <span [style.color]="item.unpaidAmount > 0 ? '#dc2626' : '#6b7280'" 
                         [style.fontWeight]="item.unpaidAmount > 0 ? '600' : '400'">
                     {{ item.unpaidAmount | number:'1.0-0' }} DNT
                   </span>
                 </td>
-                <td style="padding: 1rem; text-align: center;">
+                <td style="padding: 0.75rem 1rem; text-align: center;">
                   <span [style.background]="getStatusColor(item.customer.status)" 
                         style="padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; color: white;">
                     {{ item.customer.status || 'ACTIVE' }}
                   </span>
                 </td>
-                <td style="padding: 1rem; text-align: center;">
-                  <button (click)="viewCustomer(item.customer.customerId)" 
-                          style="margin: 0 0.25rem; padding: 0.5rem; background: #3b82f6; color: white; border: none; border-radius: 0.375rem; cursor: pointer;">
-                    👁️
-                  </button>
-                  <button (click)="editCustomer(item.customer.customerId)" 
-                          style="margin: 0 0.25rem; padding: 0.5rem; background: #f59e0b; color: white; border: none; border-radius: 0.375rem; cursor: pointer;">
-                    ✏️
-                  </button>
-                  <button (click)="deleteCustomer(item.customer.customerId)" 
-                          style="margin: 0 0.25rem; padding: 0.5rem; background: #ef4444; color: white; border: none; border-radius: 0.375rem; cursor: pointer;">
-                    🗑️
-                  </button>
+                <td style="padding: 0.75rem 1rem;">
+                  <div style="display: flex; align-items: center; justify-content: center; gap: 0.25rem;">
+                    <button (click)="viewCustomer(item.customer.customerId)" title="Voir"
+                            style="width: 2rem; height: 2rem; border-radius: 0.375rem; border: 1px solid #bfdbfe; background: #eff6ff; color: #1e40af; cursor: pointer; font-size: 0.875rem; display: flex; align-items: center; justify-content: center;"
+                            onmouseover="this.style.background='#dbeafe'" onmouseout="this.style.background='#eff6ff'">👁️</button>
+                    <button (click)="editCustomer(item.customer.customerId)" title="Modifier"
+                            style="width: 2rem; height: 2rem; border-radius: 0.375rem; border: 1px solid #fcd34d; background: #fef3c7; color: #92400e; cursor: pointer; font-size: 0.875rem; display: flex; align-items: center; justify-content: center;"
+                            onmouseover="this.style.background='#fde68a'" onmouseout="this.style.background='#fef3c7'">✏️</button>
+                    <button (click)="deleteCustomer(item.customer.customerId)" title="Supprimer"
+                            style="width: 2rem; height: 2rem; border-radius: 0.375rem; border: 1px solid #fecaca; background: #fee2e2; color: #991b1b; cursor: pointer; font-size: 0.875rem; display: flex; align-items: center; justify-content: center;"
+                            onmouseover="this.style.background='#fecaca'" onmouseout="this.style.background='#fee2e2'">🗑️</button>
+                  </div>
                 </td>
               </tr>
             </tbody>
           </table>
+        </div>
+        
+        <!-- Mobile Cards -->
+        <div class="mobile-cards">
+          <div *ngFor="let item of filteredCustomers"
+               style="border-bottom: 1px solid #e5e7eb; padding: 1rem; background: white;">
+            <!-- Header: Client Name & Status -->
+            <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 0.75rem;">
+              <div style="font-weight: 600; color: #111827; font-size: 1rem;">{{ item.customer.name }}</div>
+              <span [style.background]="getStatusColor(item.customer.status)" 
+                    style="padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; color: white;">
+                {{ item.customer.status || 'ACTIVE' }}
+              </span>
+            </div>
+            
+            <!-- Contact Info -->
+            <div style="margin-bottom: 0.75rem;">
+              <div *ngIf="item.customer.fullName" style="font-weight: 500; color: #374151; font-size: 0.875rem;">{{ item.customer.fullName }}</div>
+              <div style="color: #6b7280; font-size: 0.875rem;">{{ item.customer.phone || '-' }}</div>
+              <div style="color: #6b7280; font-size: 0.75rem;">{{ item.customer.email || '-' }}</div>
+              <div *ngIf="item.customer.city" style="color: #6b7280; font-size: 0.75rem; margin-top: 0.25rem;">📍 {{ item.customer.city }}</div>
+            </div>
+            
+            <!-- Amounts - 2 Columns Grid -->
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; margin-bottom: 1rem; font-size: 0.875rem;">
+              <div style="background: #f0fdf4; padding: 0.5rem; border-radius: 0.5rem; text-align: center;">
+                <div style="font-size: 0.75rem; color: #6b7280; margin-bottom: 0.125rem;">CA Total</div>
+                <div style="font-weight: 600; color: #059669; font-size: 0.875rem;">{{ item.totalCA | number:'1.0-0' }} DNT</div>
+              </div>
+              <div style="background: #fef2f2; padding: 0.5rem; border-radius: 0.5rem; text-align: center;">
+                <div style="font-size: 0.75rem; color: #6b7280; margin-bottom: 0.125rem;">Impayés</div>
+                <div [style.color]="item.unpaidAmount > 0 ? '#dc2626' : '#6b7280'" 
+                     [style.fontWeight]="item.unpaidAmount > 0 ? '600' : '400'"
+                     style="font-size: 0.875rem;">{{ item.unpaidAmount | number:'1.0-0' }} DNT</div>
+              </div>
+            </div>
+            
+            <!-- Actions -->
+            <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 0.25rem; border-top: 1px solid #e5e7eb; padding-top: 0.75rem;">
+              <button (click)="viewCustomer(item.customer.customerId)" title="Voir"
+                      style="width: 2rem; height: 2rem; border-radius: 0.375rem; border: 1px solid #bfdbfe; background: #eff6ff; color: #1e40af; cursor: pointer; font-size: 0.875rem; display: flex; align-items: center; justify-content: center;">👁️</button>
+              <button (click)="editCustomer(item.customer.customerId)" title="Modifier"
+                      style="width: 2rem; height: 2rem; border-radius: 0.375rem; border: 1px solid #fcd34d; background: #fef3c7; color: #92400e; cursor: pointer; font-size: 0.875rem; display: flex; align-items: center; justify-content: center;">✏️</button>
+              <button (click)="deleteCustomer(item.customer.customerId)" title="Supprimer"
+                      style="width: 2rem; height: 2rem; border-radius: 0.375rem; border: 1px solid #fecaca; background: #fee2e2; color: #991b1b; cursor: pointer; font-size: 0.875rem; display: flex; align-items: center; justify-content: center;">🗑️</button>
+            </div>
+          </div>
+          
+          <!-- Empty State -->
+          <div *ngIf="filteredCustomers.length === 0" style="text-align: center; padding: 3rem 1rem; color: #7f8c8d;">
+            <div style="font-size: 4rem; margin-bottom: 1rem; opacity: 0.5;">👥</div>
+            <p style="font-size: 1.1rem; margin: 0;">Aucun client trouvé</p>
+          </div>
         </div>
       </div>
     </div>
@@ -197,12 +252,7 @@ interface CustomerKPIs {
       margin: 0;
     }
 
-    .invoice-stats-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 1.5rem;
-      margin-bottom: 2rem;
-    }
+
 
     .invoice-card-header-title {
       font-weight: 600;

@@ -145,75 +145,85 @@ interface DeliveryNoteKPIs {
           <span style="font-size: 1rem;">📋</span>
           <span class="invoice-card-header-title">Liste des BL ({{ filteredDeliveryNotes.length }})</span>
         </div>
-        <div style="overflow-x: auto;">
+        
+        <!-- Desktop Table -->
+        <div class="desktop-table" style="overflow-x: auto;">
           <table style="width: 100%; border-collapse: collapse;">
             <thead>
-              <tr style="background: #f9fafb; border-bottom: 2px solid #e5e7eb;">
-                <th style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;">
+              <tr style="background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);">
+                <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: left;">
                   <input type="checkbox" (change)="toggleSelectAll($event)" 
                          [checked]="areAllSelected()"
                          style="width: 1.25rem; height: 1.25rem; cursor: pointer;">
                 </th>
-                <th style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;">Numéro BL</th>
-                <th style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;">Date</th>
-                <th style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;">Client</th>
-                <th style="padding: 1rem; text-align: right; font-weight: 600; color: #374151;">Montant</th>
-                <th style="padding: 1rem; text-align: center; font-weight: 600; color: #374151;">Statut</th>
-                <th style="padding: 1rem; text-align: center; font-weight: 600; color: #374151;">Facturation</th>
-                <th style="padding: 1rem; text-align: center; font-weight: 600; color: #374151;">Actions</th>
+                <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: left;">NUMÉRO BL</th>
+                <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: left;">DATE</th>
+                <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: left;">CLIENT</th>
+                <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: right;">MONTANT</th>
+                <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: center;">STATUT</th>
+                <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: center;">FACTURATION</th>
+                <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: center;">ACTIONS</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let dn of filteredDeliveryNotes" 
                   style="border-bottom: 1px solid #e5e7eb; transition: background 0.2s;"
-                  onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background='white'">
-                <td style="padding: 1rem;">
+                  onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">
+                <td style="padding: 0.75rem 1rem;">
                   <input type="checkbox" [checked]="isSelected(dn.idDeliveryNote)" 
                          (change)="toggleSelect(dn)"
                          [disabled]="dn.invoiced"
                          style="width: 1.25rem; height: 1.25rem; cursor: pointer;">
                 </td>
-                <td style="padding: 1rem; font-weight: 600; color: #111827;">{{ dn.deliveryNoteNumber }}</td>
-                <td style="padding: 1rem; color: #6b7280;">{{ dn.dateDelivery | date:'dd/MM/yyyy' }}</td>
-                <td style="padding: 1rem; color: #111827;">{{ dn.customer.name }}</td>
-                <td style="padding: 1rem; text-align: right; font-weight: 600; color: #111827;">
+                <td style="padding: 0.75rem 1rem;">
+                  <span style="display: inline-block; padding: 0.25rem 0.75rem; background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; border-radius: 0.375rem; font-weight: 600; font-size: 0.875rem;">
+                    {{ dn.deliveryNoteNumber }}
+                  </span>
+                </td>
+                <td style="padding: 0.75rem 1rem; color: #6b7280;">{{ dn.dateDelivery | date:'dd/MM/yyyy' }}</td>
+                <td style="padding: 0.75rem 1rem; color: #111827; font-weight: 500;">{{ dn.customer.name }}</td>
+                <td style="padding: 0.75rem 1rem; text-align: right; font-weight: 600; color: #111827;">
                   {{ dn.totalAmount | number:'1.3-3' }} DNT
                 </td>
-                <td style="padding: 1rem; text-align: center;">
+                <td style="padding: 0.75rem 1rem; text-align: center;">
                   <span [style.background]="getStatusColor(dn.status)" 
                         style="padding: 0.375rem 0.75rem; border-radius: 9999px; font-size: 0.875rem; font-weight: 600; color: white;">
                     {{ getStatusLabel(dn.status) }}
                   </span>
                 </td>
-                <td style="padding: 1rem; text-align: center;">
+                <td style="padding: 0.75rem 1rem; text-align: center;">
                   <div *ngIf="dn.invoiced" style="display: flex; flex-direction: column; align-items: center; gap: 0.25rem;">
                     <span style="color: #22c55e; font-weight: 600;">✅ Facturé</span>
                     <span *ngIf="dn.bill?.idBill" style="font-size: 0.75rem; color: #6b7280;">Facture #{{ dn.bill?.idBill }}</span>
                   </div>
                   <span *ngIf="!dn.invoiced" style="color: #f59e0b; font-weight: 600;">⏳ Non facturé</span>
                 </td>
-                <td style="padding: 1rem;">
-                  <div style="display: flex; gap: 0.5rem; justify-content: center;">
+                <td style="padding: 0.75rem 1rem;">
+                  <div style="display: flex; gap: 0.25rem; justify-content: center;">
                     <button (click)="downloadPDF(dn.idDeliveryNote, dn.deliveryNoteNumber)"
                             title="Télécharger PDF"
-                            style="padding: 0.5rem; background: #e0e7ff; color: #4338ca; border: none; border-radius: 0.375rem; cursor: pointer; font-weight: 600;">
+                            style="width: 2rem; height: 2rem; border-radius: 0.375rem; border: 1px solid #c7d2fe; background: #e0e7ff; color: #4338ca; cursor: pointer; font-size: 0.875rem; display: flex; align-items: center; justify-content: center;"
+                            onmouseover="this.style.background='#c7d2fe'" onmouseout="this.style.background='#e0e7ff'">
                       📥
                     </button>
                     <button *ngIf="!dn.invoiced && dn.status === 'PENDING'" 
                             (click)="updateStatus(dn.idDeliveryNote, 'DELIVERED')"
                             title="Marquer comme livré"
-                            style="padding: 0.5rem; background: #dbeafe; color: #1e40af; border: none; border-radius: 0.375rem; cursor: pointer; font-weight: 600;">
+                            style="width: 2rem; height: 2rem; border-radius: 0.375rem; border: 1px solid #bfdbfe; background: #dbeafe; color: #1e40af; cursor: pointer; font-size: 0.875rem; display: flex; align-items: center; justify-content: center;"
+                            onmouseover="this.style.background='#bfdbfe'" onmouseout="this.style.background='#dbeafe'">
                       📦
                     </button>
                     <button *ngIf="!dn.invoiced" 
                             (click)="deleteDeliveryNote(dn.idDeliveryNote)"
                             title="Supprimer"
-                            style="padding: 0.5rem; background: #fee2e2; color: #dc2626; border: none; border-radius: 0.375rem; cursor: pointer; font-weight: 600;">
+                            style="width: 2rem; height: 2rem; border-radius: 0.375rem; border: 1px solid #fecaca; background: #fee2e2; color: #dc2626; cursor: pointer; font-size: 0.875rem; display: flex; align-items: center; justify-content: center;"
+                            onmouseover="this.style.background='#fecaca'" onmouseout="this.style.background='#fee2e2'">
                       🗑️
                     </button>
                     <button *ngIf="dn.invoiced && dn.bill" 
                             title="Voir facture"
-                            style="padding: 0.5rem; background: #d1fae5; color: #065f46; border: none; border-radius: 0.375rem; cursor: pointer; font-weight: 600;">
+                            style="width: 2rem; height: 2rem; border-radius: 0.375rem; border: 1px solid #a7f3d0; background: #d1fae5; color: #065f46; cursor: pointer; font-size: 0.875rem; display: flex; align-items: center; justify-content: center;"
+                            onmouseover="this.style.background='#a7f3d0'" onmouseout="this.style.background='#d1fae5'">
                       📄
                     </button>
                   </div>
@@ -227,6 +237,80 @@ interface DeliveryNoteKPIs {
               </tr>
             </tbody>
           </table>
+        </div>
+        
+        <!-- Mobile Cards -->
+        <div class="mobile-cards">
+          <div *ngFor="let dn of filteredDeliveryNotes"
+               style="border-bottom: 1px solid #e5e7eb; padding: 1rem; background: white;">
+            <!-- Header: Checkbox + BL Number + Date + Status -->
+            <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 0.75rem;">
+              <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <input type="checkbox" [checked]="isSelected(dn.idDeliveryNote)" 
+                       (change)="toggleSelect(dn)"
+                       [disabled]="dn.invoiced"
+                       style="width: 1.125rem; height: 1.125rem; cursor: pointer;">
+                <span style="display: inline-block; padding: 0.25rem 0.75rem; background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; border-radius: 0.375rem; font-weight: 600; font-size: 0.75rem;">
+                  {{ dn.deliveryNoteNumber }}
+                </span>
+                <span style="color: #6b7280; font-size: 0.875rem;">{{ dn.dateDelivery | date:'dd/MM/yyyy' }}</span>
+              </div>
+              <span [style.background]="getStatusColor(dn.status)" 
+                    style="padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; color: white;">
+                {{ getStatusLabel(dn.status) }}
+              </span>
+            </div>
+            
+            <!-- Client Info -->
+            <div style="margin-bottom: 0.75rem;">
+              <div style="font-weight: 600; color: #1f2937; font-size: 0.875rem;">{{ dn.customer.name }}</div>
+            </div>
+            
+            <!-- Amount + Facturation Grid -->
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; margin-bottom: 1rem; font-size: 0.875rem;">
+              <div style="background: #f8fafc; padding: 0.5rem; border-radius: 0.5rem; text-align: center;">
+                <div style="font-size: 0.75rem; color: #6b7280; margin-bottom: 0.125rem;">Montant</div>
+                <div style="font-weight: 600; color: #1f2937; font-size: 0.875rem;">{{ dn.totalAmount | number:'1.3-3' }} DNT</div>
+              </div>
+              <div style="background: #f8fafc; padding: 0.5rem; border-radius: 0.5rem; text-align: center;">
+                <div style="font-size: 0.75rem; color: #6b7280; margin-bottom: 0.125rem;">Facturation</div>
+                <div *ngIf="dn.invoiced" style="font-weight: 600; color: #22c55e; font-size: 0.875rem;">✅ Facturé</div>
+                <div *ngIf="!dn.invoiced" style="font-weight: 600; color: #f59e0b; font-size: 0.875rem;">⏳ Non facturé</div>
+              </div>
+            </div>
+            
+            <!-- Actions -->
+            <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 0.25rem; border-top: 1px solid #e5e7eb; padding-top: 0.75rem;">
+              <button (click)="downloadPDF(dn.idDeliveryNote, dn.deliveryNoteNumber)"
+                      title="Télécharger PDF"
+                      style="width: 2rem; height: 2rem; border-radius: 0.375rem; border: 1px solid #c7d2fe; background: #e0e7ff; color: #4338ca; cursor: pointer; font-size: 0.875rem; display: flex; align-items: center; justify-content: center;">
+                📥
+              </button>
+              <button *ngIf="!dn.invoiced && dn.status === 'PENDING'" 
+                      (click)="updateStatus(dn.idDeliveryNote, 'DELIVERED')"
+                      title="Marquer comme livré"
+                      style="width: 2rem; height: 2rem; border-radius: 0.375rem; border: 1px solid #bfdbfe; background: #dbeafe; color: #1e40af; cursor: pointer; font-size: 0.875rem; display: flex; align-items: center; justify-content: center;">
+                📦
+              </button>
+              <button *ngIf="!dn.invoiced" 
+                      (click)="deleteDeliveryNote(dn.idDeliveryNote)"
+                      title="Supprimer"
+                      style="width: 2rem; height: 2rem; border-radius: 0.375rem; border: 1px solid #fecaca; background: #fee2e2; color: #dc2626; cursor: pointer; font-size: 0.875rem; display: flex; align-items: center; justify-content: center;">
+                🗑️
+              </button>
+              <button *ngIf="dn.invoiced && dn.bill" 
+                      title="Voir facture"
+                      style="width: 2rem; height: 2rem; border-radius: 0.375rem; border: 1px solid #a7f3d0; background: #d1fae5; color: #065f46; cursor: pointer; font-size: 0.875rem; display: flex; align-items: center; justify-content: center;">
+                📄
+              </button>
+            </div>
+          </div>
+          
+          <!-- Empty State -->
+          <div *ngIf="filteredDeliveryNotes.length === 0" style="text-align: center; padding: 3rem 1rem; color: #9ca3af;">
+            <div style="font-size: 4rem; margin-bottom: 1rem; opacity: 0.5;">📭</div>
+            <p style="font-size: 1.1rem; margin: 0;">Aucun bon de livraison trouvé</p>
+          </div>
         </div>
       </div>
 
