@@ -13,6 +13,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -33,7 +34,22 @@ public class CustomerService {
     public List<CustomerWithStatsDTO> findAllWithStats() {
         return customerRepository.findAll().stream()
                 .map(this::enrichCustomerWithStats)
+                .sorted(Comparator
+                        // D'abord par statut: ACTIVE (1), PROSPECT (2), INACTIVE (3), BLOCKED (4)
+                        .comparingInt((CustomerWithStatsDTO dto) -> getStatusOrder(dto.customer().getStatus()))
+                        // Puis par impayés décroissant
+                        .thenComparing((CustomerWithStatsDTO dto) -> dto.unpaidAmount(), Comparator.reverseOrder()))
                 .collect(Collectors.toList());
+    }
+    
+    private int getStatusOrder(CustomerStatus status) {
+        if (status == null) return 2;
+        return switch (status) {
+            case ACTIVE -> 1;
+            case PROSPECT -> 2;
+            case INACTIVE -> 3;
+            case BLOCKED -> 4;
+        };
     }
 
     public Optional<Customer> findById(Long id) {
