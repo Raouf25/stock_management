@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import java.util.List;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -45,7 +46,11 @@ public class BillService {
 
 
     public List<Bill> findAll() {
-        return billRepository.findAll();
+        return billRepository.findAll().stream()
+                .sorted(Comparator.comparing(
+                    (Bill bill) -> bill.getAmountDue() != null ? bill.getAmountDue() : BigDecimal.ZERO,
+                    Comparator.reverseOrder()))
+                .toList();
     }
 
     public Optional<Bill> findById(Long id) {
