@@ -40,6 +40,9 @@ public class InvoiceCreationDTO {
     @Min(value = 0, message = "Deposit cannot be negative")
     private BigDecimal deposit = BigDecimal.ZERO;
 
+    @Builder.Default
+    private Boolean applyTva = false; // Par défaut, la TVA (19%) n'est pas appliquée
+
     @NotEmpty(message = "At least one product is required")
     @Valid
     private List<InvoiceLineItemDTO> products;

@@ -90,6 +90,18 @@ interface InvoiceLineItem {
                   <option value="60 jours">60 jours</option>
                 </select>
               </div>
+              <div class="form-field tva-toggle-field">
+                <label class="tva-toggle-label">
+                  <span class="toggle-switch" [class.active]="invoiceForm.get('applyTva')?.value">
+                    <input type="checkbox" formControlName="applyTva" class="toggle-input">
+                    <span class="toggle-slider"></span>
+                  </span>
+                  <span class="toggle-text">
+                    <span class="toggle-title">Appliquer la TVA</span>
+                    <span class="toggle-rate" [class.active]="invoiceForm.get('applyTva')?.value">19%</span>
+                  </span>
+                </label>
+              </div>
             </div>
           </form>
         </div>
@@ -150,24 +162,24 @@ interface InvoiceLineItem {
           </div>
           <div class="section-body">
             <div class="financial-summary">
-              <div class="summary-row">
+              <div class="summary-row" *ngIf="invoiceForm.get('applyTva')?.value">
                 <span class="summary-label">Total HT Brut :</span>
                 <span class="summary-value">{{ getTotalHTBrut() | number:'1.3-3' }} DNT</span>
               </div>
-              <div *ngIf="getTotalDiscount() > 0" class="summary-row discount-row">
+              <div *ngIf="getTotalDiscount() > 0 && invoiceForm.get('applyTva')?.value" class="summary-row discount-row">
                 <span class="summary-label">Total Remises :</span>
                 <span class="summary-value">-{{ getTotalDiscount() | number:'1.3-3' }} DNT</span>
               </div>
-              <div class="summary-row">
+              <div class="summary-row" *ngIf="invoiceForm.get('applyTva')?.value">
                 <span class="summary-label">Total HT Net :</span>
                 <span class="summary-value">{{ totalHT | number:'1.3-3' }} DNT</span>
               </div>
-              <div class="summary-row">
+              <div class="summary-row" *ngIf="invoiceForm.get('applyTva')?.value">
                 <span class="summary-label">TVA (19%) :</span>
                 <span class="summary-value text-blue">{{ totalVAT | number:'1.3-3' }} DNT</span>
               </div>
               <div class="summary-row total-row">
-                <span class="summary-label">Total TTC :</span>
+                <span class="summary-label">{{ invoiceForm.get('applyTva')?.value ? 'Total TTC' : 'Total' }} :</span>
                 <span class="summary-value font-bold">{{ totalTTC | number:'1.3-3' }} DNT</span>
               </div>
               <div *ngIf="deposit > 0" class="summary-row deposit-row">
@@ -305,6 +317,99 @@ interface InvoiceLineItem {
       outline: none;
       border-color: rgb(99 102 241);
       box-shadow: 0 0 0 3px rgb(99 102 241 / 0.1);
+    }
+
+    .tva-toggle-field {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+    }
+
+    .tva-toggle-label {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      cursor: pointer;
+      padding: 0.625rem 1rem;
+      background: linear-gradient(135deg, rgb(249 250 251), rgb(243 244 246));
+      border: 1px solid rgb(229 231 235);
+      border-radius: 0.75rem;
+      transition: all 0.2s ease;
+    }
+
+    .tva-toggle-label:hover {
+      border-color: rgb(99 102 241);
+      box-shadow: 0 2px 8px rgb(99 102 241 / 0.1);
+    }
+
+    .toggle-switch {
+      position: relative;
+      width: 3rem;
+      height: 1.625rem;
+      flex-shrink: 0;
+    }
+
+    .toggle-input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+      position: absolute;
+    }
+
+    .toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgb(209 213 219);
+      border-radius: 1rem;
+      transition: all 0.3s ease;
+    }
+
+    .toggle-slider::before {
+      position: absolute;
+      content: "";
+      height: 1.25rem;
+      width: 1.25rem;
+      left: 0.1875rem;
+      bottom: 0.1875rem;
+      background: white;
+      border-radius: 50%;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 4px rgb(0 0 0 / 0.15);
+    }
+
+    .toggle-switch.active .toggle-slider {
+      background: linear-gradient(135deg, rgb(99 102 241), rgb(79 70 229));
+    }
+
+    .toggle-switch.active .toggle-slider::before {
+      transform: translateX(1.375rem);
+    }
+
+    .toggle-text {
+      display: flex;
+      flex-direction: column;
+      gap: 0.125rem;
+    }
+
+    .toggle-title {
+      font-size: 0.8125rem;
+      font-weight: 500;
+      color: rgb(55 65 81);
+    }
+
+    .toggle-rate {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: rgb(156 163 175);
+      transition: color 0.2s ease;
+    }
+
+    .toggle-rate.active {
+      color: rgb(99 102 241);
     }
 
     .search-wrapper {
@@ -635,7 +740,13 @@ export class InvoiceCreateComponent implements OnInit {
       customerId: [null, [Validators.required]],
       billDate: [this.getToday(), [Validators.required]],
       paymentTerms: ['30 jours', [Validators.required]],
-      deposit: [0, [Validators.min(0)]]
+      deposit: [0, [Validators.min(0)]],
+      applyTva: [false] // Par défaut, la TVA n'est pas appliquée
+    });
+
+    // Recalculer quand la checkbox TVA change
+    this.invoiceForm.get('applyTva')?.valueChanges.subscribe(() => {
+      this.calculateTotals();
     });
   }
 
@@ -802,9 +913,12 @@ export class InvoiceCreateComponent implements OnInit {
     // Calculate total HT (already includes per-item discounts)
     this.totalHT = this.lineItems.reduce((sum, item) => sum + item.totalPrice, 0);
 
-    // Calculate VAT (19%)
+    // Check if TVA should be applied
+    const applyTva = this.invoiceForm.get('applyTva')?.value ?? true;
     const VAT_RATE = 0.19;
-    this.totalVAT = this.totalHT * VAT_RATE;
+    
+    // Calculate VAT (19%) only if applyTva is true
+    this.totalVAT = applyTva ? this.totalHT * VAT_RATE : 0;
 
     // Calculate total TTC (total with tax)
     this.totalTTC = this.totalHT + this.totalVAT;
@@ -848,6 +962,7 @@ export class InvoiceCreateComponent implements OnInit {
       billDate: this.invoiceForm.get('billDate')?.value,
       paymentTerms: this.invoiceForm.get('paymentTerms')?.value,
       deposit: Number(deposit) || 0,
+      applyTva: this.invoiceForm.get('applyTva')?.value ?? true,
       products: this.lineItems.map(item => ({
         productId: item.productId,
         quantity: item.quantity,

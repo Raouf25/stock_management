@@ -50,5 +50,8 @@ public class Bill {
 
     @Enumerated(EnumType.STRING)
     private PaymentStatus paymentStatus;
+
+    @Column(name = "apply_tva", nullable = false)
+    private Boolean applyTva = false; // Par défaut, la TVA n'est pas appliquée
 }
 

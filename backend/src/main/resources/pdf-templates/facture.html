@@ -512,16 +512,16 @@
         </td>
         <td class="totals-cell">
             <table class="totals">
-                <tr>
+                <tr th:if="${showTva}">
                     <td class="label">Total HT</td>
                     <td class="value" th:text="${totalHTFormatted}">0.000 DNT</td>
                 </tr>
-                <tr>
-                    <td class="label">TVA</td>
+                <tr th:if="${showTva}">
+                    <td class="label">TVA (19%)</td>
                     <td class="value" th:text="${tvaFormatted}">0.000 DNT</td>
                 </tr>
                 <tr>
-                    <td class="label">Total TTC</td>
+                    <td class="label" th:text="${showTva} ? 'Total TTC' : 'Total'">Total TTC</td>
                     <td class="value" th:text="${totalTTCFormatted}">0.000 DNT</td>
                 </tr>
                 <tr>

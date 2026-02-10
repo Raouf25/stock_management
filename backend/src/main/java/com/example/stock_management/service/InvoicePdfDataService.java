@@ -91,11 +91,15 @@ public class InvoicePdfDataService extends AbstractPdfDataService {
     private void populateBillData(Bill bill, Map<String, Object> data) {
         data.put("customer", bill.getCustomer());
 
-        List<Map<String, Object>> productsList = buildProductsList(bill);
+        // Déterminer si la TVA doit être appliquée (par défaut non)
+        boolean applyTva = bill.getApplyTva() != null ? bill.getApplyTva() : false;
+        data.put("applyTva", applyTva);
+
+        List<Map<String, Object>> productsList = buildProductsList(bill, applyTva);
         data.put("products", productsList);
 
-        BillTotals totals = calculateTotals(productsList, bill);
-        populateTotals(data, totals);
+        BillTotals totals = calculateTotals(productsList, bill, applyTva);
+        populateTotals(data, totals, applyTva);
 
         data.put("billNumber", "FAC-" + String.format("%04d", bill.getIdBill()));
         data.put("billDate", bill.getDateBill().format(DATE_FORMATTER));
@@ -113,7 +117,7 @@ public class InvoicePdfDataService extends AbstractPdfDataService {
         }
     }
 
-    private void populateTotals(Map<String, Object> data, BillTotals totals) {
+    private void populateTotals(Map<String, Object> data, BillTotals totals, boolean applyTva) {
         data.put("total", totals.totalTTC);
         data.put("totalHT", totals.totalHT);
         data.put("tva", totals.tva);
@@ -121,9 +125,10 @@ public class InvoicePdfDataService extends AbstractPdfDataService {
         data.put("totalDiscount", totals.totalDiscount);
         data.put("deposit", totals.deposit);
         data.put("amountDue", totals.amountDue);
+        data.put("showTva", applyTva);
 
         data.put("totalHTFormatted", formatDecimal(totals.totalHT, 3, 3));
-        data.put("tvaFormatted", formatDecimal(totals.tva, 3, 3));
+        data.put("tvaFormatted", applyTva ? formatDecimal(totals.tva, 3, 3) : "0,000");
         data.put("totalTTCFormatted", formatDecimal(totals.totalTTC, 3, 3));
         data.put("totalGrossHTFormatted", formatDecimal(totals.totalGrossHT, 3, 3));
         data.put("totalDiscountFormatted", formatDecimal(totals.totalDiscount, 3, 3));
@@ -134,19 +139,19 @@ public class InvoicePdfDataService extends AbstractPdfDataService {
     /**
      * Construit la liste des produits avec tous les calculs nécessaires
      */
-    private List<Map<String, Object>> buildProductsList(Bill bill) {
+    private List<Map<String, Object>> buildProductsList(Bill bill, boolean applyTva) {
         List<Map<String, Object>> productsList = new ArrayList<>();
         
         if (bill.getBillProducts() == null) return productsList;
 
         for (BillProduct bp : bill.getBillProducts()) {
-            productsList.add(buildProductData(bp));
+            productsList.add(buildProductData(bp, applyTva));
         }
         
         return productsList;
     }
 
-    private Map<String, Object> buildProductData(BillProduct bp) {
+    private Map<String, Object> buildProductData(BillProduct bp, boolean applyTva) {
         Map<String, Object> productData = new HashMap<>();
         
         String productName = bp.getProduct() != null ? bp.getProduct().getName() : "";
@@ -158,7 +163,7 @@ public class InvoicePdfDataService extends AbstractPdfDataService {
         ProductDiscount discount = calculateDiscount(bp, unitPrice, qty, totalPrice);
         
         double priceAfterDiscount = totalPrice;
-        double vatAmount = priceAfterDiscount * VAT_RATE;
+        double vatAmount = applyTva ? priceAfterDiscount * VAT_RATE : 0.0;
         double totalWithVat = priceAfterDiscount + vatAmount;
         
         productData.put("productRef", productRef);
@@ -170,7 +175,7 @@ public class InvoicePdfDataService extends AbstractPdfDataService {
         productData.put("discountValue", discount.amount);
         productData.put("discountFormatted", formatDecimal(discount.amount, 3, 3));
         productData.put("discountPercentage", formatDecimal(discount.percentage, 1, 1));
-        productData.put("vatRate", "19%");
+        productData.put("vatRate", applyTva ? "19%" : "0%");
         productData.put("vatAmountFormatted", formatDecimal(vatAmount, 3, 3));
         productData.put("totalWithVatFormatted", formatDecimal(totalWithVat, 3, 3));
         productData.put("vatAmountValue", vatAmount);
@@ -209,14 +214,14 @@ public class InvoicePdfDataService extends AbstractPdfDataService {
     /**
      * Calcule tous les totaux de la facture
      */
-    private BillTotals calculateTotals(List<Map<String, Object>> productsList, Bill bill) {
+    private BillTotals calculateTotals(List<Map<String, Object>> productsList, Bill bill, boolean applyTva) {
         double sumTotalHT = productsList.stream()
             .mapToDouble(p -> getDoubleValue(p.get("totalPriceValue")))
             .sum();
         
-        double sumVat = productsList.stream()
+        double sumVat = applyTva ? productsList.stream()
             .mapToDouble(p -> getDoubleValue(p.get("vatAmountValue")))
-            .sum();
+            .sum() : 0.0;
         
         double sumGrossHT = productsList.stream()
             .mapToDouble(p -> {

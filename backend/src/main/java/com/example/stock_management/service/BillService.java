@@ -196,9 +196,18 @@ public class BillService {
 
         bill.setBillProducts(billProducts);
 
-        // Calculate totals with VAT (19%)
+        // Déterminer si la TVA doit être appliquée (par défaut non)
+        boolean applyTva = invoiceDto.getApplyTva() != null ? invoiceDto.getApplyTva() : false;
+        bill.setApplyTva(applyTva);
+
+        // Calculate totals with VAT (19%) if applyTva is true
         BigDecimal VAT_RATE = new BigDecimal("0.19");
-        BigDecimal totalWithVAT = new BigDecimal(totalHT).multiply(BigDecimal.ONE.add(VAT_RATE)).setScale(3, RoundingMode.HALF_UP);
+        BigDecimal totalWithVAT;
+        if (applyTva) {
+            totalWithVAT = new BigDecimal(totalHT).multiply(BigDecimal.ONE.add(VAT_RATE)).setScale(3, RoundingMode.HALF_UP);
+        } else {
+            totalWithVAT = new BigDecimal(totalHT).setScale(3, RoundingMode.HALF_UP);
+        }
         bill.setTotal(totalWithVAT);
 
         // Calculate amount due
