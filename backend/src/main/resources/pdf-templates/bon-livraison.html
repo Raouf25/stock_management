@@ -411,7 +411,7 @@
 <!-- Totals -->
 <div class="totals-section">
     <table class="totals">
-        <tr>
+        <tr th:if="${showTva}">
             <td class="label">Total HT</td>
             <td class="value" th:text="${totalHTFormatted}">0.000 DNT</td>
         </tr>
@@ -419,8 +419,12 @@
             <td class="label">Remise globale</td>
             <td class="value" th:text="${totalDiscountFormatted}">0.000 DNT</td>
         </tr>
+        <tr th:if="${showTva}">
+            <td class="label">TVA (19%)</td>
+            <td class="value" th:text="${tvaFormatted}">0.000 DNT</td>
+        </tr>
         <tr class="total-row">
-            <td class="label">Total</td>
+            <td class="label" th:text="${showTva} ? 'Total TTC' : 'Total'">Total</td>
             <td class="value" th:text="${totalFormatted}">0.000 DNT</td>
         </tr>
     </table>

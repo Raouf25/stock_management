@@ -60,6 +60,9 @@ public class DeliveryNote {
     @Column(name = "invoiced", nullable = false)
     private Boolean invoiced = false;
 
+    @Column(name = "apply_tva", nullable = false)
+    private Boolean applyTva = false; // Par défaut, la TVA n'est pas appliquée
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 

@@ -104,6 +104,16 @@ public class DeliveryNoteService {
             totalAmount = totalAmount.subtract(discountAmount);
         }
 
+        // Déterminer si la TVA doit être appliquée (par défaut non)
+        boolean applyTva = deliveryNoteDTO.getApplyTva() != null ? deliveryNoteDTO.getApplyTva() : false;
+        deliveryNote.setApplyTva(applyTva);
+
+        // Appliquer la TVA (19%) si demandé
+        if (applyTva) {
+            BigDecimal VAT_RATE = new BigDecimal("0.19");
+            totalAmount = totalAmount.multiply(BigDecimal.ONE.add(VAT_RATE)).setScale(3, RoundingMode.HALF_UP);
+        }
+
         deliveryNote.setTotalAmount(totalAmount.setScale(3, RoundingMode.HALF_UP));
         deliveryNote.setDeliveryNoteProducts(deliveryNoteProducts);
 

@@ -13,5 +13,6 @@ public class DeliveryNoteDTO {
     private String deliveryAddress;
     private String notes;
     private BigDecimal discount;
+    private Boolean applyTva = false; // Par défaut, la TVA n'est pas appliquée
     private List<DeliveryNoteProductDTO> products;
 }

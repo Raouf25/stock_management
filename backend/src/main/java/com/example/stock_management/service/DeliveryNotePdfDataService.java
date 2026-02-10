@@ -20,6 +20,7 @@ public class DeliveryNotePdfDataService extends AbstractPdfDataService {
 
     private final DeliveryNoteService deliveryNoteService;
 
+    private static final double VAT_RATE = 0.19;
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     public DeliveryNotePdfDataService(DeliveryNoteService deliveryNoteService, NumberUtils numberUtils) {
@@ -51,13 +52,18 @@ public class DeliveryNotePdfDataService extends AbstractPdfDataService {
         data.put("notes", dn.getNotes());
         data.put("deliveryAddress", defaultIfNull(dn.getDeliveryAddress(), ""));
 
+        // Déterminer si la TVA doit être appliquée (par défaut non)
+        boolean applyTva = dn.getApplyTva() != null ? dn.getApplyTva() : false;
+        data.put("applyTva", applyTva);
+        data.put("showTva", applyTva);
+
         List<Map<String, Object>> productsList = buildProductsList(dn);
         data.put("products", productsList);
 
-        calculateAndSetTotals(productsList, data);
+        calculateAndSetTotals(productsList, data, applyTva);
     }
 
-    private void calculateAndSetTotals(List<Map<String, Object>> productsList, Map<String, Object> data) {
+    private void calculateAndSetTotals(List<Map<String, Object>> productsList, Map<String, Object> data, boolean applyTva) {
         double totalDiscount = productsList.stream()
                 .mapToDouble(p -> getDoubleValue(p.get("discountValue")))
                 .sum();
@@ -66,9 +72,13 @@ public class DeliveryNotePdfDataService extends AbstractPdfDataService {
                 .mapToDouble(p -> getDoubleValue(p.get("totalPriceValue")))
                 .sum();
 
+        double tva = applyTva ? totalHT * VAT_RATE : 0.0;
+        double totalTTC = totalHT + tva;
+
         data.put("totalHTFormatted", formatDecimal(totalHT, 3, 3));
         data.put("totalDiscountFormatted", formatDecimal(totalDiscount, 3, 3));
-        data.put("totalFormatted", formatDecimal(totalHT, 3, 3));
+        data.put("tvaFormatted", applyTva ? formatDecimal(tva, 3, 3) : "0,000");
+        data.put("totalFormatted", formatDecimal(totalTTC, 3, 3));
     }
 
     private List<Map<String, Object>> buildProductsList(DeliveryNote dn) {

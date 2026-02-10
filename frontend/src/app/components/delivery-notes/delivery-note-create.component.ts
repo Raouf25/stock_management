@@ -92,6 +92,18 @@ interface DeliveryLineItem {
             <textarea [(ngModel)]="notes" rows="3" placeholder="Notes supplémentaires..."
                       style="width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 0.5rem; font-size: 1rem; resize: vertical;"></textarea>
           </div>
+          <div style="margin-top: 1rem;">
+            <label class="tva-toggle-label">
+              <span class="toggle-switch" [class.active]="applyTva">
+                <input type="checkbox" [(ngModel)]="applyTva" (ngModelChange)="calculateTotal()" class="toggle-input">
+                <span class="toggle-slider"></span>
+              </span>
+              <span class="toggle-text">
+                <span class="toggle-title">Appliquer la TVA</span>
+                <span class="toggle-rate" [class.active]="applyTva">19%</span>
+              </span>
+            </label>
+          </div>
         </div>
       </div>
 
@@ -137,8 +149,16 @@ interface DeliveryLineItem {
                 <input type="number" [(ngModel)]="globalDiscount" (ngModelChange)="calculateTotal()" min="0" max="100" step="0.1"
                        style="width: 100px; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem;">
               </div>
+              <div *ngIf="applyTva" style="display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid #e5e7eb;">
+                <span style="color: #6b7280;">Total HT:</span>
+                <span style="font-weight: 600; color: #111827;">{{ getTotalHT() | number:'1.3-3' }} DNT</span>
+              </div>
+              <div *ngIf="applyTva" style="display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid #e5e7eb;">
+                <span style="color: #6b7280;">TVA (19%):</span>
+                <span style="font-weight: 600; color: #3b82f6;">{{ getTVA() | number:'1.3-3' }} DNT</span>
+              </div>
               <div style="display: flex; justify-content: space-between; padding: 1rem 0; font-size: 1.25rem; font-weight: 700; color: #111827;">
-                <span>TOTAL:</span>
+                <span>{{ applyTva ? 'TOTAL TTC:' : 'TOTAL:' }}</span>
                 <span style="color: #22c55e;">{{ getTotalAmount() | number:'1.3-3' }} DNT</span>
               </div>
             </div>
@@ -175,6 +195,94 @@ interface DeliveryLineItem {
       border-color: #dc2626 !important;
       background: #fee2e2 !important;
     }
+
+    .tva-toggle-label {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      cursor: pointer;
+      padding: 0.625rem 1rem;
+      background: linear-gradient(135deg, rgb(249 250 251), rgb(243 244 246));
+      border: 1px solid rgb(229 231 235);
+      border-radius: 0.75rem;
+      transition: all 0.2s ease;
+      width: fit-content;
+    }
+
+    .tva-toggle-label:hover {
+      border-color: rgb(34 197 94);
+      box-shadow: 0 2px 8px rgb(34 197 94 / 0.1);
+    }
+
+    .toggle-switch {
+      position: relative;
+      width: 3rem;
+      height: 1.625rem;
+      flex-shrink: 0;
+    }
+
+    .toggle-input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+      position: absolute;
+    }
+
+    .toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgb(209 213 219);
+      border-radius: 1rem;
+      transition: all 0.3s ease;
+    }
+
+    .toggle-slider::before {
+      position: absolute;
+      content: "";
+      height: 1.25rem;
+      width: 1.25rem;
+      left: 0.1875rem;
+      bottom: 0.1875rem;
+      background: white;
+      border-radius: 50%;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 4px rgb(0 0 0 / 0.15);
+    }
+
+    .toggle-switch.active .toggle-slider {
+      background: linear-gradient(135deg, rgb(34 197 94), rgb(22 163 74));
+    }
+
+    .toggle-switch.active .toggle-slider::before {
+      transform: translateX(1.375rem);
+    }
+
+    .toggle-text {
+      display: flex;
+      flex-direction: column;
+      gap: 0.125rem;
+    }
+
+    .toggle-title {
+      font-size: 0.8125rem;
+      font-weight: 500;
+      color: rgb(55 65 81);
+    }
+
+    .toggle-rate {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: rgb(156 163 175);
+      transition: color 0.2s ease;
+    }
+
+    .toggle-rate.active {
+      color: rgb(34 197 94);
+    }
   `]
 })
 export class DeliveryNoteCreateComponent implements OnInit {
@@ -187,6 +295,7 @@ export class DeliveryNoteCreateComponent implements OnInit {
   deliveryAddress: string = '';
   notes: string = '';
   globalDiscount: number = 0;
+  applyTva: boolean = false;
   
   errorMessage: string = '';
   successMessage: string = '';
@@ -326,12 +435,20 @@ export class DeliveryNoteCreateComponent implements OnInit {
     // Trigger recalculation
   }
 
-  getTotalAmount(): number {
+  getTotalHT(): number {
     let total = this.getSubtotal();
     if (this.globalDiscount > 0) {
       total = total * (1 - this.globalDiscount / 100);
     }
     return total;
+  }
+
+  getTVA(): number {
+    return this.applyTva ? this.getTotalHT() * 0.19 : 0;
+  }
+
+  getTotalAmount(): number {
+    return this.getTotalHT() + this.getTVA();
   }
 
   canCreate(): boolean {
@@ -356,6 +473,7 @@ export class DeliveryNoteCreateComponent implements OnInit {
       deliveryAddress: this.deliveryAddress,
       notes: this.notes,
       discount: this.globalDiscount,
+      applyTva: this.applyTva,
       products: this.deliveryItems.map(item => ({
         productId: item.productId,
         quantity: item.quantity,
