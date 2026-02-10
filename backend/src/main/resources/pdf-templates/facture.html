@@ -1,12 +1,22 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
 <head>
     <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="description" content="Facture - Document commercial"/>
     <title th:text="'Facture - ' + ${billNumber}">Facture</title>
     <style type="text/css">
         /*<![CDATA[*/
-        /* PDF-Compatible Styles for Thymeleaf/Flying Saucer */
         
+        /* ==========================================================================
+           FACTURE - CSS Styles
+           Version: 2.2
+           Description: Thème BLEU - Valeurs directes pour compatibilité PDF
+           ========================================================================== */
+        
+        /* --------------------------------------------------------------------------
+           COMMON STYLES - Sans CSS variables pour compatibilité iText/Flying Saucer
+           -------------------------------------------------------------------------- */
         @page {
             size: A4;
             margin: 15mm;
@@ -17,7 +27,7 @@
             padding: 0;
             box-sizing: border-box;
         }
-
+        
         body {
             font-family: Arial, sans-serif;
             font-size: 10pt;
@@ -25,7 +35,17 @@
             color: #1e293b;
         }
         
-        /* Header Section */
+        strong {
+            font-weight: 600;
+        }
+        
+        address {
+            font-style: normal;
+        }
+        
+        /* --------------------------------------------------------------------------
+           HEADER SECTION
+           -------------------------------------------------------------------------- */
         .header {
             width: 100%;
             margin-bottom: 20px;
@@ -67,6 +87,7 @@
             color: #64748b;
         }
         
+        /* Invoice Details Box */
         .invoice-details-container {
             display: inline-block;
             padding: 12px 15px;
@@ -97,7 +118,9 @@
             color: white;
         }
         
-        /* Client & Delivery Information */
+        /* --------------------------------------------------------------------------
+           BILLING & DELIVERY SECTION
+           -------------------------------------------------------------------------- */
         .billing-delivery {
             width: 100%;
             margin-bottom: 20px;
@@ -129,15 +152,14 @@
             color: #64748b;
         }
         
-        /* Products Table */
+        /* --------------------------------------------------------------------------
+           PRODUCTS TABLE
+           -------------------------------------------------------------------------- */
         .products {
             width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
+            border-collapse: collapse;
             margin-bottom: 20px;
             border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            overflow: hidden;
         }
         
         .products thead {
@@ -151,44 +173,17 @@
             font-weight: 600;
             font-size: 8pt;
             text-transform: uppercase;
-            border-right: 1px solid #1d4ed8;
-            border-bottom: 1px solid #1d4ed8;
-        }
-        
-        .products th:first-child {
-            border-top-left-radius: 8px;
-        }
-        
-        .products th:last-child {
-            border-right: none;
-            border-top-right-radius: 8px;
+            border: 1px solid #1d4ed8;
+            color: white;
         }
         
         .products td {
             padding: 8px 6px;
-            border-right: 1px solid #e2e8f0;
-            border-bottom: 1px solid #e2e8f0;
+            border: 1px solid #e2e8f0;
             font-size: 9pt;
             vertical-align: middle;
         }
         
-        .products td:last-child {
-            border-right: none;
-        }
-        
-        .products tbody tr:last-child td {
-            border-bottom: none;
-        }
-        
-        .products tbody tr:last-child td:first-child {
-            border-bottom-left-radius: 8px;
-        }
-        
-        .products tbody tr:last-child td:last-child {
-            border-bottom-right-radius: 8px;
-        }
-        
-        /* Right align numeric columns */
         .products th.align-right,
         .products td.align-right {
             text-align: right;
@@ -200,12 +195,13 @@
         }
         
         .products td.ref-column {
-            font-family: Arial, sans-serif;
             font-size: 8pt;
             color: #64748b;
         }
         
-        /* Payment & Totals Section */
+        /* --------------------------------------------------------------------------
+           PAYMENT & TOTALS LAYOUT
+           -------------------------------------------------------------------------- */
         .payment-totals {
             width: 100%;
             border-collapse: separate;
@@ -230,11 +226,8 @@
         /* Payment Table */
         .payment {
             width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
+            border-collapse: collapse;
             border: 1px solid #e2e8f0;
-            border-radius: 6px;
-            overflow: hidden;
         }
         
         .payment thead {
@@ -247,17 +240,7 @@
             font-weight: 600;
             font-size: 9pt;
             color: #1e293b;
-            border-right: 1px solid #e2e8f0;
-            border-bottom: 1px solid #e2e8f0;
-        }
-        
-        .payment th:first-child {
-            border-top-left-radius: 6px;
-        }
-        
-        .payment th:last-child {
-            border-right: none;
-            border-top-right-radius: 6px;
+            border: 1px solid #e2e8f0;
         }
         
         .payment td {
@@ -265,48 +248,21 @@
             text-align: center;
             font-size: 9pt;
             color: #64748b;
-            border-right: 1px solid #e2e8f0;
-        }
-        
-        .payment tbody tr:last-child td:first-child {
-            border-bottom-left-radius: 6px;
-        }
-        
-        .payment td:last-child {
-            border-right: none;
-        }
-        
-        .payment tbody tr:last-child td:last-child {
-            border-bottom-right-radius: 6px;
+            border: 1px solid #e2e8f0;
         }
         
         /* Totals Table */
         .totals {
             width: 280px;
-            border-collapse: separate;
-            border-spacing: 0;
+            border-collapse: collapse;
             border: 2px solid #2563eb;
             margin-left: auto;
-            border-radius: 8px;
-            overflow: hidden;
-        }
-        
-        .totals tr {
-            border-bottom: 1px solid #e2e8f0;
-        }
-        
-        .totals tr:first-child td:first-child {
-            border-top-left-radius: 8px;
-        }
-        
-        .totals tr:first-child td:last-child {
-            border-top-right-radius: 8px;
         }
         
         .totals td {
             padding: 8px 12px;
             font-size: 9pt;
-            border: none;
+            border: 1px solid #e2e8f0;
         }
         
         .totals td.label {
@@ -319,30 +275,19 @@
         .totals td.value {
             text-align: right;
             font-weight: 600;
-            font-family: Arial, sans-serif;
             font-size: 10pt;
             width: 50%;
         }
         
-        .totals tr.net-pay-row {
-            background-color: #10b981;
-        }
-        
         .totals tr.net-pay-row td {
+            background-color: #10b981;
             color: white;
             font-weight: 700;
-            background-color: #10b981;
         }
         
-        .totals tr.net-pay-row td:first-child {
-            border-bottom-left-radius: 8px;
-        }
-        
-        .totals tr.net-pay-row td:last-child {
-            border-bottom-right-radius: 8px;
-        }
-        
-        /* Legal Mentions */
+        /* --------------------------------------------------------------------------
+           LEGAL MENTIONS & SIGNATURES
+           -------------------------------------------------------------------------- */
         .match-payment-header {
             font-size: 9pt;
             font-weight: 500;
@@ -351,18 +296,13 @@
             padding: 10px 12px;
             background-color: #f8fafc;
             border-left: 3px solid #f59e0b;
-            border-radius: 6px;
         }
         
-        /* Footer Signatures */
         .signatures {
             width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
+            border-collapse: collapse;
             margin-top: 15px;
             border: 1px solid #e2e8f0;
-            border-radius: 6px;
-            overflow: hidden;
         }
         
         .signatures td {
@@ -370,19 +310,8 @@
             font-size: 9pt;
             color: #64748b;
             text-align: center;
-            border-right: 1px solid #e2e8f0;
+            border: 1px solid #e2e8f0;
             width: 33.33%;
-        }
-        
-        .signatures td:first-child {
-            border-top-left-radius: 6px;
-            border-bottom-left-radius: 6px;
-        }
-        
-        .signatures td:last-child {
-            border-right: none;
-            border-top-right-radius: 6px;
-            border-bottom-right-radius: 6px;
         }
         
         .signatures td.align-left {
@@ -393,14 +322,6 @@
             text-align: right;
         }
         
-        /* Utility classes */
-        strong {
-            font-weight: 600;
-        }
-        
-        address {
-            font-style: normal;
-        }
         /*]]>*/
     </style>
 </head>

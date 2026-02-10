@@ -1,10 +1,22 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
 <head>
     <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="description" content="Bon de Livraison - Document commercial"/>
     <title th:text="'Bon de Livraison - ' + ${deliveryNoteNumber}">Bon de Livraison</title>
     <style type="text/css">
         /*<![CDATA[*/
+        
+        /* ==========================================================================
+           BON DE LIVRAISON - CSS Styles
+           Version: 2.2
+           Description: Thème VERT - Valeurs directes pour compatibilité PDF
+           ========================================================================== */
+        
+        /* --------------------------------------------------------------------------
+           COMMON STYLES - Sans CSS variables pour compatibilité iText/Flying Saucer
+           -------------------------------------------------------------------------- */
         @page {
             size: A4;
             margin: 15mm;
@@ -15,7 +27,7 @@
             padding: 0;
             box-sizing: border-box;
         }
-
+        
         body {
             font-family: Arial, sans-serif;
             font-size: 10pt;
@@ -23,7 +35,17 @@
             color: #1e293b;
         }
         
-        /* Header Section */
+        strong {
+            font-weight: 600;
+        }
+        
+        address {
+            font-style: normal;
+        }
+        
+        /* --------------------------------------------------------------------------
+           HEADER SECTION
+           -------------------------------------------------------------------------- */
         .header {
             width: 100%;
             margin-bottom: 20px;
@@ -65,6 +87,7 @@
             color: #64748b;
         }
         
+        /* Document Details Box */
         .doc-details-container {
             display: inline-block;
             padding: 12px 15px;
@@ -95,7 +118,9 @@
             color: white;
         }
         
-        /* Client & Delivery Information */
+        /* --------------------------------------------------------------------------
+           BILLING & DELIVERY SECTION
+           -------------------------------------------------------------------------- */
         .billing-delivery {
             width: 100%;
             margin-bottom: 20px;
@@ -127,7 +152,133 @@
             color: #64748b;
         }
         
-        /* Status Badge */
+        /* --------------------------------------------------------------------------
+           PRODUCTS TABLE
+           -------------------------------------------------------------------------- */
+        .products {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .products thead {
+            background-color: #16a34a;
+            color: white;
+        }
+        
+        .products th {
+            padding: 10px 6px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 8pt;
+            text-transform: uppercase;
+            border: 1px solid #15803d;
+            color: white;
+        }
+        
+        .products td {
+            padding: 8px 6px;
+            border: 1px solid #e2e8f0;
+            font-size: 9pt;
+            vertical-align: middle;
+        }
+        
+        .products th.align-right,
+        .products td.align-right {
+            text-align: right;
+        }
+        
+        .products td.monospace {
+            font-family: Arial, sans-serif;
+            font-weight: 500;
+        }
+        
+        .products td.ref-column {
+            font-size: 8pt;
+            color: #64748b;
+        }
+        
+        /* --------------------------------------------------------------------------
+           TOTALS SECTION
+           -------------------------------------------------------------------------- */
+        .totals-section {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        
+        .totals {
+            width: 280px;
+            border-collapse: collapse;
+            border: 2px solid #16a34a;
+            margin-left: auto;
+        }
+        
+        .totals td {
+            padding: 8px 12px;
+            font-size: 9pt;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .totals td.label {
+            font-weight: 500;
+            color: #64748b;
+            background-color: #f8fafc;
+            width: 50%;
+        }
+        
+        .totals td.value {
+            text-align: right;
+            font-weight: 600;
+            font-size: 10pt;
+            width: 50%;
+        }
+        
+        .totals tr.total-row td {
+            background-color: #16a34a;
+            color: white;
+            font-weight: 700;
+        }
+        
+        /* --------------------------------------------------------------------------
+           NOTES & SIGNATURES
+           -------------------------------------------------------------------------- */
+        .notes-section {
+            margin-bottom: 15px;
+            padding: 10px 12px;
+            background-color: #f8fafc;
+            border-left: 3px solid #16a34a;
+            font-size: 9pt;
+            color: #64748b;
+        }
+        
+        .signatures {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .signatures td {
+            padding: 12px;
+            font-size: 9pt;
+            color: #64748b;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+            width: 33.33%;
+        }
+        
+        .signatures td.align-left {
+            text-align: left;
+        }
+        
+        .signatures td.align-right {
+            text-align: right;
+        }
+        
+        /* --------------------------------------------------------------------------
+           STATUS BADGES (Delivery Note Specific)
+           -------------------------------------------------------------------------- */
         .status-badge {
             display: inline-block;
             padding: 4px 12px;
@@ -145,182 +296,10 @@
             background-color: #22c55e;
         }
         
-        /* Products Table */
-        .products {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
-            margin-bottom: 20px;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            overflow: hidden;
+        .status-cancelled {
+            background-color: #ef4444;
         }
         
-        .products thead {
-            background-color: #16a34a;
-            color: white;
-        }
-        
-        .products th {
-            padding: 10px 6px;
-            text-align: left;
-            font-weight: 600;
-            font-size: 8pt;
-            text-transform: uppercase;
-            border-right: 1px solid #15803d;
-            border-bottom: 1px solid #15803d;
-        }
-        
-        .products th:first-child {
-            border-top-left-radius: 8px;
-        }
-        
-        .products th:last-child {
-            border-right: none;
-            border-top-right-radius: 8px;
-        }
-        
-        .products td {
-            padding: 8px 6px;
-            border-right: 1px solid #e2e8f0;
-            border-bottom: 1px solid #e2e8f0;
-            font-size: 9pt;
-            vertical-align: middle;
-        }
-        
-        .products td:last-child {
-            border-right: none;
-        }
-        
-        .products tbody tr:last-child td {
-            border-bottom: none;
-        }
-        
-        .products tbody tr:last-child td:first-child {
-            border-bottom-left-radius: 8px;
-        }
-        
-        .products tbody tr:last-child td:last-child {
-            border-bottom-right-radius: 8px;
-        }
-        
-        .products th.align-right,
-        .products td.align-right {
-            text-align: right;
-        }
-        
-        .products td.monospace {
-            font-family: Arial, sans-serif;
-            font-weight: 500;
-        }
-        
-        .products td.ref-column {
-            font-family: Arial, sans-serif;
-            font-size: 8pt;
-            color: #64748b;
-        }
-        
-        /* Totals Section */
-        .totals-section {
-            width: 100%;
-            margin-bottom: 20px;
-        }
-        
-        .totals {
-            width: 280px;
-            border-collapse: separate;
-            border-spacing: 0;
-            border: 2px solid #16a34a;
-            margin-left: auto;
-            border-radius: 8px;
-            overflow: hidden;
-        }
-        
-        .totals tr {
-            border-bottom: 1px solid #e2e8f0;
-        }
-        
-        .totals td {
-            padding: 8px 12px;
-            font-size: 9pt;
-            border: none;
-        }
-        
-        .totals td.label {
-            font-weight: 500;
-            color: #64748b;
-            background-color: #f8fafc;
-            width: 50%;
-        }
-        
-        .totals td.value {
-            text-align: right;
-            font-weight: 600;
-            font-family: Arial, sans-serif;
-            font-size: 10pt;
-            width: 50%;
-        }
-        
-        .totals tr.total-row {
-            background-color: #16a34a;
-        }
-        
-        .totals tr.total-row td {
-            color: white;
-            font-weight: 700;
-            background-color: #16a34a;
-        }
-        
-        /* Notes */
-        .notes-section {
-            margin-bottom: 15px;
-            padding: 10px 12px;
-            background-color: #f8fafc;
-            border-left: 3px solid #16a34a;
-            border-radius: 6px;
-            font-size: 9pt;
-            color: #64748b;
-        }
-        
-        /* Signatures */
-        .signatures {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
-            margin-top: 15px;
-            border: 1px solid #e2e8f0;
-            border-radius: 6px;
-            overflow: hidden;
-        }
-        
-        .signatures td {
-            padding: 12px;
-            font-size: 9pt;
-            color: #64748b;
-            text-align: center;
-            border-right: 1px solid #e2e8f0;
-            width: 33.33%;
-        }
-        
-        .signatures td:last-child {
-            border-right: none;
-        }
-        
-        .signatures td.align-left {
-            text-align: left;
-        }
-        
-        .signatures td.align-right {
-            text-align: right;
-        }
-        
-        strong {
-            font-weight: 600;
-        }
-        
-        address {
-            font-style: normal;
-        }
         /*]]>*/
     </style>
 </head>
