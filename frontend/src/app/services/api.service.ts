@@ -112,6 +112,26 @@ export class ApiService {
     return this.http.get<any[]>(`${this.apiUrl}/suppliers`);
   }
 
+  getSupplierKPIs(): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/suppliers/kpis`);
+  }
+
+  getSupplierById(id: number): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/suppliers/${id}`);
+  }
+
+  createSupplier(supplier: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/suppliers`, supplier);
+  }
+
+  updateSupplier(id: number, supplier: any): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/suppliers/${id}`, supplier);
+  }
+
+  deleteSupplier(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/suppliers/${id}`);
+  }
+
   // === CUSTOMERS ===
   getCustomers(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/customers`);

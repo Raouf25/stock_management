@@ -57,6 +57,12 @@
             <span>Clients</span>
           </a>
         </li>
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/suppliers" routerLinkActive="active" (click)="closeSidebarOnMobile()">
+            <i class="bi bi-building"></i>
+            <span>Fournisseurs</span>
+          </a>
+        </li>
         
         <!-- Facturation avec sous-menu -->
         <li class="nav-item has-submenu" [class.open]="invoiceMenuOpen">

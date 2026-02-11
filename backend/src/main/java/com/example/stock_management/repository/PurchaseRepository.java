@@ -37,4 +37,20 @@ public interface PurchaseRepository extends JpaRepository<Purchase, Long> {
     // Total des quantités achetées pour un produit
     @Query("SELECT COALESCE(SUM(p.quantity), 0) FROM Purchase p WHERE p.product.idProduct = :productId")
     Integer findTotalPurchasesQuantityByProduct(@Param("productId") Long productId);
+    
+    // Statistiques par fournisseur
+    @Query("SELECT COUNT(p) FROM Purchase p WHERE p.supplier.id = :supplierId")
+    Long countPurchasesBySupplierId(@Param("supplierId") Long supplierId);
+    
+    @Query("SELECT COALESCE(SUM(p.totalAmountTTC), 0.0) FROM Purchase p WHERE p.supplier.id = :supplierId")
+    Double sumTotalAmountBySupplierId(@Param("supplierId") Long supplierId);
+    
+    @Query("SELECT COUNT(DISTINCT p.product.idProduct) FROM Purchase p WHERE p.supplier.id = :supplierId")
+    Long countDistinctProductsBySupplierId(@Param("supplierId") Long supplierId);
+    
+    @Query("SELECT COALESCE(SUM(p.totalAmountTTC), 0.0) FROM Purchase p")
+    Double sumAllPurchaseAmount();
+    
+    @Query("SELECT COUNT(DISTINCT p.supplier.id) FROM Purchase p WHERE p.datePurchase >= :dateFrom")
+    Long countDistinctSuppliersWithPurchasesSince(@Param("dateFrom") LocalDate dateFrom);
 }

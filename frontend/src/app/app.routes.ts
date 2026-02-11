@@ -12,6 +12,7 @@ import { DeliveryNoteListComponent } from './components/delivery-notes/delivery-
 import { CustomerListComponent } from './components/customers/customer-list.component';
 import { CustomerCreateComponent } from './components/customers/customer-create.component';
 import { CustomerEditComponent } from './components/customers/customer-edit.component';
+import { SuppliersComponent } from './components/suppliers/suppliers.component';
 import { LoginComponent } from './components/auth/login.component';
 import { ForgotPasswordComponent } from './components/auth/forgot-password.component';
 import { ResetPasswordComponent } from './components/auth/reset-password.component';
@@ -35,6 +36,9 @@ export const routes: Routes = [
   { path: 'customers', component: CustomerListComponent, canActivate: [authGuard] },
   { path: 'customers/create', component: CustomerCreateComponent, canActivate: [authGuard] },
   { path: 'customers/edit/:id', component: CustomerEditComponent, canActivate: [authGuard] },
+  
+  // Fournisseurs (protected)
+  { path: 'suppliers', component: SuppliersComponent, canActivate: [authGuard] },
   
   // Facturation - Navigation hiérarchique (protected)
   { path: 'invoices', redirectTo: 'invoices/list', pathMatch: 'full' },
