@@ -11,7 +11,7 @@ interface CustomerWithStats {
     fullName: string;
     phone: string;
     email: string;
-    city: string;
+    address: string;
     status: string;
   };
   totalCA: number;
@@ -99,10 +99,10 @@ interface CustomerKPIs {
             
             <div>
               <label style="display: block; font-size: 0.875rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem;">
-                Ville
+                Adresse
               </label>
-              <input type="text" [(ngModel)]="cityFilter" (input)="applyFilters()" 
-                     placeholder="Ville..."
+              <input type="text" [(ngModel)]="addressFilter" (input)="applyFilters()" 
+                     placeholder="Adresse..."
                      style="width: 100%; padding: 0.625rem; border: 1px solid #d1d5db; border-radius: 0.375rem; font-size: 0.875rem;">
             </div>
           </div>
@@ -121,9 +121,10 @@ interface CustomerKPIs {
           <table style="width: 100%; border-collapse: collapse;">
             <thead>
               <tr style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);">
-                <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: left;">CLIENT</th>
+                <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: left;">NOM</th>
                 <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: left;">CONTACT</th>
-                <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: left;">VILLE</th>
+                <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: left;">COORDONNÉES</th>
+                <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: left;">ADRESSE</th>
                 <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: right;">CA TOTAL</th>
                 <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: right;">IMPAYÉS</th>
                 <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: center;">STATUT</th>
@@ -138,11 +139,13 @@ interface CustomerKPIs {
                   <div style="font-weight: 600; color: #111827;">{{ item.customer.name }}</div>
                 </td>
                 <td style="padding: 0.75rem 1rem;">
-                  <div *ngIf="item.customer.fullName" style="font-weight: 600; color: #111827;">{{ item.customer.fullName }}</div>
-                  <div style="color: #111827;">{{ item.customer.phone || '-' }}</div>
-                  <div style="font-size: 0.75rem; color: #6b7280;">{{ item.customer.email || '-' }}</div>
+                  <div style="font-size: 0.875rem;">{{ item.customer.fullName || '-' }}</div>
                 </td>
-                <td style="padding: 0.75rem 1rem; color: #6b7280;">{{ item.customer.city || '-' }}</td>
+                <td style="padding: 0.75rem 1rem;">
+                  <div style="color: #111827;">📧 {{ item.customer.email || '-' }}</div>
+                  <div style="font-size: 0.75rem; color: #6b7280;">📞 {{ item.customer.phone || '-' }}</div>
+                </td>
+                <td style="padding: 0.75rem 1rem; color: #6b7280;">{{ item.customer.address || '-' }}</td>
                 <td style="padding: 0.75rem 1rem; text-align: right; font-weight: 600; color: #059669;">
                   {{ item.totalCA | number:'1.0-0' }} DNT
                 </td>
@@ -192,9 +195,9 @@ interface CustomerKPIs {
             <!-- Contact Info -->
             <div style="margin-bottom: 0.75rem;">
               <div *ngIf="item.customer.fullName" style="font-weight: 500; color: #374151; font-size: 0.875rem;">{{ item.customer.fullName }}</div>
-              <div style="color: #6b7280; font-size: 0.875rem;">{{ item.customer.phone || '-' }}</div>
-              <div style="color: #6b7280; font-size: 0.75rem;">{{ item.customer.email || '-' }}</div>
-              <div *ngIf="item.customer.city" style="color: #6b7280; font-size: 0.75rem; margin-top: 0.25rem;">📍 {{ item.customer.city }}</div>
+              <div style="color: #6b7280; font-size: 0.875rem;">📧 {{ item.customer.email || '-' }}</div>
+              <div style="color: #6b7280; font-size: 0.75rem;">📞 {{ item.customer.phone || '-' }}</div>
+              <div *ngIf="item.customer.address" style="color: #6b7280; font-size: 0.75rem; margin-top: 0.25rem;">📍 {{ item.customer.address }}</div>
             </div>
             
             <!-- Amounts - 2 Columns Grid -->
@@ -265,7 +268,7 @@ export class CustomerListComponent implements OnInit {
   filteredCustomers: CustomerWithStats[] = [];
   searchQuery = '';
   statusFilter = '';
-  cityFilter = '';
+  addressFilter = '';
   
   kpis: CustomerKPIs = {
     totalCustomers: 0,
@@ -311,8 +314,8 @@ export class CustomerListComponent implements OnInit {
         return false;
       }
       
-      // Filtre par ville
-      if (this.cityFilter && !customer.city?.toLowerCase().includes(this.cityFilter.toLowerCase())) {
+      // Filtre par adresse
+      if (this.addressFilter && !customer.address?.toLowerCase().includes(this.addressFilter.toLowerCase())) {
         return false;
       }
       
