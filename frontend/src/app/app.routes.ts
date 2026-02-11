@@ -13,6 +13,8 @@ import { CustomerListComponent } from './components/customers/customer-list.comp
 import { CustomerCreateComponent } from './components/customers/customer-create.component';
 import { CustomerEditComponent } from './components/customers/customer-edit.component';
 import { SuppliersComponent } from './components/suppliers/suppliers.component';
+import { SupplierEditComponent } from './components/suppliers/supplier-edit.component';
+import { SupplierCreateComponent } from './components/suppliers/supplier-create.component';
 import { LoginComponent } from './components/auth/login.component';
 import { ForgotPasswordComponent } from './components/auth/forgot-password.component';
 import { ResetPasswordComponent } from './components/auth/reset-password.component';
@@ -39,6 +41,8 @@ export const routes: Routes = [
   
   // Fournisseurs (protected)
   { path: 'suppliers', component: SuppliersComponent, canActivate: [authGuard] },
+  { path: 'suppliers/create', component: SupplierCreateComponent, canActivate: [authGuard] },
+  { path: 'suppliers/edit/:id', component: SupplierEditComponent, canActivate: [authGuard] },
   
   // Facturation - Navigation hiérarchique (protected)
   { path: 'invoices', redirectTo: 'invoices/list', pathMatch: 'full' },

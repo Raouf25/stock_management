@@ -1,7 +1,14 @@
 <div class="invoice-page-container">
-  <div class="invoice-page-header">
-    <span style="font-size: 2rem;">🏭</span>
-    <h1 class="invoice-page-title">Gestion des Fournisseurs</h1>
+
+  <div class="invoice-page-header" style="display: flex; align-items: center; justify-content: space-between; gap: 1rem;">
+    <div style="display: flex; align-items: center; gap: 1rem;">
+      <span style="font-size: 2rem;">🏭</span>
+      <h1 class="invoice-page-title">Gestion des Fournisseurs</h1>
+    </div>
+    <a [routerLink]="['/suppliers/create']"
+       style="padding: 0.75rem 1.5rem; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; border-radius: 0.5rem; text-decoration: none; font-weight: 600; margin-left: auto;">
+      + Nouveau Fournisseur
+    </a>
   </div>
 
   <!-- Search Bar -->
@@ -60,6 +67,7 @@
               <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: right;">NB ACHATS</th>
               <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: right;">MONTANT TOTAL (DNT)</th>
               <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: right;">PRODUITS FOURNIS</th>
+                <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: center;">ACTIONS</th>
             </tr>
           </thead>
           <tbody>
@@ -86,6 +94,19 @@
               </td>
               <td style="padding: 0.75rem 1rem; text-align: right; font-weight: 500; color: #1f2937;">
                 {{ item.totalProductsSupplied }}
+                </td>
+                <td style="padding: 0.75rem 1rem; text-align: center;">
+                  <div style="display: flex; align-items: center; justify-content: center; gap: 0.25rem;">
+                    <button title="Voir" style="width: 2rem; height: 2rem; border-radius: 0.375rem; border: 1px solid #bfdbfe; background: #eff6ff; color: #1e40af; cursor: pointer; font-size: 0.875rem; display: flex; align-items: center; justify-content: center;"
+                      (click)="viewSupplier(item.supplier.supplierId || item.supplier.id)"
+                      onmouseover="this.style.background='#dbeafe'" onmouseout="this.style.background='#eff6ff'">👁️</button>
+                    <button title="Modifier" style="width: 2rem; height: 2rem; border-radius: 0.375rem; border: 1px solid #fcd34d; background: #fef3c7; color: #92400e; cursor: pointer; font-size: 0.875rem; display: flex; align-items: center; justify-content: center;"
+                      (click)="editSupplier(item.supplier.supplierId || item.supplier.id)"
+                      onmouseover="this.style.background='#fde68a'" onmouseout="this.style.background='#fef3c7'">✏️</button>
+                    <button title="Supprimer" style="width: 2rem; height: 2rem; border-radius: 0.375rem; border: 1px solid #fecaca; background: #fee2e2; color: #991b1b; cursor: pointer; font-size: 0.875rem; display: flex; align-items: center; justify-content: center;"
+                      (click)="deleteSupplier(item.supplier.supplierId || item.supplier.id)"
+                      onmouseover="this.style.background='#fecaca'" onmouseout="this.style.background='#fee2e2'">🗑️</button>
+                  </div>
               </td>
             </tr>
             <tr *ngIf="getFilteredSuppliers().length === 0">
@@ -132,6 +153,14 @@
               <div style="font-size: 0.75rem; color: #6b7280; margin-bottom: 0.125rem;">Produits</div>
               <div style="font-weight: 600; color: #1f2937;">{{ item.totalProductsSupplied }}</div>
             </div>
+              <div style="grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 0.25rem; border-top: 1px solid #e5e7eb; padding-top: 0.75rem; margin-top: 0.5rem;">
+                <button title="Voir" style="width: 2rem; height: 2rem; border-radius: 0.375rem; border: 1px solid #bfdbfe; background: #eff6ff; color: #1e40af; cursor: pointer; font-size: 0.875rem; display: flex; align-items: center; justify-content: center;"
+                  (click)="viewSupplier(item.supplier.supplierId || item.supplier.id)">👁️</button>
+                <button title="Modifier" style="width: 2rem; height: 2rem; border-radius: 0.375rem; border: 1px solid #fcd34d; background: #fef3c7; color: #92400e; cursor: pointer; font-size: 0.875rem; display: flex; align-items: center; justify-content: center;"
+                  (click)="editSupplier(item.supplier.supplierId || item.supplier.id)">✏️</button>
+                <button title="Supprimer" style="width: 2rem; height: 2rem; border-radius: 0.375rem; border: 1px solid #fecaca; background: #fee2e2; color: #991b1b; cursor: pointer; font-size: 0.875rem; display: flex; align-items: center; justify-content: center;"
+                  (click)="deleteSupplier(item.supplier.supplierId || item.supplier.id)">🗑️</button>
+              </div>
           </div>
         </div>
         

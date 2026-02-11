@@ -32,7 +32,6 @@
 
 
 
-}  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);  border-color: #3b82f6;  outline: none;.form-control:focus {/* Form controls */}  }    gap: 1rem;    grid-template-columns: 1fr;  .invoice-stats-grid {    }    display: block;  .mobile-cards {    }    display: none;  .desktop-table {@media (max-width: 768px) {}  display: none;.mobile-cards {}  display: block;.desktop-table {/* Table responsive *//* Les styles de base sont hérités de styles.css global */.invoice-page-container {
   padding: 1.5rem;
   max-width: 1400px;
   margin: 0 auto;

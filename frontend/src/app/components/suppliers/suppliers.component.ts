@@ -1,12 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router, RouterModule } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 
 @Component({
   selector: 'app-suppliers',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './suppliers.component.html',
   styleUrls: ['./suppliers.component.css']
 })
@@ -16,7 +17,29 @@ export class SuppliersComponent implements OnInit {
   searchText = '';
   kpis: any = null;
 
-  constructor(private apiService: ApiService) {}
+  constructor(private apiService: ApiService, private router: Router) {}
+
+  viewSupplier(supplierId: number): void {
+    // Naviguer vers la page d'édition/détail du fournisseur (à adapter si une page de détail existe)
+    this.router.navigate(['/suppliers/edit', supplierId]);
+  }
+
+  editSupplier(supplierId: number): void {
+    // Naviguer vers la page d'édition du fournisseur
+    this.router.navigate(['/suppliers/edit', supplierId]);
+  }
+
+  deleteSupplier(supplierId: number): void {
+    if (confirm('Voulez-vous vraiment supprimer ce fournisseur ?')) {
+      this.apiService.deleteSupplier(supplierId).subscribe({
+        next: () => {
+          this.loadSuppliers();
+          this.loadKPIs();
+        },
+        error: (error) => console.error('Erreur lors de la suppression du fournisseur:', error)
+      });
+    }
+  }
 
   ngOnInit(): void {
     this.loadSuppliers();

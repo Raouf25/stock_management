@@ -1,0 +1,81 @@
+<div class="invoice-page-container">
+  <!-- Header -->
+  <div class="invoice-page-header">
+    <div style="display: flex; align-items: center; gap: 1rem;">
+      <span style="font-size: 2rem;">✏️</span>
+      <h1 class="invoice-page-title">Modifier le Fournisseur</h1>
+    </div>
+    <button (click)="router.navigate(['/suppliers'])"
+            style="padding: 0.75rem 1.5rem; background: #6b7280; color: white; border: none; border-radius: 0.5rem; cursor: pointer; font-weight: 600;">
+      ← Retour
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" style="text-align: center; padding: 3rem;">
+    <div style="font-size: 2rem; margin-bottom: 1rem;">⏳</div>
+    <p style="color: #6b7280;">Chargement des données du fournisseur...</p>
+  </div>
+
+  <!-- Formulaire -->
+  <div class="invoice-card" *ngIf="!loading">
+    <div class="invoice-card-header gradient-purple">
+      <span style="font-size: 1rem;">📝</span>
+      <span class="invoice-card-header-title">Informations Fournisseur #{{ supplier?.supplierId || supplier?.id }}</span>
+    </div>
+    <div style="padding: 2rem;">
+      <form *ngIf="supplier" (ngSubmit)="save()">
+        <div style="margin-bottom: 2rem;">
+          <h3 style="color: #374151; font-size: 1.125rem; font-weight: 600; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid #e5e7eb;">
+            Informations de Base
+          </h3>
+          <div class="form-grid">
+            <div class="form-field">
+              <label class="field-label">Nom <span style="color: #ef4444;">*</span></label>
+              <input class="form-input" [(ngModel)]="supplier.name" name="name" required />
+            </div>
+            <div class="form-field">
+              <label class="field-label">Contact</label>
+              <input class="form-input" [(ngModel)]="supplier.contactPerson" name="contactPerson" />
+            </div>
+            <div class="form-field">
+              <label class="field-label">Email</label>
+              <input class="form-input" [(ngModel)]="supplier.email" name="email" type="email" />
+            </div>
+            <div class="form-field">
+              <label class="field-label">Téléphone</label>
+              <input class="form-input" [(ngModel)]="supplier.phone" name="phone" />
+            </div>
+            <div class="form-field">
+              <label class="field-label">Adresse</label>
+              <input class="form-input" [(ngModel)]="supplier.address" name="address" />
+            </div>
+            <div class="form-field">
+              <label class="field-label">Site web</label>
+              <input class="form-input" [(ngModel)]="supplier.webSite" name="webSite" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Messages d'erreur et succès -->
+        <div *ngIf="error" style="padding: 1rem; background: #fee2e2; border: 1px solid #ef4444; border-radius: 0.5rem; color: #991b1b; margin-bottom: 1rem;">
+          {{ error }}
+        </div>
+
+        <!-- Boutons d'action -->
+        <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+          <button type="button" (click)="router.navigate(['/suppliers'])"
+                  style="padding: 0.75rem 1.5rem; background: #f3f4f6; color: #374151; border: 1px solid #d1d5db; border-radius: 0.5rem; cursor: pointer; font-weight: 600;">
+            Annuler
+          </button>
+          <button type="submit" [disabled]="isSaving"
+                  style="padding: 0.75rem 2rem; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; border: none; border-radius: 0.5rem; cursor: pointer; font-weight: 600;"
+                  [style.opacity]="isSaving ? '0.5' : '1'"
+                  [style.cursor]="isSaving ? 'not-allowed' : 'pointer'">
+            {{ isSaving ? 'Enregistrement...' : 'Enregistrer les Modifications' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
