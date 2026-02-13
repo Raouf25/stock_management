@@ -38,11 +38,11 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         // Endpoints publics
-                        .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
-                        .requestMatchers("/actuator/**").permitAll()
-                        // Autoriser temporairement toutes les API (à sécuriser plus tard)
-                        .requestMatchers("/api/**").permitAll()
+                .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html", "/api-docs/swagger-config", "/api-docs").permitAll()
+                .requestMatchers("/actuator/**").permitAll()
+                // Autoriser temporairement toutes les API (à sécuriser plus tard)
+                .requestMatchers("/api/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
