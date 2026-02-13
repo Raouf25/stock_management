@@ -1,4 +1,3 @@
-version: '3.9'
 
 # Configuration simplifiée pour développement
 # Pour le frontend: cd frontend && npm install && npm start
