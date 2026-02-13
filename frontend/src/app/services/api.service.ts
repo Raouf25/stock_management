@@ -70,6 +70,10 @@ export class ApiService {
     return this.http.get<any[]>(`${this.apiUrl}/purchases/search`, { params });
   }
 
+  getPurchasesBySupplier(supplierId: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/purchases?supplierId=${supplierId}`);
+  }
+
   // === SALES ===
   getSales(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/sales`);

@@ -4,7 +4,6 @@ import { ProductsComponent } from './components/products/products.component';
 import { PurchasesComponent } from './components/purchases/purchases.component';
 import { SalesComponent } from './components/sales/sales.component';
 import { StockMovementComponent } from './components/stock-movement/stock-movement.component';
-import { InvoicesComponent } from './components/invoices/invoices.component';
 import { InvoiceCreateComponent } from './components/invoices/invoice-create.component';
 import { InvoiceListComponent } from './components/invoices/invoice-list.component';
 import { DeliveryNoteCreateComponent } from './components/delivery-notes/delivery-note-create.component';
@@ -15,6 +14,7 @@ import { CustomerEditComponent } from './components/customers/customer-edit.comp
 import { SuppliersComponent } from './components/suppliers/suppliers.component';
 import { SupplierEditComponent } from './components/suppliers/supplier-edit.component';
 import { SupplierCreateComponent } from './components/suppliers/supplier-create.component';
+import { SupplierDetailComponent } from './components/suppliers/supplier-detail.component';
 import { LoginComponent } from './components/auth/login.component';
 import { ForgotPasswordComponent } from './components/auth/forgot-password.component';
 import { ResetPasswordComponent } from './components/auth/reset-password.component';
@@ -43,6 +43,7 @@ export const routes: Routes = [
   { path: 'suppliers', component: SuppliersComponent, canActivate: [authGuard] },
   { path: 'suppliers/create', component: SupplierCreateComponent, canActivate: [authGuard] },
   { path: 'suppliers/edit/:id', component: SupplierEditComponent, canActivate: [authGuard] },
+  { path: 'suppliers/view/:id', component: SupplierDetailComponent, canActivate: [authGuard] },
   
   // Facturation - Navigation hiérarchique (protected)
   { path: 'invoices', redirectTo: 'invoices/list', pathMatch: 'full' },

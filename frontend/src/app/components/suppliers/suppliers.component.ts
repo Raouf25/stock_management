@@ -8,8 +8,7 @@ import { ApiService } from '../../services/api.service';
   selector: 'app-suppliers',
   standalone: true,
   imports: [CommonModule, FormsModule, RouterModule],
-  templateUrl: './suppliers.component.html',
-  styleUrls: ['./suppliers.component.css']
+  templateUrl: './suppliers.component.html'
 })
 export class SuppliersComponent implements OnInit {
   suppliers: any[] = [];
@@ -20,12 +19,10 @@ export class SuppliersComponent implements OnInit {
   constructor(private apiService: ApiService, private router: Router) {}
 
   viewSupplier(supplierId: number): void {
-    // Naviguer vers la page d'édition/détail du fournisseur (à adapter si une page de détail existe)
-    this.router.navigate(['/suppliers/edit', supplierId]);
+    this.router.navigate(['/suppliers/view', supplierId]);
   }
 
   editSupplier(supplierId: number): void {
-    // Naviguer vers la page d'édition du fournisseur
     this.router.navigate(['/suppliers/edit', supplierId]);
   }
 
