@@ -129,8 +129,8 @@
               <td style="padding: 0.75rem 1rem; text-align: right;">{{ getCurrentStock(prod.idProduct) }}</td>
               <td style="padding: 0.75rem 1rem; text-align: right;">{{ getPurchasesByProduct(prod.idProduct).length }}</td>
               <td style="padding: 0.75rem 1rem; text-align: right;">{{ getSalesCount(prod.idProduct) }}</td>
-              <td style="padding: 0.75rem 1rem; text-align: right;">{{ getAveragePurchasePrice(prod.idProduct) | number:'1.2-2' }}</td>
-              <td style="padding: 0.75rem 1rem; text-align: right;">{{ getAverageSalePrice(prod.idProduct) | number:'1.2-2' }}</td>
+              <td style="padding: 0.75rem 1rem; text-align: right;">{{ getAveragePurchasePrice(prod.idProduct) | number:'1.3-3' }}</td>
+              <td style="padding: 0.75rem 1rem; text-align: right;">{{ getAverageSalePrice(prod.idProduct) | number:'1.3-3' }}</td>
               <td style="padding: 0.75rem 1rem; text-align: right;">
                 <span [ngClass]="isProductOpen(prod.idProduct) ? 'bi bi-chevron-up' : 'bi bi-chevron-down'" style="font-size:1.2rem;"></span>
               </td>
@@ -155,8 +155,8 @@
                         <td style="width: 16%;">{{ p.datePurchase | date:'dd/MM/yyyy' }}</td>
                         <td style="width: 24%;">{{ p.supplierName }}</td>
                         <td style="width: 12%; text-align:right;">{{ p.quantity }}</td>
-                        <td style="width: 16%; text-align:right;">{{ p.unitPriceTTC | number:'1.2-2' }}</td>
-                        <td style="width: 20%; text-align:right;">{{ (p.quantity * p.unitPriceTTC) | number:'1.2-2' }}</td>
+                        <td style="width: 16%; text-align:right;">{{ p.unitPriceTTC | number:'1.3-3' }}</td>
+                        <td style="width: 20%; text-align:right;">{{ (p.quantity * p.unitPriceTTC) | number:'1.3-3' }}</td>
                         <td style="width: 12%;">{{ p.invoiceNumber || '-' }}</td>
                       </tr>
                       <tr *ngIf="getPurchasesByProduct(prod.idProduct).length === 0">
@@ -183,8 +183,8 @@
                         <td style="width: 16%;">{{ s.dateSale | date:'dd/MM/yyyy' }}</td>
                         <td style="width: 24%;">{{ s.customerName || '-' }}</td>
                         <td style="width: 12%; text-align:right;">{{ s.quantitySold }}</td>
-                        <td style="width: 16%; text-align:right;">{{ s.unitSalePrice | number:'1.2-2' }}</td>
-                        <td style="width: 20%; text-align:right;">{{ s.totalSaleAmount | number:'1.2-2' }}</td>
+                        <td style="width: 16%; text-align:right;">{{ s.unitSalePrice | number:'1.3-3' }}</td>
+                        <td style="width: 20%; text-align:right;">{{ s.totalSaleAmount | number:'1.3-3' }}</td>
                         <td style="width: 12%;">{{ s.invoiceNumber || s.deliveryNoteNumber || '-' }}</td>
                       </tr>
                       <tr *ngIf="getSalesByProduct(prod.idProduct).length === 0">
