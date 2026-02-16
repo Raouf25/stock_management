@@ -38,14 +38,7 @@ export class TransactionsComponent implements OnInit, AfterViewInit {
   typeOptions = ['ENTREE', 'SORTIE'];
   sourceOptions = ['ACHAT', 'VENTE', 'AJUSTEMENT'];
 
-  // --- Formulaires ---
-  newSale = {
-    productId: '',
-    quantitySold: '',
-    unitSalePrice: '',
-    dateSale: '',
-    customerName: ''
-  };
+  // --- Formulaire ---
   newPurchase = {
     supplierId: '',
     productId: '',
@@ -124,7 +117,6 @@ export class TransactionsComponent implements OnInit, AfterViewInit {
   }
 
   getSalesByProduct(productId: number) {
-    console.log(this.transactions.filter(t => t.productId === productId || t.idProduct === productId));
     return this.transactions.filter(t => t.productId === productId || t.idProduct === productId);
   }
 
@@ -132,7 +124,13 @@ export class TransactionsComponent implements OnInit, AfterViewInit {
     for (const id of productIds) {
       this.apiService.getPurchasesByProduct(id).subscribe({
         next: (data) => {
-          this.purchasesByProduct[id] = data;
+          // Tri du plus vieux au plus récent
+          const sorted = [...data].sort((a, b) => {
+            const dateA = new Date(a.datePurchase);
+            const dateB = new Date(b.datePurchase);
+            return dateA.getTime() - dateB.getTime();
+          });
+          this.purchasesByProduct[id] = sorted;
         },
         error: () => {
           this.purchasesByProduct[id] = [];
@@ -241,7 +239,7 @@ export class TransactionsComponent implements OnInit, AfterViewInit {
 
   loadSuppliers(): void {
     this.apiService.getSuppliers().subscribe({
-      next: (data) => this.suppliers = data
+      next: (data) => this.suppliers = data.map(item => item.supplier)
     });
   }
 
@@ -294,26 +292,10 @@ export class TransactionsComponent implements OnInit, AfterViewInit {
     return this.movements.filter(m => m.type === type).reduce((sum, m) => sum + (m.quantity || 0), 0);
   }
 
-  // --- Création (ventes/achats) ---
-  createSale(): void {
-    if (!this.newSale.productId || !this.newSale.quantitySold || !this.newSale.unitSalePrice || !this.newSale.dateSale) return;
-    this.apiService.createSale(this.newSale).subscribe({
-      next: () => {
-        this.showForm = false;
-        this.newSale = {
-          productId: '',
-          quantitySold: '',
-          unitSalePrice: '',
-          dateSale: '',
-          customerName: ''
-        };
-        this.loadTransactions();
-      }
-    });
-  }
-
+  // --- Création (achats) ---
   createPurchase(): void {
     if (!this.newPurchase.supplierId || !this.newPurchase.productId || !this.newPurchase.quantity || !this.newPurchase.unitPriceTTC || !this.newPurchase.datePurchase) return;
+    const prodId = Number(this.newPurchase.productId); // Récupérer AVANT reset
     this.apiService.createPurchase(this.newPurchase).subscribe({
       next: () => {
         this.showForm = false;
@@ -326,6 +308,23 @@ export class TransactionsComponent implements OnInit, AfterViewInit {
           datePurchase: ''
         };
         this.loadTransactions();
+        // Mettre à jour le tableau Achats pour le produit concerné
+        if (prodId) {
+          this.apiService.getPurchasesByProduct(prodId).subscribe({
+            next: (data) => {
+              // Tri du plus vieux au plus récent
+              const sorted = [...data].sort((a, b) => {
+                const dateA = new Date(a.datePurchase);
+                const dateB = new Date(b.datePurchase);
+                return dateA.getTime() - dateB.getTime();
+              });
+              this.purchasesByProduct[prodId] = sorted;
+            },
+            error: () => {
+              this.purchasesByProduct[prodId] = [];
+            }
+          });
+        }
       }
     });
   }
