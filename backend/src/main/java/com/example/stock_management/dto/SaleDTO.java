@@ -15,7 +15,10 @@ public class SaleDTO {
     private Long productId;
     private String productName;
     private String productDesignation;
+    private String customerName;
     private Integer quantitySold;
     private Double unitSalePrice;
     private Double totalSaleAmount;
+    private String invoiceNumber;
+    private String deliveryNoteNumber;
 }

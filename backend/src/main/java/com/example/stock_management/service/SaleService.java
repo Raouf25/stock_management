@@ -17,6 +17,8 @@ import java.util.Optional;
 
 @Service
 public class SaleService {
+    @Autowired
+    private com.example.stock_management.repository.CustomerRepository customerRepository;
 
     @Autowired
     private SaleRepository saleRepository;
@@ -32,9 +34,24 @@ public class SaleService {
      */
     @Transactional
     public Sale createSale(SaleDTO saleDTO) throws Exception {
+
+
         // Valider le produit existe
         Product product = productRepository.findById(saleDTO.getProductId())
             .orElseThrow(() -> new Exception("Produit non trouvé avec l'ID : " + saleDTO.getProductId()));
+
+        // Valider le client existe
+        com.example.stock_management.model.Customer customer = null;
+        if (saleDTO.getCustomerName() != null && !saleDTO.getCustomerName().isEmpty()) {
+            List<com.example.stock_management.model.Customer> customers = customerRepository.findAll();
+            customer = customers.stream()
+                .filter(c -> c.getName() != null && c.getName().equalsIgnoreCase(saleDTO.getCustomerName()))
+                .findFirst()
+                .orElse(null);
+            if (customer == null) {
+                throw new Exception("Client non trouvé : " + saleDTO.getCustomerName());
+            }
+        }
 
         // Vérifier que la quantité vendue ne dépasse pas le stock disponible
         if (product.getCurrentStockQuantity() == null || product.getCurrentStockQuantity() < saleDTO.getQuantitySold()) {
@@ -47,9 +64,12 @@ public class SaleService {
         Sale sale = new Sale();
         sale.setDateSale(saleDTO.getDateSale() != null ? saleDTO.getDateSale() : LocalDate.now());
         sale.setProduct(product);
+        if (customer != null) sale.setCustomer(customer);
         sale.setQuantitySold(saleDTO.getQuantitySold());
         sale.setUnitSalePrice(saleDTO.getUnitSalePrice());
         sale.setTotalSaleAmount(saleDTO.getQuantitySold() * saleDTO.getUnitSalePrice());
+        sale.setInvoiceNumber(saleDTO.getInvoiceNumber());
+        sale.setDeliveryNoteNumber(saleDTO.getDeliveryNoteNumber());
 
         // Sauvegarder la vente
         Sale savedSale = saleRepository.save(sale);
@@ -113,9 +133,12 @@ public class SaleService {
         dto.setProductId(sale.getProduct().getIdProduct());
         dto.setProductName(sale.getProduct().getName());
         dto.setProductDesignation(sale.getProduct().getDesignation());
+        dto.setCustomerName(sale.getCustomer() != null ? sale.getCustomer().getName() : null);
         dto.setQuantitySold(sale.getQuantitySold());
         dto.setUnitSalePrice(sale.getUnitSalePrice());
         dto.setTotalSaleAmount(sale.getTotalSaleAmount());
+        dto.setInvoiceNumber(sale.getInvoiceNumber());
+        dto.setDeliveryNoteNumber(sale.getDeliveryNoteNumber());
         return dto;
     }
 

@@ -1,8 +1,7 @@
 import { Routes } from '@angular/router';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { ProductsComponent } from './components/products/products.component';
-import { PurchasesComponent } from './components/purchases/purchases.component';
-import { SalesComponent } from './components/sales/sales.component';
+import { TransactionsComponent } from './components/transactions/transactions.component';
 import { StockMovementComponent } from './components/stock-movement/stock-movement.component';
 import { InvoiceCreateComponent } from './components/invoices/invoice-create.component';
 import { InvoiceListComponent } from './components/invoices/invoice-list.component';
@@ -30,9 +29,7 @@ export const routes: Routes = [
   { path: '', component: DashboardComponent, canActivate: [authGuard] },
   { path: 'dashboard', component: DashboardComponent, canActivate: [authGuard] },
   { path: 'products', component: ProductsComponent, canActivate: [authGuard] },
-  { path: 'purchases', component: PurchasesComponent, canActivate: [authGuard] },
-  { path: 'sales', component: SalesComponent, canActivate: [authGuard] },
-  { path: 'stock-movements', component: StockMovementComponent, canActivate: [authGuard] },
+  { path: 'transactions', component: TransactionsComponent, canActivate: [authGuard] },
   
   // Clients (protected)
   { path: 'customers', component: CustomerListComponent, canActivate: [authGuard] },

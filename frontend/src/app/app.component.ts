@@ -18,6 +18,10 @@ export class AppComponent implements OnInit {
   currentRoute = '';
   invoiceMenuOpen = false;
   deliveryMenuOpen = false;
+  backofficeMenuOpen = false;
+  isBackofficeRouteActive(): boolean {
+    return this.currentRoute.startsWith('/transactions');
+  }
 
   constructor(
     private router: Router,

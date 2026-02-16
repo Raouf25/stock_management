@@ -25,6 +25,7 @@ public class Sale {
     private Product product;
 
     private String invoiceNumber;
+    private String deliveryNoteNumber;
     private Integer quantitySold;
     private Double unitSalePrice; // Prix unitaire de vente TTC
     private Double totalSaleAmount; // quantitySold × unitSalePrice

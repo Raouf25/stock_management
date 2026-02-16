@@ -5,66 +5,56 @@
 
 <!-- Main app with sidebar -->
 <ng-container *ngIf="!isAuthRoute()">
-  <!-- Overlay pour mobile -->
+  <!-- Overlay for mobile -->
   <div class="sidebar-overlay" *ngIf="sidebarOpen" (click)="toggleSidebarOpen()" [@fadeInOut]></div>
-  
+
   <!-- Sidebar -->
   <div class="sidebar" [class.show]="sidebarOpen" [class.collapsed]="sidebarCollapsed">
     <div class="sidebar-header">
       <div class="logo-wrapper" (click)="toggleSidebar()">
-        <div class="logo-icon">
-          <i class="bi bi-gear-fill"></i>
-        </div>
+        <div class="logo-icon"><i class="bi bi-gear-fill"></i></div>
         <span class="logo-text">Stock ERP</span>
       </div>
     </div>
 
     <nav class="sidebar-nav">
       <ul class="nav-menu">
+        <!-- Dashboard -->
         <li class="nav-item">
           <a class="nav-link" routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="closeSidebarOnMobile()">
             <i class="bi bi-speedometer2"></i>
             <span>Dashboard</span>
           </a>
         </li>
+        <!-- Produits -->
         <li class="nav-item">
           <a class="nav-link" routerLink="/products" routerLinkActive="active" (click)="closeSidebarOnMobile()">
             <i class="bi bi-box-seam"></i>
             <span>Produits</span>
           </a>
         </li>
+        <!-- Transaction -->
         <li class="nav-item">
-          <a class="nav-link" routerLink="/purchases" routerLinkActive="active" (click)="closeSidebarOnMobile()">
-            <i class="bi bi-cart-plus"></i>
-            <span>Achats</span>
+          <a class="nav-link" routerLink="/transactions" routerLinkActive="active" (click)="closeSidebarOnMobile()">
+            <i class="bi bi-arrows-collapse"></i>
+            <span>Transaction</span>
           </a>
         </li>
-        <li class="nav-item">
-          <a class="nav-link" routerLink="/sales" routerLinkActive="active" (click)="closeSidebarOnMobile()">
-            <i class="bi bi-graph-up"></i>
-            <span>Ventes</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" routerLink="/stock-movements" routerLinkActive="active" (click)="closeSidebarOnMobile()">
-            <i class="bi bi-arrow-left-right"></i>
-            <span>Mouvements</span>
-          </a>
-        </li>
+        <!-- Clients -->
         <li class="nav-item">
           <a class="nav-link" routerLink="/customers" routerLinkActive="active" (click)="closeSidebarOnMobile()">
             <i class="bi bi-people"></i>
             <span>Clients</span>
           </a>
         </li>
+        <!-- Fournisseurs -->
         <li class="nav-item">
           <a class="nav-link" routerLink="/suppliers" routerLinkActive="active" (click)="closeSidebarOnMobile()">
             <i class="bi bi-building"></i>
             <span>Fournisseurs</span>
           </a>
         </li>
-        
-        <!-- Facturation avec sous-menu -->
+        <!-- Facturation -->
         <li class="nav-item has-submenu" [class.open]="invoiceMenuOpen">
           <a class="nav-link" (click)="toggleInvoiceMenu()" [class.active]="isInvoiceRouteActive()">
             <i class="bi bi-receipt"></i>
@@ -86,8 +76,7 @@
             </li>
           </ul>
         </li>
-        
-        <!-- Bons de Livraison avec sous-menu -->
+        <!-- Bons de Livraison -->
         <li class="nav-item has-submenu" [class.open]="deliveryMenuOpen">
           <a class="nav-link" (click)="toggleDeliveryMenu()" [class.active]="isDeliveryRouteActive()">
             <i class="bi bi-truck"></i>
@@ -112,6 +101,7 @@
       </ul>
     </nav>
 
+    <!-- Sidebar Footer (User) -->
     <div class="sidebar-footer">
       <div class="user-card">
         <div class="user-avatar">
@@ -134,7 +124,6 @@
     <button class="mobile-hamburger" (click)="toggleSidebarOpen()">
       <i class="bi bi-list"></i>
     </button>
-
     <!-- Page Content -->
     <div class="page-content">
       <router-outlet></router-outlet>
