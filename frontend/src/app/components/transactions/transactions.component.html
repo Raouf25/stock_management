@@ -83,12 +83,18 @@
             <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: right;">Ventes</th>
             <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: right;">Prix moyen d'achat</th>
             <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: right;">Prix moyen de vente</th>
+            <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: right;">Bilan</th>
             <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: right;">Actions</th>
           </tr>
         </thead>
         <tbody>
           <ng-container *ngFor="let prod of filteredProducts">
-            <tr (click)="toggleProduct(prod.idProduct)" style="cursor:pointer; border-bottom: 1px solid #e5e7eb;">
+            <tr (click)="toggleProduct(prod.idProduct)"
+                [ngClass]="{
+                  'bilan-positif': getBilan(prod.idProduct) > 0,
+                  'bilan-negatif': getBilan(prod.idProduct) < 0
+                }"
+                style="cursor:pointer; border-bottom: 1px solid #e5e7eb;">
               <td style="padding: 0.75rem 1rem; font-weight: 600; color: #1f2937;">
                 {{ prod.name }}- {{ prod.unit }} <span *ngIf="prod.designation">- {{ prod.designation }}</span>
               </td>
@@ -98,11 +104,14 @@
               <td style="padding: 0.75rem 1rem; text-align: right;">{{ getAveragePurchasePrice(prod.idProduct) | number:'1.3-3' }}</td>
               <td style="padding: 0.75rem 1rem; text-align: right;">{{ getAverageSalePrice(prod.idProduct) | number:'1.3-3' }}</td>
               <td style="padding: 0.75rem 1rem; text-align: right;">
+                {{ getBilan(prod.idProduct) | number:'1.3-3' }}
+              </td>
+              <td style="padding: 0.75rem 1rem; text-align: right;">
                 <span [ngClass]="isProductOpen(prod.idProduct) ? 'bi bi-chevron-up' : 'bi bi-chevron-down'" style="font-size:1.2rem;"></span>
               </td>
             </tr>
             <tr *ngIf="isProductOpen(prod.idProduct)">
-              <td colspan="7" style="background:#f8fafc; padding:0;">
+              <td colspan="9" style="background:#f8fafc; padding:0;">
                 <div style="padding:1rem;">
                   <div style="font-weight:600; color:#f59e42; margin-bottom:0.5rem;">Achats</div>
                   <table class="table table-sm mb-3" style="table-layout: fixed; width: 100%;">

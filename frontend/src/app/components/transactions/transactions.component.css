@@ -1,4 +1,3 @@
-
 /* Unification UI/UX avec le design global */
 .invoice-page-container {
 	padding: 2rem;
@@ -108,3 +107,9 @@
 .alert-info { background: #e0e7ff; color: #3730a3; border-radius: 0.5rem; padding: 1rem; margin-bottom: 1.5rem; }
 .chart-container { width: 100%; min-height: 250px; }
 .chart-container-small { width: 100%; min-height: 180px; }
+.bilan-positif {
+  background-color: #e6f9ed !important; /* vert très clair */
+}
+.bilan-negatif {
+  background-color: #ffeaea !important; /* rouge très clair */
+}

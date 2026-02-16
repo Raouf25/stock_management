@@ -1,4 +1,3 @@
-
 import { Component, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -327,6 +326,13 @@ export class TransactionsComponent implements OnInit, AfterViewInit {
         }
       }
     });
+  }
+
+    // --- Calcul du bilan (ventes - achats) ---
+  getBilan(productId: number): number {
+    const ventes = this.getSalesByProduct(productId).reduce((sum, s) => sum + (s.totalSaleAmount || 0), 0);
+    const achats = this.getPurchasesByProduct(productId).reduce((sum, p) => sum + (p.totalAmountTTC || 0), 0);
+    return ventes - achats;
   }
 
   // --- Graphiques (placeholder) ---
