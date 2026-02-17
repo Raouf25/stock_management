@@ -3,10 +3,8 @@ package com.example.stock_management.service;
 import com.example.stock_management.dto.SaleDTO;
 import com.example.stock_management.model.Sale;
 import com.example.stock_management.model.Product;
-import com.example.stock_management.model.StockMouvement;
 import com.example.stock_management.repository.SaleRepository;
 import com.example.stock_management.repository.ProductRepository;
-import com.example.stock_management.repository.StockMouvementRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,9 +23,6 @@ public class SaleService {
 
     @Autowired
     private ProductRepository productRepository;
-
-    @Autowired
-    private StockMouvementRepository stockMouvementRepository;
 
     /**
      * Créer une nouvelle vente et générer automatiquement une sortie de stock
@@ -74,17 +69,6 @@ public class SaleService {
         // Sauvegarder la vente
         Sale savedSale = saleRepository.save(sale);
 
-        // Générer automatiquement une sortie de stock
-        StockMouvement mouvement = new StockMouvement();
-        mouvement.setProduct(product);
-        mouvement.setQuantity(saleDTO.getQuantitySold());
-        mouvement.setDate(LocalDate.now());
-        mouvement.setType(StockMouvement.Type.SORTIE);
-        mouvement.setSource(StockMouvement.Source.VENTE);
-        mouvement.setSale(savedSale);
-        mouvement.setReference("VENTE-" + savedSale.getId());
-
-        stockMouvementRepository.save(mouvement);
 
         // Mettre à jour le stock du produit
         updateProductStock(product, saleDTO.getQuantitySold(), false);

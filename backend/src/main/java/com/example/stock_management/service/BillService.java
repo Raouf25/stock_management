@@ -8,12 +8,10 @@ import com.example.stock_management.model.BillProduct;
 import com.example.stock_management.model.Customer;
 import com.example.stock_management.model.Product;
 import com.example.stock_management.model.Sale;
-import com.example.stock_management.model.StockMouvement;
 import com.example.stock_management.repository.BillRepository;
 import com.example.stock_management.repository.CustomerRepository;
 import com.example.stock_management.repository.ProductRepository;
 import com.example.stock_management.repository.SaleRepository;
-import com.example.stock_management.repository.StockMouvementRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,8 +37,6 @@ public class BillService {
     private final ProductRepository productRepository;
 
     private final CustomerRepository customerRepository;
-    
-    private final StockMouvementRepository stockMouvementRepository;
     
     private final SaleRepository saleRepository;
 
@@ -82,9 +78,6 @@ public class BillService {
             billProduct.setProduct(product);
             billProduct.setQuantity(billProductDTO.getQuantite());
             productRepository.updateStock(billProductDTO.getIdProduct(), billProductDTO.getQuantite());
-            
-            // Create stock movement for sale
-            createStockMovement(product, billProductDTO.getQuantite(), "VENTE");
             
             // Create sale record
             createSaleRecord(customer, product, billProductDTO.getQuantite(), null);
@@ -187,9 +180,6 @@ public class BillService {
             // Update stock
             productRepository.updateStock(lineItem.getProductId(), lineItem.getQuantity());
             
-            // Create stock movement for sale
-            createStockMovement(product, lineItem.getQuantity(), "VENTE");
-            
             // Create sale record
             createSaleRecord(customer, product, lineItem.getQuantity(), lineItem.getUnitPrice().doubleValue());
         }
@@ -288,21 +278,6 @@ public class BillService {
         kpis.put("revenueThisMonth", revenueThisMonth);
 
         return kpis;
-    }
-
-    /**
-     * Create a stock movement record for tracking inventory changes
-     */
-    private void createStockMovement(Product product, Integer quantity, String operation) {
-        StockMouvement mouvement = new StockMouvement();
-        mouvement.setProduct(product);
-        mouvement.setQuantity(quantity);
-        mouvement.setDate(LocalDate.now());
-        mouvement.setType(StockMouvement.Type.SORTIE);
-        mouvement.setSource(StockMouvement.Source.VENTE);
-        mouvement.setReference("FACTURE-" + System.currentTimeMillis());
-        
-        stockMouvementRepository.save(mouvement);
     }
     
     /**

@@ -3,12 +3,10 @@ package com.example.stock_management.service;
 import com.example.stock_management.dto.PurchaseDTO;
 import com.example.stock_management.model.Purchase;
 import com.example.stock_management.model.Product;
-import com.example.stock_management.model.StockMouvement;
 import com.example.stock_management.model.Supplier;
 import com.example.stock_management.repository.PurchaseRepository;
 import com.example.stock_management.repository.ProductRepository;
 import com.example.stock_management.repository.SupplierRepository;
-import com.example.stock_management.repository.StockMouvementRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,9 +26,6 @@ public class PurchaseService {
 
     @Autowired
     private SupplierRepository supplierRepository;
-
-    @Autowired
-    private StockMouvementRepository stockMouvementRepository;
 
     /**
      * Créer un nouvel achat et générer automatiquement une entrée de stock
@@ -58,18 +53,6 @@ public class PurchaseService {
 
         // Sauvegarder l'achat
         Purchase savedPurchase = purchaseRepository.save(purchase);
-
-        // Générer automatiquement une entrée de stock
-        StockMouvement mouvement = new StockMouvement();
-        mouvement.setProduct(product);
-        mouvement.setQuantity(purchaseDTO.getQuantity());
-        mouvement.setDate(LocalDate.now());
-        mouvement.setType(StockMouvement.Type.ENTREE);
-        mouvement.setSource(StockMouvement.Source.ACHAT);
-        mouvement.setPurchase(savedPurchase);
-        mouvement.setReference(purchaseDTO.getInvoiceNumber());
-
-        stockMouvementRepository.save(mouvement);
 
         // Mettre à jour le stock du produit et la valeur du stock
         updateProductStock(product, purchaseDTO.getQuantity(), purchaseDTO.getUnitPriceTTC(), true);
