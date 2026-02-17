@@ -80,7 +80,7 @@ public class BillService {
             productRepository.updateStock(billProductDTO.getIdProduct(), billProductDTO.getQuantite());
             
             // Create sale record
-            createSaleRecord(customer, product, billProductDTO.getQuantite(), null);
+            createSaleRecord(customer, product, billProductDTO.getQuantite(), billProductDTO.getPrixTotal() / billProductDTO.getQuantite());
             
             double productTotal = billProductDTO.getQuantite() * product.getUnitPriceBought();
             billProduct.setTotalProductPrice(productTotal);
@@ -181,7 +181,7 @@ public class BillService {
             productRepository.updateStock(lineItem.getProductId(), lineItem.getQuantity());
             
             // Create sale record
-            createSaleRecord(customer, product, lineItem.getQuantity(), lineItem.getUnitPrice().doubleValue());
+            createSaleRecord(customer, product, lineItem.getQuantity(), lineTotalHT/lineItem.getQuantity());
         }
 
         bill.setBillProducts(billProducts);
