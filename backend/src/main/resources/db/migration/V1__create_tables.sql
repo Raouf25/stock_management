@@ -84,22 +84,6 @@ CREATE TABLE IF NOT EXISTS sale (
     FOREIGN KEY (product_id) REFERENCES product(id_product)
 );
 
--- Create stock_mouvement table
-CREATE TABLE IF NOT EXISTS stock_mouvement (
-    id BIGSERIAL PRIMARY KEY,
-    product_id BIGINT NOT NULL,
-    quantity INTEGER,
-    date DATE,
-    type VARCHAR(255) CHECK (type IN ('ENTREE', 'SORTIE')),
-    source VARCHAR(255) CHECK (source IN ('ACHAT', 'VENTE', 'AJUSTEMENT')),
-    purchase_id BIGINT,
-    sale_id BIGINT,
-    reference VARCHAR(255),
-    FOREIGN KEY (product_id) REFERENCES product(id_product),
-    FOREIGN KEY (purchase_id) REFERENCES purchase(id),
-    FOREIGN KEY (sale_id) REFERENCES sale(id)
-);
-
 -- Create bill table
 CREATE TABLE IF NOT EXISTS bill (
     id_bill BIGSERIAL PRIMARY KEY,
@@ -172,27 +156,7 @@ CREATE TABLE IF NOT EXISTS delivery_note_product (
 -- Create indexes for delivery_note_product
 CREATE INDEX IF NOT EXISTS idx_delivery_note_product_delivery_note ON delivery_note_product(delivery_note_id);
 CREATE INDEX IF NOT EXISTS idx_delivery_note_product_product ON delivery_note_product(product_id);
-
--- Create historic_bill table
-CREATE TABLE IF NOT EXISTS historic_bill (
-    id_historic BIGSERIAL PRIMARY KEY,
-    id_bill BIGINT,
-    operation VARCHAR(255),
-    details_modification VARCHAR(255),
-    date_operation TIMESTAMP,
-    FOREIGN KEY (id_bill) REFERENCES bill(id_bill)
-);
-
--- Create historic_product table
-CREATE TABLE IF NOT EXISTS historic_product (
-    id_historic BIGSERIAL PRIMARY KEY,
-    id_product BIGINT,
-    operation VARCHAR(255),
-    details_modification VARCHAR(255),
-    date_operation TIMESTAMP,
-    FOREIGN KEY (id_product) REFERENCES product(id_product)
-);
-
+ 
 -- Create users table
 CREATE TABLE IF NOT EXISTS users (
     id BIGSERIAL PRIMARY KEY,
