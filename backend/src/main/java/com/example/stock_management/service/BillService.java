@@ -22,6 +22,8 @@ import java.util.Optional;
 import java.util.List;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -39,6 +41,8 @@ public class BillService {
     private final CustomerRepository customerRepository;
     
     private final SaleRepository saleRepository;
+
+    private final Clock clock;
 
 
     public List<Bill> findAll() {
@@ -63,7 +67,7 @@ public class BillService {
         bill.setCustomer(customer);
 
         // Mettre à jour la date de la facture à l'heure actuelle
-        bill.setDateBill(LocalDateTime.now());
+        bill.setDateBill(LocalDateTime.now(clock));
 
         // Initialize total
         BigDecimal runningTotal = BigDecimal.ZERO;
@@ -264,7 +268,7 @@ public class BillService {
         kpis.put("paymentStatusDistribution", statusDistribution);
 
         // Invoices this month
-        LocalDate now = LocalDate.now();
+        LocalDate now = LocalDate.now(clock);
         long invoicesThisMonth = bills.stream()
             .filter(b -> b.getDateBill() != null && b.getDateBill().getMonth() == now.getMonth() && b.getDateBill().getYear() == now.getYear())
             .count();
@@ -285,10 +289,10 @@ public class BillService {
      */
     private void createSaleRecord(Customer customer, Product product, Integer quantity, Double unitPrice) {
         Sale sale = new Sale();
-        sale.setDateSale(LocalDate.now());
+        sale.setDateSale(LocalDate.now(clock));
         sale.setCustomer(customer);
         sale.setProduct(product);
-        sale.setInvoiceNumber("INV-" + System.currentTimeMillis());
+        sale.setInvoiceNumber("INV-" + Instant.now(clock).toEpochMilli());
         sale.setQuantitySold(quantity);
         
         // Use provided unit price or fallback to product's unit price sold
