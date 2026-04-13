@@ -149,7 +149,14 @@
 				</configuration>
 			</plugin>
 
-			<!-- Ensure annotation processors (Lombok, MapStruct) are available during compile -->
+			<!-- Flyway Maven plugin – version pinned to match flyway-core managed by Spring Boot BOM -->
+		<plugin>
+			<groupId>org.flywaydb</groupId>
+			<artifactId>flyway-maven-plugin</artifactId>
+			<version>${flyway.version}</version>
+		</plugin>
+
+		<!-- Ensure annotation processors (Lombok, MapStruct) are available during compile -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>

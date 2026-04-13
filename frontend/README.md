@@ -79,64 +79,6 @@ npm test
 
 Modifier `src/proxy.conf.json` pour changer l'URL de l'API :
 
-**Fichier: `src/proxy.conf.json`**
-```json
-{
-  "/api": {
-    "target": "http://localhost:8080",
-    "secure": false,
-    "pathRewrite": {
-      "^/api": "/api"
-    },
-    "changeOrigin": true
-  }
-}
-```
-
-**Fichier: `src/main.ts` (Configuration initiale)**
-```typescript
-import { bootstrapApplication } from '@angular/platform-browser';
-import { importProvidersFrom } from '@angular/core';
-import { HttpClientModule } from '@angular/common/http';
-import { AppComponent } from './app/app.component';
-
-bootstrapApplication(AppComponent, {
-  providers: [
-    importProvidersFrom(HttpClientModule),
-    // ... other providers
-  ]
-});
-```
-
-## 📱 Architecture du Frontend
-
-```
-frontend/
-├── src/
-│   ├── app/
-│   │   ├── app.component.ts ........... Main component
-│   │   ├── app.routes.ts ............ Routing configuration
-│   │   ├── components/
-│   │   │   ├── dashboard/
-│   │   │   ├── bills/
-│   │   │   ├── purchases/
-│   │   │   ├── sales/
-│   │   │   └── products/
-│   │   ├── services/
-│   │   │   ├── api.service.ts ........ HTTP API calls
-│   │   │   ├── stock.service.ts ..... Stock management
-│   │   │   └── bill.service.ts ...... Bill management
-│   │   └── models/
-│   │       ├── bill.model.ts
-│   │       ├── product.model.ts
-│   │       └── purchase.model.ts
-│   ├── styles.css ................... Global styles
-│   └── proxy.conf.json ............ Development proxy
-├── angular.json ................... Angular configuration
-├── package.json ................... Dependencies
-└── tsconfig.json ................... TypeScript config
-```
-
 ```json
 {
   "/api": {

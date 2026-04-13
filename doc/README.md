@@ -1,7 +1,4 @@
-# 📦 Stock Management System
-
-> **📂 All documentation is in the `doc/` folder**  
-> **← [Back to root README](../README.md)**
+# 📦 Stock Management System - Multi-Module
 
 Système complet de gestion de stock avec architecture multi-module : **Backend API Spring Boot** + **Frontend Angular**.
 
