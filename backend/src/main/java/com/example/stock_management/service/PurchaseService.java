@@ -31,14 +31,14 @@ public class PurchaseService {
      * Créer un nouvel achat et générer automatiquement une entrée de stock
      */
     @Transactional
-    public Purchase createPurchase(PurchaseDTO purchaseDTO) throws Exception {
+    public Purchase createPurchase(PurchaseDTO purchaseDTO) {
         // Valider le produit existe
         Product product = productRepository.findById(purchaseDTO.getProductId())
-            .orElseThrow(() -> new Exception("Produit non trouvé avec l'ID : " + purchaseDTO.getProductId()));
+            .orElseThrow(() -> new IllegalArgumentException("Produit non trouvé avec l'ID : " + purchaseDTO.getProductId()));
 
         // Valider le fournisseur existe
         Supplier supplier = supplierRepository.findById(purchaseDTO.getSupplierId())
-            .orElseThrow(() -> new Exception("Fournisseur non trouvé avec l'ID : " + purchaseDTO.getSupplierId()));
+            .orElseThrow(() -> new IllegalArgumentException("Fournisseur non trouvé avec l'ID : " + purchaseDTO.getSupplierId()));
 
         // Créer l'achat
         Purchase purchase = new Purchase();
