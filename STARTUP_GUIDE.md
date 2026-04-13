@@ -41,6 +41,40 @@ mvn spring-boot:run
 - Logs : "Started StockManagementApplication"
 - API sur : http://localhost:8080/swagger-ui.html
 
+**Vérification du démarrage :**
+```bash
+# Vérifier que l'API est accessible
+curl http://localhost:8080/api/products
+
+# Vérifier Swagger
+curl http://localhost:8080/swagger-ui.html
+```
+
+**Configuration actuellement utilisée (application.properties) :**
+```properties
+# Database Configuration
+spring.datasource.url=jdbc:postgresql://localhost:5432/stock_db
+spring.datasource.username=postgres
+spring.datasource.password=postgres
+spring.datasource.driver-class-name=org.postgresql.Driver
+
+# JPA/Hibernate - Crée automatiquement le schéma
+spring.jpa.hibernate.ddl-auto=create
+spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect
+
+# Data Initialization - Charge data.sql après création du schéma
+spring.jpa.defer-datasource-initialization=true
+spring.sql.init.mode=always
+
+# Server Configuration
+server.port=8080
+server.servlet.context-path=/api
+
+# Swagger/OpenAPI
+springdoc.swagger-ui.path=/swagger-ui.html
+springdoc.api-docs.path=/v3/api-docs
+```
+
 ### 3️⃣ Démarrer le Frontend (nouveau terminal)
 
 ```bash

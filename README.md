@@ -220,17 +220,49 @@ customer → sale ─────────────→ stock_mouvement
 git clone https://github.com/votre-repo/stock_management.git
 cd stock_management
 
-# Démarrer tous les services (Backend + Frontend + PostgreSQL)
+# Démarrage avec Docker Compose
 docker-compose up -d --build
 
 # Vérifier les logs
 docker-compose logs -f backend
 ```
 
-Les services seront disponibles :
+**Services disponibles après démarrage :**
 - **Backend API** : http://localhost:8080/api
 - **Frontend Angular** : http://localhost:4200
 - **PostgreSQL** : localhost:5432
+- **Swagger UI** : http://localhost:8080/swagger-ui.html
+
+**Implémentation (docker-compose.yml) :**
+```yaml
+version: '3.8'
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: stock_db
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build: ./backend
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/stock_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+    depends_on:
+      - postgres
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "4200:4200"
+```
 
 ### 2️⃣ Installation Manuelle
 
@@ -347,6 +379,22 @@ curl -X POST http://localhost:8080/api/purchases \
   }'
 ```
 
+**Implémentation (PurchaseController.createPurchase) :**
+```java
+@PostMapping
+@Operation(summary = "Créer un nouvel achat")
+public ResponseEntity<?> createPurchase(@RequestBody PurchaseDTO purchaseDTO) {
+    try {
+        Purchase purchase = purchaseService.createPurchase(purchaseDTO);
+        return ResponseEntity.status(HttpStatus.CREATED)
+            .body(purchaseService.convertToDTO(purchase));
+    } catch (Exception e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .body("Erreur lors de la création de l'achat : " + e.getMessage());
+    }
+}
+```
+
 **3. Créer une vente**
 
 ```bash
@@ -358,6 +406,31 @@ curl -X POST http://localhost:8080/api/sales \
     "quantitySold": 30,
     "unitSalePrice": 15.0
   }'
+```
+
+**Implémentation (SaleService.createSale) :**
+```java
+public Sale createSale(SaleDTO saleDTO) {
+    Product product = productRepository.findById(saleDTO.getProductId())
+        .orElseThrow(() -> new RuntimeException("Produit non trouvé"));
+    
+    // Validate stock availability (business rule)
+    if (product.getCurrentStockQuantity() < saleDTO.getQuantitySold()) {
+        throw new RuntimeException(
+            "Quantité insuffisante en stock. Stock disponible : " + 
+            product.getCurrentStockQuantity() + 
+            ", Quantité demandée : " + saleDTO.getQuantitySold()
+        );
+    }
+    
+    Sale sale = new Sale();
+    sale.setDateSale(saleDTO.getDateSale());
+    sale.setProduct(product);
+    sale.setQuantitySold(saleDTO.getQuantitySold());
+    sale.setUnitSalePrice(saleDTO.getUnitSalePrice());
+    
+    return saleRepository.save(sale);
+}
 ```
 
 **4. Consulter le résumé du stock**
@@ -502,9 +575,11 @@ Vérifier que `spring.jpa.hibernate.ddl-auto=update` est configuré
 ## 📚 Documentation Complète
 
 Voir les fichiers :
+- [IMPLEMENTATION_GUIDE.md](IMPLEMENTATION_GUIDE.md) - Guide détaillé de l'implémentation avec code réel
 - [API_DOCUMENTATION.md](API_DOCUMENTATION.md) - Guide complet des endpoints
 - [API_EXAMPLES.md](API_EXAMPLES.md) - Exemples détaillés de requêtes
 - [backend/src/main/resources/data.sql](backend/src/main/resources/data.sql) - Données d'initialisation
+- [backend/README.md](backend/README.md) - Documentation backend
 
 ---
 

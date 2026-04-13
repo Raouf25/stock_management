@@ -41,10 +41,67 @@ Pour déployer tout dans Docker :
 docker-compose up -d
 ```
 
+**Configuration (docker-compose.yml) :**
+```yaml
+version: '3.8'
+services:
+  postgres:
+    image: postgres:15
+    container_name: stock_management_postgres
+    environment:
+      POSTGRES_DB: stock_db
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build: ./backend
+    container_name: stock_management_backend
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/stock_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_JPA_HIBERNATE_DDL_AUTO: create
+    depends_on:
+      - postgres
+    volumes:
+      - ./backend/src:/workspace/src
+
+  frontend:
+    build: ./frontend
+    container_name: stock_management_frontend
+    ports:
+      - "4200:4200"
+    depends_on:
+      - backend
+    environment:
+      BACKEND_URL: http://backend:8080/api
+
+volumes:
+  postgres_data:
+```
+
 ### Accès
 - Frontend: http://localhost:4200
 - Backend API: http://localhost:8080/swagger-ui.html
 - PostgreSQL: localhost:5432
+
+### Logs
+```bash
+# Backend logs
+docker-compose logs -f backend
+
+# Frontend logs
+docker-compose logs -f frontend
+
+# Database logs
+docker-compose logs -f postgres
+```
 
 ### Arrêt
 ```bash

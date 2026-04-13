@@ -22,6 +22,22 @@ curl -X POST http://localhost:8080/api/suppliers \
   }'
 ```
 
+**Implémentation (SupplierController) :**
+```java
+@PostMapping
+@Operation(summary = "Créer un nouveau fournisseur")
+public ResponseEntity<?> createSupplier(@RequestBody SupplierDTO supplierDTO) {
+    try {
+        Supplier supplier = supplierService.createSupplier(supplierDTO);
+        return ResponseEntity.status(HttpStatus.CREATED)
+            .body(supplierService.convertToDTO(supplier));
+    } catch (Exception e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .body("Erreur lors de la création du fournisseur : " + e.getMessage());
+    }
+}
+```
+
 ### Récupérer tous les fournisseurs
 ```bash
 curl http://localhost:8080/api/suppliers
@@ -46,6 +62,22 @@ curl -X POST http://localhost:8080/api/products \
     "initialStockValue": 1000.0,
     "supplierId": 1
   }'
+```
+
+**Implémentation (ProductController) :**
+```java
+@PostMapping
+@Operation(summary = "Créer un nouveau produit")
+public ResponseEntity<?> createProduct(@RequestBody ProductDTO productDTO) {
+    try {
+        Product product = productService.createProduct(productDTO);
+        return ResponseEntity.status(HttpStatus.CREATED)
+            .body(productService.convertToDTO(product));
+    } catch (Exception e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .body("Erreur lors de la création du produit : " + e.getMessage());
+    }
+}
 ```
 
 ### Récupérer tous les produits
@@ -96,6 +128,26 @@ curl -X POST http://localhost:8080/api/purchases \
   "unitPriceTTC": 10.5,
   "totalAmountTTC": 525.0,
   "comment": "Livraison de 50 unités du produit A"
+}
+```
+
+**Implémentation (PurchaseService) :**
+```java
+public Purchase createPurchase(PurchaseDTO purchaseDTO) {
+    Product product = productRepository.findById(purchaseDTO.getProductId())
+        .orElseThrow(() -> new RuntimeException("Produit non trouvé"));
+    
+    Purchase purchase = new Purchase();
+    purchase.setDatePurchase(purchaseDTO.getDatePurchase());
+    purchase.setSupplier(supplierRepository.findById(purchaseDTO.getSupplierId())
+        .orElseThrow(() -> new RuntimeException("Fournisseur non trouvé")));
+    purchase.setProduct(product);
+    purchase.setInvoiceNumber(purchaseDTO.getInvoiceNumber());
+    purchase.setQuantity(purchaseDTO.getQuantity());
+    purchase.setUnitPriceTTC(purchaseDTO.getUnitPriceTTC());
+    purchase.setComment(purchaseDTO.getComment());
+    
+    return purchaseRepository.save(purchase);
 }
 ```
 
@@ -191,6 +243,30 @@ curl -X POST http://localhost:8080/api/sales \
   "quantitySold": 40,
   "unitSalePrice": 15.0,
   "totalSaleAmount": 600.0
+}
+```
+
+**Implémentation (SaleService) :**
+```java
+public Sale createSale(SaleDTO saleDTO) {
+    Product product = productRepository.findById(saleDTO.getProductId())
+        .orElseThrow(() -> new RuntimeException("Produit non trouvé"));
+    
+    if (product.getCurrentStockQuantity() < saleDTO.getQuantitySold()) {
+        throw new RuntimeException(
+            "Quantité insuffisante en stock. Stock disponible : " + 
+            product.getCurrentStockQuantity() + 
+            ", Quantité demandée : " + saleDTO.getQuantitySold()
+        );
+    }
+    
+    Sale sale = new Sale();
+    sale.setDateSale(saleDTO.getDateSale());
+    sale.setProduct(product);
+    sale.setQuantitySold(saleDTO.getQuantitySold());
+    sale.setUnitSalePrice(saleDTO.getUnitSalePrice());
+    
+    return saleRepository.save(sale);
 }
 ```
 

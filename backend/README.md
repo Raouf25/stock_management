@@ -193,6 +193,61 @@ server.port=8080
 springdoc.swagger-ui.path=/swagger-ui.html
 ```
 
+### Clock Configuration (Testability)
+
+**File: `configuration/ClockConfig.java`**
+
+```java
+package com.example.stock_management.configuration;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+import java.time.Clock;
+
+@Configuration
+public class ClockConfig {
+
+    /**
+     * Provides a real Clock bean for production code.
+     * Can be easily mocked in tests for deterministic behavior.
+     */
+    @Bean
+    public Clock clock() {
+        return Clock.systemDefaultZone();  // real clock in production
+    }
+}
+```
+
+**Why Clock Abstraction?**
+
+- ✅ **Testability**: Tests can inject a fixed clock for deterministic behavior
+- ✅ **Consistency**: All timestamps in the application use the same clock
+- ✅ **No Hard Dependencies**: No static `LocalDateTime.now()` calls
+- ✅ **Easy Mocking**: In tests, simply provide `Clock.fixed()` instead
+
+**Usage in Services:**
+
+```java
+@Service
+@RequiredArgsConstructor
+public class BillService {
+    private final Clock clock;  // Injected from ClockConfig
+    
+    public Bill save(BillDTO billDto) {
+        // Use injected clock instead of LocalDateTime.now()
+        bill.setDateBill(LocalDateTime.now(clock));
+        // ...
+    }
+    
+    public Map<String, Object> getInvoiceKPIs() {
+        // Get current date from injected clock
+        LocalDate now = LocalDate.now(clock);
+        // ... filter by month/year ...
+    }
+}
+```
+
 ## 💼 Règles Métier
 
 ### Calcul du Stock Final
@@ -213,12 +268,84 @@ Tous les montants en **TTC (inclusif de taxes)**
 
 ### PurchaseService
 - `createPurchase()` - Crée achat + mouvement + update stock + CMP
+
+**Implémentation :**
+```java
+public Purchase createPurchase(PurchaseDTO purchaseDTO) {
+    Product product = productRepository.findById(purchaseDTO.getProductId())
+        .orElseThrow(() -> new RuntimeException("Produit non trouvé"));
+    
+    Purchase purchase = new Purchase();
+    purchase.setDatePurchase(purchaseDTO.getDatePurchase());
+    purchase.setSupplier(supplierRepository.findById(purchaseDTO.getSupplierId())
+        .orElseThrow(() -> new RuntimeException("Fournisseur non trouvé")));
+    purchase.setProduct(product);
+    purchase.setInvoiceNumber(purchaseDTO.getInvoiceNumber());
+    purchase.setQuantity(purchaseDTO.getQuantity());
+    purchase.setUnitPriceTTC(purchaseDTO.getUnitPriceTTC());
+    purchase.setComment(purchaseDTO.getComment());
+    
+    return purchaseRepository.save(purchase);
+}
+```
+
 - `getPurchasesByFilter()` - Recherche avancée
 - `getTotalPurchasesAmount()` - Montant total
 
 ### SaleService
 - `createSale()` - Crée vente + validation stock + mouvement + CMP
+
+**Implémentation :**
+```java
+public Sale createSale(SaleDTO saleDTO) {
+    Product product = productRepository.findById(saleDTO.getProductId())
+        .orElseThrow(() -> new RuntimeException("Produit non trouvé"));
+    
+    // Business rule validation
+    if (product.getCurrentStockQuantity() < saleDTO.getQuantitySold()) {
+        throw new RuntimeException(
+            "Quantité insuffisante en stock. Stock disponible : " + 
+            product.getCurrentStockQuantity() + 
+            ", Quantité demandée : " + saleDTO.getQuantitySold()
+        );
+    }
+    
+    Sale sale = new Sale();
+    sale.setDateSale(saleDTO.getDateSale());
+    sale.setProduct(product);
+    sale.setQuantitySold(saleDTO.getQuantitySold());
+    sale.setUnitSalePrice(saleDTO.getUnitSalePrice());
+    
+    return saleRepository.save(sale);
+}
+```
+
 - `getSalesByFilter()` - Recherche
+
+### BillService
+- `save()` - Crée facture avec détails
+
+**Implémentation (with Clock injection) :**
+```java
+@Transactional
+public Bill save(BillDTO billDto) {
+    Customer customer = customerRepository.findById(billDto.getIdClient())
+        .orElseThrow(() -> new RuntimeException("Client not found"));
+
+    Bill bill = new Bill();
+    bill.setCustomer(customer);
+    
+    // Use injected Clock for testability
+    bill.setDateBill(LocalDateTime.now(clock));
+    
+    // Process products and calculate totals...
+    
+    return billRepository.save(bill);
+}
+```
+
+- `createInvoice()` - Crée facture complète avec TVA, adresse, conditions
+- `getInvoiceKPIs()` - KPIs des factures
 
 ### StockService
 - `getGlobalStockSummary()` - Résumé tous produits

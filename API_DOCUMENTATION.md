@@ -181,6 +181,17 @@ GET /api/bills
 ]
 ```
 
+**Implémentation (BillController) :**
+```java
+@GetMapping
+@Operation(summary = "Obtenir la liste de toutes les bills")
+public List<CreatedBillDTO> getAllBills() {
+    return billService.findAll().stream()
+            .map(billMapper::sourceToDestination)
+            .toList();
+}
+```
+
 #### Générer et télécharger une facture PDF
 ```http
 GET /api/bills/generate/{id}
@@ -214,6 +225,16 @@ Content-Type: application/json
       "totalProductPrice": 500.00
     }
   ]
+}
+```
+
+**Implémentation (BillController) :**
+```java
+@PostMapping
+@Operation(summary = "Créer une nouvelle Bill")
+public Optional<CreatedBillDTO> createBill(@RequestBody BillDTO billDTO) {
+    return Optional.of(billService.save(billDTO))
+            .map(billMapper::sourceToDestination);
 }
 ```
 
@@ -290,6 +311,22 @@ Content-Type: application/json
 }
 ```
 
+**Implémentation (PurchaseController) :**
+```java
+@PostMapping
+@Operation(summary = "Créer un nouvel achat")
+public ResponseEntity<?> createPurchase(@RequestBody PurchaseDTO purchaseDTO) {
+    try {
+        Purchase purchase = purchaseService.createPurchase(purchaseDTO);
+        return ResponseEntity.status(HttpStatus.CREATED)
+            .body(purchaseService.convertToDTO(purchase));
+    } catch (Exception e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .body("Erreur lors de la création de l'achat : " + e.getMessage());
+    }
+}
+```
+
 #### Récupérer tous les achats
 ```
 GET /api/purchases
@@ -309,6 +346,20 @@ GET /api/purchases/search?dateFrom=2024-01-01T00:00:00&dateTo=2024-01-31T23:59:5
 - `dateFrom` : Date de début (ISO 8601)
 - `dateTo` : Date de fin (ISO 8601)
 - `supplierId` : ID du fournisseur
+
+**Implémentation (PurchaseController) :**
+```java
+@GetMapping("/search")
+@Operation(summary = "Rechercher des achats avec filtres")
+public ResponseEntity<List<PurchaseDTO>> searchPurchases(
+    @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDate dateFrom,
+    @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDate dateTo,
+    @RequestParam(required = false) Long supplierId) {
+
+    List<Purchase> purchases = purchaseService.getPurchasesByFilter(dateFrom, dateTo, supplierId);
+    return ResponseEntity.ok(purchaseService.convertToDTO(purchases));
+}
+```
 
 #### Récupérer les achats d'un produit
 ```
@@ -346,6 +397,22 @@ Content-Type: application/json
 **Validation :**
 - La quantité vendue ne peut pas dépasser le stock disponible
 - Retourne une erreur 400 si le stock est insuffisant
+
+**Implémentation (SaleController) :**
+```java
+@PostMapping
+@Operation(summary = "Créer une nouvelle vente")
+public ResponseEntity<?> createSale(@RequestBody SaleDTO saleDTO) {
+    try {
+        Sale sale = saleService.createSale(saleDTO);
+        return ResponseEntity.status(HttpStatus.CREATED)
+            .body(saleService.convertToDTO(sale));
+    } catch (Exception e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .body("Erreur lors de la création de la vente : " + e.getMessage());
+    }
+}
+```
 
 #### Récupérer toutes les ventes
 ```
