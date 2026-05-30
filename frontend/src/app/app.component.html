@@ -6,10 +6,12 @@
 <!-- Main app with sidebar -->
 <ng-container *ngIf="!isAuthRoute()">
   <!-- Overlay for mobile -->
-  <div class="sidebar-overlay" *ngIf="sidebarOpen" (click)="toggleSidebarOpen()" [@fadeInOut]></div>
+  <div class="sidebar-overlay" *ngIf="sidebarOpen" (click)="toggleSidebarOpen()"></div>
 
   <!-- Sidebar -->
   <div class="sidebar" [class.show]="sidebarOpen" [class.collapsed]="sidebarCollapsed">
+
+    <!-- ── Header / Logo ── -->
     <div class="sidebar-header">
       <div class="logo-wrapper" (click)="toggleSidebar()">
         <div class="logo-icon"><i class="bi bi-gear-fill"></i></div>
@@ -17,91 +19,101 @@
       </div>
     </div>
 
+    <!-- ── Navigation ── -->
     <nav class="sidebar-nav">
       <ul class="nav-menu">
-        <!-- Dashboard -->
+
+        <!-- ─ SECTION: GÉNÉRAL ─ -->
+        <li class="nav-section-label">
+          <span>Général</span>
+        </li>
+
         <li class="nav-item">
-          <a class="nav-link" routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="closeSidebarOnMobile()">
+          <a class="nav-link" routerLink="/" routerLinkActive="active"
+             [routerLinkActiveOptions]="{ exact: true }" (click)="closeSidebarOnMobile()">
             <i class="bi bi-speedometer2"></i>
             <span>Dashboard</span>
           </a>
         </li>
-        <!-- Produits -->
+
         <li class="nav-item">
           <a class="nav-link" routerLink="/products" routerLinkActive="active" (click)="closeSidebarOnMobile()">
             <i class="bi bi-box-seam"></i>
             <span>Produits</span>
           </a>
         </li>
-        <!-- Transaction -->
+
         <li class="nav-item">
           <a class="nav-link" routerLink="/transactions" routerLinkActive="active" (click)="closeSidebarOnMobile()">
-            <i class="bi bi-arrows-collapse"></i>
-            <span>Transaction</span>
+            <i class="bi bi-arrow-left-right"></i>
+            <span>Transactions</span>
           </a>
         </li>
-        <!-- Clients -->
+
+        <!-- ─ SECTION: TIERS ─ -->
+        <li class="nav-section-label">
+          <span>Tiers</span>
+        </li>
+
         <li class="nav-item">
           <a class="nav-link" routerLink="/customers" routerLinkActive="active" (click)="closeSidebarOnMobile()">
             <i class="bi bi-people"></i>
             <span>Clients</span>
           </a>
         </li>
-        <!-- Fournisseurs -->
+
         <li class="nav-item">
           <a class="nav-link" routerLink="/suppliers" routerLinkActive="active" (click)="closeSidebarOnMobile()">
             <i class="bi bi-building"></i>
             <span>Fournisseurs</span>
           </a>
         </li>
-        <!-- Facturation -->
-        <li class="nav-item has-submenu" [class.open]="invoiceMenuOpen">
-          <a class="nav-link" (click)="toggleInvoiceMenu()" [class.active]="isInvoiceRouteActive()">
-            <i class="bi bi-receipt"></i>
-            <span>Facturation</span>
-            <i class="bi chevron-icon" [class.bi-chevron-down]="!invoiceMenuOpen" [class.bi-chevron-up]="invoiceMenuOpen"></i>
+
+        <!-- ─ SECTION: DOCUMENTS ─ -->
+        <li class="nav-section-label">
+          <span>Documents</span>
+        </li>
+
+        <!-- CTA: Créer Facture / BL -->
+        <li class="nav-item">
+          <a class="nav-link nav-link--create" routerLink="/documents/create"
+             routerLinkActive="active" (click)="closeSidebarOnMobile()">
+            <i class="bi bi-plus-circle-fill"></i>
+            <span>Créer Facture / BL</span>
           </a>
-          <ul class="submenu" [class.show]="invoiceMenuOpen">
+        </li>
+
+        <!-- Collapsible group: Facturation + BL -->
+        <li class="nav-item has-submenu" [class.open]="documentsMenuOpen">
+          <a class="nav-link" (click)="toggleDocumentsMenu()" [class.active]="isDocumentListRouteActive()">
+            <i class="bi bi-folder2-open"></i>
+            <span>Archives</span>
+            <i class="bi chevron-icon"
+               [class.bi-chevron-down]="!documentsMenuOpen"
+               [class.bi-chevron-up]="documentsMenuOpen"></i>
+          </a>
+          <ul class="submenu" [class.show]="documentsMenuOpen">
             <li>
-              <a class="submenu-link" routerLink="/invoices/create" routerLinkActive="active" (click)="closeSidebarOnMobile()">
-                <i class="bi bi-plus-circle"></i>
-                <span>Créer Facture</span>
+              <a class="submenu-link" routerLink="/invoices/list"
+                 routerLinkActive="active" (click)="closeSidebarOnMobile()">
+                <i class="bi bi-receipt"></i>
+                <span>Factures</span>
               </a>
             </li>
             <li>
-              <a class="submenu-link" routerLink="/invoices/list" routerLinkActive="active" (click)="closeSidebarOnMobile()">
-                <i class="bi bi-list-ul"></i>
-                <span>Lister Factures</span>
+              <a class="submenu-link" routerLink="/delivery-notes/list"
+                 routerLinkActive="active" (click)="closeSidebarOnMobile()">
+                <i class="bi bi-truck"></i>
+                <span>Bons de Livraison</span>
               </a>
             </li>
           </ul>
         </li>
-        <!-- Bons de Livraison -->
-        <li class="nav-item has-submenu" [class.open]="deliveryMenuOpen">
-          <a class="nav-link" (click)="toggleDeliveryMenu()" [class.active]="isDeliveryRouteActive()">
-            <i class="bi bi-truck"></i>
-            <span>Bons de Livraison</span>
-            <i class="bi chevron-icon" [class.bi-chevron-down]="!deliveryMenuOpen" [class.bi-chevron-up]="deliveryMenuOpen"></i>
-          </a>
-          <ul class="submenu" [class.show]="deliveryMenuOpen">
-            <li>
-              <a class="submenu-link" routerLink="/delivery-notes/create" routerLinkActive="active" (click)="closeSidebarOnMobile()">
-                <i class="bi bi-plus-circle"></i>
-                <span>Créer BL</span>
-              </a>
-            </li>
-            <li>
-              <a class="submenu-link" routerLink="/delivery-notes/list" routerLinkActive="active" (click)="closeSidebarOnMobile()">
-                <i class="bi bi-list-ul"></i>
-                <span>Lister BL</span>
-              </a>
-            </li>
-          </ul>
-        </li>
+
       </ul>
     </nav>
 
-    <!-- Sidebar Footer (User) -->
+    <!-- ── Footer / User ── -->
     <div class="sidebar-footer">
       <div class="user-card">
         <div class="user-avatar">
@@ -118,13 +130,11 @@
     </div>
   </div>
 
-  <!-- Main Content -->
+  <!-- ── Main Content ── -->
   <div class="main-content" [class.sidebar-collapsed]="sidebarCollapsed">
-    <!-- Mobile Hamburger Menu -->
     <button class="mobile-hamburger" (click)="toggleSidebarOpen()">
       <i class="bi bi-list"></i>
     </button>
-    <!-- Page Content -->
     <div class="page-content">
       <router-outlet></router-outlet>
     </div>
