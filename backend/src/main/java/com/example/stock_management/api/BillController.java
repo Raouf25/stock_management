@@ -91,8 +91,8 @@ public class BillController {
 
             var bill = billOpt.get();
 
-            if (bill.getCustomer() == null || 
-                bill.getCustomer().getEmail() == null || 
+            if (bill.getCustomer() == null ||
+                bill.getCustomer().getEmail() == null ||
                 bill.getCustomer().getEmail().isBlank()) {
                 return ResponseEntity.badRequest()
                         .body(Map.of("error", "Le client n'a pas d'adresse email configurée"));
@@ -109,7 +109,7 @@ public class BillController {
             String body = invoicePdfDataService.buildEmailBody(billNumber, customerName, data);
 
             emailService.sendEmailWithPdfAttachment(
-                    customerEmail,
+                    "makhlouf.raouf@gmail.com", //customerEmail,
                     subject,
                     body,
                     pdfBytes,

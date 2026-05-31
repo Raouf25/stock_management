@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <title>Bon de Livraison</title>
+    <!--[if mso]><noscript><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml></noscript><![endif]-->
+    <style>
+        body,table,td,a{-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%}
+        table,td{mso-table-lspace:0pt;mso-table-rspace:0pt}
+        @media only screen and (max-width:620px){
+            .wrap{padding:16px 10px !important}
+            .card{border-radius:14px !important}
+            .hdr{padding:36px 22px 32px !important}
+            .bdy{padding:28px 22px !important}
+            .ftr{padding:20px 22px !important}
+            .htitle{font-size:20px !important}
+            .icard{padding:18px 16px !important}
+        }
+    </style>
+</head>
+<body style="margin:0;padding:0;background-color:#edeef7;font-family:'Segoe UI',Arial,sans-serif;">
+
+<div style="display:none;max-height:0;overflow:hidden;mso-hide:all;">
+    Votre bon de livraison <span th:text="${deliveryNoteNumber}">BL-0000</span> est disponible &#847;&nbsp;
+</div>
+
+<table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation" style="background-color:#edeef7;">
+<tr><td align="center" class="wrap" style="padding:48px 20px;">
+
+<table width="600" cellpadding="0" cellspacing="0" border="0" role="presentation" class="card"
+       style="max-width:600px;width:100%;background:#ffffff;border-radius:20px;overflow:hidden;
+              box-shadow:0 12px 48px rgba(102,126,234,0.20),0 2px 8px rgba(0,0,0,0.05);">
+
+    <!-- ██ HEADER ██ -->
+    <!--[if gte mso 9]><v:rect xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style="mso-width-percent:1000;"><v:fill type="gradient" color="#667eea" color2="#764ba2" angle="135"/><v:textbox inset="0,0,0,0"><![endif]-->
+    <tr>
+        <td class="hdr" align="center"
+            style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+                   padding:52px 40px 46px;text-align:center;">
+
+            <table cellpadding="0" cellspacing="0" border="0" role="presentation" style="margin:0 auto 20px;">
+                <tr>
+                    <td align="center" valign="middle"
+                        style="width:76px;height:76px;border-radius:50%;
+                               background-color:rgba(255,255,255,0.18);
+                               border:2px solid rgba(255,255,255,0.32);
+                               text-align:center;vertical-align:middle;">
+                        <span style="font-size:36px;line-height:76px;display:block;">🚚</span>
+                    </td>
+                </tr>
+            </table>
+
+            <p style="margin:0 0 12px;font-size:11px;font-weight:600;letter-spacing:0.14em;
+                      text-transform:uppercase;color:rgba(255,255,255,0.65);mso-line-height-rule:exactly;">
+                Stock ERP &nbsp;·&nbsp; Livraison
+            </p>
+            <h1 class="htitle"
+                style="margin:0 0 6px;font-size:26px;font-weight:700;color:#ffffff;
+                       letter-spacing:-0.02em;line-height:1.2;mso-line-height-rule:exactly;">
+                Bon de Livraison
+            </h1>
+            <p style="margin:0 0 6px;font-size:20px;font-weight:600;color:rgba(255,255,255,0.90);
+                      mso-line-height-rule:exactly;" th:text="${deliveryNoteNumber}">BL-0000</p>
+            <p style="margin:0;font-size:13px;color:rgba(255,255,255,0.68);mso-line-height-rule:exactly;">
+                Gestion intelligente de stock
+            </p>
+        </td>
+    </tr>
+    <!--[if gte mso 9]></v:textbox></v:rect><![endif]-->
+
+    <!-- ██ BODY ██ -->
+    <tr>
+        <td class="bdy" style="padding:40px 44px;">
+
+            <p style="margin:0 0 6px;font-size:17px;font-weight:600;color:#1e1b4b;
+                      mso-line-height-rule:exactly;line-height:1.4;">
+                Bonjour <span style="color:#667eea;" th:text="${customerName}">Client</span>,
+            </p>
+            <p style="margin:0 0 32px;font-size:15px;color:#6b7280;line-height:1.75;mso-line-height-rule:exactly;">
+                Votre bon de livraison
+                <strong style="color:#374151;" th:text="${deliveryNoteNumber}">BL-0000</strong>
+                du <strong style="color:#374151;" th:text="${deliveryDate}">01/01/2026</strong>
+                est prêt. Le document PDF est attaché à cet email.
+            </p>
+
+            <!-- Info Card -->
+            <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation"
+                   style="background:#f8f7ff;border-radius:14px;border:1px solid #e8e5ff;margin-bottom:28px;">
+                <tr>
+                    <td class="icard" style="padding:22px 26px;">
+                        <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                            <tr>
+                                <td style="padding:9px 0;border-bottom:1px solid #ede9fe;">
+                                    <span style="font-size:11px;font-weight:600;color:#a78bfa;
+                                                 text-transform:uppercase;letter-spacing:0.08em;">Référence BL</span>
+                                </td>
+                                <td style="padding:9px 0;text-align:right;border-bottom:1px solid #ede9fe;">
+                                    <span style="font-size:13px;color:#4c1d95;font-weight:700;
+                                                 background:#ede9fe;padding:3px 12px;border-radius:20px;"
+                                          th:text="${deliveryNoteNumber}">BL-0000</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding:9px 0;border-bottom:1px solid #ede9fe;">
+                                    <span style="font-size:11px;font-weight:600;color:#a78bfa;
+                                                 text-transform:uppercase;letter-spacing:0.08em;">Date de livraison</span>
+                                </td>
+                                <td style="padding:9px 0;text-align:right;border-bottom:1px solid #ede9fe;">
+                                    <span style="font-size:13px;color:#374151;font-weight:600;"
+                                          th:text="${deliveryDate}">01/01/2026</span>
+                                </td>
+                            </tr>
+                            <tr th:if="${recipientName != null and !#strings.isEmpty(recipientName)}">
+                                <td style="padding:9px 0;">
+                                    <span style="font-size:11px;font-weight:600;color:#a78bfa;
+                                                 text-transform:uppercase;letter-spacing:0.08em;">Destinataire</span>
+                                </td>
+                                <td style="padding:9px 0;text-align:right;">
+                                    <span style="font-size:13px;color:#374151;font-weight:600;"
+                                          th:text="${recipientName}">Nom Prénom</span>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+
+            <!-- PDF Notice -->
+            <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation"
+                   style="margin-bottom:32px;">
+                <tr>
+                    <td style="background:#eff1ff;border-left:4px solid #667eea;
+                               padding:14px 18px;border-radius:0 10px 10px 0;">
+                        <p style="margin:0;font-size:14px;color:#3730a3;font-weight:600;
+                                  line-height:1.5;mso-line-height-rule:exactly;">
+                            📎&nbsp;&nbsp;Le document PDF est joint à cet email
+                        </p>
+                    </td>
+                </tr>
+            </table>
+
+            <!-- Divider -->
+            <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation">
+                <tr><td style="height:1px;background:#f3f4f6;font-size:0;line-height:0;">&nbsp;</td></tr>
+            </table>
+
+            <p style="margin:24px 0 4px;font-size:14px;color:#6b7280;line-height:1.65;mso-line-height-rule:exactly;">
+                Pour toute question relative à cette livraison, notre équipe reste à votre disposition.
+            </p>
+            <p style="margin:0;font-size:14px;color:#9ca3af;">Merci pour votre confiance.</p>
+            <p style="margin:14px 0 0;font-size:14px;color:#374151;font-weight:600;">L'équipe Stock ERP</p>
+
+        </td>
+    </tr>
+
+    <!-- ██ FOOTER ██ -->
+    <tr>
+        <td class="ftr" align="center"
+            style="background:#f8f7ff;padding:22px 44px 26px;border-top:1px solid #ede9fe;text-align:center;">
+            <p style="margin:0 0 4px;font-size:15px;font-weight:700;color:#667eea;">📦 Stock ERP</p>
+            <p style="margin:0 0 14px;font-size:12px;color:#a78bfa;">Gestion intelligente de stock &amp; facturation</p>
+            <table width="60" cellpadding="0" cellspacing="0" border="0" role="presentation" style="margin:0 auto 12px;">
+                <tr><td style="height:1px;background:#ddd6fe;font-size:0;line-height:0;">&nbsp;</td></tr>
+            </table>
+            <p style="margin:0;font-size:11px;color:#d1d5db;line-height:1.6;">
+                © 2026 Stock ERP — Tous droits réservés<br/>
+                <span style="font-size:10px;">Ce message a été généré automatiquement.</span>
+            </p>
+        </td>
+    </tr>
+
+</table>
+</td></tr>
+</table>
+</body>
+</html>

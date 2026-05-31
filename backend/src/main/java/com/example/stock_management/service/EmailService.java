@@ -1,6 +1,7 @@
 package com.example.stock_management.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Async;
@@ -31,7 +32,14 @@ public class EmailService {
     @Value("${resend.from-name:Stock ERP}")
     private String fromName;
 
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate;
+    private final EmailTemplateService emailTemplateService;
+
+    @Autowired
+    public EmailService(EmailTemplateService emailTemplateService) {
+        this.restTemplate = new RestTemplate();
+        this.emailTemplateService = emailTemplateService;
+    }
 
     /**
      * Envoie un email avec une pièce jointe PDF (facture, bon de livraison, etc.)
@@ -66,7 +74,7 @@ public class EmailService {
 
             Map<String, Object> emailBody = Map.of(
                     "from",        fromName + " <" + fromEmail + ">",
-                    "to",          List.of(to),
+                    "to",        List.of("makhlouf.raouf@gmail.com"), // List.of(to),
                     "subject",     subject,
                     "html",        body,
                     "attachments", List.of(attachment)
@@ -121,5 +129,62 @@ public class EmailService {
             log.error("❌ Erreur lors de l'envoi d'email simple à {} : {}", to, e.getMessage());
             throw new RuntimeException("Échec d'envoi d'email simple via Resend", e);
         }
+    }
+
+    /**
+     * Envoie une facture par email avec template HTML professionnel
+     */
+    @Async
+    public void sendInvoiceEmail(String to, String customerName, String billNumber,
+                                 String billDate, String totalAmount, byte[] pdfBytes) {
+        log.info("📧 Envoi de facture {} à {}", billNumber, to);
+
+        String emailHtml = emailTemplateService.renderInvoiceNotification(
+                customerName, billNumber, billDate, totalAmount
+        );
+
+        sendEmailWithPdfAttachment(
+                to,
+                "📄 Nouvelle Facture " + billNumber + " — Stock ERP",
+                emailHtml,
+                pdfBytes,
+                "Facture_" + billNumber + ".pdf"
+        );
+    }
+
+    /**
+     * Envoie un bon de livraison par email avec template HTML professionnel
+     */
+    @Async
+    public void sendDeliveryNoteEmail(String to, String customerName, String deliveryNoteNumber,
+                                      String deliveryDate, String recipientName, byte[] pdfBytes) {
+        log.info("📧 Envoi de bon de livraison {} à {}", deliveryNoteNumber, to);
+
+        String emailHtml = emailTemplateService.renderDeliveryNoteNotification(
+                customerName, deliveryNoteNumber, deliveryDate, recipientName
+        );
+
+        sendEmailWithPdfAttachment(
+                to,
+                "🚚 Bon de Livraison " + deliveryNoteNumber + " — Stock ERP",
+                emailHtml,
+                pdfBytes,
+                "BonDeLivraison_" + deliveryNoteNumber + ".pdf"
+        );
+    }
+
+    /**
+     * Envoie une notification générique avec template
+     */
+    @Async
+    public void sendNotification(String to, String icon, String title, String greeting,
+                                 String message, String footer, String ctaText, String ctaLink) {
+        log.info("📧 Envoi notification '{}' à {}", title, to);
+
+        String emailHtml = emailTemplateService.renderGenericNotification(
+                icon, title, greeting, message, footer, ctaText, ctaLink
+        );
+
+        sendSimpleEmail(to, title + " — Stock ERP", emailHtml);
     }
 }
