@@ -2,476 +2,346 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="fr">
 <head>
     <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <meta name="description" content="Facture - Document commercial"/>
     <title th:text="'Facture - ' + ${billNumber}">Facture</title>
     <style type="text/css">
         /*<![CDATA[*/
-        
-        /* ==========================================================================
-           FACTURE - CSS Styles
-           Version: 2.2
-           Description: Thème BLEU - Valeurs directes pour compatibilité PDF
-           ========================================================================== */
-        
-        /* --------------------------------------------------------------------------
-           COMMON STYLES - Sans CSS variables pour compatibilité iText/Flying Saucer
-           -------------------------------------------------------------------------- */
-        @page {
-            size: A4;
-            margin: 15mm;
+        /*
+            FACTURE v4.0 — Flying Saucer PDF
+            CRITICAL: border-radius does NOT work on <table> in Flying Saucer.
+            All rounded containers use <div class="card|card-meta|card-accent">.
+        */
+        @page { size: A4; margin: 15mm; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; font-size: 10pt; line-height: 1.5;
+               color: #1e1b4b; background-color: #f5f4ff; }
+        strong { font-weight: 600; }
+        address { font-style: normal; }
+
+        /* ── HERO ── */
+        .hero-header {
+            width: 100%; margin-bottom: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 36px 28px; border-radius: 16px;
+            text-align: center; color: white;
         }
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        .hero-icon {
+            display: inline-block; width: 60px; height: 60px; margin: 0 auto 14px;
+            background-color: rgba(255,255,255,0.18); border: 2px solid rgba(255,255,255,0.32);
+            border-radius: 50%; text-align: center; line-height: 60px; font-size: 28pt;
         }
-        
-        body {
-            font-family: Arial, sans-serif;
-            font-size: 10pt;
-            line-height: 1.4;
-            color: #1e293b;
+        .hero-brand { margin: 0 0 6px; font-size: 9pt; font-weight: 600;
+            letter-spacing: 0.14em; text-transform: uppercase; color: rgba(255,255,255,0.65); }
+        .hero-title { margin: 0 0 6px; font-size: 22pt; font-weight: 700; color: white; }
+        .hero-number { margin: 0 0 6px; font-size: 16pt; font-weight: 600; color: rgba(255,255,255,0.90); }
+        .hero-tagline { margin: 0; font-size: 10pt; color: rgba(255,255,255,0.68); }
+
+        /* ── CARD WRAPPERS (provide the border-radius since <table> cannot) ── */
+        .card {
+            background: white; border: 1px solid #e0dcff;
+            border-radius: 14px; overflow: hidden; margin-bottom: 18px;
+            page-break-inside: avoid;
         }
-        
-        strong {
-            font-weight: 600;
+        .card-inner { padding: 18px; }
+        .card-meta {
+            background: #f3f0ff; border: 1px solid #e0dcff;
+            border-radius: 12px; overflow: hidden;
+            page-break-inside: avoid;
         }
-        
-        address {
-            font-style: normal;
+        .card-accent {
+            background: white; border: 2px solid #667eea;
+            border-radius: 14px; overflow: hidden;
+            max-width: 300px; margin-left: auto;
+            page-break-inside: avoid;
         }
-        
-        /* --------------------------------------------------------------------------
-           HEADER SECTION
-           -------------------------------------------------------------------------- */
-        .header {
-            width: 100%;
-            margin-bottom: 20px;
-            border: 1px solid #e2e8f0;
-            padding: 15px;
-            border-radius: 8px;
-        }
-        
-        .header-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        
-        .header-table td {
-            vertical-align: top;
-            padding: 5px;
-        }
-        
-        .header-table td.company-info {
-            width: 55%;
-            padding-right: 20px;
-        }
-        
-        .header-table td.invoice-info {
-            width: 45%;
-            text-align: right;
-        }
-        
-        .company-info h1 {
-            margin: 0 0 8px 0;
-            font-size: 16pt;
-            font-weight: 700;
-            color: #2563eb;
-        }
-        
-        .company-info p {
-            margin: 3px 0;
-            font-size: 9pt;
-            color: #64748b;
-        }
-        
-        /* Invoice Details Box */
-        .invoice-details-container {
-            display: inline-block;
-            padding: 12px 15px;
-            background-color: #2563eb;
-            color: white;
-            border-radius: 6px;
-        }
-        
-        .invoice-details {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        
-        .invoice-details th {
-            padding: 4px 15px 4px 0;
-            text-align: left;
-            font-weight: 600;
-            color: white;
-            font-size: 8pt;
-            text-transform: uppercase;
-        }
-        
-        .invoice-details td {
-            padding: 4px 0;
-            text-align: left;
-            font-weight: 500;
-            font-size: 10pt;
-            color: white;
-        }
-        
-        /* --------------------------------------------------------------------------
-           BILLING & DELIVERY SECTION
-           -------------------------------------------------------------------------- */
+
+        /* ── INFO TABLE ── */
+        .info-table { width: 100%; border-collapse: collapse; }
+        .info-table td { vertical-align: top; padding: 6px; }
+        .info-table td.company-col { width: 50%; padding-right: 16px; border-right: 1px solid #ede9fe; }
+        .info-table td.meta-col { width: 50%; padding-left: 16px; }
+        .company-col h2 { margin: 0 0 8px; font-size: 14pt; font-weight: 700; color: #667eea; }
+        .company-col p { margin: 3px 0; font-size: 9pt; color: #6b7280; }
+
+        /* meta-table has NO border/radius — the .card-meta div around it does */
+        .meta-table { width: 100%; border-collapse: collapse; background: #f3f0ff; }
+        .meta-table td { padding: 9px 12px; font-size: 9pt; border-bottom: 1px solid #ede9fe; }
+        .meta-table td:first-child { font-weight: 600; color: #a78bfa;
+            text-transform: uppercase; letter-spacing: 0.06em; width: 45%; }
+        .meta-table td:last-child { font-weight: 600; color: #374151; text-align: right; }
+        .meta-table tr:last-child td { border-bottom: none; }
+
+        /* ── BILLING / DELIVERY (td border-radius IS supported) ── */
         .billing-delivery {
-            width: 100%;
-            margin-bottom: 20px;
-            border-collapse: separate;
-            border-spacing: 10px 0;
+            width: 100%; margin-bottom: 18px;
+            border-collapse: separate; border-spacing: 10px 0;
         }
-        
         .billing-delivery td {
-            width: 50%;
-            vertical-align: top;
-            padding: 12px;
-            border: 1px solid #e2e8f0;
-            background-color: #ffffff;
-            border-radius: 6px;
+            width: 50%; vertical-align: top; padding: 16px;
+            background: white; border: 1px solid #e0dcff; border-radius: 14px;
+            page-break-inside: avoid;
         }
-        
         .billing-delivery h3 {
-            margin: 0 0 8px 0;
-            font-size: 11pt;
-            font-weight: 600;
-            color: #2563eb;
-            border-bottom: 2px solid #2563eb;
-            padding-bottom: 3px;
+            margin: 0 0 10px; font-size: 10pt; font-weight: 600; color: #667eea;
+            text-transform: uppercase; letter-spacing: 0.08em;
+            border-bottom: 2px solid #667eea; padding-bottom: 6px;
         }
-        
-        .billing-delivery p {
-            margin: 4px 0;
-            font-size: 9pt;
-            color: #64748b;
-        }
-        
-        /* --------------------------------------------------------------------------
-           PRODUCTS TABLE
-           -------------------------------------------------------------------------- */
-        .products {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-            border: 1px solid #e2e8f0;
-        }
-        
-        .products thead {
-            background-color: #2563eb;
-            color: white;
-        }
-        
-        .products th {
-            padding: 10px 6px;
-            text-align: left;
-            font-weight: 600;
-            font-size: 8pt;
-            text-transform: uppercase;
-            border: 1px solid #1d4ed8;
-            color: white;
-        }
-        
-        .products td {
-            padding: 8px 6px;
-            border: 1px solid #e2e8f0;
-            font-size: 9pt;
-            vertical-align: middle;
-        }
-        
-        .products th.align-right,
-        .products td.align-right {
-            text-align: right;
-        }
-        
-        .products td.monospace {
-            font-family: Arial, sans-serif;
-            font-weight: 500;
-        }
-        
+        .billing-delivery p { margin: 4px 0; font-size: 9pt; color: #6b7280; }
+
+        /* ── PRODUCTS (inside .card) ── */
+        .products { width: 100%; border-collapse: collapse; background: white; }
+        .products thead { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .products th { padding: 12px 10px; text-align: left; font-weight: 600;
+            font-size: 8pt; text-transform: uppercase; letter-spacing: 0.08em; color: white; }
+        .products tbody tr { border-bottom: 1px solid #ede9fe; page-break-inside: avoid; }
+        .products tbody tr:last-child { border-bottom: none; }
+        .products td { padding: 10px; font-size: 9pt; vertical-align: middle; }
+        .products th.align-right, .products td.align-right { text-align: right; }
+        .products td.monospace { font-weight: 500; }
         .products td.ref-column {
-            font-size: 8pt;
-            color: #64748b;
+            font-size: 8pt; color: #a78bfa; background: #f3f0ff;
+            padding: 3px 8px; border-radius: 6px;
         }
-        
-        /* --------------------------------------------------------------------------
-           PAYMENT & TOTALS LAYOUT
-           -------------------------------------------------------------------------- */
+
+        /* ── PAYMENT / TOTALS ── */
         .payment-totals {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 10px 0;
-            margin-bottom: 20px;
+            width: 100%; border-collapse: separate;
+            border-spacing: 10px 0; margin-bottom: 18px;
+            page-break-inside: avoid;
         }
-        
-        .payment-totals td {
-            vertical-align: top;
-            padding: 0;
+        .payment-totals td { vertical-align: top; padding: 0; }
+        .payment-totals td.payment-cell { width: 55%; }
+        .payment-totals td.totals-cell  { width: 45%; }
+
+        /* payment table has NO border/radius — the .card div around it does */
+        .payment { width: 100%; border-collapse: collapse; background: white; }
+        .payment thead { background: #f3f0ff; }
+        .payment th { padding: 12px 14px; text-align: center; font-weight: 600;
+            font-size: 9pt; color: #667eea; border-bottom: 2px solid #ede9fe; }
+        .payment td { padding: 12px 14px; text-align: center;
+            font-size: 9pt; color: #374151; font-weight: 500; }
+
+        /* totals table has NO border/radius — the .card-accent div around it does */
+        .totals { width: 100%; border-collapse: collapse; background: white; }
+        .totals td { padding: 10px 14px; font-size: 9pt; border-bottom: 1px solid #ede9fe; }
+        .totals tr:last-child td { border-bottom: none; }
+        .totals td.label { font-weight: 500; color: #a78bfa;
+            text-transform: uppercase; letter-spacing: 0.06em; font-size: 8pt; width: 50%; }
+        .totals td.value { text-align: right; font-weight: 700;
+            font-size: 11pt; color: #1e1b4b; width: 50%; }
+        .totals tr.net-pay-row { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .totals tr.net-pay-row td { color: white; font-weight: 700; font-size: 12pt; padding: 12px 14px; }
+
+        /* ── INFO BOX ── */
+        .info-box {
+            font-size: 9pt; font-weight: 500; color: #5b5ea6;
+            margin: 18px 0; padding: 14px 16px;
+            background: #eff1ff; border-left: 4px solid #667eea; border-radius: 12px;
+            page-break-inside: avoid;
         }
-        
-        .payment-totals td.payment-cell {
-            width: 55%;
+
+        /* ── SIGNATURES (inside .card) ── */
+        .signatures { width: 100%; border-collapse: collapse; background: white; }
+        .signatures td { padding: 18px 16px; font-size: 9pt; color: #6b7280;
+            text-align: center; border-right: 1px solid #ede9fe; width: 33.33%; }
+        .signatures td:last-child { border-right: none; }
+        .signatures td.align-left  { text-align: left; }
+        .signatures td.align-right { text-align: right; }
+
+        /* ── FOOTER ── */
+        .footer-branding {
+            margin-top: 22px; padding: 18px; text-align: center;
+            background: #f3f0ff; border-radius: 14px; border: 1px solid #ede9fe;
+            page-break-inside: avoid;
         }
-        
-        .payment-totals td.totals-cell {
-            width: 45%;
-            text-align: right;
-        }
-        
-        /* Payment Table */
-        .payment {
-            width: 100%;
-            border-collapse: collapse;
-            border: 1px solid #e2e8f0;
-        }
-        
-        .payment thead {
-            background-color: #f8fafc;
-        }
-        
-        .payment th {
-            padding: 8px 10px;
-            text-align: center;
-            font-weight: 600;
-            font-size: 9pt;
-            color: #1e293b;
-            border: 1px solid #e2e8f0;
-        }
-        
-        .payment td {
-            padding: 8px 10px;
-            text-align: center;
-            font-size: 9pt;
-            color: #64748b;
-            border: 1px solid #e2e8f0;
-        }
-        
-        /* Totals Table */
-        .totals {
-            width: 280px;
-            border-collapse: collapse;
-            border: 2px solid #2563eb;
-            margin-left: auto;
-        }
-        
-        .totals td {
-            padding: 8px 12px;
-            font-size: 9pt;
-            border: 1px solid #e2e8f0;
-        }
-        
-        .totals td.label {
-            font-weight: 500;
-            color: #64748b;
-            background-color: #f8fafc;
-            width: 50%;
-        }
-        
-        .totals td.value {
-            text-align: right;
-            font-weight: 600;
-            font-size: 10pt;
-            width: 50%;
-        }
-        
-        .totals tr.net-pay-row td {
-            background-color: #10b981;
-            color: white;
-            font-weight: 700;
-        }
-        
-        /* --------------------------------------------------------------------------
-           LEGAL MENTIONS & SIGNATURES
-           -------------------------------------------------------------------------- */
-        .match-payment-header {
-            font-size: 9pt;
-            font-weight: 500;
-            color: #64748b;
-            margin: 20px 0 15px 0;
-            padding: 10px 12px;
-            background-color: #f8fafc;
-            border-left: 3px solid #f59e0b;
-        }
-        
-        .signatures {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-            border: 1px solid #e2e8f0;
-        }
-        
-        .signatures td {
-            padding: 12px;
-            font-size: 9pt;
-            color: #64748b;
-            text-align: center;
-            border: 1px solid #e2e8f0;
-            width: 33.33%;
-        }
-        
-        .signatures td.align-left {
-            text-align: left;
-        }
-        
-        .signatures td.align-right {
-            text-align: right;
-        }
-        
+        .footer-branding p { margin: 0; font-size: 9pt; color: #a78bfa; }
+        .footer-branding .brand-name { font-weight: 700; color: #667eea; font-size: 11pt; }
         /*]]>*/
     </style>
 </head>
 <body>
 
-<!-- Company Header -->
-<div class="header">
-    <table class="header-table">
-        <tr>
-            <td class="company-info">
-                <h1 th:text="${companyName}">Nom de l'entreprise</h1>
-                <address>
-                    <p th:text="${companyAddress}">Adresse de l'entreprise</p>
-                    <p><strong>Tél:</strong> <span th:text="${companyPhone}">Phone</span></p>
-                    <p><strong>Matricule Fiscale:</strong> <span th:text="${companyTaxId}">Tax ID</span></p>
-                    <p><strong>RC:</strong> <span th:text="${supplierRc}"></span></p>
-                    <p><strong>RIB:</strong> <span th:text="${supplierRib}"></span></p>
-                    <p><strong>IBAN:</strong> <span th:text="${supplierIban}"></span></p>
-                </address>
-            </td>
-            <td class="invoice-info">
-                <div class="invoice-details-container">
-                    <table class="invoice-details">
-                        <tr>
-                            <th>Facture N°</th>
-                            <td th:text="${billNumber}">FAC-0000</td>
-                        </tr>
-                        <tr>
-                            <th>Date</th>
-                            <td th:text="${billDate}">01/01/2026</td>
-                        </tr>
-                        <tr>
-                            <th>Conditions</th>
-                            <td th:text="${paymentTerms}">30 jours</td>
-                        </tr>
-                    </table>
-                </div>
-            </td>
-        </tr>
-    </table>
+<!-- HERO -->
+<div class="hero-header">
+    <div class="hero-icon">&#x1F4C4;</div>
+    <p class="hero-brand">Stock ERP &#xB7; Facturation</p>
+    <h1 class="hero-title">Facture</h1>
+    <p class="hero-number" th:text="${billNumber}">FAC-0000</p>
+    <p class="hero-tagline">Gestion intelligente de stock</p>
 </div>
 
-<!-- Billing & Delivery Information -->
+<!-- COMPANY + META  (.card gives the rounded white container) -->
+<div class="card">
+    <div class="card-inner">
+        <table class="info-table">
+            <tr>
+                <td class="company-col">
+                    <h2 th:text="${companyName}">Nom de l&#x2019;entreprise</h2>
+                    <address>
+                        <p th:text="${companyAddress}">Adresse</p>
+                        <p><strong>T&#xE9;l:</strong> <span th:text="${companyPhone}">Phone</span></p>
+                        <p><strong>Matricule Fiscale:</strong> <span th:text="${companyTaxId}">Tax ID</span></p>
+                        <p><strong>RC:</strong> <span th:text="${supplierRc}"></span></p>
+                        <p><strong>RIB:</strong> <span th:text="${supplierRib}"></span></p>
+                        <p><strong>IBAN:</strong> <span th:text="${supplierIban}"></span></p>
+                    </address>
+                </td>
+                <td class="meta-col">
+                    <!-- .card-meta is the div that provides rounded corners -->
+                    <div class="card-meta">
+                        <table class="meta-table">
+                            <tr>
+                                <td>R&#xE9;f&#xE9;rence</td>
+                                <td th:text="${billNumber}">FAC-0000</td>
+                            </tr>
+                            <tr>
+                                <td>Date d&#x2019;&#xE9;mission</td>
+                                <td th:text="${billDate}">01/01/2026</td>
+                            </tr>
+                            <tr>
+                                <td>Conditions</td>
+                                <td th:text="${paymentTerms}">30 jours</td>
+                            </tr>
+                        </table>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+<!-- BILLING AND DELIVERY (td border-radius works in Flying Saucer) -->
 <table class="billing-delivery">
     <tr>
         <td>
-            <h3>Facturé à / Client</h3>
+            <h3>Factur&#xE9; &#xE0; / Client</h3>
             <address>
                 <p><strong th:text="${customerName}">Client Name</strong></p>
                 <p th:text="${customerAddress}">Client Address</p>
-                <p><strong>Tél:</strong> <span th:text="${customerPhone}">Phone</span></p>
+                <p><strong>T&#xE9;l:</strong> <span th:text="${customerPhone}">Phone</span></p>
                 <p><strong>Matricule Fiscale:</strong> <span th:text="${customerTva}">TVA</span></p>
             </address>
         </td>
         <td>
-            <h3>Livré à</h3>
+            <h3>Livr&#xE9; &#xE0;</h3>
             <address>
-                <p><strong>Nom et Prénom:</strong> <span th:text="${deliveryFullName}">Nom Prénom</span></p>
+                <p><strong>Nom et Pr&#xE9;nom:</strong> <span th:text="${deliveryFullName}">Nom</span></p>
                 <p><strong>CIN:</strong> <span th:text="${deliveryCin}">00000000</span></p>
-                <p><strong>Immatriculation:</strong> <span th:text="${licensePlateX}">000</span> TN <span th:text="${licensePlateY}">0000</span></p>
-                <p th:if="${deliveryAddress != null and deliveryAddress != ''}"><strong>Adresse:</strong> <span th:text="${deliveryAddress}">Adresse de livraison</span></p>
+                <p><strong>Immatriculation:</strong>
+                    <span th:text="${licensePlateX}">000</span> TN
+                    <span th:text="${licensePlateY}">0000</span></p>
+                <p th:if="${deliveryAddress != null and deliveryAddress != ''}">
+                    <strong>Adresse:</strong> <span th:text="${deliveryAddress}">Adresse</span>
+                </p>
             </address>
         </td>
     </tr>
 </table>
 
-<!-- Products Table -->
-<table class="products">
-    <thead>
+<!-- PRODUCTS (.card div gives the rounded border) -->
+<div class="card" style="margin-bottom:18px;">
+    <table class="products">
+        <thead>
         <tr>
             <th>Produit</th>
-            <th>Référence</th>
+            <th>R&#xE9;f&#xE9;rence</th>
             <th class="align-right">Prix Unitaire</th>
-            <th class="align-right">Quantité</th>
+            <th class="align-right">Quantit&#xE9;</th>
             <th class="align-right">Remise (%)</th>
             <th class="align-right">Montant</th>
         </tr>
-    </thead>
-    <tbody>
-        <tr th:each="product, iterStat : ${products}">
+        </thead>
+        <tbody>
+        <tr th:each="product : ${products}">
             <td th:text="${product.productName}">Nom</td>
             <td class="ref-column" th:text="${product.productRef}">REF</td>
-            <td class="align-right monospace" th:text="${product.unitPriceFormatted}">0.000 DNT</td>
+            <td class="align-right monospace" th:text="${product.unitPriceFormatted}">0.000</td>
             <td class="align-right monospace" th:text="${product.quantity}">0</td>
             <td class="align-right monospace" th:text="${product.discountPercentage}">0%</td>
-            <td class="align-right monospace" th:text="${product.totalPriceFormatted}">0.000 DNT</td>
+            <td class="align-right monospace" th:text="${product.totalPriceFormatted}">0.000</td>
         </tr>
-    </tbody>
-</table>
+        </tbody>
+    </table>
+</div>
 
-<!-- Payment & Totals Summary -->
+<!-- PAYMENT MODE + TOTALS -->
 <table class="payment-totals">
     <tr>
         <td class="payment-cell">
-            <table class="payment">
-                <thead>
+            <!-- .card div gives the rounded border -->
+            <div class="card" style="margin-bottom:0;">
+                <table class="payment">
+                    <thead>
                     <tr>
-                        <th>Mode de règlement</th>
-                        <th>Référence paiement</th>
+                        <th>Mode de r&#xE8;glement</th>
+                        <th>R&#xE9;f&#xE9;rence paiement</th>
                     </tr>
-                </thead>
-                <tbody>
+                    </thead>
+                    <tbody>
                     <tr>
-                        <td th:text="${paymentMethod}">Espèces / Virement / Chèque</td>
+                        <td th:text="${paymentMethod}">Esp&#xE8;ces / Virement / Ch&#xE8;que</td>
                         <td th:text="${paymentRef}">-</td>
                     </tr>
-                </tbody>
-            </table>
+                    </tbody>
+                </table>
+            </div>
         </td>
         <td class="totals-cell">
-            <table class="totals">
-                <tr th:if="${showTva}">
-                    <td class="label">Total HT</td>
-                    <td class="value" th:text="${totalHTFormatted}">0.000 DNT</td>
-                </tr>
-                <tr th:if="${showTva}">
-                    <td class="label">TVA (19%)</td>
-                    <td class="value" th:text="${tvaFormatted}">0.000 DNT</td>
-                </tr>
-                <tr>
-                    <td class="label" th:text="${showTva} ? 'Total TTC' : 'Total'">Total TTC</td>
-                    <td class="value" th:text="${totalTTCFormatted}">0.000 DNT</td>
-                </tr>
-                <tr>
-                    <td class="label">Acompte</td>
-                    <td class="value" th:text="${depositFormatted}">0.000 DNT</td>
-                </tr>
-                <tr class="net-pay-row">
-                    <td class="label">Net à payer</td>
-                    <td class="value" th:text="${amountDueFormatted}">0.000 DNT</td>
-                </tr>
-            </table>
+            <!-- .card-accent div gives the purple rounded border -->
+            <div class="card-accent">
+                <table class="totals">
+                    <tr th:if="${showTva}">
+                        <td class="label">Total HT</td>
+                        <td class="value" th:text="${totalHTFormatted}">0.000</td>
+                    </tr>
+                    <tr th:if="${showTva}">
+                        <td class="label">TVA (19%)</td>
+                        <td class="value" th:text="${tvaFormatted}">0.000</td>
+                    </tr>
+                    <tr>
+                        <td class="label" th:text="${showTva} ? 'Total TTC' : 'Total'">Total TTC</td>
+                        <td class="value" th:text="${totalTTCFormatted}">0.000</td>
+                    </tr>
+                    <tr>
+                        <td class="label">Acompte</td>
+                        <td class="value" th:text="${depositFormatted}">0.000</td>
+                    </tr>
+                    <tr class="net-pay-row">
+                        <td class="label">Net &#xE0; payer</td>
+                        <td class="value" th:text="${amountDueFormatted}">0.000</td>
+                    </tr>
+                </table>
+            </div>
         </td>
     </tr>
 </table>
 
-<!-- Legal Information -->
-<!-- <div class="match-payment-header">
-    <strong>Mentions légales :</strong> Cette facture est établie conformément aux dispositions de l'article 18 du code de la TVA.
-    Toute contestation doit être signalée dans un délai de 7 jours.
-</div> -->
+<!-- MENTIONS LEGALES -->
+<div class="info-box">
+    <strong>Mentions l&#xE9;gales :</strong> Cette facture est &#xE9;tablie
+    conform&#xE9;ment aux dispositions de l&#x2019;article 18 du code de la TVA.
+    Toute contestation doit &#xEA;tre signal&#xE9;e dans un d&#xE9;lai de 7 jours.
+</div>
 
-<!-- Signatures -->
-<table class="signatures">
-    <tr>
-        <td class="align-left"><strong>Conditions de paiement :</strong> <span th:text="${paymentTerms}">30 jours</span></td>
-        <td><strong>Signature client</strong></td>
-        <td class="align-right"><strong>Signature et cachet</strong></td>
-    </tr>
-</table>
+<!-- SIGNATURES (.card div gives the rounded border) -->
+<div class="card" style="margin-bottom:0;">
+    <table class="signatures">
+        <tr>
+            <td class="align-left"><strong>Conditions de paiement :</strong>
+                <span th:text="${paymentTerms}">30 jours</span></td>
+            <td><strong>Signature client</strong></td>
+            <td class="align-right"><strong>Signature et cachet</strong></td>
+        </tr>
+    </table>
+</div>
+
+<!-- FOOTER -->
+<div class="footer-branding">
+    <p class="brand-name">&#x1F4E6; Stock ERP</p>
+    <p>Gestion intelligente de stock &amp; facturation</p>
+    <p style="font-size: 8pt; color: #c4b5fd; margin-top: 6px;">
+        &#xA9; 2026 Stock ERP &#x2014; Tous droits r&#xE9;serv&#xE9;s
+    </p>
+</div>
 
 </body>
 </html>

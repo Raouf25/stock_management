@@ -8,12 +8,10 @@ import com.example.stock_management.model.BillProduct;
 import com.example.stock_management.model.Customer;
 import com.example.stock_management.model.Product;
 import com.example.stock_management.model.Sale;
-import com.example.stock_management.model.StockMouvement;
 import com.example.stock_management.repository.BillRepository;
 import com.example.stock_management.repository.CustomerRepository;
 import com.example.stock_management.repository.ProductRepository;
 import com.example.stock_management.repository.SaleRepository;
-import com.example.stock_management.repository.StockMouvementRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +22,8 @@ import java.util.Optional;
 import java.util.List;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -40,9 +40,9 @@ public class BillService {
 
     private final CustomerRepository customerRepository;
     
-    private final StockMouvementRepository stockMouvementRepository;
-    
     private final SaleRepository saleRepository;
+
+    private final Clock clock;
 
 
     public List<Bill> findAll() {
@@ -67,7 +67,7 @@ public class BillService {
         bill.setCustomer(customer);
 
         // Mettre à jour la date de la facture à l'heure actuelle
-        bill.setDateBill(LocalDateTime.now());
+        bill.setDateBill(LocalDateTime.now(clock));
 
         // Initialize total
         BigDecimal runningTotal = BigDecimal.ZERO;
@@ -83,11 +83,8 @@ public class BillService {
             billProduct.setQuantity(billProductDTO.getQuantite());
             productRepository.updateStock(billProductDTO.getIdProduct(), billProductDTO.getQuantite());
             
-            // Create stock movement for sale
-            createStockMovement(product, billProductDTO.getQuantite(), "VENTE");
-            
             // Create sale record
-            createSaleRecord(customer, product, billProductDTO.getQuantite(), null);
+            createSaleRecord(customer, product, billProductDTO.getQuantite(), billProductDTO.getPrixTotal() / billProductDTO.getQuantite());
             
             double productTotal = billProductDTO.getQuantite() * product.getUnitPriceBought();
             billProduct.setTotalProductPrice(productTotal);
@@ -187,11 +184,8 @@ public class BillService {
             // Update stock
             productRepository.updateStock(lineItem.getProductId(), lineItem.getQuantity());
             
-            // Create stock movement for sale
-            createStockMovement(product, lineItem.getQuantity(), "VENTE");
-            
             // Create sale record
-            createSaleRecord(customer, product, lineItem.getQuantity(), lineItem.getUnitPrice().doubleValue());
+            createSaleRecord(customer, product, lineItem.getQuantity(), lineTotalHT/lineItem.getQuantity());
         }
 
         bill.setBillProducts(billProducts);
@@ -274,7 +268,7 @@ public class BillService {
         kpis.put("paymentStatusDistribution", statusDistribution);
 
         // Invoices this month
-        LocalDate now = LocalDate.now();
+        LocalDate now = LocalDate.now(clock);
         long invoicesThisMonth = bills.stream()
             .filter(b -> b.getDateBill() != null && b.getDateBill().getMonth() == now.getMonth() && b.getDateBill().getYear() == now.getYear())
             .count();
@@ -289,31 +283,16 @@ public class BillService {
 
         return kpis;
     }
-
-    /**
-     * Create a stock movement record for tracking inventory changes
-     */
-    private void createStockMovement(Product product, Integer quantity, String operation) {
-        StockMouvement mouvement = new StockMouvement();
-        mouvement.setProduct(product);
-        mouvement.setQuantity(quantity);
-        mouvement.setDate(LocalDate.now());
-        mouvement.setType(StockMouvement.Type.SORTIE);
-        mouvement.setSource(StockMouvement.Source.VENTE);
-        mouvement.setReference("FACTURE-" + System.currentTimeMillis());
-        
-        stockMouvementRepository.save(mouvement);
-    }
     
     /**
      * Create a sale record for tracking sales
      */
     private void createSaleRecord(Customer customer, Product product, Integer quantity, Double unitPrice) {
         Sale sale = new Sale();
-        sale.setDateSale(LocalDate.now());
+        sale.setDateSale(LocalDate.now(clock));
         sale.setCustomer(customer);
         sale.setProduct(product);
-        sale.setInvoiceNumber("INV-" + System.currentTimeMillis());
+        sale.setInvoiceNumber("INV-" + Instant.now(clock).toEpochMilli());
         sale.setQuantitySold(quantity);
         
         // Use provided unit price or fallback to product's unit price sold

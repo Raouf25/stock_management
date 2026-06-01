@@ -16,8 +16,7 @@ export class AppComponent implements OnInit {
   sidebarCollapsed = false;
   sidebarOpen = false;
   currentRoute = '';
-  invoiceMenuOpen = false;
-  deliveryMenuOpen = false;
+  documentsMenuOpen = false;
 
   constructor(
     private router: Router,
@@ -30,30 +29,21 @@ export class AppComponent implements OnInit {
       filter((event): event is NavigationEnd => event instanceof NavigationEnd)
     ).subscribe((event: NavigationEnd) => {
       this.currentRoute = event.urlAfterRedirects;
-      // Auto-ouvrir le menu Facturation si on est sur une route de facture
-      if (this.isInvoiceRouteActive()) {
-        this.invoiceMenuOpen = true;
+      // Auto-ouvrir Archives si on est sur une route de liste documents
+      if (this.isDocumentListRouteActive()) {
+        this.documentsMenuOpen = true;
       }
-      // Auto-ouvrir le menu BL si on est sur une route de BL
-      if (this.isDeliveryRouteActive()) {
-        this.deliveryMenuOpen = true;
-      }
-      // Fermer la sidebar mobile après navigation
       this.closeSidebarOnMobile();
     });
   }
 
   toggleSidebar() {
-    // Sur mobile (< 992px), fermer le sidebar off-canvas
     if (window.innerWidth < 992) {
       this.sidebarOpen = false;
     } else {
-      // Sur desktop, toggle collapsed mode
       this.sidebarCollapsed = !this.sidebarCollapsed;
-      // Fermer les sous-menus quand on réduit la sidebar
       if (this.sidebarCollapsed) {
-        this.invoiceMenuOpen = false;
-        this.deliveryMenuOpen = false;
+        this.documentsMenuOpen = false;
       }
       localStorage.setItem('sidebarCollapsed', this.sidebarCollapsed.toString());
     }
@@ -69,24 +59,22 @@ export class AppComponent implements OnInit {
     }
   }
 
-  toggleInvoiceMenu() {
+  toggleDocumentsMenu() {
     if (!this.sidebarCollapsed) {
-      this.invoiceMenuOpen = !this.invoiceMenuOpen;
-    }
-  }
-
-  toggleDeliveryMenu() {
-    if (!this.sidebarCollapsed) {
-      this.deliveryMenuOpen = !this.deliveryMenuOpen;
+      this.documentsMenuOpen = !this.documentsMenuOpen;
     }
   }
 
   isInvoiceRouteActive(): boolean {
-    return this.currentRoute.startsWith('/invoices');
+    return this.currentRoute.startsWith('/invoices') || this.currentRoute.startsWith('/documents/create');
   }
 
   isDeliveryRouteActive(): boolean {
     return this.currentRoute.startsWith('/delivery-notes');
+  }
+
+  isDocumentListRouteActive(): boolean {
+    return this.currentRoute.startsWith('/invoices') || this.currentRoute.startsWith('/delivery-notes');
   }
 
   isAuthRoute(): boolean {
@@ -102,6 +90,7 @@ export class AppComponent implements OnInit {
       '/stock-movements': 'Mouvements de Stock',
       '/customers': 'Gestion des Clients',
       '/invoices': 'Gestion des Factures',
+      '/documents/create': 'Créer Facture / BL',
       '/invoices/create': 'Créer Facture',
       '/invoices/list': 'Liste des Factures',
       '/delivery-notes': 'Gestion des BL',

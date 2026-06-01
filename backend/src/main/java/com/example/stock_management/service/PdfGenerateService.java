@@ -7,10 +7,11 @@ import java.io.OutputStream;
 import java.util.Map;
 
 import com.lowagie.text.DocumentException;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.spring6.SpringTemplateEngine;
 import org.thymeleaf.context.Context;
 import org.xhtmlrenderer.pdf.ITextRenderer;
 
@@ -18,14 +19,20 @@ import java.io.IOException;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class PdfGenerateService {
 
     private static final String TEMPLATE_NAME = "facture";
     private static final String PDF_TEMPLATES_PATH = "pdf-templates/";
 
-    private final TemplateEngine templateEngine;
+    private final SpringTemplateEngine templateEngine;
     private final com.example.stock_management.util.NumberUtils numberUtils;
+
+    @Autowired
+    public PdfGenerateService(@Qualifier("pdfTemplateEngine") SpringTemplateEngine templateEngine,
+                              com.example.stock_management.util.NumberUtils numberUtils) {
+        this.templateEngine = templateEngine;
+        this.numberUtils = numberUtils;
+    }
 
     /**
      * Génère un PDF et l'écrit directement dans la réponse HTTP
@@ -41,7 +48,7 @@ public class PdfGenerateService {
         try {
             response.setContentType("application/pdf");
             response.setHeader("Content-Disposition", "attachment; filename=\"" + templateName + ".pdf\"");
-            
+
             generatePdf(data, response.getOutputStream(), templateName);
         } catch (IOException e) {
             log.error("Erreur lors de l'écriture du PDF dans la réponse: {}", e.getMessage(), e);
@@ -73,7 +80,7 @@ public class PdfGenerateService {
      */
     private void generatePdf(Map<String, Object> data, OutputStream outputStream, String templateName) {
         String htmlContent = processTemplate(data, templateName);
-        
+
         try {
             ITextRenderer renderer = createRenderer(htmlContent);
             renderer.createPDF(outputStream, false);

@@ -1,5 +1,6 @@
 HELP.md
 target/
+exercises/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
@@ -12,6 +13,7 @@ target/
 .settings
 .springBeans
 .sts4-cache
+.sdkmanrc
 
 ### IntelliJ IDEA ###
 .idea
@@ -38,3 +40,8 @@ logs/
 
 
 .DS_Store
+
+
+# Environment
+.env
+.env.localrailway-variables.txt

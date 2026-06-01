@@ -23,7 +23,6 @@ public class DeliveryNoteService {
     private final DeliveryNoteProductRepository deliveryNoteProductRepository;
     private final ProductRepository productRepository;
     private final CustomerRepository customerRepository;
-    private final StockMouvementRepository stockMouvementRepository;
     private final BillRepository billRepository;
 
     public List<DeliveryNote> findAll() {
@@ -89,9 +88,6 @@ public class DeliveryNoteService {
             totalAmount = totalAmount.add(dnProduct.getTotalPrice());
 
             deliveryNoteProducts.add(dnProduct);
-
-            // Créer un mouvement de stock (sortie)
-            createStockMovement(product, productDTO.getQuantity(), "BL-" + deliveryNote.getDeliveryNoteNumber());
             
             // Mettre à jour le stock du produit
             productRepository.updateStock(product.getIdProduct(), productDTO.getQuantity());
@@ -150,8 +146,6 @@ public class DeliveryNoteService {
             product.setCurrentStockQuantity(product.getCurrentStockQuantity() + dnp.getQuantity());
             productRepository.save(product);
             
-            // Créer un mouvement de stock inverse (entrée)
-            createStockMovement(product, -dnp.getQuantity(), "ANNULATION-BL-" + deliveryNote.getDeliveryNoteNumber());
         }
         
         deliveryNoteRepository.delete(deliveryNote);
@@ -263,17 +257,6 @@ public class DeliveryNoteService {
         kpis.put("thisMonthAmount", thisMonthAmount);
         
         return kpis;
-    }
-
-    private void createStockMovement(Product product, int quantity, String reference) {
-        StockMouvement movement = new StockMouvement();
-        movement.setProduct(product);
-        movement.setQuantity(quantity);
-        movement.setType(StockMouvement.Type.SORTIE); // Sortie de stock pour livraison
-        movement.setSource(StockMouvement.Source.VENTE); // Using VENTE as delivery is a sale-related movement
-        movement.setReference(reference);
-        movement.setDate(LocalDate.now());
-        stockMouvementRepository.save(movement);
     }
 
     private String generateDeliveryNoteNumber() {

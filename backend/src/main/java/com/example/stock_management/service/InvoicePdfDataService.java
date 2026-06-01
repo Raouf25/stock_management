@@ -25,7 +25,7 @@ import java.util.Objects;
  * </ul>
  * </p>
  * Hérite de AbstractPdfDataService pour les méthodes utilitaires communes.
- * 
+ *
  * @author Stock Management System
  * @version 2.0
  */
@@ -35,20 +35,21 @@ public class InvoicePdfDataService extends AbstractPdfDataService {
     // ========== Dépendances ==========
     private final BillService billService;
     private final SupplierService supplierService;
-    
+    private final EmailTemplateService emailTemplateService;
+
     // ========== Constantes Métier ==========
     private static final double VAT_RATE = 0.19;
     private static final String VAT_RATE_DISPLAY = "19%";
     private static final String NO_VAT_DISPLAY = "0%";
     private static final Long DEFAULT_SUPPLIER_ID = 3L;
-    
+
     // ========== Constantes de Formatage ==========
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     private static final String BILL_NUMBER_PREFIX = "FAC-";
     private static final String BILL_NUMBER_FORMAT = "%04d";
     private static final int DECIMAL_PRECISION_CURRENCY = 3;
     private static final int DECIMAL_PRECISION_PERCENTAGE = 1;
-    
+
     // ========== Constantes par Défaut ==========
     private static final String DEFAULT_PAYMENT_METHOD = "Espèces / Virement / Chèque";
     private static final String DEFAULT_PAYMENT_TERMS = "30 jours";
@@ -56,10 +57,14 @@ public class InvoicePdfDataService extends AbstractPdfDataService {
     private static final String DEFAULT_EMPTY_STRING = "";
     private static final String DEFAULT_ZERO_FORMATTED = "0,000";
 
-    public InvoicePdfDataService(BillService billService, SupplierService supplierService, NumberUtils numberUtils) {
+    public InvoicePdfDataService(BillService billService,
+                                  SupplierService supplierService,
+                                  EmailTemplateService emailTemplateService,
+                                  NumberUtils numberUtils) {
         super(numberUtils);
         this.billService = billService;
         this.supplierService = supplierService;
+        this.emailTemplateService = emailTemplateService;
     }
 
     /**
@@ -73,27 +78,27 @@ public class InvoicePdfDataService extends AbstractPdfDataService {
      *   <li>Valeurs par défaut pour les champs optionnels</li>
      * </ul>
      * </p>
-     * 
+     *
      * @param billId L'identifiant de la facture à traiter
      * @return Une Map contenant toutes les données formatées pour le template PDF
      * @throws IllegalArgumentException si billId est null
      */
     public Map<String, Object> preparePdfData(Long billId) {
         Objects.requireNonNull(billId, "Bill ID cannot be null");
-        
+
         Map<String, Object> data = new HashMap<>();
-        
+
         // Récupération des données du fournisseur
         supplierService.findById(DEFAULT_SUPPLIER_ID)
             .ifPresent(supplier -> data.put("supplier", supplier));
-        
+
         // Récupération et traitement des données de facture
         billService.findById(billId)
             .ifPresent(bill -> populateBillData(bill, data));
-        
+
         // Ajout des informations d'entreprise (méthode héritée)
         populateCompanyData(data);
-        
+
         // Ajout des valeurs par défaut
         addDefaultPlaceholders(data);
 
@@ -101,44 +106,19 @@ public class InvoicePdfDataService extends AbstractPdfDataService {
     }
 
     /**
-     * Construit le corps HTML de l'email pour l'envoi de facture
+     * Construit le corps HTML de l'email pour l'envoi de facture en utilisant le template premium
      */
     public String buildEmailBody(String billNumber, String customerName, Map<String, Object> data) {
-        return """
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <meta charset="UTF-8">
-                <style>
-                    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-                    .header { background-color: #4361ee; color: white; padding: 20px; text-align: center; }
-                    .content { padding: 20px; }
-                    .footer { background-color: #f8f9fa; padding: 15px; text-align: center; font-size: 12px; color: #666; }
-                    .amount { font-size: 18px; font-weight: bold; color: #4361ee; }
-                </style>
-            </head>
-            <body>
-                <div class="header">
-                    <h1>📄 Facture %s</h1>
-                </div>
-                <div class="content">
-                    <p>Bonjour <strong>%s</strong>,</p>
-                    <p>Veuillez trouver ci-joint votre facture <strong>%s</strong>.</p>
-                    <p class="amount">Montant Total TTC: %s TND</p>
-                    <p>Merci pour votre confiance.</p>
-                    <p>Cordialement,<br>L'équipe de facturation</p>
-                </div>
-                <div class="footer">
-                    <p>Ce message a été généré automatiquement. Merci de ne pas y répondre.</p>
-                </div>
-            </body>
-            </html>
-            """.formatted(
-                billNumber,
+        String billDate = (String) data.get("billDate");
+        String totalAmount = (String) data.get("totalTTCFormatted");
+        
+        // Utiliser le template Thymeleaf premium invoice-notification.html
+        return emailTemplateService.renderInvoiceNotification(
                 customerName,
                 billNumber,
-                data.getOrDefault("totalTTCFormatted", "N/A")
-            );
+                billDate,
+                totalAmount + " TND"
+        );
     }
 
     /**
@@ -153,7 +133,7 @@ public class InvoicePdfDataService extends AbstractPdfDataService {
      *   <li>Métadonnées (numéro, date)</li>
      * </ol>
      * </p>
-     * 
+     *
      * @param bill La facture à traiter
      * @param data La map de données à enrichir
      */
@@ -178,7 +158,7 @@ public class InvoicePdfDataService extends AbstractPdfDataService {
         // 5. Métadonnées de la facture
         populateBillMetadata(bill, data);
     }
-    
+
     /**
      * Ajoute les métadonnées de la facture (numéro et date).
      */
@@ -187,7 +167,7 @@ public class InvoicePdfDataService extends AbstractPdfDataService {
         data.put("billNumber", billNumber);
         data.put("billDate", bill.getDateBill().format(DATE_FORMATTER));
     }
-    
+
     /**
      * Ajoute les détails client spécifiques à la facture.
      */
@@ -203,7 +183,7 @@ public class InvoicePdfDataService extends AbstractPdfDataService {
 
     /**
      * Remplit la map de données avec les totaux de la facture (bruts et formatés).
-     * 
+     *
      * @param data La map de données à enrichir
      * @param totals Les totaux calculés
      * @param applyTva Indique si la TVA est appliquée
@@ -228,7 +208,7 @@ public class InvoicePdfDataService extends AbstractPdfDataService {
         data.put("depositFormatted", formatAmount(totals.deposit));
         data.put("amountDueFormatted", formatAmount(totals.amountDue));
     }
-    
+
     /**
      * Formate un montant avec la précision monétaire (3 décimales pour TND).
      */
@@ -248,7 +228,7 @@ public class InvoicePdfDataService extends AbstractPdfDataService {
      *   <li>Formatage pour affichage</li>
      * </ul>
      * </p>
-     * 
+     *
      * @param bill La facture contenant les produits
      * @param applyTva Indique si la TVA doit être appliquée
      * @return Liste des produits avec toutes les données calculées et formatées
@@ -265,7 +245,7 @@ public class InvoicePdfDataService extends AbstractPdfDataService {
 
     /**
      * Construit les données complètes d'un produit avec tous les calculs.
-     * 
+     *
      * @param bp Le produit de la facture
      * @param applyTva Indique si la TVA doit être appliquée
      * @return Map contenant toutes les données du produit (brutes et formatées)
@@ -273,55 +253,55 @@ public class InvoicePdfDataService extends AbstractPdfDataService {
     private Map<String, Object> buildProductData(BillProduct bp, boolean applyTva) {
         // 1. Extraction des données de base
         ProductInfo info = extractProductInfo(bp);
-        
+
         // 2. Calculs des prix et remises
         double unitPrice = calculateUnitPrice(bp, info.totalPrice, info.quantity);
         ProductDiscount discount = calculateDiscount(bp, unitPrice, info.quantity, info.totalPrice);
-        
+
         // 3. Calcul de la TVA
         double vatAmount = applyTva ? info.totalPrice * VAT_RATE : 0.0;
         double totalWithVat = info.totalPrice + vatAmount;
-        
+
         // 4. Construction de la map de données
         Map<String, Object> productData = new HashMap<>();
-        
+
         // Informations de base
         productData.put("productRef", info.reference);
         productData.put("productName", info.name);
         productData.put("quantity", info.quantity);
-        
+
         // Prix (bruts + formatés)
         productData.put("unitPriceValue", unitPrice);
         productData.put("unitPriceFormatted", formatAmount(unitPrice));
         productData.put("totalPriceValue", info.totalPrice);
         productData.put("totalPriceFormatted", formatAmount(info.totalPrice));
-        
+
         // Remise (brute + formatée)
         productData.put("discountValue", discount.amount);
         productData.put("discountFormatted", formatAmount(discount.amount));
-        productData.put("discountPercentage", formatDecimal(discount.percentage, 
+        productData.put("discountPercentage", formatDecimal(discount.percentage,
             DECIMAL_PRECISION_PERCENTAGE, DECIMAL_PRECISION_PERCENTAGE));
-        
+
         // TVA (brute + formatée)
         productData.put("vatRate", applyTva ? VAT_RATE_DISPLAY : NO_VAT_DISPLAY);
         productData.put("vatAmountValue", vatAmount);
         productData.put("vatAmountFormatted", formatAmount(vatAmount));
         productData.put("totalWithVatFormatted", formatAmount(totalWithVat));
-        
+
         return productData;
     }
-    
+
     /**
      * Extrait les informations de base d'un produit de facture.
      */
     private ProductInfo extractProductInfo(BillProduct bp) {
         Product product = bp.getProduct();
-        
+
         String name = product != null ? product.getName() : DEFAULT_EMPTY_STRING;
         String reference = product != null ? String.valueOf(product.getReference()) : DEFAULT_EMPTY_STRING;
         int quantity = bp.getQuantity() != null ? bp.getQuantity() : 0;
         double totalPrice = bp.getTotalProductPrice() != null ? bp.getTotalProductPrice() : 0.0;
-        
+
         return new ProductInfo(name, reference, quantity, totalPrice);
     }
 
@@ -343,12 +323,12 @@ public class InvoicePdfDataService extends AbstractPdfDataService {
     private ProductDiscount calculateDiscount(BillProduct bp, double unitPrice, int qty, double totalPrice) {
         double expectedGross = unitPrice * qty;
         double discountAmount = Math.max(expectedGross - totalPrice, 0.0);
-        
+
         double discountPercentage = bp.getDiscountPercentage() != null ? bp.getDiscountPercentage() : 0.0;
         if (discountPercentage == 0.0 && expectedGross > 0) {
             discountPercentage = (discountAmount / expectedGross) * 100;
         }
-        
+
         return new ProductDiscount(discountAmount, discountPercentage);
     }
 
@@ -365,7 +345,7 @@ public class InvoicePdfDataService extends AbstractPdfDataService {
      *   <li>Net à payer : Total TTC - Acompte</li>
      * </ul>
      * </p>
-     * 
+     *
      * @param productsList Liste des produits avec leurs données calculées
      * @param bill La facture pour récupérer l'acompte
      * @param applyTva Indique si la TVA doit être appliquée
@@ -376,14 +356,14 @@ public class InvoicePdfDataService extends AbstractPdfDataService {
         double sumTotalHT = productsList.stream()
             .mapToDouble(product -> getDoubleValue(product.get("totalPriceValue")))
             .sum();
-        
+
         // TVA sur le total HT
-        double sumVat = applyTva 
+        double sumVat = applyTva
             ? productsList.stream()
                 .mapToDouble(product -> getDoubleValue(product.get("vatAmountValue")))
-                .sum() 
+                .sum()
             : 0.0;
-        
+
         // Total brut HT (avant remises)
         double sumGrossHT = productsList.stream()
             .mapToDouble(product -> {
@@ -392,17 +372,17 @@ public class InvoicePdfDataService extends AbstractPdfDataService {
                 return unitPrice * quantity;
             })
             .sum();
-        
+
         // Total des remises
         double sumDiscount = productsList.stream()
             .mapToDouble(product -> getDoubleValue(product.get("discountValue")))
             .sum();
-        
+
         // Calculs finaux
         double totalTTC = sumTotalHT + sumVat;
         double deposit = bill.getDeposit() != null ? bill.getDeposit().doubleValue() : 0.0;
         double amountDue = totalTTC - deposit;
-        
+
         return new BillTotals(sumTotalHT, sumVat, totalTTC, sumGrossHT, sumDiscount, deposit, amountDue);
     }
 
@@ -419,36 +399,36 @@ public class InvoicePdfDataService extends AbstractPdfDataService {
     }
 
     // ========== Records internes pour structurer les données ==========
-    
+
     /**
      * Informations de base d'un produit extraites de BillProduct.
-     * 
+     *
      * @param name Nom du produit
      * @param reference Référence du produit
      * @param quantity Quantité commandée
      * @param totalPrice Prix total après remise
      */
     private record ProductInfo(
-        String name, 
-        String reference, 
-        int quantity, 
+        String name,
+        String reference,
+        int quantity,
         double totalPrice
     ) {}
-    
+
     /**
      * Remise calculée pour un produit.
-     * 
+     *
      * @param amount Montant de la remise en devise
      * @param percentage Pourcentage de remise (0-100)
      */
     private record ProductDiscount(
-        double amount, 
+        double amount,
         double percentage
     ) {}
-    
+
     /**
      * Ensemble des totaux calculés pour une facture.
-     * 
+     *
      * @param totalHT Total hors taxes (après remises)
      * @param tva Montant de la TVA
      * @param totalTTC Total toutes taxes comprises
@@ -458,12 +438,12 @@ public class InvoicePdfDataService extends AbstractPdfDataService {
      * @param amountDue Montant restant dû (TTC - Acompte)
      */
     private record BillTotals(
-        double totalHT, 
-        double tva, 
+        double totalHT,
+        double tva,
         double totalTTC,
-        double totalGrossHT, 
-        double totalDiscount, 
-        double deposit, 
+        double totalGrossHT,
+        double totalDiscount,
+        double deposit,
         double amountDue
     ) {}
 }

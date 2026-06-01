@@ -1,0 +1,13 @@
+# Railway configuration — Stock Management Backend
+# Docs: https://docs.railway.com/reference/config-as-code
+
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "./backend/Dockerfile"
+
+[deploy]
+# Healthcheck sur /actuator/health (Spring Actuator) — plus léger que /api/products
+healthcheckPath = "/actuator/health"
+healthcheckTimeout = 90
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3

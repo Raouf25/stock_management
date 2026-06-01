@@ -30,7 +30,4 @@ public class Purchase {
     private Double totalAmountTTC; // quantity × unitPriceTTC
     private String comment;
 
-    // Préserver la relation avec l'historique
-    @OneToMany(mappedBy = "purchase", cascade = CascadeType.ALL)
-    private List<StockMouvement> stockMouvements;
 }

@@ -5,6 +5,7 @@ import com.example.stock_management.model.Purchase;
 import com.example.stock_management.service.PurchaseService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -13,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/purchases")
@@ -29,14 +29,9 @@ public class PurchaseController {
      */
     @PostMapping
     @Operation(summary = "Créer un nouvel achat")
-    public ResponseEntity<?> createPurchase(@RequestBody PurchaseDTO purchaseDTO) {
-        try {
-            Purchase purchase = purchaseService.createPurchase(purchaseDTO);
-            return ResponseEntity.status(HttpStatus.CREATED).body(purchaseService.convertToDTO(purchase));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body("Erreur lors de la création de l'achat : " + e.getMessage());
-        }
+    public ResponseEntity<PurchaseDTO> createPurchase(@Valid @RequestBody PurchaseDTO purchaseDTO) {
+        Purchase purchase = purchaseService.createPurchase(purchaseDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(purchaseService.convertToDTO(purchase));
     }
 
     /**
@@ -54,14 +49,10 @@ public class PurchaseController {
      */
     @GetMapping("/{id}")
     @Operation(summary = "Récupérer un achat par ID")
-    public ResponseEntity<?> getPurchaseById(@PathVariable Long id) {
-        Optional<Purchase> purchase = purchaseService.getPurchaseById(id);
-        if (purchase.isPresent()) {
-            return ResponseEntity.ok(purchaseService.convertToDTO(purchase.get()));
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body("Achat non trouvé avec l'ID : " + id);
-        }
+    public ResponseEntity<PurchaseDTO> getPurchaseById(@PathVariable Long id) {
+        return purchaseService.getPurchaseById(id)
+            .map(purchase -> ResponseEntity.ok(purchaseService.convertToDTO(purchase)))
+            .orElseThrow(() -> new ResourceNotFoundException("Achat non trouv\u00e9 avec l'ID : " + id));
     }
 
     /**

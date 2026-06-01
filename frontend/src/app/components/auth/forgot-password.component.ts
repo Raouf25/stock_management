@@ -9,227 +9,317 @@ import { AuthService } from '../../services/auth.service';
   standalone: true,
   imports: [CommonModule, FormsModule, RouterModule],
   template: `
-    <div class="auth-container">
-      <div class="auth-card">
-        <div class="auth-header">
-          <div class="icon-circle">
-            <i class="bi" [class.bi-key]="!emailSent" [class.bi-envelope-check]="emailSent"></i>
+    <div class="auth-page">
+
+      <!-- Left panel — branding -->
+      <div class="brand-panel">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="brand-content">
+          <div class="brand-logo"><i class="bi bi-box-seam-fill"></i></div>
+          <h1 class="brand-name">Stock ERP</h1>
+          <p class="brand-tagline">Récupérez l'accès à votre<br>espace de gestion</p>
+          <div class="steps">
+            <div class="step-item">
+              <div class="step-num">1</div>
+              <div class="step-text">
+                <strong>Entrez votre email</strong>
+                <span>Associé à votre compte Stock ERP</span>
+              </div>
+            </div>
+            <div class="step-item">
+              <div class="step-num">2</div>
+              <div class="step-text">
+                <strong>Recevez le lien</strong>
+                <span>Email envoyé via Resend en quelques secondes</span>
+              </div>
+            </div>
+            <div class="step-item">
+              <div class="step-num">3</div>
+              <div class="step-text">
+                <strong>Définissez un nouveau mot de passe</strong>
+                <span>Le lien est valable 1 heure</span>
+              </div>
+            </div>
           </div>
-          <h1>{{ emailSent ? 'Email envoyé !' : 'Mot de passe oublié' }}</h1>
-          <p>{{ emailSent ? 'Vérifiez votre boîte de réception' : 'Entrez votre email pour recevoir un lien de réinitialisation' }}</p>
         </div>
+      </div>
 
-        <div class="alert error" *ngIf="errorMessage">
-          <i class="bi bi-exclamation-triangle"></i> {{ errorMessage }}
-        </div>
+      <!-- Right panel — form -->
+      <div class="form-panel">
+        <div class="form-card">
 
-        <!-- Form -->
-        <form *ngIf="!emailSent" (ngSubmit)="onSubmit()" class="auth-form">
-          <div class="form-group">
-            <label><i class="bi bi-envelope"></i> Email</label>
-            <input type="email" [(ngModel)]="email" name="email" 
-                   placeholder="votre@email.com" required>
-          </div>
-          <button type="submit" class="btn-primary" [disabled]="isLoading">
-            <i class="bi" [class.bi-send]="!isLoading" [class.bi-arrow-repeat]="isLoading" [class.spin]="isLoading"></i>
-            {{ isLoading ? 'Envoi...' : 'Envoyer le lien' }}
-          </button>
-        </form>
+          <!-- ── FORM STATE ── -->
+          <ng-container *ngIf="!emailSent">
+            <div class="form-header">
+              <div class="form-icon"><i class="bi bi-key-fill"></i></div>
+              <h2>Mot de passe oublié ?</h2>
+              <p>Entrez votre email pour recevoir un lien de réinitialisation</p>
+            </div>
 
-        <!-- Success State -->
-        <div *ngIf="emailSent" class="success-state">
-          <p class="info-text">
-            Si un compte existe avec l'email <strong>{{ email }}</strong>, 
-            vous recevrez un lien de réinitialisation dans quelques minutes.
+            <div class="alert alert-error" *ngIf="errorMessage">
+              <i class="bi bi-exclamation-circle-fill"></i>
+              <span>{{ errorMessage }}</span>
+            </div>
+
+            <form (ngSubmit)="onSubmit()" autocomplete="on">
+              <div class="form-field">
+                <label for="fp-email">
+                  <i class="bi bi-envelope"></i> Email
+                </label>
+                <input
+                  id="fp-email"
+                  type="email"
+                  [(ngModel)]="email"
+                  name="email"
+                  placeholder="votre@email.com"
+                  autocomplete="email"
+                  required>
+              </div>
+
+              <button type="submit" class="btn-submit" [disabled]="isLoading">
+                <i class="bi" [class.bi-send-fill]="!isLoading" [class.bi-arrow-repeat]="isLoading"
+                   [class.spin]="isLoading"></i>
+                {{ isLoading ? 'Envoi en cours...' : 'Envoyer le lien' }}
+              </button>
+            </form>
+          </ng-container>
+
+          <!-- ── SUCCESS STATE ── -->
+          <ng-container *ngIf="emailSent">
+            <div class="success-view">
+              <div class="success-icon-wrap">
+                <i class="bi bi-envelope-check-fill"></i>
+              </div>
+              <h2>Email envoyé !</h2>
+              <p class="success-desc">
+                Si un compte existe avec l'adresse <strong>{{ email }}</strong>,
+                vous recevrez un lien de réinitialisation dans quelques instants.
+              </p>
+
+              <div class="info-cards">
+                <div class="info-card">
+                  <i class="bi bi-inbox"></i>
+                  <span>Vérifiez aussi votre dossier <strong>Spam</strong></span>
+                </div>
+                <div class="info-card">
+                  <i class="bi bi-clock"></i>
+                  <span>Le lien expire dans <strong>1 heure</strong></span>
+                </div>
+                <div class="info-card resend-badge">
+                  <i class="bi bi-send"></i>
+                  <span>Envoyé via <strong>Resend</strong></span>
+                </div>
+              </div>
+
+              <button class="btn-secondary" (click)="resetForm()" type="button">
+                <i class="bi bi-arrow-counterclockwise"></i> Renvoyer un email
+              </button>
+            </div>
+          </ng-container>
+
+          <!-- Back link -->
+          <p class="back-link">
+            <a routerLink="/login">
+              <i class="bi bi-arrow-left"></i> Retour à la connexion
+            </a>
           </p>
-          <div class="tips">
-            <p><i class="bi bi-info-circle"></i> Vérifiez aussi vos spams</p>
-            <p><i class="bi bi-clock"></i> Le lien expire dans 1 heure</p>
-          </div>
-          <button class="btn-secondary" (click)="resetForm()">
-            <i class="bi bi-arrow-left"></i> Renvoyer un email
-          </button>
-        </div>
 
-        <div class="back-link">
-          <a routerLink="/login"><i class="bi bi-arrow-left"></i> Retour à la connexion</a>
         </div>
       </div>
     </div>
   `,
   styles: [`
-    .auth-container {
+    .auth-page {
+      display: flex;
       min-height: 100vh;
+      width: 100vw;
+      position: fixed;
+      inset: 0;
+    }
+
+    /* ── Brand panel ── */
+    .brand-panel {
+      flex: 1;
+      background: linear-gradient(150deg, #4338ca 0%, #6d28d9 50%, #7c3aed 100%);
       display: flex;
       align-items: center;
       justify-content: center;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      padding: 20px;
+      padding: 3rem 2.5rem;
+      position: relative;
+      overflow: hidden;
     }
-    .auth-card {
-      background: white;
-      border-radius: 20px;
-      padding: 40px;
-      width: 100%;
-      max-width: 400px;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-    }
-    .auth-header {
-      text-align: center;
-      margin-bottom: 30px;
-    }
-    .icon-circle {
-      width: 80px;
-      height: 80px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    .blob {
+      position: absolute;
       border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 20px;
-      font-size: 36px;
-      color: white;
+      background: rgba(255,255,255,0.06);
     }
-    .auth-header h1 {
-      font-size: 24px;
-      color: #333;
-      margin: 0 0 10px;
+    .blob-1 { width: 300px; height: 300px; top: -60px; left: -60px; animation: float 8s ease-in-out infinite; }
+    .blob-2 { width: 220px; height: 220px; bottom: -50px; right: -30px; animation: float 10s ease-in-out infinite reverse; }
+    @keyframes float {
+      0%,100% { transform: translateY(0); }
+      50%      { transform: translateY(-18px); }
     }
-    .auth-header p {
-      color: #666;
-      margin: 0;
-      font-size: 14px;
-      line-height: 1.5;
+    .brand-content { position: relative; z-index: 1; max-width: 400px; }
+    .brand-logo {
+      width: 64px; height: 64px;
+      background: rgba(255,255,255,0.15);
+      border: 2px solid rgba(255,255,255,0.25);
+      border-radius: 1.25rem;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.875rem; color: white;
+      margin-bottom: 1.25rem;
     }
+    .brand-name  { font-size: 2.25rem; font-weight: 800; color: white; margin: 0 0 0.625rem; letter-spacing: -0.03em; }
+    .brand-tagline { font-size: 1rem; color: rgba(255,255,255,0.72); line-height: 1.65; margin: 0 0 2rem; }
+
+    .steps { display: flex; flex-direction: column; gap: 1rem; }
+    .step-item {
+      display: flex; align-items: flex-start; gap: 1rem;
+      padding: 0.875rem 1.125rem;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 0.75rem;
+    }
+    .step-num {
+      width: 1.75rem; height: 1.75rem; flex-shrink: 0;
+      background: rgba(255,255,255,0.2);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.8125rem; font-weight: 700; color: white;
+    }
+    .step-text { display: flex; flex-direction: column; gap: 0.125rem; }
+    .step-text strong { font-size: 0.875rem; font-weight: 600; color: white; }
+    .step-text span   { font-size: 0.8125rem; color: rgba(255,255,255,0.6); }
+
+    /* ── Form panel ── */
+    .form-panel {
+      width: 480px; min-width: 320px;
+      background: #f8f9fb;
+      display: flex; align-items: center; justify-content: center;
+      padding: 2rem 1.5rem;
+      overflow-y: auto;
+    }
+    .form-card {
+      width: 100%; max-width: 400px;
+      background: white; border-radius: 1.25rem;
+      padding: 2.25rem 2rem;
+      box-shadow: 0 4px 32px rgba(67,56,202,0.10), 0 1px 4px rgba(0,0,0,0.06);
+      animation: slideUp 0.3s ease-out;
+    }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .form-header { text-align: center; margin-bottom: 1.75rem; }
+    .form-icon {
+      width: 52px; height: 52px;
+      background: linear-gradient(135deg, #4338ca, #7c3aed);
+      border-radius: 1rem;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem; color: white;
+      margin: 0 auto 1rem;
+    }
+    .form-header h2 { font-size: 1.375rem; font-weight: 700; color: #111827; margin: 0 0 0.375rem; }
+    .form-header p  { font-size: 0.875rem; color: #6b7280; margin: 0; line-height: 1.5; }
+
+    /* Alert */
     .alert {
-      padding: 12px 15px;
-      border-radius: 10px;
-      margin-bottom: 20px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 14px;
+      display: flex; align-items: flex-start; gap: 0.625rem;
+      padding: 0.75rem 1rem; border-radius: 0.625rem;
+      margin-bottom: 1.25rem; font-size: 0.875rem;
     }
-    .alert.error {
-      background: #fee2e2;
-      color: #dc2626;
+    .alert-error { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+
+    /* Form field */
+    .form-field { display: flex; flex-direction: column; gap: 0.375rem; margin-bottom: 1rem; }
+    .form-field label {
+      font-size: 0.8125rem; font-weight: 600; color: #374151;
+      display: flex; align-items: center; gap: 0.375rem;
     }
-    .auth-form {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
+    .form-field label i { color: #6d28d9; }
+    .form-field input {
+      width: 100%; padding: 0.6875rem 0.875rem;
+      border: 1.5px solid #e5e7eb; border-radius: 0.625rem;
+      font-size: 0.9375rem; color: #111827;
+      transition: all 0.18s ease; box-sizing: border-box;
     }
-    .form-group {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
+    .form-field input:focus {
+      outline: none; border-color: #6d28d9;
+      box-shadow: 0 0 0 3px rgba(109,40,217,0.1);
     }
-    .form-group label {
-      font-weight: 500;
-      color: #333;
-      font-size: 14px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
+
+    /* Buttons */
+    .btn-submit {
+      width: 100%; padding: 0.8125rem 1rem;
+      background: linear-gradient(135deg, #4338ca, #7c3aed);
+      color: white; border: none; border-radius: 0.75rem;
+      font-size: 0.9375rem; font-weight: 600; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+      transition: all 0.2s ease; margin-bottom: 0.5rem;
+      box-shadow: 0 2px 12px rgba(109,40,217,0.3);
     }
-    .form-group label i {
-      color: #667eea;
-    }
-    .form-group input {
-      padding: 12px 15px;
-      border: 2px solid #e9ecef;
-      border-radius: 10px;
-      font-size: 15px;
-      transition: all 0.3s;
-    }
-    .form-group input:focus {
-      outline: none;
-      border-color: #667eea;
-      box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
-    }
-    .btn-primary, .btn-secondary {
-      padding: 14px;
-      border: none;
-      border-radius: 10px;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      transition: all 0.3s;
-    }
-    .btn-primary {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-    }
-    .btn-primary:hover:not(:disabled) {
-      transform: translateY(-2px);
-      box-shadow: 0 5px 20px rgba(102,126,234,0.4);
-    }
-    .btn-primary:disabled {
-      opacity: 0.7;
-      cursor: not-allowed;
-    }
+    .btn-submit:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(109,40,217,0.4); }
+    .btn-submit:disabled { opacity: 0.7; cursor: not-allowed; }
     .btn-secondary {
-      background: #f3f4f6;
-      color: #333;
-      width: 100%;
+      width: 100%; padding: 0.75rem 1rem;
+      background: #f3f4f6; color: #374151;
+      border: none; border-radius: 0.75rem;
+      font-size: 0.875rem; font-weight: 600; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+      transition: background 0.15s ease;
     }
-    .btn-secondary:hover {
-      background: #e5e7eb;
+    .btn-secondary:hover { background: #e5e7eb; }
+
+    /* Success state */
+    .success-view { text-align: center; }
+    .success-icon-wrap {
+      width: 64px; height: 64px;
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      border-radius: 50%; margin: 0 auto 1.25rem;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.75rem; color: white;
+      box-shadow: 0 4px 16px rgba(34,197,94,0.35);
+      animation: popIn 0.4s cubic-bezier(0.34,1.56,0.64,1);
     }
-    .success-state {
-      text-align: center;
+    @keyframes popIn {
+      from { transform: scale(0.5); opacity: 0; }
+      to   { transform: scale(1);   opacity: 1; }
     }
-    .info-text {
-      color: #333;
-      line-height: 1.6;
-      margin-bottom: 20px;
+    .success-view h2 { font-size: 1.375rem; font-weight: 700; color: #111827; margin: 0 0 0.75rem; }
+    .success-desc { font-size: 0.875rem; color: #6b7280; line-height: 1.65; margin: 0 0 1.5rem; }
+    .info-cards { display: flex; flex-direction: column; gap: 0.625rem; margin-bottom: 1.5rem; }
+    .info-card {
+      display: flex; align-items: center; gap: 0.75rem;
+      padding: 0.75rem 1rem; background: #f9fafb;
+      border: 1px solid #e5e7eb; border-radius: 0.625rem;
+      font-size: 0.8125rem; color: #374151; text-align: left;
     }
-    .tips {
-      background: #f3f4f6;
-      padding: 15px;
-      border-radius: 10px;
-      margin-bottom: 20px;
-    }
-    .tips p {
-      margin: 0;
-      padding: 5px 0;
-      color: #666;
-      font-size: 13px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-    }
-    .tips p i {
-      color: #667eea;
-    }
-    .back-link {
-      text-align: center;
-      margin-top: 25px;
-      padding-top: 20px;
-      border-top: 1px solid #e9ecef;
-    }
+    .info-card i { color: #6d28d9; font-size: 1rem; flex-shrink: 0; }
+    .info-card.resend-badge { background: #f0fdf4; border-color: #bbf7d0; }
+    .info-card.resend-badge i { color: #16a34a; }
+
+    /* Back link */
+    .back-link { text-align: center; margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid #e5e7eb; }
     .back-link a {
-      color: #667eea;
-      text-decoration: none;
-      font-size: 14px;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
+      color: #6d28d9; text-decoration: none; font-size: 0.875rem; font-weight: 500;
+      display: inline-flex; align-items: center; gap: 0.375rem;
+      transition: color 0.15s ease;
     }
-    .back-link a:hover {
-      text-decoration: underline;
+    .back-link a:hover { color: #4338ca; text-decoration: underline; }
+
+    /* Spinner */
+    .spin { animation: spin 0.8s linear infinite; display: inline-block; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .brand-panel { display: none; }
+      .form-panel  { width: 100%; background: linear-gradient(150deg, #4338ca, #7c3aed); }
     }
-    .spin {
-      animation: spin 1s linear infinite;
-    }
-    @keyframes spin {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
+    @media (max-width: 480px) {
+      .form-panel { padding: 1.25rem 1rem; padding-top: 3rem; align-items: flex-start; }
+      .form-card  { padding: 1.75rem 1.25rem; }
     }
   `]
 })
@@ -243,28 +333,18 @@ export class ForgotPasswordComponent {
 
   onSubmit(): void {
     this.errorMessage = '';
-
-    if (!this.email) {
-      this.errorMessage = 'Veuillez entrer votre email';
-      return;
-    }
+    if (!this.email) { this.errorMessage = 'Veuillez entrer votre email'; return; }
 
     this.isLoading = true;
     this.authService.forgotPassword(this.email).subscribe({
-      next: () => {
-        this.isLoading = false;
-        this.emailSent = true;
-      },
-      error: () => {
-        this.isLoading = false;
-        // Always show success to prevent email enumeration
-        this.emailSent = true;
-      }
+      next:  () => { this.isLoading = false; this.emailSent = true; },
+      error: () => { this.isLoading = false; this.emailSent = true; } // anti-enumeration
     });
   }
 
   resetForm(): void {
     this.emailSent = false;
     this.email = '';
+    this.errorMessage = '';
   }
 }

@@ -137,54 +137,86 @@ VALUES
     ('2025-02-05', 5, 9, 'IDM-2025-1789', 120, 4.832, 579.84, 'Commande VALBLANC 1KG'),
     ('2025-03-01', 5, 10, 'IDM-2025-2012', 70, 23.705, 1659.35, 'VALPRO MAT 5KG - Import');
 
--- Auto-generate stock movements from purchases (ENTREE)
-INSERT INTO stock_mouvement (product_id, quantity, date, type, source, purchase_id, reference)
-SELECT 
-    p.product_id,
-    p.quantity,
-    p.date_purchase,
-    'ENTREE',
-    'ACHAT',
-    p.id,
-    p.invoice_number
-FROM purchase p;
+-- Produit avec uniquement des achats (aucune vente)
+INSERT INTO purchase (date_purchase, supplier_id, product_id, invoice_number, quantity, unit_pricettc, total_amountttc, comment)
+VALUES
+  ('2026-01-10', 2, 6, 'STQ-2026-001', 30, 15.236, 457.08, 'Achat FISSATIVO 30G');
 
--- Auto-generate stock movements from sales (SORTIE)
-INSERT INTO stock_mouvement (product_id, quantity, date, type, source, sale_id, reference)
-SELECT 
-    s.product_id,
-    s.quantity_sold,
-    s.date_sale,
-    'SORTIE',
-    'VENTE',
-    s.id,
-    s.invoice_number
-FROM sale s;
+-- Produit avec bilan négatif (achats > ventes)
+INSERT INTO purchase (date_purchase, supplier_id, product_id, invoice_number, quantity, unit_pricettc, total_amountttc, comment)
+VALUES
+  ('2026-01-20', 3, 8, 'MATNORD-2026-001', 200, 4.439, 887.80, 'Gros achat VALTEX 1KG');
 
--- Update initial stock based on purchases
-UPDATE product p
-SET initial_stock_quantity = COALESCE(
-    (SELECT SUM(pur.quantity) 
-     FROM purchase pur 
-     WHERE pur.product_id = p.id_product), 
-    0
-);
+INSERT INTO sale (date_sale, customer_id, product_id, invoice_number, quantity_sold, unit_sale_price, total_sale_amount, comment)
+VALUES
+  ('2026-01-25', 4, 8, 'FACT-2026-002', 10, 4.439, 44.39, 'Petite vente VALTEX 1KG');
 
--- Update current stock based on sales
-UPDATE product p
-SET current_stock_quantity = COALESCE(p.initial_stock_quantity, 0) - COALESCE(
-    (SELECT SUM(s.quantity_sold) 
-     FROM sale s 
-     WHERE s.product_id = p.id_product), 
-    0
-);
+-- Produit avec bilan nul (achats = ventes)
+INSERT INTO purchase (date_purchase, supplier_id, product_id, invoice_number, quantity, unit_pricettc, total_amountttc, comment)
+VALUES
+  ('2026-02-01', 4, 9, 'PC-2026-002', 50, 5.750, 287.50, 'Achat VALBLANC 1KG');
 
--- Update stock values and CMP (Cost of Weighted Average)
-UPDATE product p
-SET 
-    initial_stock_value = COALESCE(p.initial_stock_quantity, 0) * COALESCE(p.unit_price_bought, 0),
-    current_stock_value = COALESCE(p.current_stock_quantity, 0) * COALESCE(p.unit_price_bought, 0),
-    cmp = CASE 
-        WHEN COALESCE(p.current_stock_quantity, 0) > 0 THEN p.unit_price_bought
-        ELSE 0
-    END;
+INSERT INTO sale (date_sale, customer_id, product_id, invoice_number, quantity_sold, unit_sale_price, total_sale_amount, comment)
+VALUES
+  ('2026-02-05', 5, 9, 'FACT-2026-003', 50, 5.750, 287.50, 'Vente VALBLANC 1KG');
+
+-- Produit avec plusieurs achats et plusieurs ventes, dates mélangées
+INSERT INTO purchase (date_purchase, supplier_id, product_id, invoice_number, quantity, unit_pricettc, total_amountttc, comment)
+VALUES
+  ('2025-12-15', 1, 4, 'VP-2025-010', 10, 8.209, 82.09, 'Achat ancien VALFIX 1KG'),
+  ('2026-02-10', 1, 4, 'VP-2026-011', 15, 8.209, 123.14, 'Achat récent VALFIX 1KG');
+
+INSERT INTO sale (date_sale, customer_id, product_id, invoice_number, quantity_sold, unit_sale_price, total_sale_amount, comment)
+VALUES
+  ('2026-02-12', 2, 4, 'FACT-2026-004', 5, 9.769, 48.85, 'Vente récente VALFIX 1KG'),
+  ('2025-12-20', 2, 4, 'FACT-2025-005', 8, 9.769, 78.15, 'Vente ancienne VALFIX 1KG');
+
+-- Produit avec bilan positif (ventes > achats)
+INSERT INTO purchase (date_purchase, supplier_id, product_id, invoice_number, quantity, unit_pricettc, total_amountttc, comment)
+VALUES
+  ('2026-02-15', 2, 7, 'STQ-2026-010', 10, 3.343, 33.43, 'Petit achat VALMAT 1KG');
+
+INSERT INTO sale (date_sale, customer_id, product_id, invoice_number, quantity_sold, unit_sale_price, total_sale_amount, comment)
+VALUES
+  ('2026-02-20', 3, 7, 'FACT-2026-010', 20, 3.978, 79.56, 'Grosse vente VALMAT 1KG');
+
+-- Produit 2 avec bilan positif (ventes > achats)
+INSERT INTO purchase (date_purchase, supplier_id, product_id, invoice_number, quantity, unit_pricettc, total_amountttc, comment)
+VALUES
+  ('2026-02-18', 3, 8, 'MATNORD-2026-011', 5, 4.439, 22.20, 'Petit achat VALTEX 1KG');
+
+INSERT INTO sale (date_sale, customer_id, product_id, invoice_number, quantity_sold, unit_sale_price, total_sale_amount, comment)
+VALUES
+  ('2026-02-22', 4, 8, 'FACT-2026-011', 30, 4.439, 133.17, 'Grosse vente VALTEX 1KG');
+
+-- Facture pour le produit VALMAT (id produit 7) avec bilan positif
+INSERT INTO bill (date_bill, customer_id, total, deposit, amount_due, discount, delivery_address, payment_terms, notes, payment_status, apply_tva)
+VALUES ('2026-02-21 10:00:00', 3, 79.56, 0, 79.56, 0, '789 Avenue des Décorateurs, Sousse', 'Comptant', 'Facture bilan positif VALMAT', 'PAID', true);
+
+-- Lien produit-facture
+INSERT INTO bill_product (id_bill, id_product, quantity, total_product_price, discount_percentage)
+VALUES (4, 7, 20, 79.56, 0);
+
+-- Achat lié à ce produit
+INSERT INTO purchase (date_purchase, supplier_id, product_id, invoice_number, quantity, unit_pricettc, total_amountttc, comment)
+VALUES ('2026-02-15', 2, 7, 'STQ-2026-010', 10, 3.343, 33.43, 'Petit achat VALMAT 1KG');
+
+-- Vente liée à la facture
+INSERT INTO sale (date_sale, customer_id, product_id, invoice_number, quantity_sold, unit_sale_price, total_sale_amount, comment)
+VALUES ('2026-02-20', 3, 7, 'FACT-2026-010', 20, 3.978, 79.56, 'Grosse vente VALMAT 1KG');
+
+-- Facture pour le produit VALTEX (id produit 8) avec bilan positif
+INSERT INTO bill (date_bill, customer_id, total, deposit, amount_due, discount, delivery_address, payment_terms, notes, payment_status, apply_tva)
+VALUES ('2026-02-23 11:00:00', 4, 133.17, 0, 133.17, 0, '321 Rue de l''Industrie, Monastir', 'Comptant', 'Facture bilan positif VALTEX', 'PAID', true);
+
+-- Lien produit-facture
+INSERT INTO bill_product (id_bill, id_product, quantity, total_product_price, discount_percentage)
+VALUES (5, 8, 30, 133.17, 0);
+
+-- Achat lié à ce produit
+INSERT INTO purchase (date_purchase, supplier_id, product_id, invoice_number, quantity, unit_pricettc, total_amountttc, comment)
+VALUES ('2026-02-18', 3, 8, 'MATNORD-2026-011', 5, 4.439, 22.20, 'Petit achat VALTEX 1KG');
+
+-- Vente liée à la facture
+INSERT INTO sale (date_sale, customer_id, product_id, invoice_number, quantity_sold, unit_sale_price, total_sale_amount, comment)
+VALUES ('2026-02-22', 4, 8, 'FACT-2026-011', 30, 4.439, 133.17, 'Grosse vente VALTEX 1KG');

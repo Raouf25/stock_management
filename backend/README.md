@@ -213,12 +213,53 @@ Tous les montants en **TTC (inclusif de taxes)**
 
 ### PurchaseService
 - `createPurchase()` - Crée achat + mouvement + update stock + CMP
+
+**Implémentation :**
+```java
+public Purchase createPurchase(PurchaseDTO purchaseDTO) {
+    Product product = productRepository.findById(purchaseDTO.getProductId())
+        .orElseThrow(() -> new RuntimeException("Produit non trouvé"));
+    
+    Purchase purchase = new Purchase();
+    purchase.setDatePurchase(purchaseDTO.getDatePurchase());
+    purchase.setSupplier(supplierRepository.findById(purchaseDTO.getSupplierId())
+        .orElseThrow(() -> new RuntimeException("Fournisseur non trouvé")));
+    purchase.setProduct(product);
+    purchase.setInvoiceNumber(purchaseDTO.getInvoiceNumber());
+    purchase.setQuantity(purchaseDTO.getQuantity());
+    purchase.setUnitPriceTTC(purchaseDTO.getUnitPriceTTC());
+    purchase.setComment(purchaseDTO.getComment());
+    
+    return purchaseRepository.save(purchase);
+}
+```
+
 - `getPurchasesByFilter()` - Recherche avancée
 - `getTotalPurchasesAmount()` - Montant total
 
 ### SaleService
 - `createSale()` - Crée vente + validation stock + mouvement + CMP
-- `getSalesByFilter()` - Recherche
+
+**Implémentation :**
+```java
+public Sale createSale(SaleDTO saleDTO) {
+    Product product = productRepository.findById(saleDTO.getProductId())
+        .orElseThrow(() -> new RuntimeException("Produit non trouvé"));
+    
+    // Business rule validation
+    if (product.getCurrentStockQuantity() < saleDTO.getQuantitySold()) {
+        throw new RuntimeException(
+            "Quantité insuffisante en stock. Stock disponible : " + 
+    bill.setDateBill(LocalDateTime.now(clock));
+    
+    // Process products and calculate totals...
+    
+    return billRepository.save(bill);
+}
+```
+
+- `createInvoice()` - Crée facture complète avec TVA, adresse, conditions
+- `getInvoiceKPIs()` - KPIs des factures
 
 ### StockService
 - `getGlobalStockSummary()` - Résumé tous produits
@@ -263,44 +304,6 @@ mvn spring-boot:run -Dspring-boot.run.arguments=--server.port=8081
 
 ### Connexion DB échouée
 ```bash
-# Vérifier PostgreSQL running
-docker ps | grep postgres
-
-# Vérifier credentials dans application.properties
-```
-
-### Pas de données au démarrage
-```bash
-# Vérifier CsvDataLoaderService logs
-tail -f logs/stock_management.log | grep CSV
-
-# Vérifier DB
-docker exec stock_management_postgres psql -U postgres -d stock_db -c "SELECT COUNT(*) FROM products;"
-```
-
-## 📊 Exemple de Requête
-
-### Créer un achat
-```bash
-curl -X POST http://localhost:8080/api/purchases \
-  -H "Content-Type: application/json" \
-  -d '{
-    "supplierId": 1,
-    "productId": 1,
-    "quantity": 100,
-    "unitPriceTTC": 50.00,
-    "invoiceNumber": "INV001",
-    "datePurchase": "2024-01-19T10:00:00"
-  }'
-```
-
-### Créer une vente
-```bash
-curl -X POST http://localhost:8080/api/sales \
-  -H "Content-Type: application/json" \
-  -d '{
-    "productId": 1,
-    "quantitySold": 10,
     "unitSalePrice": 75.00,
     "dateSale": "2024-01-19T12:00:00"
   }'

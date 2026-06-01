@@ -3,12 +3,10 @@ package com.example.stock_management.service;
 import com.example.stock_management.dto.PurchaseDTO;
 import com.example.stock_management.model.Purchase;
 import com.example.stock_management.model.Product;
-import com.example.stock_management.model.StockMouvement;
 import com.example.stock_management.model.Supplier;
 import com.example.stock_management.repository.PurchaseRepository;
 import com.example.stock_management.repository.ProductRepository;
 import com.example.stock_management.repository.SupplierRepository;
-import com.example.stock_management.repository.StockMouvementRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,21 +27,18 @@ public class PurchaseService {
     @Autowired
     private SupplierRepository supplierRepository;
 
-    @Autowired
-    private StockMouvementRepository stockMouvementRepository;
-
     /**
      * Créer un nouvel achat et générer automatiquement une entrée de stock
      */
     @Transactional
-    public Purchase createPurchase(PurchaseDTO purchaseDTO) throws Exception {
+    public Purchase createPurchase(PurchaseDTO purchaseDTO) {
         // Valider le produit existe
         Product product = productRepository.findById(purchaseDTO.getProductId())
-            .orElseThrow(() -> new Exception("Produit non trouvé avec l'ID : " + purchaseDTO.getProductId()));
+            .orElseThrow(() -> new IllegalArgumentException("Produit non trouvé avec l'ID : " + purchaseDTO.getProductId()));
 
         // Valider le fournisseur existe
         Supplier supplier = supplierRepository.findById(purchaseDTO.getSupplierId())
-            .orElseThrow(() -> new Exception("Fournisseur non trouvé avec l'ID : " + purchaseDTO.getSupplierId()));
+            .orElseThrow(() -> new IllegalArgumentException("Fournisseur non trouvé avec l'ID : " + purchaseDTO.getSupplierId()));
 
         // Créer l'achat
         Purchase purchase = new Purchase();
@@ -58,18 +53,6 @@ public class PurchaseService {
 
         // Sauvegarder l'achat
         Purchase savedPurchase = purchaseRepository.save(purchase);
-
-        // Générer automatiquement une entrée de stock
-        StockMouvement mouvement = new StockMouvement();
-        mouvement.setProduct(product);
-        mouvement.setQuantity(purchaseDTO.getQuantity());
-        mouvement.setDate(LocalDate.now());
-        mouvement.setType(StockMouvement.Type.ENTREE);
-        mouvement.setSource(StockMouvement.Source.ACHAT);
-        mouvement.setPurchase(savedPurchase);
-        mouvement.setReference(purchaseDTO.getInvoiceNumber());
-
-        stockMouvementRepository.save(mouvement);
 
         // Mettre à jour le stock du produit et la valeur du stock
         updateProductStock(product, purchaseDTO.getQuantity(), purchaseDTO.getUnitPriceTTC(), true);
