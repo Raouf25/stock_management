@@ -1,0 +1,16 @@
+# Railway configuration — Stock Management Backend
+# Docs: https://docs.railway.com/reference/config-as-code
+
+[build]
+# Pointe EXPLICITEMENT vers le Dockerfile backend (racine du repo)
+# Evite toute confusion avec frontend/Dockerfile
+builder = "DOCKERFILE"
+dockerfilePath = "./backend/Dockerfile"
+
+[deploy]
+healthcheckPath = "/api/products"
+healthcheckTimeout = 60
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3
+
+
