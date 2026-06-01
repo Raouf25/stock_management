@@ -1,27 +1,16 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ApiService {
-  private apiUrl = this.getApiUrl();
+  private apiUrl = environment.apiUrl;
 
   constructor(private http: HttpClient) { }
 
-  private getApiUrl(): string {
-    const hostname = window.location.hostname;
-    
-    // En développement local (localhost ou 127.0.0.1)
-    if (hostname === 'localhost' || hostname === '127.0.0.1') {
-      return '/api';  // Use proxy configuration
-    }
-    
-    // En Codespaces ou devtunnel - utiliser le proxy Angular
-    // Le proxy redirigera vers localhost:8080
-    return '/api';
-  }
 
   // === PRODUCTS ===
   getProducts(): Observable<any[]> {

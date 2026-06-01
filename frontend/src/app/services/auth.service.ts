@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { Router } from '@angular/router';
+import { environment } from '../../environments/environment';
 
 // Types
 export interface User {
@@ -30,7 +31,7 @@ export interface LoginRequest {
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private readonly API_URL = this.getApiUrl() + '/auth';
+  private readonly API_URL = environment.apiUrl + '/auth';
   private readonly TOKEN_KEY = 'auth_token';
   private readonly USER_KEY = 'user_info';
 
@@ -39,18 +40,6 @@ export class AuthService {
 
   constructor(private http: HttpClient, private router: Router) {}
 
-  private getApiUrl(): string {
-    const hostname = window.location.hostname;
-    
-    // En développement local (localhost ou 127.0.0.1)
-    if (hostname === 'localhost' || hostname === '127.0.0.1') {
-      return '/api';  // Use proxy configuration
-    }
-    
-    // En Codespaces ou devtunnel - utiliser le proxy Angular
-    // Le proxy redirigera vers localhost:8080
-    return '/api';
-  }
 
   // === Authentification ===
 
