@@ -39,12 +39,13 @@ public class BillService {
     private final ProductRepository productRepository;
 
     private final CustomerRepository customerRepository;
-    
+
     private final SaleRepository saleRepository;
 
     private final Clock clock;
 
 
+    @Transactional(readOnly = true)
     public List<Bill> findAll() {
         return billRepository.findAll().stream()
                 .sorted(Comparator.comparing(
@@ -53,6 +54,7 @@ public class BillService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     public Optional<Bill> findById(Long id) {
         return billRepository.findById(id);
     }
@@ -82,10 +84,10 @@ public class BillService {
             billProduct.setProduct(product);
             billProduct.setQuantity(billProductDTO.getQuantite());
             productRepository.updateStock(billProductDTO.getIdProduct(), billProductDTO.getQuantite());
-            
+
             // Create sale record
             createSaleRecord(customer, product, billProductDTO.getQuantite(), billProductDTO.getPrixTotal() / billProductDTO.getQuantite());
-            
+
             double productTotal = billProductDTO.getQuantite() * product.getUnitPriceBought();
             billProduct.setTotalProductPrice(productTotal);
 
@@ -100,7 +102,7 @@ public class BillService {
             .map(bp -> BigDecimal.valueOf(bp.getTotalProductPrice()))
             .reduce(BigDecimal.ZERO, BigDecimal::add)
             .setScale(3, RoundingMode.HALF_UP);
-        
+
         bill.setTotal(runningTotal);
 
         // Attach products
@@ -142,12 +144,12 @@ public class BillService {
 
         Bill bill = new Bill();
         bill.setCustomer(customer);
-        
+
         // Convert LocalDate to LocalDateTime
         bill.setDateBill(invoiceDto.getBillDate()
             .atStartOfDay(ZoneId.systemDefault())
             .toLocalDateTime());
-        
+
         // Set additional invoice details
         bill.setDeliveryAddress(invoiceDto.getDeliveryAddress());
         bill.setPaymentTerms(invoiceDto.getPaymentTerms());
@@ -165,7 +167,7 @@ public class BillService {
 
             // Calculate line total before discount
             double subtotal = lineItem.getQuantity() * lineItem.getUnitPrice().doubleValue();
-            
+
             // Apply per-item discount if specified
             double lineDiscount = lineItem.getDiscount() != null ? lineItem.getDiscount().doubleValue() : 0.0;
             double discountAmount = (subtotal * lineDiscount) / 100.0;
@@ -183,7 +185,7 @@ public class BillService {
 
             // Update stock
             productRepository.updateStock(lineItem.getProductId(), lineItem.getQuantity());
-            
+
             // Create sale record
             createSaleRecord(customer, product, lineItem.getQuantity(), lineTotalHT/lineItem.getQuantity());
         }
@@ -243,7 +245,7 @@ public class BillService {
         kpis.put("totalInvoicedAmount", totalInvoiced);
 
         // Average invoice amount
-        BigDecimal avgInvoice = bills.isEmpty() ? BigDecimal.ZERO : 
+        BigDecimal avgInvoice = bills.isEmpty() ? BigDecimal.ZERO :
             totalInvoiced.divide(new BigDecimal(bills.size()), 3, RoundingMode.HALF_UP);
         kpis.put("averageInvoiceAmount", avgInvoice);
 
@@ -283,7 +285,7 @@ public class BillService {
 
         return kpis;
     }
-    
+
     /**
      * Create a sale record for tracking sales
      */
@@ -294,13 +296,13 @@ public class BillService {
         sale.setProduct(product);
         sale.setInvoiceNumber("INV-" + Instant.now(clock).toEpochMilli());
         sale.setQuantitySold(quantity);
-        
+
         // Use provided unit price or fallback to product's unit price sold
         double salePrice = (unitPrice != null) ? unitPrice : product.getUnitPriceSold();
         sale.setUnitSalePrice(salePrice);
         sale.setTotalSaleAmount(quantity * salePrice);
         sale.setComment("Vente automatique via facturation");
-        
+
         saleRepository.save(sale);
     }
 
@@ -308,9 +310,9 @@ public class BillService {
     public Bill registerPayment(Long billId, double amount) {
         Bill bill = billRepository.findById(billId)
             .orElseThrow(() -> new RuntimeException("Facture non trouvée avec l'ID: " + billId));
-        
+
         BigDecimal paymentAmount = BigDecimal.valueOf(amount).setScale(3, RoundingMode.HALF_UP);
-        
+
         if (paymentAmount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new RuntimeException("Le montant doit être positif.");
         }
@@ -320,19 +322,19 @@ public class BillService {
         if (paymentAmount.compareTo(bill.getAmountDue()) > 0) {
             throw new RuntimeException("Le montant dépasse le montant dû.");
         }
-        
+
         // Met à jour l'acompte
         BigDecimal currentDeposit = bill.getDeposit() != null ? bill.getDeposit() : BigDecimal.ZERO;
         BigDecimal newDeposit = currentDeposit.add(paymentAmount);
         bill.setDeposit(newDeposit);
-        
+
         // Recalcule le montant dû
         BigDecimal newAmountDue = bill.getTotal().subtract(newDeposit);
         if (newAmountDue.compareTo(BigDecimal.ZERO) < 0) {
             newAmountDue = BigDecimal.ZERO;
         }
         bill.setAmountDue(newAmountDue);
-        
+
         // Met à jour le statut de paiement
         if (newAmountDue.compareTo(BigDecimal.ZERO) == 0) {
             bill.setPaymentStatus(PaymentStatus.PAID);
@@ -341,7 +343,7 @@ public class BillService {
         } else {
             bill.setPaymentStatus(PaymentStatus.UNPAID);
         }
-        
+
         // Sauvegarde
         return billRepository.save(bill);
     }
