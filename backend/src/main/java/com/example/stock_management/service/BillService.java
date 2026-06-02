@@ -47,16 +47,12 @@ public class BillService {
 
     @Transactional(readOnly = true)
     public List<Bill> findAll() {
-        return billRepository.findAll().stream()
-                .sorted(Comparator.comparing(
-                    (Bill bill) -> bill.getAmountDue() != null ? bill.getAmountDue() : BigDecimal.ZERO,
-                    Comparator.reverseOrder()))
-                .toList();
+        return billRepository.findAllWithProducts();
     }
 
     @Transactional(readOnly = true)
     public Optional<Bill> findById(Long id) {
-        return billRepository.findById(id);
+        return billRepository.findByIdWithProducts(id);
     }
 
     @Transactional

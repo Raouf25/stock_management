@@ -23,13 +23,13 @@ public class Bill {
     @JoinColumn(name = "customerId")
     private Customer customer;
 
-    @OneToMany(mappedBy = "bill", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "bill", fetch = FetchType.EAGER)
     @ToString.Exclude // Exclusion de la relation pour éviter la récursion infinie
     private List<BillProduct> billProducts;
 
     @Column(precision = 19, scale = 3)
     private BigDecimal total;
-    
+
     @Column(nullable = true, precision = 19, scale = 3)
     private BigDecimal deposit;// "Acompte"
 
