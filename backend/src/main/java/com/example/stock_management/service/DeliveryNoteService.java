@@ -25,16 +25,16 @@ public class DeliveryNoteService {
     private final CustomerRepository customerRepository;
     private final BillRepository billRepository;
 
+    @Transactional(readOnly = true)
     public List<DeliveryNote> findAll() {
-        List<DeliveryNote> notes = deliveryNoteRepository.findAll();
-        // Sort by dateDelivery descending (most recent first)
-        notes.sort((a, b) -> b.getDateDelivery().compareTo(a.getDateDelivery()));
-        return notes;
+        return deliveryNoteRepository.findAll();
     }
 
+    @Transactional(readOnly = true)
     public Optional<DeliveryNote> findById(Long id) {
         return deliveryNoteRepository.findById(id);
     }
+
 
     public List<DeliveryNote> findByCustomerId(Long customerId) {
         return deliveryNoteRepository.findByCustomer_CustomerId(customerId);
@@ -56,7 +56,7 @@ public class DeliveryNoteService {
 
         DeliveryNote deliveryNote = new DeliveryNote();
         deliveryNote.setCustomer(customer);
-        deliveryNote.setDateDelivery(deliveryNoteDTO.getDateDelivery() != null ? 
+        deliveryNote.setDateDelivery(deliveryNoteDTO.getDateDelivery() != null ?
                 deliveryNoteDTO.getDateDelivery() : LocalDateTime.now());
         deliveryNote.setDeliveryAddress(deliveryNoteDTO.getDeliveryAddress());
         deliveryNote.setNotes(deliveryNoteDTO.getNotes());
@@ -78,17 +78,17 @@ public class DeliveryNoteService {
             DeliveryNoteProduct dnProduct = new DeliveryNoteProduct();
             dnProduct.setProduct(product);
             dnProduct.setQuantity(productDTO.getQuantity());
-            dnProduct.setUnitPrice(productDTO.getUnitPrice() != null ? 
+            dnProduct.setUnitPrice(productDTO.getUnitPrice() != null ?
                     productDTO.getUnitPrice() : BigDecimal.valueOf(product.getUnitPriceSold()));
             dnProduct.setDiscount(productDTO.getDiscount() != null ? productDTO.getDiscount() : BigDecimal.ZERO);
             dnProduct.setDeliveryNote(deliveryNote);
-            
+
             // Calculer le prix total
             dnProduct.calculateTotalPrice();
             totalAmount = totalAmount.add(dnProduct.getTotalPrice());
 
             deliveryNoteProducts.add(dnProduct);
-            
+
             // Mettre à jour le stock du produit
             productRepository.updateStock(product.getIdProduct(), productDTO.getQuantity());
         }
@@ -120,13 +120,13 @@ public class DeliveryNoteService {
     public DeliveryNote updateStatus(Long id, DeliveryNoteStatus status) {
         DeliveryNote deliveryNote = deliveryNoteRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Delivery Note not found with ID: " + id));
-        
+
         deliveryNote.setStatus(status);
-        
+
         if (status == DeliveryNoteStatus.INVOICED) {
             deliveryNote.setInvoiced(true);
         }
-        
+
         return deliveryNoteRepository.save(deliveryNote);
     }
 
@@ -134,20 +134,20 @@ public class DeliveryNoteService {
     public void delete(Long id) {
         DeliveryNote deliveryNote = deliveryNoteRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Delivery Note not found with ID: " + id));
-        
+
         if (deliveryNote.getInvoiced()) {
             throw new RuntimeException("Cannot delete an invoiced delivery note");
         }
-        
+
         // Annuler les mouvements de stock
         for (DeliveryNoteProduct dnp : deliveryNote.getDeliveryNoteProducts()) {
             // Remettre le stock
             Product product = dnp.getProduct();
             product.setCurrentStockQuantity(product.getCurrentStockQuantity() + dnp.getQuantity());
             productRepository.save(product);
-            
+
         }
-        
+
         deliveryNoteRepository.delete(deliveryNote);
     }
 
@@ -158,7 +158,7 @@ public class DeliveryNoteService {
         }
 
         List<DeliveryNote> deliveryNotes = deliveryNoteRepository.findAllById(deliveryNoteIds);
-        
+
         if (deliveryNotes.isEmpty()) {
             throw new RuntimeException("No delivery notes found");
         }
@@ -167,7 +167,7 @@ public class DeliveryNoteService {
         Customer customer = deliveryNotes.get(0).getCustomer();
         boolean sameCustomer = deliveryNotes.stream()
                 .allMatch(dn -> dn.getCustomer().getCustomerId().equals(customer.getCustomerId()));
-        
+
         if (!sameCustomer) {
             throw new RuntimeException("All delivery notes must belong to the same customer");
         }
@@ -191,7 +191,7 @@ public class DeliveryNoteService {
         for (DeliveryNote dn : deliveryNotes) {
             for (DeliveryNoteProduct dnp : dn.getDeliveryNoteProducts()) {
                 Long productId = dnp.getProduct().getIdProduct();
-                
+
                 if (productMap.containsKey(productId)) {
                     // Additionner les quantités si le produit existe déjà
                     BillProduct existing = productMap.get(productId);
@@ -207,7 +207,7 @@ public class DeliveryNoteService {
                     billProduct.setBill(bill);
                     productMap.put(productId, billProduct);
                 }
-                
+
                 totalAmount = totalAmount.add(dnp.getTotalPrice());
             }
         }
@@ -215,7 +215,7 @@ public class DeliveryNoteService {
         bill.setBillProducts(new ArrayList<>(productMap.values()));
         bill.setTotal(totalAmount.setScale(3, RoundingMode.HALF_UP));
         bill.setAmountDue(totalAmount.setScale(3, RoundingMode.HALF_UP));
-        
+
         // Sauvegarder la facture
         bill = billRepository.save(bill);
 
@@ -232,13 +232,13 @@ public class DeliveryNoteService {
 
     public Map<String, Object> getKPIs() {
         Map<String, Object> kpis = new HashMap<>();
-        
+
         long totalDeliveryNotes = deliveryNoteRepository.count();
         long notInvoiced = deliveryNoteRepository.countNotInvoiced();
         long pending = deliveryNoteRepository.countByStatus(DeliveryNoteStatus.PENDING);
         long delivered = deliveryNoteRepository.countByStatus(DeliveryNoteStatus.DELIVERED);
         BigDecimal totalAmountNotInvoiced = deliveryNoteRepository.sumTotalAmountNotInvoiced();
-        
+
         // Calculs pour le mois en cours
         LocalDateTime now = LocalDateTime.now();
         List<DeliveryNote> thisMonthNotes = deliveryNoteRepository.findByYearAndMonth(
@@ -247,7 +247,7 @@ public class DeliveryNoteService {
         BigDecimal thisMonthAmount = thisMonthNotes.stream()
                 .map(DeliveryNote::getTotalAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
-        
+
         kpis.put("totalDeliveryNotes", totalDeliveryNotes);
         kpis.put("notInvoiced", notInvoiced);
         kpis.put("pendingDelivery", pending);
@@ -255,18 +255,18 @@ public class DeliveryNoteService {
         kpis.put("totalAmountNotInvoiced", totalAmountNotInvoiced);
         kpis.put("thisMonthDeliveryNotes", thisMonthCount);
         kpis.put("thisMonthAmount", thisMonthAmount);
-        
+
         return kpis;
     }
 
     private String generateDeliveryNoteNumber() {
         String prefix = "BL";
         String datePart = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-        
+
         // Trouver le dernier numéro du jour
         String pattern = prefix + "-" + datePart + "-%";
         long count = deliveryNoteRepository.count();
-        
+
         return String.format("%s-%s-%04d", prefix, datePart, count + 1);
     }
 }
