@@ -27,7 +27,7 @@ public class PasswordResetEmailService {
     @Value("${resend.from-email:onboarding@resend.dev}")
     private String fromEmail;
 
-    @Value("${resend.from-name:Stock ERP}")
+    @Value("${resend.from-name:Bhouri Stock}")
     private String fromName;
 
     private final RestTemplate restTemplate;
@@ -58,7 +58,7 @@ public class PasswordResetEmailService {
             Map<String, Object> body = Map.of(
                     "from",    fromName + " <" + fromEmail + ">",
                     "to",      List.of(to),
-                    "subject", "🔐 Réinitialisation de votre mot de passe — Stock ERP",
+                    "subject", "🔐 Réinitialisation de votre mot de passe — Bhouri Stock",
                     "html",    emailHtml
             );
 

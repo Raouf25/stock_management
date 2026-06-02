@@ -15,7 +15,7 @@ import { AuthService } from '../../services/auth.service';
         <div class="blob blob-2"></div>
         <div class="brand-content">
           <div class="brand-logo"><i class="bi bi-shield-lock-fill"></i></div>
-          <h1 class="brand-name">Stock ERP</h1>
+          <h1 class="brand-name">Bhouri Stock</h1>
           <p class="brand-tagline">Sécurisez votre compte avec<br>un mot de passe robuste</p>
           <div class="tips-section">
             <h3>Conseils de sécurité</h3>

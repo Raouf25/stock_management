@@ -17,14 +17,14 @@ import { AuthService } from '../../services/auth.service';
         <div class="blob blob-2"></div>
         <div class="brand-content">
           <div class="brand-logo"><i class="bi bi-box-seam-fill"></i></div>
-          <h1 class="brand-name">Stock ERP</h1>
+          <h1 class="brand-name">Bhouri Stock</h1>
           <p class="brand-tagline">Récupérez l'accès à votre<br>espace de gestion</p>
           <div class="steps">
             <div class="step-item">
               <div class="step-num">1</div>
               <div class="step-text">
                 <strong>Entrez votre email</strong>
-                <span>Associé à votre compte Stock ERP</span>
+                <span>Associé à votre compte Bhouri Stock</span>
               </div>
             </div>
             <div class="step-item">

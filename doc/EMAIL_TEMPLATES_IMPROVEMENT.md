@@ -1,8 +1,8 @@
-# 📧 Amélioration du Système d'Emails — Stock ERP
+# 📧 Amélioration du Système d'Emails — Bhouri Stock
 
 ## 📋 Vue d'ensemble
 
-Refonte complète du système d'emails de l'application Stock ERP avec :
+Refonte complète du système d'emails de l'application Bhouri Stock avec :
 - ✅ **Design moderne** avec gradients purple/indigo
 - ✅ **Templates HTML professionnels** réutilisables
 - ✅ **Cohérence visuelle** avec l'application
@@ -24,7 +24,7 @@ Refonte complète du système d'emails de l'application Stock ERP avec :
 - Design moderne avec les couleurs exactes de l'application
 - Gradients purple/indigo (#667eea → #764ba2)
 - Logo/icône avec effet glassmorphism
-- Footer unifié avec branding "Stock ERP"
+- Footer unifié avec branding "Bhouri Stock"
 - Responsive design optimisé pour tous les clients email
 
 ---
@@ -350,7 +350,7 @@ public class CustomEmailService {
 # Resend API Configuration
 resend.api-key=re_xxxxxxxxxxxxx
 resend.from-email=onboarding@resend.dev
-resend.from-name=Stock ERP
+resend.from-name=Bhouri Stock
 ```
 
 ---
@@ -430,16 +430,16 @@ Documentation complète disponible dans :
 
 ## ✨ Conclusion
 
-Le système d'emails de Stock ERP est maintenant :
+Le système d'emails de Bhouri Stock est maintenant :
 - ✅ **Moderne et professionnel**
 - ✅ **Cohérent avec l'identité visuelle de l'app**
 - ✅ **Facile à maintenir et étendre**
 - ✅ **Bien documenté**
 - ✅ **Prêt pour la production**
 
-**Branding** : Tous les emails affichent fièrement le logo et les couleurs de **Stock ERP** avec le tagline "Gestion intelligente de stock" 📦
+**Branding** : Tous les emails affichent fièrement le logo et les couleurs de **Bhouri Stock** avec le tagline "Gestion intelligente de stock" 📦
 
 ---
 
-© 2026 Stock ERP — Amélioration du système d'emails
+© 2026 Bhouri Stock — Amélioration du système d'emails
 

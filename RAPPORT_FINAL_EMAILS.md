@@ -2,7 +2,7 @@
 
 ## 🎯 Mission Accomplie
 
-Tous les emails de l'application **Stock ERP** ont été modernisés avec succès ! 
+Tous les emails de l'application **Bhouri Stock** ont été modernisés avec succès ! 
 
 ---
 
@@ -39,7 +39,7 @@ backend/src/main/resources/email-templates/
 - Responsive (max-width: 600px)
 - Compatible tous clients email (Gmail, Outlook, Apple Mail...)
 - Émojis et icônes glassmorphism
-- Footer unifié avec branding "Stock ERP"
+- Footer unifié avec branding "Bhouri Stock"
 
 ---
 
@@ -275,7 +275,7 @@ ls -lh backend/src/main/resources/email-templates/
 ### Pour l'Entreprise
 
 - ✅ **Image professionnelle** : Emails modernes et cohérents
-- ✅ **Branding renforcé** : Couleurs et logo Stock ERP partout
+- ✅ **Branding renforcé** : Couleurs et logo Bhouri Stock partout
 - ✅ **Confiance client** : Design professionnel = crédibilité
 
 ### Pour les Développeurs
@@ -317,19 +317,19 @@ ls -lh backend/src/main/resources/email-templates/
 
 ### ✅ Mission Accomplie
 
-Le système d'emails de **Stock ERP** a été complètement modernisé avec :
+Le système d'emails de **Bhouri Stock** a été complètement modernisé avec :
 
 1. ✅ **4 templates HTML professionnels** aux couleurs de l'app
 2. ✅ **Architecture propre** avec Thymeleaf (séparation HTML/Java)
 3. ✅ **Services réutilisables** pour tous les types d'emails
 4. ✅ **Documentation complète** (1,200 lignes)
 5. ✅ **Compilation réussie** — prêt pour production
-6. ✅ **Design cohérent** avec le branding Stock ERP
+6. ✅ **Design cohérent** avec le branding Bhouri Stock
 
 ### 📊 Statistiques Finales
 
 ```
-📦 Projet : Stock ERP — Amélioration Emails
+📦 Projet : Bhouri Stock — Amélioration Emails
 📅 Date    : 31 Mai 2026
 ⏱️  Durée   : ~4-5 heures
 👨‍💻 Effort  : Moyen
@@ -343,7 +343,7 @@ Le système d'emails de **Stock ERP** a été complètement modernisé avec :
 |--------|---------|---------|
 | **Design** | Basique, couleurs génériques | Moderne, gradient purple/indigo |
 | **Architecture** | HTML inline dans Java | Templates Thymeleaf séparés |
-| **Branding** | Aucun | Logo + Nom + Couleurs Stock ERP |
+| **Branding** | Aucun | Logo + Nom + Couleurs Bhouri Stock |
 | **Maintenabilité** | Faible (HTML dans code) | Élevée (templates séparés) |
 | **Réutilisabilité** | Faible | Élevée (4 templates + 1 générique) |
 | **Documentation** | Inexistante | Complète (1,200 lignes) |
@@ -385,11 +385,11 @@ R : Testé sur Gmail, Outlook, Apple Mail — techniques compatibles (tables inl
 
 Merci à **Raouf Makhlouf** pour la réalisation de cette amélioration !
 
-**Stock ERP** bénéficie maintenant d'un système d'emails professionnel qui reflète parfaitement l'identité visuelle de l'application.
+**Bhouri Stock** bénéficie maintenant d'un système d'emails professionnel qui reflète parfaitement l'identité visuelle de l'application.
 
 ---
 
-**© 2026 Stock ERP** — Amélioration du Système d'Emails  
+**© 2026 Bhouri Stock** — Amélioration du Système d'Emails  
 📦 Votre solution de gestion de stock intelligente
 
 ---

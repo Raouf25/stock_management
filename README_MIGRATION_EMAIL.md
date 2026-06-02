@@ -96,7 +96,7 @@ Dashboard Resend : https://resend.com/emails
 | **Free** | $0 | 3,000 | Dev + petite prod |
 | **Pro** | $20/mois | 50,000 | Prod moyenne |
 
-**Pour Stock ERP** : ~350 emails/mois → **Plan Free suffit** 🎉
+**Pour Bhouri Stock** : ~350 emails/mois → **Plan Free suffit** 🎉
 
 ---
 

@@ -1,10 +1,10 @@
-# 📧 Stock ERP — Catalogue des Templates d'Email
+# 📧 Bhouri Stock — Catalogue des Templates d'Email
 
 ## Vue d'Ensemble
 
-Tous les templates suivent le design system de **Stock ERP** :
+Tous les templates suivent le design system de **Bhouri Stock** :
 - 🎨 Gradient Purple/Indigo : `#667eea → #764ba2`
-- 📦 Branding : "Stock ERP — Gestion intelligente de stock"
+- 📦 Branding : "Bhouri Stock — Gestion intelligente de stock"
 - 🎯 Design moderne responsive (max-width: 600px)
 
 ---
@@ -21,7 +21,7 @@ Tous les templates suivent le design system de **Stock ERP** :
 ╔═══════════════════════════════════════╗
 ║        🔐 dans cercle glassmorphism    ║  ← Purple gradient
 ║   Réinitialisation du mot de passe    ║
-║   Stock ERP — Gestion intelligente    ║
+║   Bhouri Stock — Gestion intelligente    ║
 ╚═══════════════════════════════════════╝
 
 Bonjour [Raouf],
@@ -44,7 +44,7 @@ https://app.stock-erp.com/reset?token=...
 Si vous n'avez pas demandé cette
 réinitialisation, ignorez cet email.
 
-© 2026 Stock ERP — Tous droits réservés
+© 2026 Bhouri Stock — Tous droits réservés
 📦 Votre solution de gestion de stock intelligente
 ```
 
@@ -79,7 +79,7 @@ String html = emailTemplateService.renderPasswordResetEmail(
 ╔═══════════════════════════════════════╗
 ║        📄 dans cercle glassmorphism    ║  ← Purple gradient
 ║         Nouvelle Facture              ║
-║   Stock ERP — Gestion intelligente    ║
+║   Bhouri Stock — Gestion intelligente    ║
 ╚═══════════════════════════════════════╝
 
 Bonjour [SARL Dupont],
@@ -105,7 +105,7 @@ n'hésitez pas à nous contacter.
 
 Merci de votre confiance.
 
-© 2026 Stock ERP — Tous droits réservés
+© 2026 Bhouri Stock — Tous droits réservés
 📦 Votre solution de gestion de stock intelligente
 ```
 
@@ -152,7 +152,7 @@ emailService.sendEmailWithPdfAttachment(
 ╔═══════════════════════════════════════╗
 ║        🚚 dans cercle glassmorphism    ║  ← Purple gradient
 ║        Bon de Livraison               ║
-║   Stock ERP — Gestion intelligente    ║
+║   Bhouri Stock — Gestion intelligente    ║
 ╚═══════════════════════════════════════╝
 
 Bonjour [SARL Dupont],
@@ -178,7 +178,7 @@ n'hésitez pas à nous contacter.
 
 Merci de votre confiance.
 
-© 2026 Stock ERP — Tous droits réservés
+© 2026 Bhouri Stock — Tous droits réservés
 📦 Votre solution de gestion de stock intelligente
 ```
 
@@ -225,7 +225,7 @@ emailService.sendEmailWithPdfAttachment(
 ╔═══════════════════════════════════════╗
 ║        [Icône personnalisée]           ║  ← Purple gradient
 ║         [Titre personnalisé]          ║     (ex: ✅, ⚠️, 📦)
-║   Stock ERP — Gestion intelligente    ║
+║   Bhouri Stock — Gestion intelligente    ║
 ╚═══════════════════════════════════════╝
 
 [Salutation personnalisée]
@@ -243,7 +243,7 @@ Ex: Votre commande #12345 a été validée
 [Footer personnalisé]
 Ex: Pour toute question, contactez-nous.
 
-© 2026 Stock ERP — Tous droits réservés
+© 2026 Bhouri Stock — Tous droits réservés
 📦 Votre solution de gestion de stock intelligente
 ```
 
@@ -277,7 +277,7 @@ emailService.sendNotification(
 // Exemple 3 : Utilisation directe du template
 String html = emailTemplateService.renderGenericNotification(
     "🎉",
-    "Bienvenue sur Stock ERP",
+    "Bienvenue sur Bhouri Stock",
     "Bonjour Marie",
     "Votre compte a été créé avec succès.",
     "Commencez à gérer votre stock dès maintenant !",
@@ -286,7 +286,7 @@ String html = emailTemplateService.renderGenericNotification(
 );
 emailService.sendSimpleEmail(
     "marie@example.com",
-    "Bienvenue sur Stock ERP",
+    "Bienvenue sur Bhouri Stock",
     html
 );
 ```
@@ -432,7 +432,7 @@ Map.of(
 
 ---
 
-**© 2026 Stock ERP** — Catalogue des Templates d'Email  
+**© 2026 Bhouri Stock** — Catalogue des Templates d'Email  
 📦 Votre solution de gestion de stock intelligente
 
 *Dernière mise à jour : 31 Mai 2026*

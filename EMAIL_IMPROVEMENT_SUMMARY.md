@@ -1,8 +1,8 @@
-# ✨ Amélioration du Design des Emails — Stock ERP
+# ✨ Amélioration du Design des Emails — Bhouri Stock
 
 ## 🎯 Objectif Réalisé
 
-Unification et modernisation de tous les emails de l'application **Stock ERP** avec :
+Unification et modernisation de tous les emails de l'application **Bhouri Stock** avec :
 - ✅ Design moderne aux couleurs de l'application (purple/indigo gradients)
 - ✅ Templates HTML professionnels et réutilisables
 - ✅ Architecture propre avec Thymeleaf
@@ -97,7 +97,7 @@ box-shadow: 0 8px 20px rgba(102,126,234,0.35);
 | **Bouton CTA** | Gradient avec shadow et border-radius: 12px |
 | **Warning Box** | Background jaune, bordure orange (#f59e0b) |
 | **Info Box** | Background bleu, bordure bleue (#3b82f6) |
-| **Footer** | Background gris clair avec © Stock ERP |
+| **Footer** | Background gris clair avec © Bhouri Stock |
 
 ---
 
@@ -111,7 +111,7 @@ box-shadow: 0 8px 20px rgba(102,126,234,0.35);
 │  ║   🔐 (icône dans cercle)       ║    │ ← Header gradient purple
 │  ║  Réinitialisation du mot       ║    │
 │  ║      de passe                  ║    │
-│  ║  Stock ERP — Gestion de stock  ║    │
+│  ║  Bhouri Stock — Gestion de stock  ║    │
 │  ╚════════════════════════════════╝    │
 │                                        │
 │  Bonjour [Utilisateur],                │
@@ -131,7 +131,7 @@ box-shadow: 0 8px 20px rgba(102,126,234,0.35);
 │  Lien de secours: https://...         │
 │                                        │
 │  ────────────────────────────────────  │
-│  © 2026 Stock ERP — Tous droits       │ ← Footer
+│  © 2026 Bhouri Stock — Tous droits       │ ← Footer
 │  📦 Votre solution de gestion...      │
 └────────────────────────────────────────┘
 ```
@@ -143,7 +143,7 @@ box-shadow: 0 8px 20px rgba(102,126,234,0.35);
 │  ╔════════════════════════════════╗    │
 │  ║   📄 (icône dans cercle)       ║    │ ← Header gradient purple
 │  ║     Nouvelle Facture           ║    │
-│  ║  Stock ERP — Gestion de stock  ║    │
+│  ║  Bhouri Stock — Gestion de stock  ║    │
 │  ╚════════════════════════════════╝    │
 │                                        │
 │  Bonjour [Client],                     │
@@ -162,7 +162,7 @@ box-shadow: 0 8px 20px rgba(102,126,234,0.35);
 │  └────────────────────────────────┘   │
 │                                        │
 │  ────────────────────────────────────  │
-│  © 2026 Stock ERP                     │
+│  © 2026 Bhouri Stock                     │
 └────────────────────────────────────────┘
 ```
 
@@ -278,7 +278,7 @@ emailService.sendNotification(
 ### 🎨 Design & UX
 
 - ✅ **Cohérence visuelle** : Tous les emails suivent le même design system que l'app
-- ✅ **Branding unifié** : Logo, couleurs (#667eea → #764ba2), et nom "Stock ERP" partout
+- ✅ **Branding unifié** : Logo, couleurs (#667eea → #764ba2), et nom "Bhouri Stock" partout
 - ✅ **Design moderne** : Gradients, shadows, rounded corners, glassmorphism
 - ✅ **Responsive** : Optimisé pour desktop et mobile (max-width: 600px)
 - ✅ **Accessibilité** : Structure sémantique, bon contraste des couleurs
@@ -381,7 +381,7 @@ String html = emailTemplateService.renderTemplate("my-template", variables);
 
 ## 🎉 Conclusion
 
-Le système d'emails de **Stock ERP** est maintenant :
+Le système d'emails de **Bhouri Stock** est maintenant :
 
 - ✅ **Professionnel & Moderne** — Design aux couleurs de l'app
 - ✅ **Cohérent** — Tous les emails suivent le même style
@@ -401,7 +401,7 @@ Pour toute question ou modification :
 
 ---
 
-**© 2026 Stock ERP** — Amélioration du système d'emails  
+**© 2026 Bhouri Stock** — Amélioration du système d'emails  
 📦 Votre solution de gestion de stock intelligente
 
 ---

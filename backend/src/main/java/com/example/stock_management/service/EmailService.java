@@ -29,7 +29,7 @@ public class EmailService {
     @Value("${resend.from-email:onboarding@resend.dev}")
     private String fromEmail;
 
-    @Value("${resend.from-name:Stock ERP}")
+    @Value("${resend.from-name:Bhouri Stock}")
     private String fromName;
 
     private final RestTemplate restTemplate;
@@ -145,7 +145,7 @@ public class EmailService {
 
         sendEmailWithPdfAttachment(
                 to,
-                "📄 Nouvelle Facture " + billNumber + " — Stock ERP",
+                "📄 Nouvelle Facture " + billNumber + " — Bhouri Stock",
                 emailHtml,
                 pdfBytes,
                 "Facture_" + billNumber + ".pdf"
@@ -166,7 +166,7 @@ public class EmailService {
 
         sendEmailWithPdfAttachment(
                 to,
-                "🚚 Bon de Livraison " + deliveryNoteNumber + " — Stock ERP",
+                "🚚 Bon de Livraison " + deliveryNoteNumber + " — Bhouri Stock",
                 emailHtml,
                 pdfBytes,
                 "BonDeLivraison_" + deliveryNoteNumber + ".pdf"
@@ -185,6 +185,6 @@ public class EmailService {
                 icon, title, greeting, message, footer, ctaText, ctaLink
         );
 
-        sendSimpleEmail(to, title + " — Stock ERP", emailHtml);
+        sendSimpleEmail(to, title + " — Bhouri Stock", emailHtml);
     }
 }

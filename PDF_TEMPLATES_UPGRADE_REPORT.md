@@ -8,7 +8,7 @@
 
 ## 🎯 Objectif
 
-Moderniser les templates PDF des **Factures** et **Bons de Livraison** pour qu'ils suivent le même style visuel unifié que les templates d'emails, avec le branding **Stock ERP**.
+Moderniser les templates PDF des **Factures** et **Bons de Livraison** pour qu'ils suivent le même style visuel unifié que les templates d'emails, avec le branding **Bhouri Stock**.
 
 ---
 
@@ -24,7 +24,7 @@ Moderniser les templates PDF des **Factures** et **Bons de Livraison** pour qu'i
 
 #### **Après:**
 - ✅ **Gradient purple/indigo** (#667eea → #764ba2) — couleurs exactes de l'application
-- ✅ **Branding unifié** : "Stock ERP — Gestion intelligente de stock"
+- ✅ **Branding unifié** : "Bhouri Stock — Gestion intelligente de stock"
 - ✅ **Effet glassmorphism** sur les icônes (cercles avec transparence)
 - ✅ **Style moderne** cohérent avec les emails
 - ✅ **Design responsive** optimisé pour PDF
@@ -39,7 +39,7 @@ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 ```
 - Icône avec effet glassmorphism (📄 pour factures, 🚚 pour BL)
 - Titre central élégant
-- Badge "Stock ERP · Facturation/Livraison"
+- Badge "Bhouri Stock · Facturation/Livraison"
 - Tagline : "Gestion intelligente de stock"
 
 ### 2. **Section d'information modernisée**
@@ -61,7 +61,7 @@ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 - Coins arrondis
 
 ### 5. **Footer avec branding**
-- "📦 Stock ERP"
+- "📦 Bhouri Stock"
 - Tagline de l'application
 - Copyright © 2026
 - Design cohérent avec emails
@@ -94,7 +94,7 @@ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 
 ---
 
-## 🎨 Palette de couleurs — Stock ERP
+## 🎨 Palette de couleurs — Bhouri Stock
 
 ### **Primaires (Gradient)**
 - `#667eea` → Purple principal
@@ -132,7 +132,7 @@ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 5. ✅ Mode de paiement + totaux
 6. ✅ Mentions légales
 7. ✅ Signatures
-8. ✅ Footer branding Stock ERP
+8. ✅ Footer branding Bhouri Stock
 
 **Variables Thymeleaf utilisées:**
 - `${billNumber}`, `${billDate}`, `${paymentTerms}`
@@ -155,7 +155,7 @@ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 5. ✅ Totaux
 6. ✅ Notes optionnelles
 7. ✅ Signatures
-8. ✅ Footer branding Stock ERP
+8. ✅ Footer branding Bhouri Stock
 
 **Variables Thymeleaf utilisées:**
 - `${deliveryNoteNumber}`, `${deliveryDate}`, `${statusLabel}`
@@ -198,7 +198,7 @@ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 
 - [ ] Gradient purple/indigo visible et uniforme
 - [ ] Icône glassmorphism bien rendue
-- [ ] Branding "Stock ERP" présent et lisible
+- [ ] Branding "Bhouri Stock" présent et lisible
 - [ ] Tableaux bien alignés
 - [ ] Couleurs cohérentes avec les emails
 - [ ] Coins arrondis visibles
@@ -265,7 +265,7 @@ git checkout HEAD~1 -- backend/src/main/resources/pdf-templates/
 | **Emails** | Gradient purple/indigo ✅ | Gradient purple/indigo ✅ |
 | **Factures PDF** | Bleu basique ❌ | Gradient purple/indigo ✅ |
 | **BL PDF** | Vert basique ❌ | Gradient purple/indigo ✅ |
-| **Branding** | Incohérent ❌ | "Stock ERP" unifié ✅ |
+| **Branding** | Incohérent ❌ | "Bhouri Stock" unifié ✅ |
 | **Design** | Basique ❌ | Moderne + glassmorphism ✅ |
 
 ### **Impact utilisateur:**
@@ -289,7 +289,7 @@ git checkout HEAD~1 -- backend/src/main/resources/pdf-templates/
 
 ## 🎉 Conclusion
 
-Les templates PDF de **Facture** et **Bon de Livraison** sont maintenant parfaitement alignés avec le design moderne de l'application Stock ERP, utilisant le même gradient purple/indigo (#667eea → #764ba2) et le même branding que les emails.
+Les templates PDF de **Facture** et **Bon de Livraison** sont maintenant parfaitement alignés avec le design moderne de l'application Bhouri Stock, utilisant le même gradient purple/indigo (#667eea → #764ba2) et le même branding que les emails.
 
 **Bravo ! Votre système de gestion de stock a maintenant une identité visuelle unifiée et professionnelle. 🚀**
 

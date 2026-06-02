@@ -86,7 +86,7 @@ Ouvrir les PDFs et vérifier :
 
 - [ ] **Header avec gradient purple/indigo** (#667eea → #764ba2)
 - [ ] **Icône 📄 avec effet glassmorphism** (cercle semi-transparent)
-- [ ] **Badge "Stock ERP · Facturation"** en blanc avec letterspacing
+- [ ] **Badge "Bhouri Stock · Facturation"** en blanc avec letterspacing
 - [ ] **Titre "Facture"** en grand, blanc et gras
 - [ ] **Numéro de facture** bien visible
 - [ ] **Tagline "Gestion intelligente de stock"** en bas du header
@@ -95,13 +95,13 @@ Ouvrir les PDFs et vérifier :
 - [ ] **Références produits** avec fond purple clair (#f8f7ff)
 - [ ] **Totaux** avec bordure purple
 - [ ] **Ligne "Net à payer"** avec fond gradient purple/indigo blanc
-- [ ] **Footer "📦 Stock ERP"** avec branding et copyright
+- [ ] **Footer "📦 Bhouri Stock"** avec branding et copyright
 
 ### ✅ Bon de livraison (`bon_livraison_test.pdf`)
 
 - [ ] **Header avec gradient purple/indigo** (#667eea → #764ba2)
 - [ ] **Icône 🚚 avec effet glassmorphism** (cercle semi-transparent)
-- [ ] **Badge "Stock ERP · Livraison"** en blanc avec letterspacing
+- [ ] **Badge "Bhouri Stock · Livraison"** en blanc avec letterspacing
 - [ ] **Titre "Bon de Livraison"** en grand, blanc et gras
 - [ ] **Numéro BL** bien visible
 - [ ] **Tagline "Gestion intelligente de stock"** en bas du header
@@ -111,7 +111,7 @@ Ouvrir les PDFs et vérifier :
 - [ ] **Totaux** avec bordure purple
 - [ ] **Ligne "Total"** avec fond gradient purple/indigo blanc
 - [ ] **Notes** (si présentes) avec bordure purple à gauche
-- [ ] **Footer "📦 Stock ERP"** avec branding et copyright
+- [ ] **Footer "📦 Bhouri Stock"** avec branding et copyright
 
 ---
 
@@ -126,7 +126,7 @@ Ouvrir les PDFs et vérifier :
 ### **Après (v3.0):**
 - **Facture & BL : gradient purple/indigo** (#667eea → #764ba2) ✅
 - **Design moderne avec glassmorphism** ✅
-- **Branding "Stock ERP" unifié** ✅
+- **Branding "Bhouri Stock" unifié** ✅
 - **Cohérence totale avec les emails** ✅
 
 ---
@@ -196,7 +196,7 @@ cd /Users/raouf/Projects/stock_management
 - [ ] Bon de livraison PDF téléchargé et ouvert
 - [ ] Gradients purple/indigo visibles
 - [ ] Icônes glassmorphism rendues
-- [ ] Branding "Stock ERP" présent partout
+- [ ] Branding "Bhouri Stock" présent partout
 - [ ] Tableaux bien formatés
 - [ ] Footer complet avec copyright
 
@@ -244,7 +244,7 @@ Si tous les tests passent, vous avez maintenant :
 
 ✅ **Identité visuelle unifiée** — Emails + PDFs cohérents  
 ✅ **Design moderne** — Gradient purple/indigo + glassmorphism  
-✅ **Branding professionnel** — "Stock ERP" partout  
+✅ **Branding professionnel** — "Bhouri Stock" partout  
 ✅ **Expérience utilisateur premium** 🚀
 
 ---

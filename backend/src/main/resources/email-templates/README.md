@@ -1,14 +1,14 @@
-# 📧 Email Templates — Stock ERP
+# 📧 Email Templates — Bhouri Stock
 
-Ce dossier contient tous les templates HTML pour les emails envoyés par l'application Stock ERP.
+Ce dossier contient tous les templates HTML pour les emails envoyés par l'application Bhouri Stock.
 
 ## 🎨 Design & Branding
 
 Tous les templates suivent le design system de l'application :
 - **Couleurs principales** : Gradient purple/indigo (#667eea → #764ba2)
-- **Nom de l'application** : Stock ERP
+- **Nom de l'application** : Bhouri Stock
 - **Tagline** : "Gestion intelligente de stock"
-- **Footer** : © 2026 Stock ERP — Tous droits réservés
+- **Footer** : © 2026 Bhouri Stock — Tous droits réservés
 
 ## 📁 Templates Disponibles
 
@@ -187,7 +187,7 @@ Les emails sont envoyés via Resend. Configuration dans `application.properties`
 ```properties
 resend.api-key=re_xxxxxxxxxxxxx
 resend.from-email=onboarding@resend.dev
-resend.from-name=Stock ERP
+resend.from-name=Bhouri Stock
 ```
 
 ---
@@ -253,5 +253,5 @@ public String renderMyNewTemplate(String param1, String param2) {
 
 ## 📄 Licence
 
-© 2026 Stock ERP — Tous droits réservés
+© 2026 Bhouri Stock — Tous droits réservés
 

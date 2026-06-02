@@ -70,7 +70,7 @@ public void sendResetEmail(String to, String userName, String resetLink) {
 ```properties
 resend.api-key=${RESEND_API_KEY}
 resend.from-email=${RESEND_FROM_EMAIL:onboarding@resend.dev}
-resend.from-name=${RESEND_FROM_NAME:Stock ERP}
+resend.from-name=${RESEND_FROM_NAME:Bhouri Stock}
 ```
 
 ### Variables d'environnement
@@ -78,7 +78,7 @@ resend.from-name=${RESEND_FROM_NAME:Stock ERP}
 # .env
 RESEND_API_KEY=re_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 RESEND_FROM_EMAIL=onboarding@resend.dev
-RESEND_FROM_NAME=Stock ERP
+RESEND_FROM_NAME=Bhouri Stock
 ```
 
 ---
@@ -108,7 +108,7 @@ RESEND_FROM_NAME=Stock ERP
 | **Pro** | $20/mois | 50,000 | 10 | Email |
 | **Business** | Custom | Illimité | Illimité | Phone/Slack |
 
-**Pour Stock ERP :**
+**Pour Bhouri Stock :**
 - ~100 resets/mois + ~200 factures/mois = **~300 emails/mois**
 - → **Plan Free** largement suffisant
 

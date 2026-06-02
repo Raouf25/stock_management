@@ -1,4 +1,4 @@
-# 📧 Mise à niveau des templates email — Stock ERP
+# 📧 Mise à niveau des templates email — Bhouri Stock
 
 **Date :** 31 mai 2026  
 **Objectif :** Uniformiser tous les emails avec le design premium purple/indigo de l'application
@@ -76,7 +76,7 @@ public InvoicePdfDataService(..., EmailTemplateService emailTemplateService, ...
 |---------|----------------|
 | **Gradient header** | `linear-gradient(135deg, #667eea 0%, #764ba2 100%)` + VML pour Outlook |
 | **Icône glassmorphism** | Cercle `rgba(255,255,255,0.18)` avec emoji 76×76px |
-| **Branding** | "STOCK ERP · Facturation/Livraison/Sécurité" |
+| **Branding** | "Bhouri Stock · Facturation/Livraison/Sécurité" |
 | **Fond email** | `#edeef7` teinté violet |
 | **Carte info** | Fond `#f8f7ff` violet clair unifié |
 | **Badge référence** | Pill `#ede9fe` violet avec texte `#4c1d95` |
@@ -140,7 +140,7 @@ Email premium avec :
 - Carte info violet clair
 - Badge référence violet pill
 - Montant en 26px bold violet
-- Footer avec branding "Stock ERP"
+- Footer avec branding "Bhouri Stock"
 - Compatible Outlook/Gmail/Apple Mail
 
 ---

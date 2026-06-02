@@ -18,7 +18,7 @@ L'implémentation remplace SMTP (Gmail) par un appel REST direct à l'API Resend
 
 1. Tableau de bord Resend → **API Keys**
 2. Cliquez sur **"Create API Key"**
-3. Nom : `Stock ERP - Password Reset`
+3. Nom : `Bhouri Stock - Password Reset`
 4. Permission : `Sending access`
 5. Copiez la clé : `re_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx`
 
@@ -49,7 +49,7 @@ resend.api-key=${RESEND_API_KEY:re_test_placeholder}
 resend.from-email=${RESEND_FROM_EMAIL:onboarding@resend.dev}
 
 # Nom affiché dans l'email
-resend.from-name=${RESEND_FROM_NAME:Stock ERP}
+resend.from-name=${RESEND_FROM_NAME:Bhouri Stock}
 ```
 
 ### Injection en production
@@ -61,7 +61,7 @@ services:
     environment:
       RESEND_API_KEY: re_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
       RESEND_FROM_EMAIL: noreply@votredomaine.com
-      RESEND_FROM_NAME: Stock ERP
+      RESEND_FROM_NAME: Bhouri Stock
 ```
 
 **Kubernetes Secret :**
@@ -178,7 +178,7 @@ public class PasswordResetEmailService {
 | **Pro**    | $20/mois     | 50,000      | 10       | Email      |
 | **Business** | Custom     | Illimité    | Illimité | Phone/Slack|
 
-**Pour Stock ERP (production moyenne) :**
+**Pour Bhouri Stock (production moyenne) :**
 - ~100 resets/mois → **Plan Free** suffisant
 - Si > 3000 resets/mois → **Plan Pro** recommandé
 

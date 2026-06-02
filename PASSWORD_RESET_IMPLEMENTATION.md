@@ -16,7 +16,7 @@
 # application.properties
 resend.api-key=${RESEND_API_KEY:re_test_placeholder}
 resend.from-email=${RESEND_FROM_EMAIL:onboarding@resend.dev}
-resend.from-name=${RESEND_FROM_NAME:Stock ERP}
+resend.from-name=${RESEND_FROM_NAME:Bhouri Stock}
 ```
 
 **3. Compilation**

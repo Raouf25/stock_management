@@ -17,7 +17,7 @@
 
 1. Une fois connecté, allez dans **"API Keys"** (menu gauche)
 2. Cliquez **"Create API Key"**
-3. Nom : `Stock ERP - Development`
+3. Nom : `Bhouri Stock - Development`
 4. Permission : **"Sending access"** ✅
 5. Cliquez **"Create"**
 6. **COPIEZ la clé** (commence par `re_`) — elle ne sera plus affichée
@@ -171,7 +171,7 @@ Vérifiez que vous voyez :
    - Attendre validation (~10 min)
 
 2. **Générer une clé API de production**
-   - Nom : `Stock ERP - Production`
+   - Nom : `Bhouri Stock - Production`
    - Permission : "Sending access"
    - **Stocker en secret sécurisé** (jamais dans le code)
 
@@ -179,7 +179,7 @@ Vérifiez que vous voyez :
    ```bash
    RESEND_API_KEY=re_live_xxxxxxxxxxxxxxxxx
    RESEND_FROM_EMAIL=noreply@votredomaine.com
-   RESEND_FROM_NAME=Stock ERP
+   RESEND_FROM_NAME=Bhouri Stock
    ```
 
 4. **Activer monitoring**

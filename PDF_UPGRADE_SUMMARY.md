@@ -14,7 +14,7 @@ Les templates PDF des **Factures** et **Bons de Livraison** ont été modernisé
 |---------|-------|-------|
 | **Couleurs Facture** | Bleu basique (#2563eb) | **Gradient purple/indigo** (#667eea → #764ba2) ✅ |
 | **Couleurs BL** | Vert basique (#16a34a) | **Gradient purple/indigo** (#667eea → #764ba2) ✅ |
-| **Branding** | Nom entreprise seulement | **"Stock ERP — Gestion intelligente de stock"** ✅ |
+| **Branding** | Nom entreprise seulement | **"Bhouri Stock — Gestion intelligente de stock"** ✅ |
 | **Icônes** | Aucune | **Glassmorphism** (📄 facture, 🚚 BL) ✅ |
 | **Design** | Basique | **Moderne + coins arrondis** ✅ |
 | **Header** | Simple | **Hero section avec gradient** ✅ |
@@ -70,7 +70,7 @@ curl -X GET "http://localhost:8080/api/delivery-notes/1/pdf" \
 Ouvrir les PDFs et vérifier :
 - ✅ Gradient purple/indigo (#667eea → #764ba2)
 - ✅ Icône glassmorphism
-- ✅ Branding "Stock ERP"
+- ✅ Branding "Bhouri Stock"
 - ✅ Design moderne cohérent
 
 ---
@@ -86,7 +86,7 @@ Ouvrir les PDFs et vérifier :
 │  ║             │   📄    │  ← Glassmorphism icon║  │
 │  ║             └─────────┘                       ║  │
 │  ║                                               ║  │
-│  ║         STOCK ERP · FACTURATION               ║  │
+│  ║         Bhouri Stock · FACTURATION               ║  │
 │  ║                                               ║  │
 │  ║              Facture                          ║  │
 │  ║           FAC-2026-0001                       ║  │
@@ -114,9 +114,9 @@ Ouvrir les PDFs et vérifier :
 │  │                        └──────────────────┘   │  │
 │  └───────────────────────────────────────────────┘  │
 │  ┌───────────────────────────────────────────────┐  │
-│  │         📦 Stock ERP                          │  │
+│  │         📦 Bhouri Stock                          │  │
 │  │   Gestion intelligente de stock               │  │
-│  │   © 2026 Stock ERP — Tous droits réservés    │  │
+│  │   © 2026 Bhouri Stock — Tous droits réservés    │  │
 │  └───────────────────────────────────────────────┘  │
 └─────────────────────────────────────────────────────┘
 ```
@@ -150,7 +150,7 @@ Gradient purple/indigo
 
 ## 🎉 Bravo !
 
-Votre système **Stock ERP** dispose maintenant d'une **identité visuelle unifiée et professionnelle** sur tous les supports :
+Votre système **Bhouri Stock** dispose maintenant d'une **identité visuelle unifiée et professionnelle** sur tous les supports :
 
 ✅ Interface web (Angular)  
 ✅ Emails (Thymeleaf)  

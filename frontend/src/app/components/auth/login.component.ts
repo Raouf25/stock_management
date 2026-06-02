@@ -26,7 +26,7 @@ type TabType = 'login' | 'register';
           <div class="brand-logo">
             <i class="bi bi-box-seam-fill"></i>
           </div>
-          <h1 class="brand-name">Stock ERP</h1>
+          <h1 class="brand-name">Bhouri Stock</h1>
           <p class="brand-tagline">Gérez votre inventaire<br>avec précision et efficacité</p>
 
           <div class="brand-features">
@@ -67,7 +67,7 @@ type TabType = 'login' | 'register';
               <i class="bi bi-box-seam-fill"></i>
             </div>
             <h2>{{ activeTab === 'login' ? 'Bienvenue !' : 'Créer un compte' }}</h2>
-            <p>{{ activeTab === 'login' ? 'Connectez-vous à votre espace' : 'Rejoignez Stock ERP' }}</p>
+            <p>{{ activeTab === 'login' ? 'Connectez-vous à votre espace' : 'Rejoignez Bhouri Stock' }}</p>
           </div>
 
           <!-- Tabs -->
