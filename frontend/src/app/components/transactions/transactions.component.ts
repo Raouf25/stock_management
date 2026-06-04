@@ -47,6 +47,11 @@ export class TransactionsComponent implements OnInit, AfterViewInit {
     datePurchase: ''
   };
 
+  // --- Recherche produit dans le formulaire ---
+  productSearchForm = '';
+  productDropdownOpen = false;
+  selectedProductLabel = '';
+
   constructor(private apiService: ApiService, private route: ActivatedRoute, private router: Router) {}
 
   // --- Hooks Angular ---
@@ -105,11 +110,29 @@ export class TransactionsComponent implements OnInit, AfterViewInit {
     return this.openProducts.includes(id);
   }
 
-  // --- Produits triés alphabétiquement (pour le select du formulaire) ---
-  get sortedProducts() {
-    return [...this.products].sort((a, b) =>
+  // --- Produits filtrés pour le formulaire (recherche + tri alpha) ---
+  get filteredProductsForm() {
+    const search = this.productSearchForm.trim().toLowerCase();
+    const list = search
+        ? this.products.filter(p =>
+            (p.name && p.name.toLowerCase().includes(search)) ||
+            (p.designation && p.designation.toLowerCase().includes(search))
+        )
+        : [...this.products];
+    return list.sort((a, b) =>
         (a.name || '').toLowerCase().localeCompare((b.name || '').toLowerCase(), 'fr')
     );
+  }
+
+  selectProduct(p: any) {
+    this.newPurchase.productId = p.idProduct;
+    this.selectedProductLabel = `${p.name} - ${p.unit} - ${p.designation}`;
+    this.productDropdownOpen = false;
+    this.productSearchForm = '';
+  }
+
+  closeProductDropdown() {
+    setTimeout(() => { this.productDropdownOpen = false; }, 200);
   }
 
   // --- Recherche et regroupement produits ---
@@ -310,6 +333,8 @@ export class TransactionsComponent implements OnInit, AfterViewInit {
     this.apiService.createPurchase(this.newPurchase).subscribe({
       next: () => {
         this.showForm = false;
+        this.selectedProductLabel = '';
+        this.productSearchForm = '';
         this.newPurchase = {
           supplierId: '',
           productId: '',
