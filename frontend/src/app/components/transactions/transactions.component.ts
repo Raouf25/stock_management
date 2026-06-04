@@ -77,7 +77,7 @@ export class TransactionsComponent implements OnInit, AfterViewInit {
       productId: prod.idProduct || prod.id
     };
   }
-    // --- Méthodes UI ---
+  // --- Méthodes UI ---
   switchType(type: 'sales' | 'purchases' | 'movements') {
     this.type = type;
     this.showForm = false;
@@ -105,14 +105,26 @@ export class TransactionsComponent implements OnInit, AfterViewInit {
     return this.openProducts.includes(id);
   }
 
+  // --- Produits triés alphabétiquement (pour le select du formulaire) ---
+  get sortedProducts() {
+    return [...this.products].sort((a, b) =>
+        (a.name || '').toLowerCase().localeCompare((b.name || '').toLowerCase(), 'fr')
+    );
+  }
+
   // --- Recherche et regroupement produits ---
   get filteredProducts() {
-    if (!this.productSearch?.trim()) return this.products;
+    const sortAlpha = (list: any[]) =>
+        [...list].sort((a, b) => (a.name || '').toLowerCase().localeCompare((b.name || '').toLowerCase(), 'fr'));
+
+    if (!this.productSearch?.trim()) return sortAlpha(this.products);
+
     const search = this.productSearch.trim().toLowerCase();
-    return this.products.filter(p =>
-      (p.name && p.name.toLowerCase().includes(search)) ||
-      (p.designation && p.designation.toLowerCase().includes(search))
+    const filtered = this.products.filter(p =>
+        (p.name && p.name.toLowerCase().includes(search)) ||
+        (p.designation && p.designation.toLowerCase().includes(search))
     );
+    return sortAlpha(filtered);
   }
 
   getSalesByProduct(productId: number) {
@@ -147,17 +159,17 @@ export class TransactionsComponent implements OnInit, AfterViewInit {
     // Somme des achats pour ce produit
     const purchases = this.getPurchasesByProduct(productId);
     const achats = purchases.reduce((sum, a) => sum + (a.quantity || 0), 0);
-    
+
     // Somme des ventes pour ce produit
-    const sales = this.transactions.filter(t => 
-      (t.productId === productId || t.idProduct === productId) && 
-      (t.quantitySold !== undefined || t.quantity !== undefined)
+    const sales = this.transactions.filter(t =>
+        (t.productId === productId || t.idProduct === productId) &&
+        (t.quantitySold !== undefined || t.quantity !== undefined)
     );
     const ventes = sales.reduce((sum, v) => sum + (v.quantitySold || 0), 0);
-    
+
     // Calcul final : Achats - Ventes
     const stockFinal = achats - ventes;
-    
+
     return Math.max(0, stockFinal); // Garantir que le stock ne soit jamais négatif
   }
 
@@ -328,7 +340,7 @@ export class TransactionsComponent implements OnInit, AfterViewInit {
     });
   }
 
-    // --- Calcul du bilan (ventes - achats) ---
+  // --- Calcul du bilan (ventes - achats) ---
   getBilan(productId: number): number {
     const ventes = this.getSalesByProduct(productId).reduce((sum, s) => sum + (s.totalSaleAmount || 0), 0);
     const achats = this.getPurchasesByProduct(productId).reduce((sum, p) => sum + (p.totalAmountTTC || 0), 0);
@@ -349,8 +361,8 @@ export class TransactionsComponent implements OnInit, AfterViewInit {
 
       // Trier les produits par quantité vendue (descendant)
       const sorted = Object.entries(salesByProduct)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 7); // Top 7 produits
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 7); // Top 7 produits
 
       const labels = sorted.map(([prodId]) => {
         const prod = this.products.find(p => p.idProduct == prodId || p.productId == prodId);

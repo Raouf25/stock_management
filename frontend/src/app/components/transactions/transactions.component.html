@@ -1,185 +1,185 @@
 <div class="invoice-page-container">
-  <div class="invoice-page-header">
-    <span style="font-size: 2rem;">🗃️</span>
-    <h1 class="invoice-page-title">Backoffice Produits</h1>
-  </div>
+    <div class="invoice-page-header">
+        <span style="font-size: 2rem;">🗃️</span>
+        <h1 class="invoice-page-title">Backoffice Produits</h1>
+    </div>
 
 
-  <!-- Bouton Acheter et Nouveau Achat avant la barre de recherche -->
+    <!-- Bouton Acheter et Nouveau Achat avant la barre de recherche -->
     <button class="btn btn-primary" (click)="!showForm = true">Acheter</button>
-     
-  <!-- Form Card déplacée avant la barre de recherche -->
-  <div *ngIf="showForm" class="invoice-card" style="margin-bottom: 1.5rem;">
-    <div class="invoice-card-header gradient-green">
-      <span>➕</span>
-      <span class="invoice-card-header-title">
+
+    <!-- Form Card déplacée avant la barre de recherche -->
+    <div *ngIf="showForm" class="invoice-card" style="margin-bottom: 1.5rem;">
+        <div class="invoice-card-header gradient-green">
+            <span>➕</span>
+            <span class="invoice-card-header-title">
         Nouveau Achat
       </span>
-    </div>
-    <div style="padding: 1.5rem;">
-      <form >
-        <div class="row">
-          <div class="col-md-6 mb-3">
-            <label class="form-label">Fournisseur</label>
-            <select class="form-control" [(ngModel)]="newPurchase.supplierId" name="supplierId">
-              <option value="">Sélectionnez un fournisseur...</option>
-              <option *ngFor="let s of suppliers" [value]="s.id">{{ s.name }}</option>
-            </select>
-          </div>
-          <div class="col-md-6 mb-3">
-            <label class="form-label">Produit</label>
-            <select class="form-control" [(ngModel)]="newPurchase.productId" name="productId">
-              <option value="">Sélectionnez un produit...</option>
-              <option *ngFor="let p of products" [value]="p.idProduct">{{ p.name }} - {{ p.unit }} - {{ p.designation }}</option>
-            </select>
-          </div>
         </div>
-        <div class="row">
-          <div class="col-md-3 mb-3">
-            <label class="form-label">Quantité</label>
-            <input type="number" class="form-control" [(ngModel)]="newPurchase.quantity" name="quantity" min="1" placeholder="Ex: 100">
-          </div>
-          <div class="col-md-3 mb-3">
-            <label class="form-label">Prix Unitaire TTC (DNT)</label>
-            <input type="number" step="0.01" class="form-control" [(ngModel)]="newPurchase.unitPriceTTC" name="unitPriceTTC" placeholder="Ex: 50.00">
-          </div>
-          <div class="col-md-3 mb-3">
-            <label class="form-label">N° Facture</label>
-            <input type="text" class="form-control" [(ngModel)]="newPurchase.invoiceNumber" name="invoiceNumber" placeholder="Ex: FAC-2026-001">
-          </div>
-          <div class="col-md-3 mb-3">
-            <label class="form-label">Date d'Achat</label>
-            <input type="date" class="form-control" [(ngModel)]="newPurchase.datePurchase" name="datePurchase">
-          </div>
+        <div style="padding: 1.5rem;">
+            <form >
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Fournisseur</label>
+                        <select class="form-control" [(ngModel)]="newPurchase.supplierId" name="supplierId">
+                            <option value="">Sélectionnez un fournisseur...</option>
+                            <option *ngFor="let s of suppliers" [value]="s.id">{{ s.name }}</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Produit</label>
+                        <select class="form-control" [(ngModel)]="newPurchase.productId" name="productId">
+                            <option value="">Sélectionnez un produit...</option>
+                            <option *ngFor="let p of sortedProducts" [value]="p.idProduct">{{ p.name }} - {{ p.unit }} - {{ p.designation }}</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Quantité</label>
+                        <input type="number" class="form-control" [(ngModel)]="newPurchase.quantity" name="quantity" min="1" placeholder="Ex: 100">
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Prix Unitaire TTC (DNT)</label>
+                        <input type="number" step="0.01" class="form-control" [(ngModel)]="newPurchase.unitPriceTTC" name="unitPriceTTC" placeholder="Ex: 50.00">
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">N° Facture</label>
+                        <input type="text" class="form-control" [(ngModel)]="newPurchase.invoiceNumber" name="invoiceNumber" placeholder="Ex: FAC-2026-001">
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Date d'Achat</label>
+                        <input type="date" class="form-control" [(ngModel)]="newPurchase.datePurchase" name="datePurchase">
+                    </div>
+                </div>
+                <button class="btn btn-success btn-lg" (click)="createPurchase()" type="button">
+                    ✓ Créer l'Achat
+                </button>
+            </form>
         </div>
-        <button class="btn btn-success btn-lg" (click)="createPurchase()" type="button">
-          ✓ Créer l'Achat
-        </button>
-      </form>
-    </div>
-  </div>
-
-
- 
-  <!-- Tableau regroupé par produit -->
-  <div class="invoice-card">
-    <div class="invoice-card-header gradient-purple">
-      <span>📦</span>
-      <span class="invoice-card-header-title">Produits ({{ filteredProducts.length }})</span>
     </div>
 
-  <!-- Barre de recherche produit -->
-  <div class="search-bar" style="overflow-x: auto; padding: 1rem;">
-    <input class="form-control form-control-lg" type="text" [(ngModel)]="productSearch" placeholder="🔍 Rechercher un produit..."/>
-  </div>
-    
-    <div class="desktop-table" style="overflow-x: auto; padding: 1rem;">
-      <table style="width: 100%; border-collapse: collapse;">
-        <thead>
-          <tr style="background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);">
-            <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: left;">Produits</th>
-            <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: right;">Stock</th>
-            <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: right;">Achats</th>
-            <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: right;">Ventes</th>
-            <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: right;">Prix moyen d'achat</th>
-            <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: right;">Prix moyen de vente</th>
-            <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: right;">Bilan</th>
-            <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: right;">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <ng-container *ngFor="let prod of filteredProducts">
-            <tr (click)="toggleProduct(prod.idProduct)"
-                [ngClass]="{
+
+
+    <!-- Tableau regroupé par produit -->
+    <div class="invoice-card">
+        <div class="invoice-card-header gradient-purple">
+            <span>📦</span>
+            <span class="invoice-card-header-title">Produits ({{ filteredProducts.length }})</span>
+        </div>
+
+        <!-- Barre de recherche produit -->
+        <div class="search-bar" style="overflow-x: auto; padding: 1rem;">
+            <input class="form-control form-control-lg" type="text" [(ngModel)]="productSearch" placeholder="🔍 Rechercher un produit..."/>
+        </div>
+
+        <div class="desktop-table" style="overflow-x: auto; padding: 1rem;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                <tr style="background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);">
+                    <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: left;">Produits</th>
+                    <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: right;">Stock</th>
+                    <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: right;">Achats</th>
+                    <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: right;">Ventes</th>
+                    <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: right;">Prix moyen d'achat</th>
+                    <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: right;">Prix moyen de vente</th>
+                    <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: right;">Bilan</th>
+                    <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: right;">Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <ng-container *ngFor="let prod of filteredProducts">
+                    <tr (click)="toggleProduct(prod.idProduct)"
+                        [ngClass]="{
                   'bilan-positif': getBilan(prod.idProduct) > 0,
                   'bilan-negatif': getBilan(prod.idProduct) < 0
                 }"
-                style="cursor:pointer; border-bottom: 1px solid #e5e7eb;">
-              <td style="padding: 0.75rem 1rem; font-weight: 600; color: #1f2937;">
-                {{ prod.name }}- {{ prod.unit }} <span *ngIf="prod.designation">- {{ prod.designation }}</span>
-              </td>
-              <td style="padding: 0.75rem 1rem; text-align: right;">{{ getCurrentStock(prod.idProduct) }}</td>
-              <td style="padding: 0.75rem 1rem; text-align: right;">{{ getPurchasesByProduct(prod.idProduct).length }}</td>
-              <td style="padding: 0.75rem 1rem; text-align: right;">{{ getSalesCount(prod.idProduct) }}</td>
-              <td style="padding: 0.75rem 1rem; text-align: right;">{{ getAveragePurchasePrice(prod.idProduct) | number:'1.3-3' }}</td>
-              <td style="padding: 0.75rem 1rem; text-align: right;">{{ getAverageSalePrice(prod.idProduct) | number:'1.3-3' }}</td>
-              <td style="padding: 0.75rem 1rem; text-align: right;">
-                {{ getBilan(prod.idProduct) | number:'1.3-3' }}
-              </td>
-              <td style="padding: 0.75rem 1rem; text-align: right;">
-                <span [ngClass]="isProductOpen(prod.idProduct) ? 'bi bi-chevron-up' : 'bi bi-chevron-down'" style="font-size:1.2rem;"></span>
-              </td>
-            </tr>
-            <tr *ngIf="isProductOpen(prod.idProduct)">
-              <td colspan="9" style="background:#f8fafc; padding:0;">
-                <div style="padding:1rem;">
-                  <div style="font-weight:600; color:#f59e42; margin-bottom:0.5rem;">Achats</div>
-                  <table class="table table-sm mb-3" style="table-layout: fixed; width: 100%;">
-                    <thead>
-                      <tr>
-                        <th style="width: 16%;">Date</th>
-                        <th style="width: 24%;">Fournisseur</th>
-                        <th style="width: 12%; text-align:right;">Quantité</th>
-                        <th style="width: 16%; text-align:right;">Prix Unitaire</th>
-                        <th style="width: 20%; text-align:right;">Montant Total</th>
-                        <th style="width: 12%;">Facture</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr *ngFor="let p of getPurchasesByProduct(prod.idProduct)">
-                        <td style="width: 16%;">{{ p.datePurchase | date:'dd/MM/yyyy' }}</td>
-                        <td style="width: 24%;">{{ p.supplierName }}</td>
-                        <td style="width: 12%; text-align:right;">{{ p.quantity }}</td>
-                        <td style="width: 16%; text-align:right;">{{ p.unitPriceTTC | number:'1.3-3' }}</td>
-                        <td style="width: 20%; text-align:right;">{{ (p.quantity * p.unitPriceTTC) | number:'1.3-3' }}</td>
-                        <td style="width: 12%;">{{ p.invoiceNumber || '-' }}</td>
-                      </tr>
-                      <tr *ngIf="getPurchasesByProduct(prod.idProduct).length === 0">
-                        <td colspan="6" style="text-align:center; color:#9ca3af;">Aucun achat</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                  <!-- Le bouton Acheter n'est plus ici -->
-                  <div style="clear:both;"></div>
-                  <div style="font-weight:600; color:#6366f1; margin-bottom:0.5rem;">Ventes</div>
-                  <table class="table table-sm" style="table-layout: fixed; width: 100%;">
-                    <thead>
-                      <tr>
-                        <th style="width: 16%;">Date</th>
-                        <th style="width: 24%;">Client</th>
-                        <th style="width: 12%; text-align:right;">Quantité</th>
-                        <th style="width: 16%; text-align:right;">Prix Unitaire</th>
-                        <th style="width: 20%; text-align:right;">Montant Total</th>
-                        <th style="width: 12%;">Facture/Bon de livraison</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr *ngFor="let s of getSalesByProduct(prod.idProduct)">
-                        <td style="width: 16%;">{{ s.dateSale | date:'dd/MM/yyyy' }}</td>
-                        <td style="width: 24%;">{{ s.customerName || '-' }}</td>
-                        <td style="width: 12%; text-align:right;">{{ s.quantitySold }}</td>
-                        <td style="width: 16%; text-align:right;">{{ s.unitSalePrice | number:'1.3-3' }}</td>
-                        <td style="width: 20%; text-align:right;">{{ s.totalSaleAmount | number:'1.3-3' }}</td>
-                        <td style="width: 12%;">{{ s.invoiceNumber || s.deliveryNoteNumber || '-' }}</td>
-                      </tr>
-                      <tr *ngIf="getSalesByProduct(prod.idProduct).length === 0">
-                        <td colspan="6" style="text-align:center; color:#9ca3af;">Aucune vente</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </td>
-            </tr>
-          </ng-container>
-        </tbody>
-      </table>
+                        style="cursor:pointer; border-bottom: 1px solid #e5e7eb;">
+                        <td style="padding: 0.75rem 1rem; font-weight: 600; color: #1f2937;">
+                            {{ prod.name }}- {{ prod.unit }} <span *ngIf="prod.designation">- {{ prod.designation }}</span>
+                        </td>
+                        <td style="padding: 0.75rem 1rem; text-align: right;">{{ getCurrentStock(prod.idProduct) }}</td>
+                        <td style="padding: 0.75rem 1rem; text-align: right;">{{ getPurchasesByProduct(prod.idProduct).length }}</td>
+                        <td style="padding: 0.75rem 1rem; text-align: right;">{{ getSalesCount(prod.idProduct) }}</td>
+                        <td style="padding: 0.75rem 1rem; text-align: right;">{{ getAveragePurchasePrice(prod.idProduct) | number:'1.3-3' }}</td>
+                        <td style="padding: 0.75rem 1rem; text-align: right;">{{ getAverageSalePrice(prod.idProduct) | number:'1.3-3' }}</td>
+                        <td style="padding: 0.75rem 1rem; text-align: right;">
+                            {{ getBilan(prod.idProduct) | number:'1.3-3' }}
+                        </td>
+                        <td style="padding: 0.75rem 1rem; text-align: right;">
+                            <span [ngClass]="isProductOpen(prod.idProduct) ? 'bi bi-chevron-up' : 'bi bi-chevron-down'" style="font-size:1.2rem;"></span>
+                        </td>
+                    </tr>
+                    <tr *ngIf="isProductOpen(prod.idProduct)">
+                        <td colspan="9" style="background:#f8fafc; padding:0;">
+                            <div style="padding:1rem;">
+                                <div style="font-weight:600; color:#f59e42; margin-bottom:0.5rem;">Achats</div>
+                                <table class="table table-sm mb-3" style="table-layout: fixed; width: 100%;">
+                                    <thead>
+                                    <tr>
+                                        <th style="width: 16%;">Date</th>
+                                        <th style="width: 24%;">Fournisseur</th>
+                                        <th style="width: 12%; text-align:right;">Quantité</th>
+                                        <th style="width: 16%; text-align:right;">Prix Unitaire</th>
+                                        <th style="width: 20%; text-align:right;">Montant Total</th>
+                                        <th style="width: 12%;">Facture</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr *ngFor="let p of getPurchasesByProduct(prod.idProduct)">
+                                        <td style="width: 16%;">{{ p.datePurchase | date:'dd/MM/yyyy' }}</td>
+                                        <td style="width: 24%;">{{ p.supplierName }}</td>
+                                        <td style="width: 12%; text-align:right;">{{ p.quantity }}</td>
+                                        <td style="width: 16%; text-align:right;">{{ p.unitPriceTTC | number:'1.3-3' }}</td>
+                                        <td style="width: 20%; text-align:right;">{{ (p.quantity * p.unitPriceTTC) | number:'1.3-3' }}</td>
+                                        <td style="width: 12%;">{{ p.invoiceNumber || '-' }}</td>
+                                    </tr>
+                                    <tr *ngIf="getPurchasesByProduct(prod.idProduct).length === 0">
+                                        <td colspan="6" style="text-align:center; color:#9ca3af;">Aucun achat</td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                                <!-- Le bouton Acheter n'est plus ici -->
+                                <div style="clear:both;"></div>
+                                <div style="font-weight:600; color:#6366f1; margin-bottom:0.5rem;">Ventes</div>
+                                <table class="table table-sm" style="table-layout: fixed; width: 100%;">
+                                    <thead>
+                                    <tr>
+                                        <th style="width: 16%;">Date</th>
+                                        <th style="width: 24%;">Client</th>
+                                        <th style="width: 12%; text-align:right;">Quantité</th>
+                                        <th style="width: 16%; text-align:right;">Prix Unitaire</th>
+                                        <th style="width: 20%; text-align:right;">Montant Total</th>
+                                        <th style="width: 12%;">Facture/Bon de livraison</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr *ngFor="let s of getSalesByProduct(prod.idProduct)">
+                                        <td style="width: 16%;">{{ s.dateSale | date:'dd/MM/yyyy' }}</td>
+                                        <td style="width: 24%;">{{ s.customerName || '-' }}</td>
+                                        <td style="width: 12%; text-align:right;">{{ s.quantitySold }}</td>
+                                        <td style="width: 16%; text-align:right;">{{ s.unitSalePrice | number:'1.3-3' }}</td>
+                                        <td style="width: 20%; text-align:right;">{{ s.totalSaleAmount | number:'1.3-3' }}</td>
+                                        <td style="width: 12%;">{{ s.invoiceNumber || s.deliveryNoteNumber || '-' }}</td>
+                                    </tr>
+                                    <tr *ngIf="getSalesByProduct(prod.idProduct).length === 0">
+                                        <td colspan="6" style="text-align:center; color:#9ca3af;">Aucune vente</td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </td>
+                    </tr>
+                </ng-container>
+                </tbody>
+            </table>
+        </div>
     </div>
-  </div>
 
 
 
 
-  <div *ngIf="loading" class="alert alert-info">Chargement...</div>
+    <div *ngIf="loading" class="alert alert-info">Chargement...</div>
 
 
 
