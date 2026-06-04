@@ -93,9 +93,28 @@
             <span class="invoice-card-header-title">Produits ({{ filteredProducts.length }})</span>
         </div>
 
-        <!-- Barre de recherche produit -->
-        <div class="search-bar" style="overflow-x: auto; padding: 1rem;">
-            <input class="form-control form-control-lg" type="text" [(ngModel)]="productSearch" placeholder="🔍 Rechercher un produit..."/>
+        <!-- Barre de recherche + toggle stock -->
+        <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem; flex-wrap: wrap;">
+            <input class="form-control form-control-lg" style="flex: 1; min-width: 200px;"
+                   type="text" [(ngModel)]="productSearch" placeholder="🔍 Rechercher un produit..."/>
+
+            <!-- Toggle stock -->
+            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;
+                  white-space: nowrap; user-select: none; font-weight: 500; color: #374151;">
+                <div (click)="showOnlyInStock = !showOnlyInStock"
+                     [style.background]="showOnlyInStock ? '#10b981' : '#e5e7eb'"
+                     style="width: 44px; height: 24px; border-radius: 12px; position: relative;
+                  transition: background 0.25s; cursor: pointer; flex-shrink: 0;">
+                    <div [style.left]="showOnlyInStock ? '22px' : '2px'"
+                         style="position: absolute; top: 2px; width: 20px; height: 20px;
+                    border-radius: 50%; background: white;
+                    box-shadow: 0 1px 4px rgba(0,0,0,0.2); transition: left 0.25s;">
+                    </div>
+                </div>
+                <span style="font-size: 0.92rem;">
+        en Stock
+      </span>
+            </label>
         </div>
 
         <div class="desktop-table" style="overflow-x: auto; padding: 1rem;">

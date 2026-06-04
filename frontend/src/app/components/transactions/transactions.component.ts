@@ -52,6 +52,9 @@ export class TransactionsComponent implements OnInit, AfterViewInit {
   productDropdownOpen = false;
   selectedProductLabel = '';
 
+  // --- Filtre stock ---
+  showOnlyInStock = false;
+
   constructor(private apiService: ApiService, private route: ActivatedRoute, private router: Router) {}
 
   // --- Hooks Angular ---
@@ -140,14 +143,23 @@ export class TransactionsComponent implements OnInit, AfterViewInit {
     const sortAlpha = (list: any[]) =>
         [...list].sort((a, b) => (a.name || '').toLowerCase().localeCompare((b.name || '').toLowerCase(), 'fr'));
 
-    if (!this.productSearch?.trim()) return sortAlpha(this.products);
+    let list = [...this.products];
 
-    const search = this.productSearch.trim().toLowerCase();
-    const filtered = this.products.filter(p =>
-        (p.name && p.name.toLowerCase().includes(search)) ||
-        (p.designation && p.designation.toLowerCase().includes(search))
-    );
-    return sortAlpha(filtered);
+    // Filtre stock > 0
+    if (this.showOnlyInStock) {
+      list = list.filter(p => this.getCurrentStock(p.idProduct) > 0);
+    }
+
+    // Filtre recherche texte
+    const search = this.productSearch?.trim().toLowerCase();
+    if (search) {
+      list = list.filter(p =>
+          (p.name && p.name.toLowerCase().includes(search)) ||
+          (p.designation && p.designation.toLowerCase().includes(search))
+      );
+    }
+
+    return sortAlpha(list);
   }
 
   getSalesByProduct(productId: number) {
