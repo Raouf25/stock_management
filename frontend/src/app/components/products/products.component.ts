@@ -16,11 +16,11 @@ Chart.register(...registerables);
 export class ProductsComponent implements OnInit, AfterViewInit {
   @ViewChild('stockDistributionChart') stockDistributionChart!: ElementRef<HTMLCanvasElement>;
   @ViewChild('categoryChart') categoryChart!: ElementRef<HTMLCanvasElement>;
-  
+
   products: any[] = [];
   loading = true;
   searchText = '';
-  
+
   // Charts
   private distributionChart: Chart | null = null;
   private catChart: Chart | null = null;
@@ -57,14 +57,14 @@ export class ProductsComponent implements OnInit, AfterViewInit {
     if (!this.searchText || this.searchText.trim() === '') {
       return this.products;
     }
-    
+
     const searchLower = this.searchText.toLowerCase().trim();
-    
+
     return this.products.filter(p => {
       const nameMatch = p.name && p.name.toLowerCase().includes(searchLower);
       const designationMatch = p.designation && p.designation.toLowerCase().includes(searchLower);
       const categoryMatch = p.category && p.category.toLowerCase().includes(searchLower);
-      
+
       return nameMatch || designationMatch || categoryMatch;
     });
   }
@@ -108,8 +108,8 @@ export class ProductsComponent implements OnInit, AfterViewInit {
 
     // Sort by stock quantity and take top 15
     const topProducts = [...this.products]
-      .sort((a, b) => (b.currentStockQuantity || 0) - (a.currentStockQuantity || 0))
-      .slice(0, 15);
+        .sort((a, b) => (b.currentStockQuantity || 0) - (a.currentStockQuantity || 0))
+        .slice(0, 15);
 
     const config: ChartConfiguration = {
       type: 'bar',
@@ -118,11 +118,11 @@ export class ProductsComponent implements OnInit, AfterViewInit {
         datasets: [{
           label: 'Quantité en Stock',
           data: topProducts.map(p => p.currentStockQuantity || 0),
-          backgroundColor: topProducts.map(p => 
-            (p.currentStockQuantity || 0) < 50 ? 'rgba(231, 76, 60, 0.8)' : 'rgba(52, 152, 219, 0.8)'
+          backgroundColor: topProducts.map(p =>
+              (p.currentStockQuantity || 0) < 50 ? 'rgba(231, 76, 60, 0.8)' : 'rgba(52, 152, 219, 0.8)'
           ),
-          borderColor: topProducts.map(p => 
-            (p.currentStockQuantity || 0) < 50 ? 'rgba(231, 76, 60, 1)' : 'rgba(52, 152, 219, 1)'
+          borderColor: topProducts.map(p =>
+              (p.currentStockQuantity || 0) < 50 ? 'rgba(231, 76, 60, 1)' : 'rgba(52, 152, 219, 1)'
           ),
           borderWidth: 1
         }]
@@ -164,9 +164,9 @@ export class ProductsComponent implements OnInit, AfterViewInit {
 
     // Group by category
     const categoryData: { [key: string]: { count: number, value: number } } = {};
-    
+
     this.products.forEach(product => {
-      const category = product.category || 'Non catégorisé';
+      const category = product.range || product.gamme  || 'Non défini';
       if (!categoryData[category]) {
         categoryData[category] = { count: 0, value: 0 };
       }
@@ -179,7 +179,7 @@ export class ProductsComponent implements OnInit, AfterViewInit {
       data: {
         labels: Object.keys(categoryData),
         datasets: [{
-          label: 'Valeur par Catégorie (DNT)',
+          label: 'Valeur par Gamme (DNT)',
           data: Object.values(categoryData).map(d => d.value),
           backgroundColor: [
             'rgba(102, 126, 234, 0.8)',
@@ -204,7 +204,7 @@ export class ProductsComponent implements OnInit, AfterViewInit {
           },
           title: {
             display: true,
-            text: 'Valeur du Stock par Catégorie'
+            text: 'Valeur du Stock par Gamme'
           }
         }
       }
