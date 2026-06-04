@@ -20,6 +20,7 @@ export class ProductsComponent implements OnInit, AfterViewInit {
   products: any[] = [];
   loading = true;
   searchText = '';
+  showOnlyInStock = false;
 
   // Charts
   private distributionChart: Chart | null = null;
@@ -35,18 +36,15 @@ export class ProductsComponent implements OnInit, AfterViewInit {
     // Charts will be created after data loads
   }
 
-  loadProducts(): void {
+  private loadProducts(): void {
     this.loading = true;
     this.apiService.getProducts().subscribe({
       next: (data) => {
-        console.log('Produits reçus:', data?.length || 0, 'produits');
-        console.log('Premier produit:', data?.[0]);
         this.products = data || [];
         this.loading = false;
         this.createCharts();
       },
-      error: (err) => {
-        console.error('Erreur lors du chargement des produits:', err);
+      error: () => {
         this.products = [];
         this.loading = false;
       }
@@ -54,19 +52,22 @@ export class ProductsComponent implements OnInit, AfterViewInit {
   }
 
   getFilteredProducts(): any[] {
-    if (!this.searchText || this.searchText.trim() === '') {
-      return this.products;
+    let list = [...this.products];
+
+    if (this.showOnlyInStock) {
+      list = list.filter(p => (p.currentStockQuantity || 0) > 0);
     }
 
-    const searchLower = this.searchText.toLowerCase().trim();
+    const searchLower = this.searchText?.toLowerCase().trim();
+    if (searchLower) {
+      list = list.filter(p =>
+          (p.name && p.name.toLowerCase().includes(searchLower)) ||
+          (p.designation && p.designation.toLowerCase().includes(searchLower)) ||
+          (p.category && p.category.toLowerCase().includes(searchLower))
+      );
+    }
 
-    return this.products.filter(p => {
-      const nameMatch = p.name && p.name.toLowerCase().includes(searchLower);
-      const designationMatch = p.designation && p.designation.toLowerCase().includes(searchLower);
-      const categoryMatch = p.category && p.category.toLowerCase().includes(searchLower);
-
-      return nameMatch || designationMatch || categoryMatch;
-    });
+    return list;
   }
 
   getTotalStock(): number {
@@ -166,7 +167,7 @@ export class ProductsComponent implements OnInit, AfterViewInit {
     const categoryData: { [key: string]: { count: number, value: number } } = {};
 
     this.products.forEach(product => {
-      const category = product.range || product.gamme  || 'Non défini';
+      const category = product.range || product.gamme || product.category || 'Non défini';
       if (!categoryData[category]) {
         categoryData[category] = { count: 0, value: 0 };
       }

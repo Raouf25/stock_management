@@ -2,20 +2,6 @@
     <div class="invoice-page-header">
         <span style="font-size: 2rem;">📦</span>
         <h1 class="invoice-page-title">Gestion des Produits</h1>
-        <button class="btn btn-primary btn-refresh" style="margin-left: auto;" (click)="loadProducts()">
-            🔄 Rafraîchir
-        </button>
-    </div>
-
-    <!-- Search Bar -->
-    <div class="invoice-card" style="margin-bottom: 1.5rem;">
-        <div style="padding: 1rem;">
-            <input type="text"
-                   class="form-control"
-                   placeholder="🔍 Rechercher par nom, désignation ou catégorie..."
-                   [(ngModel)]="searchText"
-                   style="width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 0.5rem;">
-        </div>
     </div>
 
     <div *ngIf="loading" class="alert alert-info">Chargement des produits...</div>
@@ -75,6 +61,31 @@
         <div class="invoice-card-header gradient-purple">
             <span>📋</span>
             <span class="invoice-card-header-title">Liste des Produits ({{ getFilteredProducts().length }})</span>
+        </div>
+        <!-- Barre de recherche + toggle stock -->
+        <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem; flex-wrap: wrap;">
+            <input type="text"
+                   class="form-control"
+                   placeholder="🔍 Rechercher un produit..."
+                   [(ngModel)]="searchText"
+                   style="flex: 1; min-width: 200px; padding: 0.65rem 0.9rem;
+                    border: 1px solid #d1d5db; border-radius: 0.5rem; font-size: 0.95rem;">
+
+            <!-- Toggle stock -->
+            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;
+                    white-space: nowrap; user-select: none; font-weight: 500; color: #374151;">
+                <div (click)="showOnlyInStock = !showOnlyInStock"
+                     [style.background]="showOnlyInStock ? '#10b981' : '#e5e7eb'"
+                     style="width: 44px; height: 24px; border-radius: 12px; position: relative;
+                    transition: background 0.25s; cursor: pointer; flex-shrink: 0;">
+                    <div [style.left]="showOnlyInStock ? '22px' : '2px'"
+                         style="position: absolute; top: 2px; width: 20px; height: 20px;
+                      border-radius: 50%; background: white;
+                      box-shadow: 0 1px 4px rgba(0,0,0,0.2); transition: left 0.25s;">
+                    </div>
+                </div>
+                <span style="font-size: 0.92rem;">en Stock</span>
+            </label>
         </div>
         <div *ngIf="products.length > 0">
             <!-- Desktop Table -->
