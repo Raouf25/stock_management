@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -7,6 +7,19 @@ import { Chart, registerables } from 'chart.js';
 
 Chart.register(...registerables);
 
+type TransactionType = 'sales' | 'purchases' | 'movements';
+
+const EMPTY_PURCHASE = {
+  supplierId: '', productId: '', quantity: '',
+  unitPriceTTC: '', invoiceNumber: '', datePurchase: ''
+};
+
+const sortByDate = (a: any, b: any) =>
+    new Date(a.datePurchase).getTime() - new Date(b.datePurchase).getTime();
+
+const sortAlpha = (list: any[]) =>
+    [...list].sort((a, b) => (a.name || '').toLowerCase().localeCompare((b.name || '').toLowerCase(), 'fr'));
+
 @Component({
   selector: 'app-transactions',
   standalone: true,
@@ -14,430 +27,313 @@ Chart.register(...registerables);
   templateUrl: './transactions.component.html',
   styleUrls: ['./transactions.component.css']
 })
-export class TransactionsComponent implements OnInit, AfterViewInit {
-  // --- Propriétés UI et état ---
-  @ViewChild('trendChart') trendChart!: ElementRef<HTMLCanvasElement>;
+export class TransactionsComponent implements OnInit {
+  @ViewChild('trendChart')    trendChart!: ElementRef<HTMLCanvasElement>;
   @ViewChild('categoryChart') categoryChart!: ElementRef<HTMLCanvasElement>;
-  type: 'sales' | 'purchases' | 'movements' = 'sales';
-  loading = true;
-  showForm = false;
+
+  // UI
+  type: TransactionType = 'sales';
+  loading       = true;
+  showForm      = false;
   productSearch = '';
   openProducts: number[] = [];
-
-  // --- Données ---
-  transactions: any[] = [];
-  purchasesByProduct: { [productId: number]: any[] } = {};
-  movements: any[] = [];
-  products: any[] = [];
-  suppliers: any[] = [];
-
-  // --- Filtres mouvements ---
-  selectedType = '';
-  selectedSource = '';
-  typeOptions = ['ENTREE', 'SORTIE'];
-  sourceOptions = ['ACHAT', 'VENTE', 'AJUSTEMENT'];
-
-  // --- Formulaire ---
-  newPurchase = {
-    supplierId: '',
-    productId: '',
-    quantity: '',
-    unitPriceTTC: '',
-    invoiceNumber: '',
-    datePurchase: ''
-  };
-
-  // --- Recherche produit dans le formulaire ---
-  productSearchForm = '';
-  productDropdownOpen = false;
-  selectedProductLabel = '';
-
   showAllProducts = false;
 
-  constructor(private apiService: ApiService, private route: ActivatedRoute, private router: Router) {}
+  // Données
+  transactions: any[] = [];
+  purchasesByProduct: Record<number, any[]> = {};
+  movements:  any[] = [];
+  products:   any[] = [];
+  suppliers:  any[] = [];
 
-  // --- Hooks Angular ---
+  // Filtres mouvements
+  selectedType   = '';
+  selectedSource = '';
+  readonly typeOptions   = ['ENTREE', 'SORTIE'];
+  readonly sourceOptions = ['ACHAT', 'VENTE', 'AJUSTEMENT'];
+
+  // Formulaire achat
+  newPurchase = { ...EMPTY_PURCHASE };
+  productSearchForm    = '';
+  productDropdownOpen  = false;
+  selectedProductLabel = '';
+
+  // Chart instance
+  private categoryChartInstance?: Chart;
+
+  constructor(
+      private api: ApiService,
+      private route: ActivatedRoute,
+      private router: Router
+  ) {}
+
+  // ── Lifecycle ────────────────────────────────────────────────────────────────
+
   ngOnInit(): void {
-    this.route.queryParams.subscribe(params => {
-      const t = params['type'];
-      if (t === 'movements' || t === 'sales' || t === 'purchases') {
-        this.type = t;
+    this.route.queryParams.subscribe(({ type }) => {
+      if (type === 'movements' || type === 'sales' || type === 'purchases') {
+        this.type = type;
       }
     });
     this.loadProducts();
     this.loadSuppliers();
-    if (this.type === 'movements') {
-      this.loadMovements();
-    } else {
-      this.loadTransactions();
-    }
+    this.type === 'movements' ? this.loadMovements() : this.loadTransactions();
   }
 
-  ngAfterViewInit(): void {}
+  // ── Navigation ───────────────────────────────────────────────────────────────
 
-  // Ouvre le formulaire d'achat pour un produit donné
-  openPurchaseForm(prod: any) {
-    this.type = 'purchases';
-    this.showForm = true;
-    this.newPurchase = {
-      ...this.newPurchase,
-      productId: prod.idProduct || prod.id
-    };
-  }
-  // --- Méthodes UI ---
-  switchType(type: 'sales' | 'purchases' | 'movements') {
-    this.type = type;
+  switchType(type: TransactionType): void {
+    this.type     = type;
     this.showForm = false;
-    this.router.navigate([], {
-      relativeTo: this.route,
-      queryParams: { type },
-      queryParamsHandling: 'merge',
-    });
-    if (type === 'movements') {
-      this.loadMovements();
-    } else {
-      this.loadTransactions();
-    }
+    this.router.navigate([], { relativeTo: this.route, queryParams: { type }, queryParamsHandling: 'merge' });
+    type === 'movements' ? this.loadMovements() : this.loadTransactions();
   }
 
-  toggleProduct(id: number) {
-    if (this.isProductOpen(id)) {
-      this.openProducts = this.openProducts.filter(pid => pid !== id);
-    } else {
-      this.openProducts.push(id);
-    }
+  // ── Produits (accordion) ─────────────────────────────────────────────────────
+
+  toggleProduct(id: number): void {
+    this.openProducts = this.isProductOpen(id)
+        ? this.openProducts.filter(pid => pid !== id)
+        : [...this.openProducts, id];
   }
 
-  isProductOpen(id: number) {
+  isProductOpen(id: number): boolean {
     return this.openProducts.includes(id);
   }
 
-  // --- Produits filtrés pour le formulaire (recherche + tri alpha) ---
-  get filteredProductsForm() {
-    const search = this.productSearchForm.trim().toLowerCase();
-    const list = search
-        ? this.products.filter(p =>
-            (p.name && p.name.toLowerCase().includes(search)) ||
-            (p.designation && p.designation.toLowerCase().includes(search))
-        )
-        : [...this.products];
-    return list.sort((a, b) =>
-        (a.name || '').toLowerCase().localeCompare((b.name || '').toLowerCase(), 'fr')
-    );
+  openPurchaseForm(prod: any): void {
+    this.type     = 'purchases';
+    this.showForm = true;
+    this.newPurchase = { ...this.newPurchase, productId: prod.idProduct ?? prod.id };
   }
 
-  selectProduct(p: any) {
-    this.newPurchase.productId = p.idProduct;
-    this.selectedProductLabel = `${p.name} - ${p.unit} - ${p.designation}`;
-    this.productDropdownOpen = false;
-    this.productSearchForm = '';
-  }
+  // ── Getters filtrés ──────────────────────────────────────────────────────────
 
-  closeProductDropdown() {
-    setTimeout(() => { this.productDropdownOpen = false; }, 200);
-  }
+  get filteredProducts(): any[] {
+    let list = this.showAllProducts
+        ? [...this.products]
+        : this.products.filter(p => this.getPurchasesCount(p.idProduct) > 0);
 
-  // --- Recherche et regroupement produits ---
-  get filteredProducts() {
-    const sortAlpha = (list: any[]) =>
-        [...list].sort((a, b) => (a.name || '').toLowerCase().localeCompare((b.name || '').toLowerCase(), 'fr'));
-
-    let list = [...this.products];
-
-    // Par défaut : uniquement les produits avec au moins un achat
-    if (!this.showAllProducts) {
-      list = list.filter(p => this.getPurchasesCount(p.idProduct) > 0);
-    }
-
-    // Filtre recherche texte
-    const search = this.productSearch?.trim().toLowerCase();
-    if (search) {
+    const term = this.productSearch.trim().toLowerCase();
+    if (term) {
       list = list.filter(p =>
-          (p.name && p.name.toLowerCase().includes(search)) ||
-          (p.designation && p.designation.toLowerCase().includes(search))
+          p.name?.toLowerCase().includes(term) ||
+          p.designation?.toLowerCase().includes(term)
       );
     }
-
     return sortAlpha(list);
   }
 
-  getSalesByProduct(productId: number) {
+  get filteredProductsForm(): any[] {
+    const term = this.productSearchForm.trim().toLowerCase();
+    const list = term
+        ? this.products.filter(p =>
+            p.name?.toLowerCase().includes(term) ||
+            p.designation?.toLowerCase().includes(term)
+        )
+        : [...this.products];
+    return sortAlpha(list);
+  }
+
+  // ── Sélection produit (formulaire) ───────────────────────────────────────────
+
+  selectProduct(p: any): void {
+    this.newPurchase.productId   = p.idProduct;
+    this.selectedProductLabel    = `${p.name} - ${p.unit} - ${p.designation}`;
+    this.productDropdownOpen     = false;
+    this.productSearchForm       = '';
+  }
+
+  closeProductDropdown(): void {
+    setTimeout(() => { this.productDropdownOpen = false; }, 200);
+  }
+
+  // ── Accès données produit ────────────────────────────────────────────────────
+
+  getSalesByProduct(productId: number): any[] {
     return this.transactions.filter(t => t.productId === productId || t.idProduct === productId);
   }
 
-  async loadPurchasesForProducts(productIds: number[]) {
-    for (const id of productIds) {
-      this.apiService.getPurchasesByProduct(id).subscribe({
-        next: (data) => {
-          // Tri du plus vieux au plus récent
-          const sorted = [...data].sort((a, b) => {
-            const dateA = new Date(a.datePurchase);
-            const dateB = new Date(b.datePurchase);
-            return dateA.getTime() - dateB.getTime();
-          });
-          this.purchasesByProduct[id] = sorted;
-        },
-        error: () => {
-          this.purchasesByProduct[id] = [];
-        }
-      });
-    }
+  getPurchasesByProduct(productId: number): any[] {
+    return this.purchasesByProduct[productId] ?? [];
   }
 
-  getPurchasesByProduct(productId: number) {
-    return this.purchasesByProduct[productId] || [];
-  }
+  getSalesCount(productId: number):    number { return this.getSalesByProduct(productId).length; }
+  getPurchasesCount(productId: number): number { return this.getPurchasesByProduct(productId).length; }
 
-  // CORRIGÉ : Calcul du stock = Achats - Ventes (sans stock initial)
+  // ── Calculs stock & prix ─────────────────────────────────────────────────────
+
   getCurrentStock(productId: number): number {
-    // Somme des achats pour ce produit
-    const purchases = this.getPurchasesByProduct(productId);
-    const achats = purchases.reduce((sum, a) => sum + (a.quantity || 0), 0);
-
-    // Somme des ventes pour ce produit
-    const sales = this.transactions.filter(t =>
-        (t.productId === productId || t.idProduct === productId) &&
-        (t.quantitySold !== undefined || t.quantity !== undefined)
-    );
-    const ventes = sales.reduce((sum, v) => sum + (v.quantitySold || 0), 0);
-
-    // Calcul final : Achats - Ventes
-    const stockFinal = achats - ventes;
-
-    return Math.max(0, stockFinal); // Garantir que le stock ne soit jamais négatif
+    const achats  = this.getPurchasesByProduct(productId).reduce((s, a) => s + (a.quantity    || 0), 0);
+    const ventes  = this.getSalesByProduct(productId)
+        .filter(t => t.quantitySold !== undefined || t.quantity !== undefined)
+        .reduce((s, v) => s + (v.quantitySold || 0), 0);
+    return Math.max(0, achats - ventes);
   }
 
-  getSalesCount(productId: number) {
-    return this.getSalesByProduct(productId).length;
-  }
-
-  getPurchasesCount(productId: number) {
-    return this.getPurchasesByProduct(productId).length;
-  }
-
-  // --- Prix moyen par produit ---
   getAveragePurchasePrice(productId: number): number {
-    const purchases = this.getPurchasesByProduct(productId);
-    if (!purchases || purchases.length === 0) return 0;
-    // Prix d'achat moyen par pièce = somme (prix unitaire * quantité) / somme (quantité)
-    const totalAmount = purchases.reduce((sum: number, p: any) => sum + ((p.unitPriceTTC || 0) * (p.quantity || 0)), 0);
-    const totalQuantity = purchases.reduce((sum: number, p: any) => sum + (p.quantity || 0), 0);
-    if (totalQuantity === 0) return 0;
-    return totalAmount / totalQuantity;
+    return this.weightedAvg(this.getPurchasesByProduct(productId), 'unitPriceTTC', 'quantity');
   }
 
   getAverageSalePrice(productId: number): number {
-    const sales = this.getSalesByProduct(productId);
-    if (!sales || sales.length === 0) return 0;
-    // Prix de vente moyen par pièce = somme (prix unitaire * quantité vendue) / somme (quantité vendue)
-    const totalAmount = sales.reduce((sum: number, s: any) => sum + ((s.unitSalePrice || 0) * (s.quantitySold || 0)), 0);
-    const totalQuantity = sales.reduce((sum: number, s: any) => sum + (s.quantitySold || 0), 0);
-    if (totalQuantity === 0) return 0;
-    return totalAmount / totalQuantity;
+    return this.weightedAvg(this.getSalesByProduct(productId), 'unitSalePrice', 'quantitySold');
   }
 
-  // --- Chargement des données (API) ---
-  loadTransactions(): void {
-    this.loading = true;
-    if (this.type === 'sales') {
-      this.apiService.getSales().subscribe({
-        next: (data) => {
-          this.transactions = data;
-          this.loading = false;
-          this.createCharts();
-        }
-      });
-    } else if (this.type === 'purchases') {
-      this.apiService.getPurchases().subscribe({
-        next: (data) => {
-          this.transactions = data;
-          // Charger les achats par produit pour tous les produits affichés
-          const productIds = Array.from(new Set(data.map((p: any) => p.productId || p.idProduct)));
-          this.loadPurchasesForProducts(productIds);
-          this.loading = false;
-          this.createCharts();
-        }
-      });
-    }
+  private weightedAvg(list: any[], priceKey: string, qtyKey: string): number {
+    const totalQty    = list.reduce((s, x) => s + (x[qtyKey]   || 0), 0);
+    const totalAmount = list.reduce((s, x) => s + ((x[priceKey] || 0) * (x[qtyKey] || 0)), 0);
+    return totalQty ? totalAmount / totalQty : 0;
   }
 
-  loadMovements(): void {
-    this.loading = true;
-    this.apiService.getStockMovements().subscribe({
-      next: (data) => {
-        this.movements = this.filterMovements(data);
-        this.loading = false;
-      }
-    });
+  getBilan(productId: number): number {
+    const ventes = this.getSalesByProduct(productId).reduce((s, v) => s + (v.totalSaleAmount  || 0), 0);
+    const achats = this.getPurchasesByProduct(productId).reduce((s, a) => s + (a.totalAmountTTC || 0), 0);
+    return ventes - achats;
   }
 
-  loadProducts(): void {
-    this.apiService.getProducts().subscribe({
-      next: (data) => {
-        this.products = data;
-        // Charger les achats pour tous les produits dès que la liste est disponible
-        const productIds = Array.from(new Set(data.map((p: any) => p.idProduct || p.productId)));
-        this.loadPurchasesForProducts(productIds);
-      }
-    });
+  // ── KPIs globaux ─────────────────────────────────────────────────────────────
+
+  getTotalAmount(): number {
+    return this.type === 'sales'
+        ? this.transactions.reduce((s, t) => s + (t.totalSaleAmount  || 0), 0)
+        : this.transactions.reduce((s, t) => s + (t.totalAmountTTC   || 0), 0);
   }
 
-  loadSuppliers(): void {
-    this.apiService.getSuppliers().subscribe({
-      next: (data) => this.suppliers = data.map(item => item.supplier)
-    });
+  getTotalQuantity(): number {
+    return this.type === 'sales'
+        ? this.transactions.reduce((s, t) => s + (t.quantitySold || 0), 0)
+        : this.transactions.reduce((s, t) => s + (t.quantity     || 0), 0);
   }
 
-  // --- Filtres mouvements ---
-  filterMovements(data: any[]): any[] {
-    return data.filter(m => {
-      const typeMatch = !this.selectedType || m.type === this.selectedType;
-      const sourceMatch = !this.selectedSource || m.source === this.selectedSource;
-      return typeMatch && sourceMatch;
-    });
+  getAveragePrice(): number {
+    if (!this.transactions.length) return 0;
+    const key = this.type === 'sales' ? 'unitSalePrice' : 'unitPriceTTC';
+    return this.transactions.reduce((s, t) => s + (t[key] || 0), 0) / this.transactions.length;
   }
 
-  onFilterChange(): void {
-    this.loadMovements();
+  getTotalMovementQuantity(type: string): number {
+    return this.movements.filter(m => m.type === type).reduce((s, m) => s + (m.quantity || 0), 0);
   }
 
   getMovementIcon(type: string): string {
     return type === 'ENTREE' ? '📥' : '📤';
   }
 
-  // --- Calculs/KPIs ---
-  getTotalAmount(): number {
-    if (this.type === 'sales') {
-      return this.transactions.reduce((sum, s) => sum + (s.totalSaleAmount || 0), 0);
-    } else if (this.type === 'purchases') {
-      return this.transactions.reduce((sum, p) => sum + (p.totalAmountTTC || 0), 0);
-    }
-    return 0;
+  // ── Chargement API ───────────────────────────────────────────────────────────
+
+  loadTransactions(): void {
+    this.loading = true;
+    const obs$ = this.type === 'sales' ? this.api.getSales() : this.api.getPurchases();
+    obs$.subscribe({
+      next: (data) => {
+        this.transactions = data;
+        if (this.type === 'purchases') {
+          const ids = [...new Set(data.map((p: any) => p.productId ?? p.idProduct))] as number[];
+          this.loadPurchasesForProducts(ids);
+        }
+        this.loading = false;
+        this.createCharts();
+      }
+    });
   }
 
-  getTotalQuantity(): number {
-    if (this.type === 'sales') {
-      return this.transactions.reduce((sum, s) => sum + (s.quantitySold || 0), 0);
-    } else if (this.type === 'purchases') {
-      return this.transactions.reduce((sum, p) => sum + (p.quantity || 0), 0);
-    }
-    return 0;
+  loadMovements(): void {
+    this.loading = true;
+    this.api.getStockMovements().subscribe({
+      next: (data) => {
+        this.movements = data.filter((m: any) => {
+          return (!this.selectedType   || m.type   === this.selectedType)
+              && (!this.selectedSource || m.source === this.selectedSource);
+        });
+        this.loading = false;
+      }
+    });
   }
 
-  getAveragePrice(): number {
-    if (this.type === 'sales' && this.transactions.length > 0) {
-      return this.transactions.reduce((sum, s) => sum + (s.unitSalePrice || 0), 0) / this.transactions.length;
-    } else if (this.type === 'purchases' && this.transactions.length > 0) {
-      return this.transactions.reduce((sum, p) => sum + (p.unitPriceTTC || 0), 0) / this.transactions.length;
-    }
-    return 0;
+  loadProducts(): void {
+    this.api.getProducts().subscribe({
+      next: (data) => {
+        this.products = data;
+        const ids = [...new Set(data.map((p: any) => p.idProduct ?? p.productId))] as number[];
+        this.loadPurchasesForProducts(ids);
+      }
+    });
   }
 
-  getTotalMovementQuantity(type: string): number {
-    return this.movements.filter(m => m.type === type).reduce((sum, m) => sum + (m.quantity || 0), 0);
+  loadSuppliers(): void {
+    this.api.getSuppliers().subscribe({
+      next: (data) => { this.suppliers = data.map((item: any) => item.supplier); }
+    });
   }
 
-  // --- Création (achats) ---
+  loadPurchasesForProducts(ids: number[]): void {
+    ids.forEach(id => {
+      this.api.getPurchasesByProduct(id).subscribe({
+        next: (data) => { this.purchasesByProduct[id] = [...data].sort(sortByDate); },
+        error: ()     => { this.purchasesByProduct[id] = []; }
+      });
+    });
+  }
+
+  onFilterChange(): void { this.loadMovements(); }
+
+  // ── Création achat ───────────────────────────────────────────────────────────
+
   createPurchase(): void {
-    if (!this.newPurchase.supplierId || !this.newPurchase.productId || !this.newPurchase.quantity || !this.newPurchase.unitPriceTTC || !this.newPurchase.datePurchase) return;
-    const prodId = Number(this.newPurchase.productId); // Récupérer AVANT reset
-    this.apiService.createPurchase(this.newPurchase).subscribe({
+    const { supplierId, productId, quantity, unitPriceTTC, datePurchase } = this.newPurchase;
+    if (!supplierId || !productId || !quantity || !unitPriceTTC || !datePurchase) return;
+
+    const prodId = Number(productId);
+    this.api.createPurchase(this.newPurchase).subscribe({
       next: () => {
-        this.showForm = false;
+        this.showForm            = false;
         this.selectedProductLabel = '';
-        this.productSearchForm = '';
-        this.newPurchase = {
-          supplierId: '',
-          productId: '',
-          quantity: '',
-          unitPriceTTC: '',
-          invoiceNumber: '',
-          datePurchase: ''
-        };
+        this.productSearchForm   = '';
+        this.newPurchase         = { ...EMPTY_PURCHASE };
         this.loadTransactions();
-        // Mettre à jour le tableau Achats pour le produit concerné
         if (prodId) {
-          this.apiService.getPurchasesByProduct(prodId).subscribe({
-            next: (data) => {
-              // Tri du plus vieux au plus récent
-              const sorted = [...data].sort((a, b) => {
-                const dateA = new Date(a.datePurchase);
-                const dateB = new Date(b.datePurchase);
-                return dateA.getTime() - dateB.getTime();
-              });
-              this.purchasesByProduct[prodId] = sorted;
-            },
-            error: () => {
-              this.purchasesByProduct[prodId] = [];
-            }
+          this.api.getPurchasesByProduct(prodId).subscribe({
+            next: (data) => { this.purchasesByProduct[prodId] = [...data].sort(sortByDate); },
+            error: ()     => { this.purchasesByProduct[prodId] = []; }
           });
         }
       }
     });
   }
 
-  // --- Calcul du bilan (ventes - achats) ---
-  getBilan(productId: number): number {
-    const ventes = this.getSalesByProduct(productId).reduce((sum, s) => sum + (s.totalSaleAmount || 0), 0);
-    const achats = this.getPurchasesByProduct(productId).reduce((sum, p) => sum + (p.totalAmountTTC || 0), 0);
-    return ventes - achats;
-  }
+  // ── Graphiques ───────────────────────────────────────────────────────────────
 
-  // --- Graphiques (placeholder) ---
   createCharts(): void {
-    // Graphique Top Produits (par quantité vendue)
-    if (this.type === 'sales' && this.products.length > 0 && this.transactions.length > 0 && this.categoryChart) {
-      // Regrouper les ventes par produit
-      const salesByProduct: { [key: string]: number } = {};
-      this.transactions.forEach(sale => {
-        const prodId = sale.productId || sale.idProduct;
-        if (!salesByProduct[prodId]) salesByProduct[prodId] = 0;
-        salesByProduct[prodId] += sale.quantitySold || 0;
-      });
+    if (this.type !== 'sales' || !this.products.length || !this.transactions.length || !this.categoryChart) return;
 
-      // Trier les produits par quantité vendue (descendant)
-      const sorted = Object.entries(salesByProduct)
-          .sort((a, b) => b[1] - a[1])
-          .slice(0, 7); // Top 7 produits
+    const salesByProduct: Record<string, number> = {};
+    this.transactions.forEach(sale => {
+      const id = sale.productId ?? sale.idProduct;
+      salesByProduct[id] = (salesByProduct[id] ?? 0) + (sale.quantitySold || 0);
+    });
 
-      const labels = sorted.map(([prodId]) => {
-        const prod = this.products.find(p => p.idProduct == prodId || p.productId == prodId);
-        return prod ? prod.name : 'Produit ' + prodId;
-      });
-      const data = sorted.map(([, qty]) => qty);
+    const top7 = Object.entries(salesByProduct).sort((a, b) => b[1] - a[1]).slice(0, 7);
+    const labels = top7.map(([id]) => this.products.find(p => p.idProduct == id || p.productId == id)?.name ?? 'Produit ' + id);
+    const data   = top7.map(([, qty]) => qty);
 
-      // Détruire l'ancien graphique si besoin
-      if ((this as any)._categoryChartInstance) {
-        (this as any)._categoryChartInstance.destroy();
+    this.categoryChartInstance?.destroy();
+    const ctx = this.categoryChart.nativeElement.getContext('2d');
+    if (!ctx) return;
+
+    this.categoryChartInstance = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{ label: 'Quantité vendue', data, backgroundColor: '#6366f1', borderRadius: 6, maxBarThickness: 38 }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false }, title: { display: false } },
+        scales: {
+          x: { grid: { display: false } },
+          y: { beginAtZero: true, grid: { color: '#e5e7eb' } }
+        }
       }
-
-      const ctx = this.categoryChart.nativeElement.getContext('2d');
-      if (ctx) {
-        (this as any)._categoryChartInstance = new Chart(ctx, {
-          type: 'bar',
-          data: {
-            labels,
-            datasets: [{
-              label: 'Quantité vendue',
-              data,
-              backgroundColor: '#6366f1',
-              borderRadius: 6,
-              maxBarThickness: 38
-            }]
-          },
-          options: {
-            responsive: true,
-            plugins: {
-              legend: { display: false },
-              title: { display: false }
-            },
-            scales: {
-              x: { grid: { display: false } },
-              y: { beginAtZero: true, grid: { color: '#e5e7eb' } }
-            }
-          }
-        });
-      }
-    }
+    });
   }
 }
