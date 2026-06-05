@@ -1,262 +1,282 @@
-<div class="page-container">
+<div class="page">
 
-    <!-- ══════════════ HEADER ══════════════ -->
-    <div class="page-header">
-        <div class="page-header-left">
-            <h1 class="page-title">Backoffice Produits</h1>
-        </div>
-        <button class="btn-acheter" (click)="showForm = !showForm">
-            <span>＋</span> Acheter
+    <!-- ══════════ TOP BAR ══════════ -->
+    <div class="topbar">
+        <h1 class="page-title">Backoffice Produits</h1>
+        <button class="btn-primary" (click)="showForm = !showForm">
+            <span class="icon">{{ showForm ? '✕' : '＋' }}</span>
+            {{ showForm ? 'Annuler' : 'Nouvel achat' }}
         </button>
     </div>
 
-    <!-- ══════════════ FORM ACHAT ══════════════ -->
-    <div *ngIf="showForm" class="card form-card">
-        <div class="card-header header-green">
-            <span>➕</span>
-            <span>Nouvel Achat</span>
+    <!-- ══════════ DRAWER FORMULAIRE ══════════ -->
+    <div *ngIf="showForm" class="drawer">
+        <div class="drawer-header">
+            <h2 class="drawer-title">
+                <span class="dot"></span>
+                Nouvel achat
+            </h2>
+            <button class="btn-close" (click)="showForm = false">✕</button>
         </div>
-        <div class="card-body">
+
+        <div class="drawer-body">
             <div class="form-grid">
 
                 <!-- Fournisseur -->
-                <div class="form-group">
+                <div class="form-field">
                     <label class="form-label">Fournisseur</label>
                     <select class="form-control" [(ngModel)]="newPurchase.supplierId" name="supplierId">
-                        <option value="">Sélectionnez un fournisseur...</option>
+                        <option value="">Sélectionnez...</option>
                         <option *ngFor="let s of suppliers" [value]="s.id">{{ s.name }}</option>
                     </select>
                 </div>
 
-                <!-- Produit avec dropdown -->
-                <div class="form-group dropdown-wrapper">
+                <!-- Produit -->
+                <div class="form-field field-relative">
                     <label class="form-label">Produit</label>
-                    <input
-                            type="text"
-                            class="form-control"
-                            [placeholder]="selectedProductLabel || 'Rechercher un produit...'"
-                            [(ngModel)]="productSearchForm"
-                            name="productSearchForm"
-                            (focus)="productDropdownOpen = true"
-                            (blur)="closeProductDropdown()"
-                            autocomplete="off"
-                    />
+                    <input type="text" class="form-control"
+                           [placeholder]="selectedProductLabel || 'Rechercher un produit...'"
+                           [(ngModel)]="productSearchForm" name="productSearchForm"
+                           (focus)="productDropdownOpen = true"
+                           (blur)="closeProductDropdown()"
+                           autocomplete="off"/>
                     <div *ngIf="productDropdownOpen" class="dropdown-list">
-                        <div *ngIf="filteredProductsForm.length === 0" class="dropdown-empty">
-                            Aucun produit trouvé
-                        </div>
-                        <div
-                                *ngFor="let p of filteredProductsForm"
-                                (mousedown)="selectProduct(p)"
-                                class="dropdown-item">
-                            {{ p.name }} <span class="dropdown-item-sub">— {{ p.unit }} — {{ p.designation }}</span>
+                        <div *ngIf="filteredProductsForm.length === 0" class="dropdown-empty">Aucun produit</div>
+                        <div *ngFor="let p of filteredProductsForm"
+                             class="dropdown-item"
+                             (mousedown)="selectProduct(p)">
+                            {{ p.name }} <span>— {{ p.unit }} — {{ p.designation }}</span>
                         </div>
                     </div>
                 </div>
 
                 <!-- Quantité -->
-                <div class="form-group">
+                <div class="form-field">
                     <label class="form-label">Quantité</label>
-                    <input type="number" class="form-control" [(ngModel)]="newPurchase.quantity"
-                           name="quantity" min="1" placeholder="Ex: 100"/>
+                    <input type="number" class="form-control"
+                           [(ngModel)]="newPurchase.quantity" name="quantity" min="1" placeholder="100"/>
                 </div>
 
-                <!-- Prix -->
-                <div class="form-group">
-                    <label class="form-label">Prix Unitaire TTC (DT)</label>
-                    <input type="number" step="0.01" class="form-control" [(ngModel)]="newPurchase.unitPriceTTC"
-                           name="unitPriceTTC" placeholder="Ex: 50.000"/>
+                <!-- Prix unitaire -->
+                <div class="form-field">
+                    <label class="form-label">Prix unitaire TTC (DT)</label>
+                    <input type="number" step="0.001" class="form-control"
+                           [(ngModel)]="newPurchase.unitPriceTTC" name="unitPriceTTC" placeholder="0.000"/>
                 </div>
 
                 <!-- N° Facture -->
-                <div class="form-group">
+                <div class="form-field">
                     <label class="form-label">N° Facture</label>
-                    <input type="text" class="form-control" [(ngModel)]="newPurchase.invoiceNumber"
-                           name="invoiceNumber" placeholder="Ex: FAC-2026-001"/>
+                    <input type="text" class="form-control"
+                           [(ngModel)]="newPurchase.invoiceNumber" name="invoiceNumber" placeholder="FAC-2026-001"/>
                 </div>
 
                 <!-- Date -->
-                <div class="form-group">
-                    <label class="form-label">Date d'Achat</label>
-                    <input type="date" class="form-control" [(ngModel)]="newPurchase.datePurchase"
-                           name="datePurchase"/>
+                <div class="form-field">
+                    <label class="form-label">Date d'achat</label>
+                    <input type="date" class="form-control"
+                           [(ngModel)]="newPurchase.datePurchase" name="datePurchase"/>
                 </div>
 
             </div>
+        </div>
 
-            <button class="btn-submit" (click)="createPurchase()" type="button">
-                ✓ Créer l'Achat
+        <div class="drawer-footer">
+            <button class="btn-success" type="button" (click)="createPurchase()">
+                ✓ Créer l'achat
             </button>
         </div>
     </div>
 
-    <!-- ══════════════ TABLEAU PRODUITS ══════════════ -->
-    <div class="card">
-        <div class="card-header header-purple">
-            <span>📦</span>
-            <span>Produits ({{ filteredProducts.length }})</span>
-        </div>
+    <!-- ══════════ CARD PRINCIPALE ══════════ -->
+    <div class="main-card">
 
-        <!-- Barre de recherche + toggle -->
-        <div class="toolbar">
-            <input
-                    class="search-input"
-                    type="text"
-                    [(ngModel)]="productSearch"
-                    placeholder="Rechercher un produit..."/>
-
-            <label class="toggle-label">
-                <div class="toggle-track"
-                     (click)="showAllProducts = !showAllProducts"
-                     [class.toggle-on]="showAllProducts">
-                    <div class="toggle-thumb"></div>
+        <!-- Top bar : titre + recherche + toggle -->
+        <div class="card-topbar">
+      <span class="card-label">
+        📦 Produits
+        <span class="badge-count">{{ filteredProducts.length }}</span>
+      </span>
+            <div class="toolbar">
+                <div class="search-wrap">
+                    <i class="search-icon">🔍</i>
+                    <input class="search-input" type="text"
+                           [(ngModel)]="productSearch"
+                           placeholder="Rechercher un produit..."/>
                 </div>
-                <span class="toggle-text">Tous les produits</span>
-            </label>
+                <label class="toggle-wrap" (click)="showAllProducts = !showAllProducts">
+                    <div class="toggle-track" [class.on]="showAllProducts">
+                        <div class="toggle-thumb"></div>
+                    </div>
+                    <span class="toggle-text">Tous les produits</span>
+                </label>
+            </div>
         </div>
 
-        <!-- ── Desktop : tableau ── -->
-        <div class="desktop-only table-wrapper">
+        <!-- Loader -->
+        <div *ngIf="loading" class="loader">
+            <div class="spinner"></div>
+            Chargement...
+        </div>
+
+        <!-- ── DESKTOP : tableau ── -->
+        <div *ngIf="!loading" class="desktop-only table-scroll">
             <table class="data-table">
                 <thead>
                 <tr>
                     <th>Produit</th>
-                    <th class="text-right">Stock</th>
-                    <th class="text-right">Achats</th>
-                    <th class="text-right">Ventes</th>
-                    <th class="text-right">Px moyen achat</th>
-                    <th class="text-right">Px moyen vente</th>
-                    <th class="text-right">Bilan</th>
-                    <th class="text-right">Détail</th>
+                    <th class="tr">Stock</th>
+                    <th class="tr">Achats</th>
+                    <th class="tr">Ventes</th>
+                    <th class="tr">Px moy. achat</th>
+                    <th class="tr">Px moy. vente</th>
+                    <th class="tr">Bilan</th>
+                    <th class="tr"></th>
                 </tr>
                 </thead>
                 <tbody>
                 <ng-container *ngFor="let prod of filteredProducts">
-                    <!-- Ligne produit -->
-                    <tr (click)="toggleProduct(prod.idProduct)"
-                        class="product-row"
-                        [class.bilan-positif]="getBilan(prod.idProduct) > 0"
-                        [class.bilan-negatif]="getBilan(prod.idProduct) < 0">
-                        <td class="product-name">
-                            {{ prod.name }} – {{ prod.unit }}
-                            <span *ngIf="prod.designation" class="product-designation">– {{ prod.designation }}</span>
+                    <tr class="product-row"
+                        [class.row-pos]="getBilan(prod.idProduct) > 0"
+                        [class.row-neg]="getBilan(prod.idProduct) < 0"
+                        (click)="toggleProduct(prod.idProduct)">
+                        <td>
+                            <span class="prod-name">{{ prod.name }}</span>
+                            <span class="prod-meta"> — {{ prod.unit }}<span *ngIf="prod.designation"> — {{ prod.designation }}</span></span>
                         </td>
-                        <td class="text-right">{{ getCurrentStock(prod.idProduct) }}</td>
-                        <td class="text-right">{{ getPurchasesByProduct(prod.idProduct).length }}</td>
-                        <td class="text-right">{{ getSalesCount(prod.idProduct) }}</td>
-                        <td class="text-right mono">{{ getAveragePurchasePrice(prod.idProduct) | number:'1.3-3' }}</td>
-                        <td class="text-right mono">{{ getAverageSalePrice(prod.idProduct) | number:'1.3-3' }}</td>
-                        <td class="text-right mono"
-                            [class.positive]="getBilan(prod.idProduct) > 0"
-                            [class.negative]="getBilan(prod.idProduct) < 0">
+                        <td class="tr mono">{{ getCurrentStock(prod.idProduct) }}</td>
+                        <td class="tr mono">{{ getPurchasesByProduct(prod.idProduct).length }}</td>
+                        <td class="tr mono">{{ getSalesCount(prod.idProduct) }}</td>
+                        <td class="tr mono">{{ getAveragePurchasePrice(prod.idProduct) | number:'1.3-3' }}</td>
+                        <td class="tr mono">{{ getAverageSalePrice(prod.idProduct) | number:'1.3-3' }}</td>
+                        <td class="tr mono"
+                            [class.bilan-pos]="getBilan(prod.idProduct) > 0"
+                            [class.bilan-neg]="getBilan(prod.idProduct) < 0">
                             {{ getBilan(prod.idProduct) | number:'1.3-3' }}
                         </td>
-                        <td class="text-right">
-                            <span [class]="isProductOpen(prod.idProduct) ? 'bi bi-chevron-up' : 'bi bi-chevron-down'"></span>
+                        <td class="tr">
+                <span class="chevron-btn">
+                  {{ isProductOpen(prod.idProduct) ? '▲' : '▼' }}
+                </span>
                         </td>
                     </tr>
 
-                    <!-- Ligne détail (accordion) -->
+                    <!-- Accordion détail desktop -->
                     <tr *ngIf="isProductOpen(prod.idProduct)">
                         <td colspan="8" class="detail-cell">
-                            <ng-container *ngTemplateOutlet="detailBlock; context: { prod: prod }"></ng-container>
+                            <div class="detail-inner">
+                                <ng-container *ngTemplateOutlet="detailContent; context: { prod: prod }"></ng-container>
+                            </div>
                         </td>
                     </tr>
                 </ng-container>
+
+                <tr *ngIf="filteredProducts.length === 0">
+                    <td colspan="8" class="empty-msg">Aucun produit trouvé</td>
+                </tr>
                 </tbody>
             </table>
         </div>
 
-        <!-- ── Mobile : cards ── -->
-        <div class="mobile-only">
-            <div *ngFor="let prod of filteredProducts" class="product-card"
-                 [class.bilan-positif-card]="getBilan(prod.idProduct) > 0"
-                 [class.bilan-negatif-card]="getBilan(prod.idProduct) < 0">
+        <!-- ── MOBILE : cards ── -->
+        <div *ngIf="!loading" class="mobile-only">
+            <div *ngFor="let prod of filteredProducts" class="prod-card">
 
-                <!-- Header card produit -->
-                <div class="product-card-header" (click)="toggleProduct(prod.idProduct)">
-                    <div>
-                        <div class="product-card-name">{{ prod.name }}</div>
-                        <div class="product-card-sub">{{ prod.unit }}<span *ngIf="prod.designation"> — {{ prod.designation }}</span></div>
+                <!-- Header -->
+                <div class="prod-card-header" (click)="toggleProduct(prod.idProduct)">
+                    <div class="prod-card-info">
+                        <div class="prod-card-name">{{ prod.name }}</div>
+                        <div class="prod-card-sub">{{ prod.unit }}<span *ngIf="prod.designation"> — {{ prod.designation }}</span></div>
                     </div>
-                    <span [class]="isProductOpen(prod.idProduct) ? 'bi bi-chevron-up chevron' : 'bi bi-chevron-down chevron'"></span>
-                </div>
-
-                <!-- KPIs en grille 2×3 -->
-                <div class="product-card-kpis">
-                    <div class="kpi">
-                        <span class="kpi-label">Stock</span>
-                        <span class="kpi-value">{{ getCurrentStock(prod.idProduct) }}</span>
-                    </div>
-                    <div class="kpi">
-                        <span class="kpi-label">Achats</span>
-                        <span class="kpi-value">{{ getPurchasesByProduct(prod.idProduct).length }}</span>
-                    </div>
-                    <div class="kpi">
-                        <span class="kpi-label">Ventes</span>
-                        <span class="kpi-value">{{ getSalesCount(prod.idProduct) }}</span>
-                    </div>
-                    <div class="kpi">
-                        <span class="kpi-label">Px achat moy.</span>
-                        <span class="kpi-value mono">{{ getAveragePurchasePrice(prod.idProduct) | number:'1.3-3' }}</span>
-                    </div>
-                    <div class="kpi">
-                        <span class="kpi-label">Px vente moy.</span>
-                        <span class="kpi-value mono">{{ getAverageSalePrice(prod.idProduct) | number:'1.3-3' }}</span>
-                    </div>
-                    <div class="kpi">
-                        <span class="kpi-label">Bilan</span>
-                        <span class="kpi-value mono"
-                              [class.positive]="getBilan(prod.idProduct) > 0"
-                              [class.negative]="getBilan(prod.idProduct) < 0">
-              {{ getBilan(prod.idProduct) | number:'1.3-3' }}
-            </span>
+                    <div class="prod-card-bilan">
+                        <div class="bilan-amount"
+                             [class.bilan-pos]="getBilan(prod.idProduct) > 0"
+                             [class.bilan-neg]="getBilan(prod.idProduct) < 0">
+                            {{ getBilan(prod.idProduct) | number:'1.3-3' }}
+                        </div>
+                        <div style="font-size:0.68rem; color:var(--c-gray-500); margin-top:1px;">
+                            {{ isProductOpen(prod.idProduct) ? '▲' : '▼' }}
+                        </div>
                     </div>
                 </div>
 
-                <!-- Détail accordion mobile -->
-                <div *ngIf="isProductOpen(prod.idProduct)" class="detail-cell">
-                    <ng-container *ngTemplateOutlet="detailBlock; context: { prod: prod }"></ng-container>
+                <!-- KPIs 2×3 -->
+                <div class="kpi-grid">
+                    <div class="kpi-cell">
+                        <div class="kpi-lbl">Stock</div>
+                        <div class="kpi-val">{{ getCurrentStock(prod.idProduct) }}</div>
+                    </div>
+                    <div class="kpi-cell">
+                        <div class="kpi-lbl">Achats</div>
+                        <div class="kpi-val">{{ getPurchasesByProduct(prod.idProduct).length }}</div>
+                    </div>
+                    <div class="kpi-cell">
+                        <div class="kpi-lbl">Ventes</div>
+                        <div class="kpi-val">{{ getSalesCount(prod.idProduct) }}</div>
+                    </div>
+                    <div class="kpi-cell">
+                        <div class="kpi-lbl">Px achat moy.</div>
+                        <div class="kpi-val">{{ getAveragePurchasePrice(prod.idProduct) | number:'1.3-3' }}</div>
+                    </div>
+                    <div class="kpi-cell">
+                        <div class="kpi-lbl">Px vente moy.</div>
+                        <div class="kpi-val">{{ getAverageSalePrice(prod.idProduct) | number:'1.3-3' }}</div>
+                    </div>
+                    <div class="kpi-cell">
+                        <div class="kpi-lbl">Bilan</div>
+                        <div class="kpi-val"
+                             [class.bilan-pos]="getBilan(prod.idProduct) > 0"
+                             [class.bilan-neg]="getBilan(prod.idProduct) < 0">
+                            {{ getBilan(prod.idProduct) | number:'1.3-3' }}
+                        </div>
+                    </div>
                 </div>
+
+                <!-- Accordion mobile -->
+                <div *ngIf="isProductOpen(prod.idProduct)" class="detail-mobile">
+                    <ng-container *ngTemplateOutlet="detailContent; context: { prod: prod }"></ng-container>
+                </div>
+
+            </div>
+
+            <div *ngIf="filteredProducts.length === 0" class="empty-msg" style="margin:1rem;">
+                Aucun produit trouvé
             </div>
         </div>
 
-    </div><!-- /card -->
+    </div><!-- /main-card -->
 
-    <div *ngIf="loading" class="loading-banner">Chargement...</div>
+</div><!-- /page -->
 
-</div><!-- /page-container -->
+<!-- ══════════ TEMPLATE DÉTAIL PARTAGÉ ══════════ -->
+<ng-template #detailContent let-prod="prod">
 
-<!-- ══════════════ TEMPLATE DÉTAIL PARTAGÉ ══════════════ -->
-<ng-template #detailBlock let-prod="prod">
-
-    <!-- Achats -->
-    <div class="detail-section">
-        <div class="detail-section-title orange">Achats</div>
+    <!-- ACHATS -->
+    <div style="margin-bottom: 1.25rem;">
+        <div class="section-label orange">Achats</div>
 
         <!-- Desktop sub-table -->
         <div class="desktop-only">
             <table class="sub-table">
-                <thead>
-                <tr>
-                    <th>Date</th><th>Fournisseur</th>
-                    <th class="text-right">Qté</th>
-                    <th class="text-right">Prix U.</th>
-                    <th class="text-right">Montant</th>
+                <thead><tr>
+                    <th>Date</th>
+                    <th>Fournisseur</th>
+                    <th class="tr">Qté</th>
+                    <th class="tr">Prix U. TTC</th>
+                    <th class="tr">Montant TTC</th>
                     <th>Facture</th>
-                </tr>
-                </thead>
+                </tr></thead>
                 <tbody>
                 <tr *ngFor="let p of getPurchasesByProduct(prod.idProduct)">
                     <td>{{ p.datePurchase | date:'dd/MM/yyyy' }}</td>
                     <td>{{ p.supplierName }}</td>
-                    <td class="text-right mono">{{ p.quantity }}</td>
-                    <td class="text-right mono">{{ p.unitPriceTTC | number:'1.3-3' }}</td>
-                    <td class="text-right mono">{{ (p.quantity * p.unitPriceTTC) | number:'1.3-3' }}</td>
+                    <td class="tr mono">{{ p.quantity }}</td>
+                    <td class="tr mono">{{ p.unitPriceTTC | number:'1.3-3' }}</td>
+                    <td class="tr mono">{{ (p.quantity * p.unitPriceTTC) | number:'1.3-3' }}</td>
                     <td>{{ p.invoiceNumber || '—' }}</td>
                 </tr>
                 <tr *ngIf="getPurchasesByProduct(prod.idProduct).length === 0">
-                    <td colspan="6" class="empty-row">Aucun achat</td>
+                    <td colspan="6" class="empty-msg">Aucun achat enregistré</td>
                 </tr>
                 </tbody>
             </table>
@@ -265,62 +285,43 @@
         <!-- Mobile sub-cards -->
         <div class="mobile-only">
             <div *ngFor="let p of getPurchasesByProduct(prod.idProduct)" class="sub-card">
-                <div class="sub-card-row">
-                    <span class="sub-card-label">Date</span>
-                    <span>{{ p.datePurchase | date:'dd/MM/yyyy' }}</span>
-                </div>
-                <div class="sub-card-row">
-                    <span class="sub-card-label">Fournisseur</span>
-                    <span>{{ p.supplierName }}</span>
-                </div>
-                <div class="sub-card-row">
-                    <span class="sub-card-label">Quantité</span>
-                    <span class="mono">{{ p.quantity }}</span>
-                </div>
-                <div class="sub-card-row">
-                    <span class="sub-card-label">Prix U.</span>
-                    <span class="mono">{{ p.unitPriceTTC | number:'1.3-3' }}</span>
-                </div>
-                <div class="sub-card-row">
-                    <span class="sub-card-label">Montant</span>
-                    <span class="mono">{{ (p.quantity * p.unitPriceTTC) | number:'1.3-3' }}</span>
-                </div>
-                <div class="sub-card-row">
-                    <span class="sub-card-label">Facture</span>
-                    <span>{{ p.invoiceNumber || '—' }}</span>
-                </div>
+                <div class="sub-card-row"><span class="sub-card-lbl">Date</span><span class="sub-card-val">{{ p.datePurchase | date:'dd/MM/yyyy' }}</span></div>
+                <div class="sub-card-row"><span class="sub-card-lbl">Fournisseur</span><span class="sub-card-val">{{ p.supplierName }}</span></div>
+                <div class="sub-card-row"><span class="sub-card-lbl">Quantité</span><span class="sub-card-val mono">{{ p.quantity }}</span></div>
+                <div class="sub-card-row"><span class="sub-card-lbl">Prix U. TTC</span><span class="sub-card-val mono">{{ p.unitPriceTTC | number:'1.3-3' }}</span></div>
+                <div class="sub-card-row"><span class="sub-card-lbl">Montant TTC</span><span class="sub-card-val mono">{{ (p.quantity * p.unitPriceTTC) | number:'1.3-3' }}</span></div>
+                <div class="sub-card-row"><span class="sub-card-lbl">Facture</span><span class="sub-card-val">{{ p.invoiceNumber || '—' }}</span></div>
             </div>
-            <div *ngIf="getPurchasesByProduct(prod.idProduct).length === 0" class="empty-row">Aucun achat</div>
+            <div *ngIf="getPurchasesByProduct(prod.idProduct).length === 0" class="empty-msg">Aucun achat</div>
         </div>
     </div>
 
-    <!-- Ventes -->
-    <div class="detail-section">
-        <div class="detail-section-title purple">Ventes</div>
+    <!-- VENTES -->
+    <div>
+        <div class="section-label purple">Ventes</div>
 
         <!-- Desktop sub-table -->
         <div class="desktop-only">
             <table class="sub-table">
-                <thead>
-                <tr>
-                    <th>Date</th><th>Client</th>
-                    <th class="text-right">Qté</th>
-                    <th class="text-right">Prix U.</th>
-                    <th class="text-right">Montant</th>
+                <thead><tr>
+                    <th>Date</th>
+                    <th>Client</th>
+                    <th class="tr">Qté</th>
+                    <th class="tr">Prix U.</th>
+                    <th class="tr">Montant</th>
                     <th>Référence</th>
-                </tr>
-                </thead>
+                </tr></thead>
                 <tbody>
                 <tr *ngFor="let s of getSalesByProduct(prod.idProduct)">
                     <td>{{ s.dateSale | date:'dd/MM/yyyy' }}</td>
                     <td>{{ s.customerName || '—' }}</td>
-                    <td class="text-right mono">{{ s.quantitySold }}</td>
-                    <td class="text-right mono">{{ s.unitSalePrice | number:'1.3-3' }}</td>
-                    <td class="text-right mono">{{ s.totalSaleAmount | number:'1.3-3' }}</td>
+                    <td class="tr mono">{{ s.quantitySold }}</td>
+                    <td class="tr mono">{{ s.unitSalePrice | number:'1.3-3' }}</td>
+                    <td class="tr mono">{{ s.totalSaleAmount | number:'1.3-3' }}</td>
                     <td>{{ s.invoiceNumber || s.deliveryNoteNumber || '—' }}</td>
                 </tr>
                 <tr *ngIf="getSalesByProduct(prod.idProduct).length === 0">
-                    <td colspan="6" class="empty-row">Aucune vente</td>
+                    <td colspan="6" class="empty-msg">Aucune vente enregistrée</td>
                 </tr>
                 </tbody>
             </table>
@@ -329,32 +330,14 @@
         <!-- Mobile sub-cards -->
         <div class="mobile-only">
             <div *ngFor="let s of getSalesByProduct(prod.idProduct)" class="sub-card">
-                <div class="sub-card-row">
-                    <span class="sub-card-label">Date</span>
-                    <span>{{ s.dateSale | date:'dd/MM/yyyy' }}</span>
-                </div>
-                <div class="sub-card-row">
-                    <span class="sub-card-label">Client</span>
-                    <span>{{ s.customerName || '—' }}</span>
-                </div>
-                <div class="sub-card-row">
-                    <span class="sub-card-label">Quantité</span>
-                    <span class="mono">{{ s.quantitySold }}</span>
-                </div>
-                <div class="sub-card-row">
-                    <span class="sub-card-label">Prix U.</span>
-                    <span class="mono">{{ s.unitSalePrice | number:'1.3-3' }}</span>
-                </div>
-                <div class="sub-card-row">
-                    <span class="sub-card-label">Montant</span>
-                    <span class="mono">{{ s.totalSaleAmount | number:'1.3-3' }}</span>
-                </div>
-                <div class="sub-card-row">
-                    <span class="sub-card-label">Référence</span>
-                    <span>{{ s.invoiceNumber || s.deliveryNoteNumber || '—' }}</span>
-                </div>
+                <div class="sub-card-row"><span class="sub-card-lbl">Date</span><span class="sub-card-val">{{ s.dateSale | date:'dd/MM/yyyy' }}</span></div>
+                <div class="sub-card-row"><span class="sub-card-lbl">Client</span><span class="sub-card-val">{{ s.customerName || '—' }}</span></div>
+                <div class="sub-card-row"><span class="sub-card-lbl">Quantité</span><span class="sub-card-val mono">{{ s.quantitySold }}</span></div>
+                <div class="sub-card-row"><span class="sub-card-lbl">Prix U.</span><span class="sub-card-val mono">{{ s.unitSalePrice | number:'1.3-3' }}</span></div>
+                <div class="sub-card-row"><span class="sub-card-lbl">Montant</span><span class="sub-card-val mono">{{ s.totalSaleAmount | number:'1.3-3' }}</span></div>
+                <div class="sub-card-row"><span class="sub-card-lbl">Référence</span><span class="sub-card-val">{{ s.invoiceNumber || s.deliveryNoteNumber || '—' }}</span></div>
             </div>
-            <div *ngIf="getSalesByProduct(prod.idProduct).length === 0" class="empty-row">Aucune vente</div>
+            <div *ngIf="getSalesByProduct(prod.idProduct).length === 0" class="empty-msg">Aucune vente</div>
         </div>
     </div>
 
