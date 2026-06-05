@@ -10,7 +10,7 @@
 #  6. exec java  → PID 1 = shutdown propre sur Railway
 # ══════════════════════════════════════════════════════════════
 # ─── Stage 1 : Build ──────────────────────────────────────────
-FROM maven:3.9-eclipse-temurin-21 AS builder
+FROM maven:3.9-eclipse-temurin-21-alpine AS builder
 
 WORKDIR /app
 
@@ -25,27 +25,23 @@ COPY backend/src ./src
 RUN mvn clean package -DskipTests --no-transfer-progress -q
 
 # ─── Stage 2 : Runtime ────────────────────────────────────────
-FROM eclipse-temurin:21-jre-bookworm-slim
+# eclipse-temurin:21-jre-alpine ≈ 95 MB vs 250 MB (Debian JRE)
+# Moins de bande passante à transférer sur Railway à chaque deploy
+FROM eclipse-temurin:21-jre-alpine
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apk add --no-cache \
     chromium \
-    fonts-liberation \
+    nss \
+    freetype \
+    harfbuzz \
+    ttf-freefont \
     ca-certificates \
-    libnss3 \
-    libx11-6 \
-    libx11-xcb1 \
-    libxcb1 \
-    libxcomposite1 \
-    libxdamage1 \
-    libxext6 \
-    libxfixes3 \
-    libxrandr2 \
-    libgbm1 \
-    libgtk-3-0 \
-    libasound2 \
-    && rm -rf /var/lib/apt/lists/*
+    font-noto \
+    font-noto-emoji \
+    libstdc++ \
+    libc6-compat
 
 COPY --from=builder /app/target/*.jar app.jar
 
@@ -59,6 +55,8 @@ ENV JAVA_OPTS="-XX:+UseContainerSupport \
                -XX:MaxRAMPercentage=75.0 \
                -Djava.security.egd=file:/dev/./urandom"
 
-ENV CHROMIUM_PATH=/usr/bin/chromium
+ENV CHROMIUM_PATH=/usr/bin/chromium-browser
+# selon l'image Alpine, tu peux aussi tester :
+# ENV CHROMIUM_PATH=/usr/bin/chromium
 
 ENTRYPOINT ["sh", "-c", "exec java $JAVA_OPTS -jar app.jar"]
