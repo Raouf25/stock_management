@@ -99,21 +99,20 @@
                    type="text" [(ngModel)]="productSearch" placeholder="🔍 Rechercher un produit..."/>
 
             <!-- Toggle stock -->
+            <!-- Toggle Tous les produits -->
             <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;
-                  white-space: nowrap; user-select: none; font-weight: 500; color: #374151;">
-                <div (click)="showOnlyInStock = !showOnlyInStock"
-                     [style.background]="showOnlyInStock ? '#10b981' : '#e5e7eb'"
+      white-space: nowrap; user-select: none; font-weight: 500; color: #374151;">
+                <div (click)="showAllProducts = !showAllProducts"
+                     [style.background]="showAllProducts ? '#10b981' : '#e5e7eb'"
                      style="width: 44px; height: 24px; border-radius: 12px; position: relative;
-                  transition: background 0.25s; cursor: pointer; flex-shrink: 0;">
-                    <div [style.left]="showOnlyInStock ? '22px' : '2px'"
+      transition: background 0.25s; cursor: pointer; flex-shrink: 0;">
+                    <div [style.left]="showAllProducts ? '22px' : '2px'"
                          style="position: absolute; top: 2px; width: 20px; height: 20px;
-                    border-radius: 50%; background: white;
-                    box-shadow: 0 1px 4px rgba(0,0,0,0.2); transition: left 0.25s;">
+        border-radius: 50%; background: white;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.2); transition: left 0.25s;">
                     </div>
                 </div>
-                <span style="font-size: 0.92rem;">
-        en Stock
-      </span>
+                <span style="font-size: 0.92rem;">Tous les produits</span>
             </label>
         </div>
 

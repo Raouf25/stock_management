@@ -52,8 +52,7 @@ export class TransactionsComponent implements OnInit, AfterViewInit {
   productDropdownOpen = false;
   selectedProductLabel = '';
 
-  // --- Filtre stock ---
-  showOnlyInStock = false;
+  showAllProducts = false;
 
   constructor(private apiService: ApiService, private route: ActivatedRoute, private router: Router) {}
 
@@ -145,9 +144,9 @@ export class TransactionsComponent implements OnInit, AfterViewInit {
 
     let list = [...this.products];
 
-    // Filtre stock > 0
-    if (this.showOnlyInStock) {
-      list = list.filter(p => this.getCurrentStock(p.idProduct) > 0);
+    // Par défaut : uniquement les produits avec au moins un achat
+    if (!this.showAllProducts) {
+      list = list.filter(p => this.getPurchasesCount(p.idProduct) > 0);
     }
 
     // Filtre recherche texte
