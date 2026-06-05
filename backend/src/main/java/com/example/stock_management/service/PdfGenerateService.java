@@ -1,5 +1,7 @@
 package com.example.stock_management.service;
 
+import com.microsoft.playwright.options.Margin;
+import com.microsoft.playwright.options.WaitUntilState;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,15 +11,11 @@ import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 
 import com.microsoft.playwright.*;
-import com.microsoft.playwright.options.Margin;
 import com.microsoft.playwright.options.Media;
-import com.microsoft.playwright.options.WaitUntilState;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.List;
-import java.util.Optional;
 import java.util.Map;
 
 @Slf4j
@@ -88,41 +86,34 @@ public class PdfGenerateService {
         String htmlContent = processTemplate(data, templateName);
 
         try (Playwright playwright = Playwright.create()) {
-
-            BrowserType.LaunchOptions launchOptions = new BrowserType.LaunchOptions()
-                    .setHeadless(true)
-                    .setArgs(List.of("--no-sandbox", "--disable-dev-shm-usage"));
-
-            // Si Playwright n'a pas son propre Chromium, utiliser le Chrome/Chromium système
-            resolveSystemChromium().ifPresent(launchOptions::setExecutablePath);
-
-            Browser browser = playwright.chromium().launch(launchOptions);
+            Browser browser = playwright.chromium().launch(
+                    new BrowserType.LaunchOptions()
+                            .setHeadless(true)
+                            // Désactive le sandbox pour les environnements Docker/Linux sans user namespace
+                            .setArgs(java.util.List.of("--no-sandbox", "--disable-dev-shm-usage"))
+            );
 
             try (BrowserContext context = browser.newContext();
                  Page page = context.newPage()) {
 
-                // Charge le HTML directement en mémoire
-                page.setContent(htmlContent,
-                        new Page.SetContentOptions()
-                                .setWaitUntil(WaitUntilState.LOAD));
+                // Charge le HTML directement en mémoire (pas besoin de serveur HTTP)
+                page.setContent(htmlContent, new Page.SetContentOptions()
+                        .setWaitUntil(WaitUntilState.LOAD));
 
-                // Active les règles CSS @media print
-                page.emulateMedia(
-                        new Page.EmulateMediaOptions()
-                                .setMedia(Media.PRINT));
+                // Émule le média "print" pour activer les règles CSS @media print
+                page.emulateMedia(new Page.EmulateMediaOptions().setMedia(Media.PRINT));
 
-                // Marges via com.microsoft.playwright.options.Margin
+                // ✅ Après
                 Margin margin = new Margin()
-                        .setTop("10mm")
-                        .setBottom("10mm")
-                        .setLeft("10mm")
-                        .setRight("10mm");
+                        .setTop("8mm").setBottom("8mm")
+                        .setLeft("8mm").setRight("8mm");
 
-                byte[] pdfBytes = page.pdf(
-                        new Page.PdfOptions()
-                                .setFormat("A4")
-                                .setPrintBackground(true)
-                                .setMargin(margin));
+                // Options PDF – ajustez selon vos besoins
+                byte[] pdfBytes = page.pdf(new Page.PdfOptions()
+                        .setFormat("A4")
+                        .setPrintBackground(true)   // inclut les couleurs/images de fond
+                        .setMargin(margin)
+                );
 
                 outputStream.write(pdfBytes);
 
@@ -148,27 +139,5 @@ public class PdfGenerateService {
         context.setVariables(data);
         context.setVariable("numbers", numberUtils);
         return templateEngine.process(templateName, context);
-    }
-
-    /**
-     * Cherche un exécutable Chromium/Chrome installé sur le système.
-     * Utilisé comme fallback si Playwright n'a pas téléchargé son propre Chromium.
-     */
-    private Optional<java.nio.file.Path> resolveSystemChromium() {
-        List<String> candidates = List.of(
-                "/usr/bin/chromium",
-                "/usr/bin/chromium-browser",
-                "/usr/bin/google-chrome",
-                "/usr/bin/google-chrome-stable",
-                "/snap/bin/chromium"
-        );
-        return candidates.stream()
-                .map(java.nio.file.Paths::get)
-                .filter(java.nio.file.Files::isExecutable)
-                .findFirst()
-                .map(p -> {
-                    log.info("Playwright: utilisation du Chromium système: {}", p);
-                    return p;
-                });
     }
 }
