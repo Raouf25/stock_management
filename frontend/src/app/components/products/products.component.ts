@@ -20,7 +20,7 @@ export class ProductsComponent implements OnInit, AfterViewInit {
   products: any[] = [];
   loading = true;
   searchText = '';
-  showOnlyInStock = false;
+  showAllProducts = false;
 
   // Charts
   private distributionChart: Chart | null = null;
@@ -52,11 +52,10 @@ export class ProductsComponent implements OnInit, AfterViewInit {
   }
 
   getFilteredProducts(): any[] {
-    let list = [...this.products];
+    let list = this.showAllProducts
+        ? [...this.products]
+        : this.products.filter(p => (p.currentStockQuantity || 0) > 0);
 
-    if (this.showOnlyInStock) {
-      list = list.filter(p => (p.currentStockQuantity || 0) > 0);
-    }
 
     const searchLower = this.searchText?.toLowerCase().trim();
     if (searchLower) {
