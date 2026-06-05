@@ -25,14 +25,13 @@ COPY backend/src ./src
 RUN mvn clean package -DskipTests --no-transfer-progress -q
 
 # ─── Stage 2 : Runtime ────────────────────────────────────────
-FROM eclipse-temurin:21-jre
+FROM eclipse-temurin:21-jre-jammy
 
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     chromium \
     fonts-liberation \
-    fontconfig \
     ca-certificates \
     libnss3 \
     libx11-6 \
