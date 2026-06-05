@@ -9,6 +9,7 @@
 #  5. Sans curl/apt → pas d'installation inutile au runtime
 #  6. exec java  → PID 1 = shutdown propre sur Railway
 # ══════════════════════════════════════════════════════════════
+
 # ─── Stage 1 : Build ──────────────────────────────────────────
 FROM maven:3.9-eclipse-temurin-21-alpine AS builder
 
@@ -31,18 +32,6 @@ FROM eclipse-temurin:21-jre-alpine
 
 WORKDIR /app
 
-RUN apk add --no-cache \
-    chromium \
-    nss \
-    freetype \
-    harfbuzz \
-    ttf-freefont \
-    ca-certificates \
-    font-noto \
-    font-noto-emoji \
-    libstdc++ \
-    libc6-compat
-
 COPY --from=builder /app/target/*.jar app.jar
 
 EXPOSE 8080
@@ -55,8 +44,6 @@ ENV JAVA_OPTS="-XX:+UseContainerSupport \
                -XX:MaxRAMPercentage=75.0 \
                -Djava.security.egd=file:/dev/./urandom"
 
-ENV CHROMIUM_PATH=/usr/bin/chromium-browser
-# selon l'image Alpine, tu peux aussi tester :
-# ENV CHROMIUM_PATH=/usr/bin/chromium
-
+# exec → Java devient PID 1 → reçoit SIGTERM → arrêt propre (graceful shutdown)
+# Le healthcheck est géré par railway.toml, inutile de le dupliquer ici
 ENTRYPOINT ["sh", "-c", "exec java $JAVA_OPTS -jar app.jar"]
