@@ -25,7 +25,7 @@ COPY backend/src ./src
 RUN mvn clean package -DskipTests --no-transfer-progress -q
 
 # ─── Stage 2 : Runtime ────────────────────────────────────────
-FROM eclipse-temurin:21-jre-jammy
+FROM eclipse-temurin:21-jre-bookworm-slim
 
 WORKDIR /app
 
