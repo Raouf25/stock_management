@@ -29,26 +29,22 @@ public class PurchaseService {
     private SupplierRepository supplierRepository;
 
     /**
-     * Créer un achat groupé multi-produits et mettre à jour le stock pour chaque produit
+     * Créer un achat groupé multi-produits et générer automatiquement des entrées de stock
      */
     @Transactional
     public List<Purchase> createPurchase(PurchaseDTO purchaseDTO) {
-        // 1. Valider que le fournisseur existe
         Supplier supplier = supplierRepository.findById(purchaseDTO.getSupplierId())
                 .orElseThrow(() -> new IllegalArgumentException("Fournisseur non trouvé avec l'ID : " + purchaseDTO.getSupplierId()));
 
         LocalDate datePurchase = purchaseDTO.getDatePurchase() != null ? purchaseDTO.getDatePurchase() : LocalDate.now();
         List<Purchase> savedPurchases = new ArrayList<>();
 
-        // 2. Parcourir chaque ligne de produit envoyée par le front-end
         if (purchaseDTO.getLines() != null) {
             for (PurchaseDTO.PurchaseLineDTO line : purchaseDTO.getLines()) {
 
-                // Valider que le produit de la ligne existe
                 Product product = productRepository.findById(line.getProductId())
                         .orElseThrow(() -> new IllegalArgumentException("Produit non trouvé avec l'ID : " + line.getProductId()));
 
-                // Créer une entité Purchase dédiée à cette ligne de produit
                 Purchase purchase = new Purchase();
                 purchase.setDatePurchase(datePurchase);
                 purchase.setSupplier(supplier);
@@ -56,16 +52,14 @@ public class PurchaseService {
                 purchase.setInvoiceNumber(purchaseDTO.getInvoiceNumber());
                 purchase.setComment(purchaseDTO.getComment());
 
-                // Assigner les données spécifiques à la ligne de produit
                 purchase.setQuantity(line.getQuantity());
                 purchase.setUnitPriceTTC(line.getUnitPriceTTC());
                 purchase.setTotalAmountTTC(line.getQuantity() * line.getUnitPriceTTC());
 
-                // Sauvegarder la ligne d'achat
                 Purchase savedLine = purchaseRepository.save(purchase);
                 savedPurchases.add(savedLine);
 
-                // Mettre à jour le stock du produit et recalculer le CMP (Entrée de stock)
+                // Mettre à jour le stock du produit et la valeur du stock
                 updateProductStock(product, line.getQuantity(), line.getUnitPriceTTC(), true);
             }
         }
@@ -109,7 +103,7 @@ public class PurchaseService {
     }
 
     /**
-     * Convertir une entité Purchase individuelle en DTO (Format unifié compatible avec la classe parente)
+     * Convertir une entité Purchase en DTO (Format hybride : Racine + Lignes imbriquées)
      */
     public PurchaseDTO convertToDTO(Purchase purchase) {
         PurchaseDTO dto = new PurchaseDTO();
@@ -119,9 +113,13 @@ public class PurchaseService {
         dto.setSupplierName(purchase.getSupplier().getName());
         dto.setInvoiceNumber(purchase.getInvoiceNumber());
         dto.setComment(purchase.getComment());
+
+        // FIX REGRESSION : Réassignation des champs racines indispensables au tableau HTML
+        dto.setQuantity(purchase.getQuantity());
+        dto.setUnitPriceTTC(purchase.getUnitPriceTTC());
         dto.setTotalAmountTTC(purchase.getTotalAmountTTC());
 
-        // Remplir la structure sous forme de liste de lignes à élément unique pour la compatibilité front
+        // Mapping de l'objet imbriqué ligne par ligne (Utile pour d'éventuelles lectures côté front)
         PurchaseDTO.PurchaseLineDTO lineDto = new PurchaseDTO.PurchaseLineDTO();
         lineDto.setProductId(purchase.getProduct().getIdProduct());
         lineDto.setProductName(purchase.getProduct().getName());
@@ -148,7 +146,6 @@ public class PurchaseService {
      */
     private void updateProductStock(Product product, Integer quantity, Double unitPrice, boolean isEntry) {
         if (isEntry) {
-            // Entrée de stock : mise à jour du CMP
             if (product.getCurrentStockQuantity() == null) {
                 product.setCurrentStockQuantity(0);
             }
@@ -162,14 +159,12 @@ public class PurchaseService {
             product.setCurrentStockQuantity(newQuantity);
             product.setCurrentStockValue(newValue);
 
-            // Calculer le CMP
             if (newQuantity > 0) {
                 product.setCmp(newValue / newQuantity);
             } else {
                 product.setCmp(0.0);
             }
         } else {
-            // Sortie de stock
             if (product.getCurrentStockQuantity() == null) {
                 product.setCurrentStockQuantity(0);
             }
@@ -184,7 +179,6 @@ public class PurchaseService {
             product.setCurrentStockQuantity(newQuantity);
             product.setCurrentStockValue(newValue);
 
-            // Calculer le CMP
             if (newQuantity > 0) {
                 product.setCmp(newValue / newQuantity);
             } else {

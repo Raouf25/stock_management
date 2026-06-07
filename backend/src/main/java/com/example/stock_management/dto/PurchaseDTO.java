@@ -26,14 +26,17 @@ public class PurchaseDTO {
     private String supplierName;
     private String invoiceNumber;
     private String comment;
-    private Double totalAmountTTC; // Calculé globalement (somme des lignes)
 
-    // ── Lignes de l'achat multi-produits ──
-    @NotEmpty(message = "Purchase must have at least one product line")
-    @Valid // Permet de déclencher la validation des contraintes internes à PurchaseLineDTO
+    // Rétrocompatibilité et Correction Régression (Données historiques à la racine)
+    private Integer quantity;
+    private Double unitPriceTTC;
+    private Double totalAmountTTC;
+
+    // Pour l'envoi depuis le formulaire multi-produits du Front-end
+    @Valid
     private List<PurchaseLineDTO> lines;
 
-    // ── Classe interne pour représenter une ligne de produit ──
+    // Classe interne pour représenter une ligne de produit au sein d'un achat groupé
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
@@ -52,6 +55,6 @@ public class PurchaseDTO {
         @Positive(message = "unitPriceTTC must be greater than 0")
         private Double unitPriceTTC;
 
-        private Double totalLineAmountTTC; // Optionnel (quantity * unitPriceTTC)
+        private Double totalLineAmountTTC;
     }
 }
