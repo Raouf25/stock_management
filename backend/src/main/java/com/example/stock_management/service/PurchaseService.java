@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,36 +29,48 @@ public class PurchaseService {
     private SupplierRepository supplierRepository;
 
     /**
-     * Créer un nouvel achat et générer automatiquement une entrée de stock
+     * Créer un achat groupé multi-produits et mettre à jour le stock pour chaque produit
      */
     @Transactional
-    public Purchase createPurchase(PurchaseDTO purchaseDTO) {
-        // Valider le produit existe
-        Product product = productRepository.findById(purchaseDTO.getProductId())
-            .orElseThrow(() -> new IllegalArgumentException("Produit non trouvé avec l'ID : " + purchaseDTO.getProductId()));
-
-        // Valider le fournisseur existe
+    public List<Purchase> createPurchase(PurchaseDTO purchaseDTO) {
+        // 1. Valider que le fournisseur existe
         Supplier supplier = supplierRepository.findById(purchaseDTO.getSupplierId())
-            .orElseThrow(() -> new IllegalArgumentException("Fournisseur non trouvé avec l'ID : " + purchaseDTO.getSupplierId()));
+                .orElseThrow(() -> new IllegalArgumentException("Fournisseur non trouvé avec l'ID : " + purchaseDTO.getSupplierId()));
 
-        // Créer l'achat
-        Purchase purchase = new Purchase();
-        purchase.setDatePurchase(purchaseDTO.getDatePurchase() != null ? purchaseDTO.getDatePurchase() : LocalDate.now());
-        purchase.setProduct(product);
-        purchase.setSupplier(supplier);
-        purchase.setInvoiceNumber(purchaseDTO.getInvoiceNumber());
-        purchase.setQuantity(purchaseDTO.getQuantity());
-        purchase.setUnitPriceTTC(purchaseDTO.getUnitPriceTTC());
-        purchase.setTotalAmountTTC(purchaseDTO.getQuantity() * purchaseDTO.getUnitPriceTTC());
-        purchase.setComment(purchaseDTO.getComment());
+        LocalDate datePurchase = purchaseDTO.getDatePurchase() != null ? purchaseDTO.getDatePurchase() : LocalDate.now();
+        List<Purchase> savedPurchases = new ArrayList<>();
 
-        // Sauvegarder l'achat
-        Purchase savedPurchase = purchaseRepository.save(purchase);
+        // 2. Parcourir chaque ligne de produit envoyée par le front-end
+        if (purchaseDTO.getLines() != null) {
+            for (PurchaseDTO.PurchaseLineDTO line : purchaseDTO.getLines()) {
 
-        // Mettre à jour le stock du produit et la valeur du stock
-        updateProductStock(product, purchaseDTO.getQuantity(), purchaseDTO.getUnitPriceTTC(), true);
+                // Valider que le produit de la ligne existe
+                Product product = productRepository.findById(line.getProductId())
+                        .orElseThrow(() -> new IllegalArgumentException("Produit non trouvé avec l'ID : " + line.getProductId()));
 
-        return savedPurchase;
+                // Créer une entité Purchase dédiée à cette ligne de produit
+                Purchase purchase = new Purchase();
+                purchase.setDatePurchase(datePurchase);
+                purchase.setSupplier(supplier);
+                purchase.setProduct(product);
+                purchase.setInvoiceNumber(purchaseDTO.getInvoiceNumber());
+                purchase.setComment(purchaseDTO.getComment());
+
+                // Assigner les données spécifiques à la ligne de produit
+                purchase.setQuantity(line.getQuantity());
+                purchase.setUnitPriceTTC(line.getUnitPriceTTC());
+                purchase.setTotalAmountTTC(line.getQuantity() * line.getUnitPriceTTC());
+
+                // Sauvegarder la ligne d'achat
+                Purchase savedLine = purchaseRepository.save(purchase);
+                savedPurchases.add(savedLine);
+
+                // Mettre à jour le stock du produit et recalculer le CMP (Entrée de stock)
+                updateProductStock(product, line.getQuantity(), line.getUnitPriceTTC(), true);
+            }
+        }
+
+        return savedPurchases;
     }
 
     /**
@@ -96,7 +109,7 @@ public class PurchaseService {
     }
 
     /**
-     * Convertir une entité Purchase en DTO
+     * Convertir une entité Purchase individuelle en DTO (Format unifié compatible avec la classe parente)
      */
     public PurchaseDTO convertToDTO(Purchase purchase) {
         PurchaseDTO dto = new PurchaseDTO();
@@ -104,14 +117,20 @@ public class PurchaseService {
         dto.setDatePurchase(purchase.getDatePurchase());
         dto.setSupplierId(purchase.getSupplier().getId());
         dto.setSupplierName(purchase.getSupplier().getName());
-        dto.setProductId(purchase.getProduct().getIdProduct());
-        dto.setProductName(purchase.getProduct().getName());
-        dto.setProductDesignation(purchase.getProduct().getDesignation());
         dto.setInvoiceNumber(purchase.getInvoiceNumber());
-        dto.setQuantity(purchase.getQuantity());
-        dto.setUnitPriceTTC(purchase.getUnitPriceTTC());
-        dto.setTotalAmountTTC(purchase.getTotalAmountTTC());
         dto.setComment(purchase.getComment());
+        dto.setTotalAmountTTC(purchase.getTotalAmountTTC());
+
+        // Remplir la structure sous forme de liste de lignes à élément unique pour la compatibilité front
+        PurchaseDTO.PurchaseLineDTO lineDto = new PurchaseDTO.PurchaseLineDTO();
+        lineDto.setProductId(purchase.getProduct().getIdProduct());
+        lineDto.setProductName(purchase.getProduct().getName());
+        lineDto.setProductDesignation(purchase.getProduct().getDesignation());
+        lineDto.setQuantity(purchase.getQuantity());
+        lineDto.setUnitPriceTTC(purchase.getUnitPriceTTC());
+        lineDto.setTotalLineAmountTTC(purchase.getTotalAmountTTC());
+
+        dto.setLines(List.of(lineDto));
         return dto;
     }
 

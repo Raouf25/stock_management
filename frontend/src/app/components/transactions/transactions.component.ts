@@ -9,9 +9,11 @@ Chart.register(...registerables);
 
 type TransactionType = 'sales' | 'purchases' | 'movements';
 
+// Structure de base pour l'enveloppe de l'achat
 const EMPTY_PURCHASE = {
-  supplierId: '', productId: '', quantity: '',
-  unitPriceTTC: '', invoiceNumber: '', datePurchase: ''
+  supplierId: '',
+  invoiceNumber: '',
+  datePurchase: ''
 };
 
 const sortByDate = (a: any, b: any) =>
@@ -52,11 +54,9 @@ export class TransactionsComponent implements OnInit {
   readonly typeOptions   = ['ENTREE', 'SORTIE'];
   readonly sourceOptions = ['ACHAT', 'VENTE', 'AJUSTEMENT'];
 
-  // Formulaire achat
+  // Formulaire achat multi-produits
   newPurchase = { ...EMPTY_PURCHASE };
-  productSearchForm    = '';
-  productDropdownOpen  = false;
-  selectedProductLabel = '';
+  purchaseLines: any[] = [];
 
   // Chart instance
   private categoryChartInstance?: Chart;
@@ -75,6 +75,7 @@ export class TransactionsComponent implements OnInit {
         this.type = type;
       }
     });
+    this.initPurchaseForm();
     this.loadProducts();
     this.loadSuppliers();
     this.type === 'movements' ? this.loadMovements() : this.loadTransactions();
@@ -101,13 +102,72 @@ export class TransactionsComponent implements OnInit {
     return this.openProducts.includes(id);
   }
 
-  openPurchaseForm(prod: any): void {
-    this.type     = 'purchases';
-    this.showForm = true;
-    this.newPurchase = { ...this.newPurchase, productId: prod.idProduct ?? prod.id };
+  // ── Initialisation & Gestion dynamique des lignes d'achat ───────────────────
+
+  initPurchaseForm(): void {
+    this.newPurchase = { ...EMPTY_PURCHASE };
+    this.purchaseLines = [this.createEmptyLine()];
   }
 
-  // ── Getters filtrés ──────────────────────────────────────────────────────────
+  createEmptyLine(): any {
+    return {
+      productId: '',
+      productSearch: '',
+      productLabel: '',
+      quantity: 1,
+      unitPriceTTC: 0,
+      dropdownOpen: false
+    };
+  }
+
+  addPurchaseLine(): void {
+    this.purchaseLines.push(this.createEmptyLine());
+  }
+
+  removePurchaseLine(index: number): void {
+    if (this.purchaseLines.length > 1) {
+      this.purchaseLines.splice(index, 1);
+    }
+  }
+
+  getPurchaseLinesTotal(): number {
+    return this.purchaseLines.reduce((acc, line) => acc + ((line.quantity || 0) * (line.unitPriceTTC || 0)), 0);
+  }
+
+  // ── Autocomplete / Dropdown par ligne de produit ────────────────────────────
+
+  openLineDropdown(index: number): void {
+    this.purchaseLines[index].dropdownOpen = true;
+  }
+
+  closeLineDropdown(index: number): void {
+    // Timeout pour laisser le clic sur le dropdown s'exécuter avant la fermeture
+    setTimeout(() => {
+      this.purchaseLines[index].dropdownOpen = false;
+    }, 220);
+  }
+
+  getFilteredProductsForLine(line: any): any[] {
+    const term = (line.productSearch || '').trim().toLowerCase();
+    if (!term) {
+      return sortAlpha(this.products);
+    }
+    const list = this.products.filter(p =>
+      p.name?.toLowerCase().includes(term) ||
+      p.designation?.toLowerCase().includes(term)
+    );
+    return sortAlpha(list);
+  }
+
+  selectProductForLine(index: number, product: any): void {
+    const line = this.purchaseLines[index];
+    line.productId = product.idProduct ?? product.id;
+    line.productLabel = `${product.name} - ${product.unit}`;
+    line.productSearch = product.name; // Remplit le champ visuel
+    line.dropdownOpen = false;
+  }
+
+  // ── Getters filtrés (Tableau Principal) ──────────────────────────────────────
 
   get filteredProducts(): any[] {
     let list = this.showAllProducts
@@ -122,30 +182,6 @@ export class TransactionsComponent implements OnInit {
       );
     }
     return sortAlpha(list);
-  }
-
-  get filteredProductsForm(): any[] {
-    const term = this.productSearchForm.trim().toLowerCase();
-    const list = term
-        ? this.products.filter(p =>
-            p.name?.toLowerCase().includes(term) ||
-            p.designation?.toLowerCase().includes(term)
-        )
-        : [...this.products];
-    return sortAlpha(list);
-  }
-
-  // ── Sélection produit (formulaire) ───────────────────────────────────────────
-
-  selectProduct(p: any): void {
-    this.newPurchase.productId   = p.idProduct;
-    this.selectedProductLabel    = `${p.name} - ${p.unit} - ${p.designation}`;
-    this.productDropdownOpen     = false;
-    this.productSearchForm       = '';
-  }
-
-  closeProductDropdown(): void {
-    setTimeout(() => { this.productDropdownOpen = false; }, 200);
   }
 
   // ── Accès données produit ────────────────────────────────────────────────────
@@ -277,26 +313,43 @@ export class TransactionsComponent implements OnInit {
 
   onFilterChange(): void { this.loadMovements(); }
 
-  // ── Création achat ───────────────────────────────────────────────────────────
+  // ── Soumission d'un Achat groupé (multi-produits) ───────────────────────────
 
   createPurchase(): void {
-    const { supplierId, productId, quantity, unitPriceTTC, datePurchase } = this.newPurchase;
-    if (!supplierId || !productId || !quantity || !unitPriceTTC || !datePurchase) return;
+    const { supplierId, invoiceNumber, datePurchase } = this.newPurchase;
 
-    const prodId = Number(productId);
-    this.api.createPurchase(this.newPurchase).subscribe({
+    // Validation globale de base
+    if (!supplierId || !datePurchase || this.purchaseLines.length === 0) return;
+
+    // Validation que chaque ligne possède au moins un produit, une quantité et un prix valides
+    const isFormValid = this.purchaseLines.every(line => line.productId && line.quantity > 0 && line.unitPriceTTC >= 0);
+    if (!isFormValid) return;
+
+    // Payload final combinant les métadonnées de l'achat et ses lignes de commandes associés
+    const purchasePayload = {
+      supplierId,
+      invoiceNumber,
+      datePurchase,
+      lines: this.purchaseLines.map(line => ({
+        productId: Number(line.productId),
+        quantity: Number(line.quantity),
+        unitPriceTTC: Number(line.unitPriceTTC)
+      }))
+    };
+
+    this.api.createPurchase(purchasePayload).subscribe({
       next: () => {
-        this.showForm            = false;
-        this.selectedProductLabel = '';
-        this.productSearchForm   = '';
-        this.newPurchase         = { ...EMPTY_PURCHASE };
+        this.showForm = false;
+        this.initPurchaseForm(); // Reset global du formulaire
         this.loadTransactions();
-        if (prodId) {
-          this.api.getPurchasesByProduct(prodId).subscribe({
-            next: (data) => { this.purchasesByProduct[prodId] = [...data].sort(sortByDate); },
-            error: ()     => { this.purchasesByProduct[prodId] = []; }
+
+        // Rafraîchir l'historique des achats pour chaque produit impacté
+        purchasePayload.lines.forEach(line => {
+          this.api.getPurchasesByProduct(line.productId).subscribe({
+            next: (data) => { this.purchasesByProduct[line.productId] = [...data].sort(sortByDate); },
+            error: ()     => { this.purchasesByProduct[line.productId] = []; }
           });
-        }
+        });
       }
     });
   }
