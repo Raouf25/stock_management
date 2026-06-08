@@ -211,7 +211,7 @@ export class ApiService {
   }
 
   // ============= Delivery Notes API =============
-  
+
   getAllDeliveryNotes(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/delivery-notes`);
   }

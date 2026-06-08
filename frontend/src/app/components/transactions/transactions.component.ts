@@ -47,7 +47,7 @@ export class TransactionsComponent implements OnInit {
   products:   any[] = [];
   suppliers:  any[] = [];
 
-  // Cache pour stocker les statuts de paiement par ID de facture (billId)
+  // Cache de stockage pour les statuts de paiement par ID de facture
   billsCache: Record<number, { paymentStatus: string; loading: boolean }> = {};
 
   // Filtres mouvements
@@ -96,7 +96,7 @@ export class TransactionsComponent implements OnInit {
       this.openProducts = this.openProducts.filter(pid => pid !== id);
     } else {
       this.openProducts = [...this.openProducts, id];
-      // Charger à la demande les informations de paiement des ventes associées à ce produit
+      // FIX : Déclenche l'appel vers l'API des factures à l'ouverture de l'accordéon
       this.loadPaymentStatusesForProductSales(id);
     }
   }
@@ -214,18 +214,20 @@ export class TransactionsComponent implements OnInit {
   getSalesCount(productId: number):    number { return this.getSalesByProduct(productId).length; }
   getPurchasesCount(productId: number): number { return this.getPurchasesByProduct(productId).length; }
 
-  // ── Gestion du statut de paiement (Lazy Loading Cache) ─────────────────────
+  // ── Récupération et gestion du statut de paiement ──────────────────────────
 
   private loadPaymentStatusesForProductSales(productId: number): void {
     const sales = this.getSalesByProduct(productId);
+
     sales.forEach(sale => {
-      // Extraction de l'id de la facture (généralement billId ou invoiceId selon votre modèle de vente)
-      const billId = sale.billId ?? sale.idBill ?? sale.invoiceId;
+      // Extrait l'ID de facture via toutes les clés envisageables (idBill, billId, invoiceId, id)
+      const billId = sale.invoiceNumber;
+
       if (billId && !this.billsCache[billId]) {
-        // Initialisation de l'état de chargement
+        // Met la clé en état "loading" pour éviter d'appeler l'API en boucle
         this.billsCache[billId] = { paymentStatus: '', loading: true };
 
-        // Appel dynamique vers /api/bills/{id}
+        // Appel de l'API /api/bills/{id}
         this.api.getBillById(billId).subscribe({
           next: (billDto: any) => {
             this.billsCache[billId] = {
@@ -235,7 +237,7 @@ export class TransactionsComponent implements OnInit {
           },
           error: () => {
             this.billsCache[billId] = {
-              paymentStatus: 'UNKNOWN',
+              paymentStatus: 'ERREUR',
               loading: false
             };
           }
@@ -245,17 +247,20 @@ export class TransactionsComponent implements OnInit {
   }
 
   getSalePaymentStatus(sale: any): string {
-    const billId = sale.billId ?? sale.idBill ?? sale.invoiceId;
-    if (!billId) return 'N/A';
+    const billId = sale.invoiceNumber;
+    if (!billId) return 'SANS FACTURE';
 
     const cached = this.billsCache[billId];
-    if (!cached) return 'Chargement...';
+    if (!cached) return 'CHARGEMENT';
     if (cached.loading) return '...';
-    return cached.paymentStatus || 'Non spécifié';
+
+    return cached.paymentStatus || 'INCONNU';
   }
 
   getPaymentBadgeClass(status: string): string {
-    switch(status?.toUpperCase()) {
+    if (!status) return 'badge-status default';
+
+    switch(status.toUpperCase()) {
       case 'PAID':
       case 'PAYE':
         return 'badge-status paid';
@@ -300,7 +305,7 @@ export class TransactionsComponent implements OnInit {
     return ventes - achats;
   }
 
-  // ── Chargement API Corrigé ───────────────────────────────────────────────────
+  // ── Chargement API robuste ───────────────────────────────────────────────────
 
   loadDataWithPurchasesFilter(): void {
     this.loading = true;
@@ -312,6 +317,7 @@ export class TransactionsComponent implements OnInit {
         }
 
         const discoveredProductIds = new Set<number>();
+
         purchasesData.forEach((p: any) => {
           if (p.productId) discoveredProductIds.add(Number(p.productId));
           if (p.idProduct) discoveredProductIds.add(Number(p.idProduct));
@@ -319,7 +325,9 @@ export class TransactionsComponent implements OnInit {
           if (p.lines && Array.isArray(p.lines)) {
             p.lines.forEach((line: any) => {
               const prodId = line.productId ?? line.idProduct;
-              if (prodId) discoveredProductIds.add(Number(prodId));
+              if (prodId) {
+                discoveredProductIds.add(Number(prodId));
+              }
             });
           }
         });
