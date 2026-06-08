@@ -9,7 +9,6 @@ Chart.register(...registerables);
 
 type TransactionType = 'sales' | 'purchases' | 'movements';
 
-// Structure de base pour l'enveloppe de l'achat
 const EMPTY_PURCHASE = {
   supplierId: '',
   invoiceNumber: '',
@@ -51,14 +50,11 @@ export class TransactionsComponent implements OnInit {
   // Filtres mouvements
   selectedType   = '';
   selectedSource = '';
-  readonly typeOptions   = ['ENTREE', 'SORTIE'];
-  readonly sourceOptions = ['ACHAT', 'VENTE', 'AJUSTEMENT'];
 
   // Formulaire achat multi-produits
   newPurchase = { ...EMPTY_PURCHASE };
   purchaseLines: any[] = [];
 
-  // Chart instance
   private categoryChartInstance?: Chart;
 
   constructor(
@@ -76,18 +72,8 @@ export class TransactionsComponent implements OnInit {
       }
     });
     this.initPurchaseForm();
-    this.loadProducts();
     this.loadSuppliers();
-    this.type === 'movements' ? this.loadMovements() : this.loadTransactions();
-  }
-
-  // ── Navigation ───────────────────────────────────────────────────────────────
-
-  switchType(type: TransactionType): void {
-    this.type     = type;
-    this.showForm = false;
-    this.router.navigate([], { relativeTo: this.route, queryParams: { type }, queryParamsHandling: 'merge' });
-    type === 'movements' ? this.loadMovements() : this.loadTransactions();
+    this.loadProducts();
   }
 
   // ── Produits (accordion) ─────────────────────────────────────────────────────
@@ -141,7 +127,6 @@ export class TransactionsComponent implements OnInit {
   }
 
   closeLineDropdown(index: number): void {
-    // Timeout pour laisser le clic sur le dropdown s'exécuter avant la fermeture
     setTimeout(() => {
       this.purchaseLines[index].dropdownOpen = false;
     }, 220);
@@ -153,17 +138,17 @@ export class TransactionsComponent implements OnInit {
       return sortAlpha(this.products);
     }
     const list = this.products.filter(p =>
-      p.name?.toLowerCase().includes(term) ||
-      p.designation?.toLowerCase().includes(term)
+        p.name?.toLowerCase().includes(term) ||
+        p.designation?.toLowerCase().includes(term)
     );
     return sortAlpha(list);
   }
 
   selectProductForLine(index: number, product: any): void {
     const line = this.purchaseLines[index];
-    line.productId = product.idProduct ?? product.id;
+    line.productId = product.idProduct ?? product.productId ?? product.id;
     line.productLabel = `${product.name} - ${product.unit}`;
-    line.productSearch = product.name; // Remplit le champ visuel
+    line.productSearch = product.name;
     line.dropdownOpen = false;
   }
 
@@ -172,7 +157,7 @@ export class TransactionsComponent implements OnInit {
   get filteredProducts(): any[] {
     let list = this.showAllProducts
         ? [...this.products]
-        : this.products.filter(p => this.getPurchasesCount(p.idProduct) > 0);
+        : this.products.filter(p => this.getPurchasesCount(p.idProduct ?? p.productId ?? p.id) > 0);
 
     const term = this.productSearch.trim().toLowerCase();
     if (term) {
@@ -187,7 +172,9 @@ export class TransactionsComponent implements OnInit {
   // ── Accès données produit ────────────────────────────────────────────────────
 
   getSalesByProduct(productId: number): any[] {
-    return this.transactions.filter(t => t.productId === productId || t.idProduct === productId);
+    return this.type === 'sales'
+        ? this.transactions.filter(t => t.productId === productId || t.idProduct === productId)
+        : [];
   }
 
   getPurchasesByProduct(productId: number): any[] {
@@ -216,7 +203,7 @@ export class TransactionsComponent implements OnInit {
   }
 
   private weightedAvg(list: any[], priceKey: string, qtyKey: string): number {
-    const totalQty    = list.reduce((s, x) => s + (x[qtyKey]   || 0), 0);
+    const totalQty = list.reduce((s, x) => s + (x[qtyKey] || 0), 0);
     const totalAmount = list.reduce((s, x) => s + ((x[priceKey] || 0) * (x[qtyKey] || 0)), 0);
     return totalQty ? totalAmount / totalQty : 0;
   }
@@ -227,49 +214,59 @@ export class TransactionsComponent implements OnInit {
     return ventes - achats;
   }
 
-  // ── KPIs globaux ─────────────────────────────────────────────────────────────
+  // ── Chargement API Corrigé ───────────────────────────────────────────────────
 
-  getTotalAmount(): number {
-    return this.type === 'sales'
-        ? this.transactions.reduce((s, t) => s + (t.totalSaleAmount  || 0), 0)
-        : this.transactions.reduce((s, t) => s + (t.totalAmountTTC   || 0), 0);
-  }
-
-  getTotalQuantity(): number {
-    return this.type === 'sales'
-        ? this.transactions.reduce((s, t) => s + (t.quantitySold || 0), 0)
-        : this.transactions.reduce((s, t) => s + (t.quantity     || 0), 0);
-  }
-
-  getAveragePrice(): number {
-    if (!this.transactions.length) return 0;
-    const key = this.type === 'sales' ? 'unitSalePrice' : 'unitPriceTTC';
-    return this.transactions.reduce((s, t) => s + (t[key] || 0), 0) / this.transactions.length;
-  }
-
-  getTotalMovementQuantity(type: string): number {
-    return this.movements.filter(m => m.type === type).reduce((s, m) => s + (m.quantity || 0), 0);
-  }
-
-  getMovementIcon(type: string): string {
-    return type === 'ENTREE' ? '📥' : '📤';
-  }
-
-  // ── Chargement API ───────────────────────────────────────────────────────────
-
-  loadTransactions(): void {
+  /**
+   * OPTIMISATION CRITIQUE : Extraction ciblée uniquement des vrais "productId"
+   * On ignore complètement la clé "p.id" globale de la facture.
+   */
+  loadDataWithPurchasesFilter(): void {
     this.loading = true;
-    const obs$ = this.type === 'sales' ? this.api.getSales() : this.api.getPurchases();
-    obs$.subscribe({
-      next: (data) => {
-        this.transactions = data;
+
+    this.api.getPurchases().subscribe({
+      next: (purchasesData) => {
         if (this.type === 'purchases') {
-          const ids = [...new Set(data.map((p: any) => p.productId ?? p.idProduct))] as number[];
-          this.loadPurchasesForProducts(ids);
+          this.transactions = purchasesData;
         }
-        this.loading = false;
-        this.createCharts();
-      }
+
+        const discoveredProductIds = new Set<number>();
+
+        purchasesData.forEach((p: any) => {
+          // 1. Extraction à la racine (uniquement s'il s'agit explicitement du champ produit)
+          if (p.productId) discoveredProductIds.add(Number(p.productId));
+          if (p.idProduct) discoveredProductIds.add(Number(p.idProduct));
+
+          // 2. Extraction au sein de la liste des lignes "lines" de l'achat
+          if (p.lines && Array.isArray(p.lines)) {
+            p.lines.forEach((line: any) => {
+              const prodId = line.productId ?? line.idProduct;
+              if (prodId) {
+                discoveredProductIds.add(Number(prodId));
+              }
+            });
+          }
+        });
+
+        const activePurchaseIds = Array.from(discoveredProductIds);
+
+        // On n'appelle le detail API par produit QUE pour les vrais IDs de produits extraits
+        this.loadPurchasesForProducts(activePurchaseIds);
+
+        if (this.type === 'sales') {
+          this.api.getSales().subscribe({
+            next: (salesData) => {
+              this.transactions = salesData;
+              this.loading = false;
+              this.createCharts();
+            },
+            error: () => this.loading = false
+          });
+        } else {
+          this.loading = false;
+          this.createCharts();
+        }
+      },
+      error: () => this.loading = false
     });
   }
 
@@ -282,17 +279,19 @@ export class TransactionsComponent implements OnInit {
               && (!this.selectedSource || m.source === this.selectedSource);
         });
         this.loading = false;
-      }
+      },
+      error: () => this.loading = false
     });
   }
 
   loadProducts(): void {
+    this.loading = true;
     this.api.getProducts().subscribe({
       next: (data) => {
         this.products = data;
-        const ids = [...new Set(data.map((p: any) => p.idProduct ?? p.productId))] as number[];
-        this.loadPurchasesForProducts(ids);
-      }
+        this.type === 'movements' ? this.loadMovements() : this.loadDataWithPurchasesFilter();
+      },
+      error: () => this.loading = false
     });
   }
 
@@ -304,28 +303,25 @@ export class TransactionsComponent implements OnInit {
 
   loadPurchasesForProducts(ids: number[]): void {
     ids.forEach(id => {
-      this.api.getPurchasesByProduct(id).subscribe({
-        next: (data) => { this.purchasesByProduct[id] = [...data].sort(sortByDate); },
-        error: ()     => { this.purchasesByProduct[id] = []; }
-      });
+      if (id && this.purchasesByProduct[id] === undefined) {
+        this.api.getPurchasesByProduct(id).subscribe({
+          next: (data) => { this.purchasesByProduct[id] = [...data].sort(sortByDate); },
+          error: ()     => { this.purchasesByProduct[id] = []; }
+        });
+      }
     });
   }
 
-  onFilterChange(): void { this.loadMovements(); }
-
-  // ── Soumission d'un Achat groupé (multi-produits) ───────────────────────────
+  // ── Soumission d'un Achat groupé ───────────────────────────────────────────
 
   createPurchase(): void {
     const { supplierId, invoiceNumber, datePurchase } = this.newPurchase;
 
-    // Validation globale de base
     if (!supplierId || !datePurchase || this.purchaseLines.length === 0) return;
 
-    // Validation que chaque ligne possède au moins un produit, une quantité et un prix valides
     const isFormValid = this.purchaseLines.every(line => line.productId && line.quantity > 0 && line.unitPriceTTC >= 0);
     if (!isFormValid) return;
 
-    // Payload final combinant les métadonnées de l'achat et ses lignes de commandes associés
     const purchasePayload = {
       supplierId,
       invoiceNumber,
@@ -340,14 +336,14 @@ export class TransactionsComponent implements OnInit {
     this.api.createPurchase(purchasePayload).subscribe({
       next: () => {
         this.showForm = false;
-        this.initPurchaseForm(); // Reset global du formulaire
-        this.loadTransactions();
+        this.initPurchaseForm();
+        this.loadDataWithPurchasesFilter();
 
-        // Rafraîchir l'historique des achats pour chaque produit impacté
         purchasePayload.lines.forEach(line => {
-          this.api.getPurchasesByProduct(line.productId).subscribe({
-            next: (data) => { this.purchasesByProduct[line.productId] = [...data].sort(sortByDate); },
-            error: ()     => { this.purchasesByProduct[line.productId] = []; }
+          const prodId = Number(line.productId);
+          this.api.getPurchasesByProduct(prodId).subscribe({
+            next: (data) => { this.purchasesByProduct[prodId] = [...data].sort(sortByDate); },
+            error: ()     => { this.purchasesByProduct[prodId] = []; }
           });
         });
       }
@@ -366,7 +362,7 @@ export class TransactionsComponent implements OnInit {
     });
 
     const top7 = Object.entries(salesByProduct).sort((a, b) => b[1] - a[1]).slice(0, 7);
-    const labels = top7.map(([id]) => this.products.find(p => p.idProduct == id || p.productId == id)?.name ?? 'Produit ' + id);
+    const labels = top7.map(([id]) => this.products.find(p => p.idProduct == id || p.productId == id || p.id == id)?.name ?? 'Produit ' + id);
     const data   = top7.map(([, qty]) => qty);
 
     this.categoryChartInstance?.destroy();
