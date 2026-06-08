@@ -47,6 +47,9 @@ export class TransactionsComponent implements OnInit {
   products:   any[] = [];
   suppliers:  any[] = [];
 
+  // Cache pour stocker les statuts de paiement par ID de facture (billId)
+  billsCache: Record<number, { paymentStatus: string; loading: boolean }> = {};
+
   // Filtres mouvements
   selectedType   = '';
   selectedSource = '';
@@ -76,16 +79,43 @@ export class TransactionsComponent implements OnInit {
     this.loadProducts();
   }
 
+  // ── Navigation ───────────────────────────────────────────────────────────────
+
+  switchType(type: TransactionType): void {
+    this.type     = type;
+    this.showForm = false;
+    this.router.navigate([], { relativeTo: this.route, queryParams: { type }, queryParamsHandling: 'merge' });
+    type === 'movements' ? this.loadMovements() : this.loadDataWithPurchasesFilter();
+  }
+
   // ── Produits (accordion) ─────────────────────────────────────────────────────
 
   toggleProduct(id: number): void {
-    this.openProducts = this.isProductOpen(id)
-        ? this.openProducts.filter(pid => pid !== id)
-        : [...this.openProducts, id];
+    const isOpen = this.isProductOpen(id);
+    if (isOpen) {
+      this.openProducts = this.openProducts.filter(pid => pid !== id);
+    } else {
+      this.openProducts = [...this.openProducts, id];
+      // Charger à la demande les informations de paiement des ventes associées à ce produit
+      this.loadPaymentStatusesForProductSales(id);
+    }
   }
 
   isProductOpen(id: number): boolean {
     return this.openProducts.includes(id);
+  }
+
+  toggleShowAllProducts(): void {
+    this.showAllProducts = !this.showAllProducts;
+
+    if (this.showAllProducts) {
+      const allProductIds = this.products.map(p => p.idProduct ?? p.productId ?? p.id);
+      const missingIds = allProductIds.filter(id => id && this.purchasesByProduct[id] === undefined);
+
+      if (missingIds.length > 0) {
+        this.loadPurchasesForProducts(missingIds);
+      }
+    }
   }
 
   // ── Initialisation & Gestion dynamique des lignes d'achat ───────────────────
@@ -184,6 +214,62 @@ export class TransactionsComponent implements OnInit {
   getSalesCount(productId: number):    number { return this.getSalesByProduct(productId).length; }
   getPurchasesCount(productId: number): number { return this.getPurchasesByProduct(productId).length; }
 
+  // ── Gestion du statut de paiement (Lazy Loading Cache) ─────────────────────
+
+  private loadPaymentStatusesForProductSales(productId: number): void {
+    const sales = this.getSalesByProduct(productId);
+    sales.forEach(sale => {
+      // Extraction de l'id de la facture (généralement billId ou invoiceId selon votre modèle de vente)
+      const billId = sale.billId ?? sale.idBill ?? sale.invoiceId;
+      if (billId && !this.billsCache[billId]) {
+        // Initialisation de l'état de chargement
+        this.billsCache[billId] = { paymentStatus: '', loading: true };
+
+        // Appel dynamique vers /api/bills/{id}
+        this.api.getBillById(billId).subscribe({
+          next: (billDto: any) => {
+            this.billsCache[billId] = {
+              paymentStatus: billDto.paymentStatus,
+              loading: false
+            };
+          },
+          error: () => {
+            this.billsCache[billId] = {
+              paymentStatus: 'UNKNOWN',
+              loading: false
+            };
+          }
+        });
+      }
+    });
+  }
+
+  getSalePaymentStatus(sale: any): string {
+    const billId = sale.billId ?? sale.idBill ?? sale.invoiceId;
+    if (!billId) return 'N/A';
+
+    const cached = this.billsCache[billId];
+    if (!cached) return 'Chargement...';
+    if (cached.loading) return '...';
+    return cached.paymentStatus || 'Non spécifié';
+  }
+
+  getPaymentBadgeClass(status: string): string {
+    switch(status?.toUpperCase()) {
+      case 'PAID':
+      case 'PAYE':
+        return 'badge-status paid';
+      case 'PARTIALLY_PAID':
+      case 'PARTIEL':
+        return 'badge-status partial';
+      case 'UNPAID':
+      case 'IMPAYE':
+        return 'badge-status unpaid';
+      default:
+        return 'badge-status default';
+    }
+  }
+
   // ── Calculs stock & prix ─────────────────────────────────────────────────────
 
   getCurrentStock(productId: number): number {
@@ -216,10 +302,6 @@ export class TransactionsComponent implements OnInit {
 
   // ── Chargement API Corrigé ───────────────────────────────────────────────────
 
-  /**
-   * OPTIMISATION CRITIQUE : Extraction ciblée uniquement des vrais "productId"
-   * On ignore complètement la clé "p.id" globale de la facture.
-   */
   loadDataWithPurchasesFilter(): void {
     this.loading = true;
 
@@ -230,26 +312,19 @@ export class TransactionsComponent implements OnInit {
         }
 
         const discoveredProductIds = new Set<number>();
-
         purchasesData.forEach((p: any) => {
-          // 1. Extraction à la racine (uniquement s'il s'agit explicitement du champ produit)
           if (p.productId) discoveredProductIds.add(Number(p.productId));
           if (p.idProduct) discoveredProductIds.add(Number(p.idProduct));
 
-          // 2. Extraction au sein de la liste des lignes "lines" de l'achat
           if (p.lines && Array.isArray(p.lines)) {
             p.lines.forEach((line: any) => {
               const prodId = line.productId ?? line.idProduct;
-              if (prodId) {
-                discoveredProductIds.add(Number(prodId));
-              }
+              if (prodId) discoveredProductIds.add(Number(prodId));
             });
           }
         });
 
         const activePurchaseIds = Array.from(discoveredProductIds);
-
-        // On n'appelle le detail API par produit QUE pour les vrais IDs de produits extraits
         this.loadPurchasesForProducts(activePurchaseIds);
 
         if (this.type === 'sales') {
@@ -312,8 +387,6 @@ export class TransactionsComponent implements OnInit {
     });
   }
 
-  // ── Soumission d'un Achat groupé ───────────────────────────────────────────
-
   createPurchase(): void {
     const { supplierId, invoiceNumber, datePurchase } = this.newPurchase;
 
@@ -349,8 +422,6 @@ export class TransactionsComponent implements OnInit {
       }
     });
   }
-
-  // ── Graphiques ───────────────────────────────────────────────────────────────
 
   createCharts(): void {
     if (this.type !== 'sales' || !this.products.length || !this.transactions.length || !this.categoryChart) return;

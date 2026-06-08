@@ -113,3 +113,35 @@
 .bilan-negatif {
   background-color: #ffeaea !important; /* rouge très clair */
 }
+
+
+/* Badges pour le statut de paiement */
+.badge-status {
+	display: inline-block;
+	padding: 0.25rem 0.6rem;
+	font-size: 0.75rem;
+	font-weight: 600;
+	border-radius: 50rem;
+	text-transform: uppercase;
+	letter-spacing: 0.03em;
+}
+
+.badge-status.paid {
+	background-color: #d1fae5;
+	color: #065f46;
+}
+
+.badge-status.partial {
+	background-color: #fef3c7;
+	color: #92400e;
+}
+
+.badge-status.unpaid {
+	background-color: #fee2e2;
+	color: #991b1b;
+}
+
+.badge-status.default {
+	background-color: #e5e7eb;
+	color: #374151;
+}

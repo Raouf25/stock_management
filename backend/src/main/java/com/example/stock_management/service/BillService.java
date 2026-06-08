@@ -16,12 +16,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
-import java.util.List;
-import java.util.Comparator;
-import java.util.HashMap;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -81,8 +77,8 @@ public class BillService {
             billProduct.setQuantity(billProductDTO.getQuantite());
             productRepository.updateStock(billProductDTO.getIdProduct(), billProductDTO.getQuantite());
 
-            // Create sale record
-            createSaleRecord(customer, product, billProductDTO.getQuantite(), billProductDTO.getPrixTotal() / billProductDTO.getQuantite());
+            // Create sale record//
+          //  createSaleRecord(customer, product, billProductDTO.getQuantite(), billProductDTO.getPrixTotal() / billProductDTO.getQuantite(), "INV-" + Instant.now(clock).toEpochMilli());
 
             double productTotal = billProductDTO.getQuantite() * product.getUnitPriceBought();
             billProduct.setTotalProductPrice(productTotal);
@@ -140,6 +136,8 @@ public class BillService {
 
         Bill bill = new Bill();
         bill.setCustomer(customer);
+        long billId = Instant.now(clock).toEpochMilli();
+        bill.setIdBill(billId); // Generate unique invoice number
 
         // Convert LocalDate to LocalDateTime
         bill.setDateBill(invoiceDto.getBillDate()
@@ -156,6 +154,8 @@ public class BillService {
         // Calculate total from line items
         double totalHT = 0.0;
         List<BillProduct> billProducts = new java.util.ArrayList<>();
+
+        List<Sale> saleList = new ArrayList<>();
 
         for (InvoiceCreationDTO.InvoiceLineItemDTO lineItem : invoiceDto.getProducts()) {
             Product product = productRepository.findById(lineItem.getProductId())
@@ -183,7 +183,8 @@ public class BillService {
             productRepository.updateStock(lineItem.getProductId(), lineItem.getQuantity());
 
             // Create sale record
-            createSaleRecord(customer, product, lineItem.getQuantity(), lineTotalHT/lineItem.getQuantity());
+            Sale saleRecord = createSaleRecord(customer, product, lineItem.getQuantity(), lineTotalHT / lineItem.getQuantity());
+            saleList.add(saleRecord);
         }
 
         bill.setBillProducts(billProducts);
@@ -219,7 +220,13 @@ public class BillService {
             bill.setPaymentStatus(PaymentStatus.UNPAID);
         }
 
-        return billRepository.save(bill);
+        Bill savedBill = billRepository.save(bill);
+       // private String invoiceNumber;
+        saleList.forEach(sale -> {
+            sale.setInvoiceNumber(String.valueOf(savedBill.getIdBill()));
+        });
+        saleRepository.saveAll(saleList);
+        return savedBill;
     }
 
 
@@ -285,12 +292,12 @@ public class BillService {
     /**
      * Create a sale record for tracking sales
      */
-    private void createSaleRecord(Customer customer, Product product, Integer quantity, Double unitPrice) {
+    private Sale createSaleRecord(Customer customer, Product product, Integer quantity, Double unitPrice) {
         Sale sale = new Sale();
         sale.setDateSale(LocalDate.now(clock));
         sale.setCustomer(customer);
         sale.setProduct(product);
-        sale.setInvoiceNumber("INV-" + Instant.now(clock).toEpochMilli());
+      //  sale.setInvoiceNumber(String.valueOf(invoiceNumber));
         sale.setQuantitySold(quantity);
 
         // Use provided unit price or fallback to product's unit price sold
@@ -299,7 +306,7 @@ public class BillService {
         sale.setTotalSaleAmount(quantity * salePrice);
         sale.setComment("Vente automatique via facturation");
 
-        saleRepository.save(sale);
+       return sale;
     }
 
     @Transactional

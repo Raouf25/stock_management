@@ -51,12 +51,12 @@ public class BillController {
                 .map(billMapper::sourceToDestination);
     }
 
-    @PostMapping
-    @Operation(summary = "Créer une nouvelle Bill")
-    public Optional<CreatedBillDTO> createBill(@RequestBody BillDTO billDTO) {
-        return Optional.of(billService.save(billDTO))
-                .map(billMapper::sourceToDestination);
-    }
+//    @PostMapping
+//    @Operation(summary = "Créer une nouvelle Bill")
+//    public Optional<CreatedBillDTO> createBill(@RequestBody BillDTO billDTO) {
+//        return Optional.of(billService.save(billDTO))
+//                .map(billMapper::sourceToDestination);
+//    }
 
     @PostMapping("/create")
     @Operation(summary = "Créer une nouvelle facture avec tous les détails")
