@@ -168,7 +168,8 @@
                 <thead>
                 <tr style="background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);">
                     <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: left;">Produits</th>
-                    <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: right;">Stock</th>
+                    <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: right;">Stock vendu</th>
+                    <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: right;">Stock entrepôt</th>
                     <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: right;">Achats</th>
                     <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: right;">Ventes</th>
                     <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: right;">Prix moyen d'achat</th>
@@ -188,7 +189,8 @@
                         <td style="padding: 0.75rem 1rem; font-weight: 600; color: #1f2937;">
                             {{ prod.name }}- {{ prod.unit }} <span *ngIf="prod.designation">- {{ prod.designation }}</span>
                         </td>
-                        <td style="padding: 0.75rem 1rem; text-align: right;">{{ getCurrentStock(prod.idProduct) }}</td>
+                        <td style="padding: 0.75rem 1rem; text-align: right;">{{ getStockVendu(prod.idProduct) }}</td>
+                        <td style="padding: 0.75rem 1rem; text-align: right;">{{ getStockEntrepot(prod.idProduct) }}</td>
                         <td style="padding: 0.75rem 1rem; text-align: right;">{{ getPurchasesByProduct(prod.idProduct).length }}</td>
                         <td style="padding: 0.75rem 1rem; text-align: right;">{{ getSalesCount(prod.idProduct) }}</td>
                         <td style="padding: 0.75rem 1rem; text-align: right;">{{ getAveragePurchasePrice(prod.idProduct) | number:'1.3-3' }}</td>

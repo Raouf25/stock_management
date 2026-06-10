@@ -277,12 +277,18 @@ export class TransactionsComponent implements OnInit {
 
   // ── Calculs stock & prix ─────────────────────────────────────────────────────
 
-  getCurrentStock(productId: number): number {
-    const achats  = this.getPurchasesByProduct(productId).reduce((s, a) => s + (a.quantity    || 0), 0);
-    const ventes  = this.getSalesByProduct(productId)
-        .filter(t => t.quantitySold !== undefined || t.quantity !== undefined)
+  getStockVendu(productId: number): number {
+    return this.getSalesByProduct(productId)
         .reduce((s, v) => s + (v.quantitySold || 0), 0);
-    return Math.max(0, achats - ventes);
+  }
+
+  getStockEntrepot(productId: number): number {
+    const achats = this.getPurchasesByProduct(productId).reduce((s, a) => s + (a.quantity || 0), 0);
+    return Math.max(0, achats - this.getStockVendu(productId));
+  }
+
+  getCurrentStock(productId: number): number {
+    return this.getStockEntrepot(productId);
   }
 
   getAveragePurchasePrice(productId: number): number {
