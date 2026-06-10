@@ -16,9 +16,12 @@ import com.microsoft.playwright.options.WaitUntilState;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -26,10 +29,59 @@ public class PdfGenerateService {
 
     private static final String TEMPLATE_NAME = "facture";
 
-    // Chemin injecté via variable d'environnement définie dans le Dockerfile.
-    // Valeur : /usr/bin/chromium-browser
-    private static final String CHROMIUM_PATH =
-            System.getenv().getOrDefault("PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH", "/usr/bin/chromium-browser");
+    /**
+     * Résolution du chemin Chromium selon l'environnement :
+     *
+     *  1. Variable d'env PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH (Docker/Railway)
+     *     → chemin fixe défini dans le Dockerfile
+     *
+     *  2. Chemins système connus (Linux, macOS)
+     *     → détection automatique sur la machine du développeur
+     *
+     *  3. null → Playwright télécharge son propre Chromium dans ~/.cache/ms-playwright
+     *     (premier lancement uniquement, mis en cache ensuite)
+     */
+    private static final Path CHROMIUM_PATH = resolveChromiumPath();
+
+    private static Path resolveChromiumPath() {
+        // Priorité 1 : variable d'environnement (Docker / Railway)
+        String envPath = System.getenv("PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH");
+        if (envPath != null && !envPath.isBlank()) {
+            Path p = Paths.get(envPath);
+            if (Files.isExecutable(p)) {
+                log.info("[Playwright] Chromium via env: {}", p);
+                return p;
+            }
+            log.warn("[Playwright] PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH défini mais introuvable: {}", envPath);
+        }
+
+        // Priorité 2 : chemins système communs (Linux + macOS)
+        List<String> candidates = List.of(
+                // Linux (Debian/Ubuntu)
+                "/usr/bin/chromium",
+                "/usr/bin/chromium-browser",
+                "/usr/bin/google-chrome-stable",
+                "/usr/bin/google-chrome",
+                // macOS (Homebrew)
+                "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+                "/Applications/Chromium.app/Contents/MacOS/Chromium",
+                "/opt/homebrew/bin/chromium"
+        );
+
+        Optional<Path> found = candidates.stream()
+                .map(Paths::get)
+                .filter(Files::isExecutable)
+                .findFirst();
+
+        if (found.isPresent()) {
+            log.info("[Playwright] Chromium système trouvé: {}", found.get());
+            return found.get();
+        }
+
+        // Priorité 3 : laisser Playwright gérer (téléchargement automatique)
+        log.info("[Playwright] Aucun Chromium système trouvé — Playwright utilisera son propre Chromium (~/.cache/ms-playwright)");
+        return null;
+    }
 
     private final SpringTemplateEngine templateEngine;
     private final com.example.stock_management.util.NumberUtils numberUtils;
@@ -39,7 +91,6 @@ public class PdfGenerateService {
                               com.example.stock_management.util.NumberUtils numberUtils) {
         this.templateEngine = templateEngine;
         this.numberUtils = numberUtils;
-        log.info("PdfGenerateService: Chromium path = {}", CHROMIUM_PATH);
     }
 
     // -------------------------------------------------------------------------
@@ -83,17 +134,21 @@ public class PdfGenerateService {
 
         try (Playwright playwright = Playwright.create()) {
 
-            Browser browser = playwright.chromium().launch(
-                    new BrowserType.LaunchOptions()
-                            .setHeadless(true)
-                            .setExecutablePath(Paths.get(CHROMIUM_PATH))
-                            .setArgs(List.of(
-                                    "--no-sandbox",
-                                    "--disable-dev-shm-usage",
-                                    "--disable-gpu",
-                                    "--disable-setuid-sandbox"
-                            ))
-            );
+            BrowserType.LaunchOptions options = new BrowserType.LaunchOptions()
+                    .setHeadless(true)
+                    .setArgs(List.of(
+                            "--no-sandbox",
+                            "--disable-dev-shm-usage",
+                            "--disable-gpu",
+                            "--disable-setuid-sandbox"
+                    ));
+
+            // Chemin fixe seulement si résolu — sinon Playwright utilise le sien
+            if (CHROMIUM_PATH != null) {
+                options.setExecutablePath(CHROMIUM_PATH);
+            }
+
+            Browser browser = playwright.chromium().launch(options);
 
             try (BrowserContext context = browser.newContext();
                  Page page = context.newPage()) {
