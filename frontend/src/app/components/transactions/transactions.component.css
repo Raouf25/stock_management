@@ -108,10 +108,10 @@
 .chart-container { width: 100%; min-height: 250px; }
 .chart-container-small { width: 100%; min-height: 180px; }
 .bilan-positif {
-  background-color: #e6f9ed !important; /* vert très clair */
+	background-color: #e6f9ed !important; /* vert très clair */
 }
 .bilan-negatif {
-  background-color: #ffeaea !important; /* rouge très clair */
+	background-color: #ffeaea !important; /* rouge très clair */
 }
 
 
@@ -144,4 +144,26 @@
 .badge-status.default {
 	background-color: #e5e7eb;
 	color: #374151;
+}
+/* ── Loupe expand ── */
+.expand-loupe {
+	margin-left: auto;
+	font-size: 0.95rem;
+	opacity: 0.35;
+	transition: opacity 0.15s, transform 0.15s;
+	cursor: pointer;
+	display: inline-block;
+}
+.expand-loupe.is-open {
+	opacity: 1;
+	transform: scale(1.15);
+	filter: hue-rotate(200deg);
+}
+[style*="cursor:pointer"]:hover .expand-loupe { opacity: 0.75; }
+
+/* Cellule produit en flex pour pousser la loupe à droite */
+td[style*="font-weight: 600"] {
+	display: flex;
+	align-items: center;
+	gap: 0.25rem;
 }
