@@ -17,6 +17,9 @@
             background-color: #ffffff;
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
+            width: 100%;
+            max-width: 100%;
+            overflow-x: hidden;
         }
 
         strong { font-weight: 700; }
@@ -107,10 +110,10 @@
         }
 
         /* ── INFO TABLE (company + meta) ── */
-        .info-table { width: 100%; border-collapse: collapse; }
+        .info-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
         .info-table td { vertical-align: top; padding: 4px; }
-        .info-table td.company-col { width: 50%; padding-right: 16px; border-right: 1.5px solid #e0daff; }
-        .info-table td.meta-col { width: 50%; padding-left: 16px; }
+        .info-table td.company-col { width: 55%; padding-right: 10px; border-right: 1.5px solid #e0daff; }
+        .info-table td.meta-col { width: 45%; padding-left: 10px; }
 
         .company-col h2 {
             margin: 0 0 8px;
@@ -145,12 +148,12 @@
             width: 100%;
             margin-bottom: 16px;
             border-collapse: separate;
-            border-spacing: 12px 0;
+            border-spacing: 0;
         }
         .billing-delivery td {
             width: 50%;
             vertical-align: top;
-            padding: 14px 16px;
+            padding: 12px 10px;
             background: #ffffff;
             border: 1.5px solid #d4ccff;
             border-radius: 12px;
@@ -205,7 +208,7 @@
         .payment-totals {
             width: 100%;
             border-collapse: separate;
-            border-spacing: 12px 0;
+            border-spacing: 0;
             margin-bottom: 16px;
             page-break-inside: avoid;
         }
