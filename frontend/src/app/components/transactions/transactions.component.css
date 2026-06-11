@@ -23,36 +23,21 @@
 	font-weight: 500;
 	transition: all 0.2s;
 	box-shadow: 0 1px 4px #0001;
+	background-color: #ffffff;
+	border: 1px solid #e5e7eb;
+	color: #374151;
+	padding: 0.5rem 1rem;
 }
 .btn-action.active, .btn-action:active {
 	font-weight: bold;
-	border-width: 2px;
-	background: rgba(79,70,229,0.1);
-	color: #4f46e5;
+	background: #4f46e5 !important;
+	color: #ffffff !important;
+	border-color: #4f46e5;
 }
-.invoice-stats-grid {
-	display: flex;
-	gap: 1.5rem;
-	margin-bottom: 2rem;
-}
-.invoice-stat-card {
-	flex: 1;
-	padding: 1.5rem;
-	border-radius: 1rem;
-	background: #fff;
-	box-shadow: 0 2px 8px #0001;
-	text-align: center;
-	border-bottom: 4px solid #e5e7eb;
-}
-.border-green { border-bottom: 4px solid #28a745 !important; }
-.border-blue { border-bottom: 4px solid #007bff !important; }
-.border-purple { border-bottom: 4px solid #6f42c1 !important; }
-.border-orange { border-bottom: 4px solid #fd7e14 !important; }
-.border-red { border-bottom: 4px solid #dc3545 !important; }
 .invoice-card {
 	background: #fff;
 	border-radius: 1rem;
-	box-shadow: 0 2px 8px #0001;
+	box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 	margin-bottom: 2rem;
 }
 .invoice-card-header {
@@ -66,10 +51,9 @@
 	color: #fff;
 }
 .gradient-green { background: linear-gradient(90deg, #28a745 0%, #218838 100%) !important; color: #fff !important; }
-.gradient-orange { background: linear-gradient(90deg, #fd7e14 0%, #e8590c 100%) !important; color: #fff !important; }
-.gradient-blue { background: linear-gradient(90deg, #007bff 0%, #60a5fa 100%) !important; color: #fff !important; }
 .gradient-purple { background: linear-gradient(90deg, #6f42c1 0%, #a78bfa 100%) !important; color: #fff !important; }
 .invoice-card-header-title { margin-left: 0.5rem; }
+
 .desktop-table table {
 	background: #fff;
 	border-radius: 1rem;
@@ -91,13 +75,7 @@
 .desktop-table tr:hover {
 	background: #f8fafc;
 }
-.mobile-cards {
-	display: none;
-}
-@media (max-width: 900px) {
-	.desktop-table { display: none; }
-	.mobile-cards { display: block; }
-}
+
 .form-label { font-weight: 500; color: #4f46e5; }
 .form-control { border-radius: 0.5rem; border: 1px solid #e5e7eb; }
 .row { display: flex; flex-wrap: wrap; gap: 1rem; }
@@ -105,47 +83,47 @@
 .col-md-3 { flex: 0 0 23%; max-width: 23%; }
 .mb-3 { margin-bottom: 1rem; }
 .alert-info { background: #e0e7ff; color: #3730a3; border-radius: 0.5rem; padding: 1rem; margin-bottom: 1.5rem; }
-.chart-container { width: 100%; min-height: 250px; }
-.chart-container-small { width: 100%; min-height: 180px; }
+
 .bilan-positif {
-	background-color: #e6f9ed !important; /* vert très clair */
+	background-color: #e6f9ed !important;
 }
 .bilan-negatif {
-	background-color: #ffeaea !important; /* rouge très clair */
+	background-color: #ffeaea !important;
 }
 
-
-/* Badges pour le statut de paiement */
+/* Classes de badges pour les statuts de paiement */
 .badge-status {
 	display: inline-block;
-	padding: 0.25rem 0.6rem;
-	font-size: 0.75rem;
-	font-weight: 600;
-	border-radius: 50rem;
+	padding: 0.25rem 0.5rem;
+	font-size: 0.7rem;
+	font-weight: 700;
+	border-radius: 4px;
 	text-transform: uppercase;
-	letter-spacing: 0.03em;
+	text-align: center;
+	white-space: nowrap;
 }
-
 .badge-status.paid {
-	background-color: #d1fae5;
-	color: #065f46;
+	background-color: #d1fae5 !important;
+	color: #065f46 !important;
+	border: 1px solid #a7f3d0;
 }
-
 .badge-status.partial {
-	background-color: #fef3c7;
-	color: #92400e;
+	background-color: #fef3c7 !important;
+	color: #92400e !important;
+	border: 1px solid #fde68a;
 }
-
 .badge-status.unpaid {
-	background-color: #fee2e2;
-	color: #991b1b;
+	background-color: #fee2e2 !important;
+	color: #991b1b !important;
+	border: 1px solid #fca5a5;
+}
+.badge-status.default {
+	background-color: #f3f4f6 !important;
+	color: #4b5563 !important;
+	border: 1px solid #e5e7eb;
 }
 
-.badge-status.default {
-	background-color: #e5e7eb;
-	color: #374151;
-}
-/* ── Loupe expand ── */
+/* Loupe d'origine */
 .expand-loupe {
 	margin-left: auto;
 	font-size: 0.95rem;
@@ -154,16 +132,129 @@
 	cursor: pointer;
 	display: inline-block;
 }
-.expand-loupe.is-open {
-	opacity: 1;
-	transform: scale(1.15);
-	filter: hue-rotate(200deg);
-}
-[style*="cursor:pointer"]:hover .expand-loupe { opacity: 0.75; }
+[style*="cursor:pointer"]:hover .expand-loupe { opacity: 0.85; }
 
-/* Cellule produit en flex pour pousser la loupe à droite */
-td[style*="font-weight: 600"] {
+/* Fond obscurci global (Drawer Backdrop) */
+.drawer-backdrop {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100vw;
+	height: 100vh;
+	background-color: rgba(15, 23, 42, 0.4);
+	backdrop-filter: blur(2px);
+	z-index: 1040;
+	animation: fadeIn 0.2s ease-out;
+}
+
+/* Panneau latéral Coulissant à Droite (Side Drawer) */
+.side-drawer {
+	position: fixed;
+	top: 0;
+	right: -720px;
+	width: 700px;
+	max-width: 100%;
+	height: 100vh;
+	background: #f8fafc;
+	box-shadow: -8px 0 24px rgba(0, 0, 0, 0.15);
+	z-index: 1050;
+	transition: right 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.side-drawer.open {
+	right: 0;
+}
+.drawer-header {
+	padding: 1.25rem 1.5rem;
+	background: #ffffff;
+	border-bottom: 1px solid #e2e8f0;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+.drawer-product-title {
+	margin: 0;
+	font-size: 1.2rem;
+	font-weight: 700;
+	color: #0f172a;
+}
+.drawer-product-sub {
+	font-size: 0.85rem;
+	color: #64748b;
+}
+.btn-close-drawer {
+	background: #f1f5f9;
+	border: none;
+	width: 32px;
+	height: 32px;
+	border-radius: 50%;
+	font-weight: bold;
+	color: #64748b;
+	cursor: pointer;
 	display: flex;
 	align-items: center;
-	gap: 0.25rem;
+	justify-content: center;
+	transition: all 0.15s;
+}
+.btn-close-drawer:hover {
+	background: #e2e8f0;
+	color: #0f172a;
+}
+.drawer-body {
+	flex: 1;
+	overflow-y: auto;
+	padding: 1.5rem;
+}
+
+/* ── Grille de statistiques pour le Drawer ── */
+.drawer-stats-grid {
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	gap: 0.75rem;
+	margin-bottom: 1.5rem;
+}
+.drawer-stat-card-box {
+	background: #ffffff;
+	border: 1px solid #e2e8f0;
+	border-radius: 0.5rem;
+	padding: 0.6rem 0.85rem;
+	display: flex;
+	flex-direction: column;
+	gap: 0.2rem;
+	box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+}
+.drawer-stat-card-box.full-width {
+	grid-column: span 2;
+}
+.drawer-stat-label {
+	font-size: 0.72rem;
+	text-transform: uppercase;
+	color: #64748b;
+	font-weight: 600;
+	letter-spacing: 0.03em;
+}
+.drawer-stat-value {
+	font-size: 1.1rem;
+	font-weight: 700;
+	color: #1e293b;
+}
+
+/* Styles pour les boîtes de bilan */
+.bilan-positif-box {
+	background-color: #ecfdf5 !important;
+	border-color: #a7f3d0 !important;
+}
+.bilan-positif-box .drawer-stat-value {
+	color: #047857 !important;
+}
+.bilan-negatif-box {
+	background-color: #fef2f2 !important;
+	border-color: #fca5a5 !important;
+}
+.bilan-negatif-box .drawer-stat-value {
+	color: #b91c1c !important;
+}
+
+@keyframes fadeIn {
+	from { opacity: 0; }
+	to { opacity: 1; }
 }

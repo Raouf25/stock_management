@@ -37,8 +37,11 @@ export class TransactionsComponent implements OnInit {
   loading       = true;
   showForm      = false;
   productSearch = '';
-  openProducts: number[] = [];
   showAllProducts = false;
+
+  // Variables d'état pour le panneau latéral (Side Drawer)
+  isDrawerOpen = false;
+  selectedProductForDrawer: any = null;
 
   // Données
   transactions: any[] = [];
@@ -66,8 +69,6 @@ export class TransactionsComponent implements OnInit {
       private router: Router
   ) {}
 
-  // ── Lifecycle ────────────────────────────────────────────────────────────────
-
   ngOnInit(): void {
     this.route.queryParams.subscribe(({ type }) => {
       if (type === 'movements' || type === 'sales' || type === 'purchases') {
@@ -79,8 +80,6 @@ export class TransactionsComponent implements OnInit {
     this.loadProducts();
   }
 
-  // ── Navigation ───────────────────────────────────────────────────────────────
-
   switchType(type: TransactionType): void {
     this.type     = type;
     this.showForm = false;
@@ -88,21 +87,17 @@ export class TransactionsComponent implements OnInit {
     type === 'movements' ? this.loadMovements() : this.loadDataWithPurchasesFilter();
   }
 
-  // ── Produits (accordion) ─────────────────────────────────────────────────────
+  // ── Panneau Latéral (Side Drawer) ───────────────────────────────────────────
 
-  toggleProduct(id: number): void {
-    const isOpen = this.isProductOpen(id);
-    if (isOpen) {
-      this.openProducts = this.openProducts.filter(pid => pid !== id);
-    } else {
-      this.openProducts = [...this.openProducts, id];
-      // FIX : Déclenche l'appel vers l'API des factures à l'ouverture de l'accordéon
-      this.loadPaymentStatusesForProductSales(id);
-    }
+  openProductDrawer(product: any): void {
+    this.selectedProductForDrawer = product;
+    this.isDrawerOpen = true;
+    this.loadPaymentStatusesForProductSales(product.idProduct);
   }
 
-  isProductOpen(id: number): boolean {
-    return this.openProducts.includes(id);
+  closeDrawer(): void {
+    this.isDrawerOpen = false;
+    this.selectedProductForDrawer = null;
   }
 
   toggleShowAllProducts(): void {
@@ -118,7 +113,60 @@ export class TransactionsComponent implements OnInit {
     }
   }
 
-  // ── Initialisation & Gestion dynamique des lignes d'achat ───────────────────
+  // ── Calculs Statistiques du Produit dans le Drawer ──────────────────────────
+  get drawerProductStats() {
+    if (!this.selectedProductForDrawer) return null;
+    const pId = this.selectedProductForDrawer.idProduct ?? this.selectedProductForDrawer.productId ?? this.selectedProductForDrawer.id;
+
+    // Récupération sécurisée des données associées
+    const sales = this.getSalesByProduct(pId);
+    const purchases = this.getPurchasesByProduct(pId);
+
+    // 1. Nombre d'articles vendus
+    const itemsSold = sales.reduce((acc, s) => acc + (s.quantitySold || 0), 0);
+
+    // 2. Nombre d'achats
+    const purchasesCount = purchases.length;
+
+    // 3. Nombre de ventes
+    const salesCount = sales.length;
+
+    // 4. Prix d'achat moyen et volume d'achat total
+    let totalPurchaseQty = 0;
+    let totalPurchaseCost = 0;
+    purchases.forEach(p => {
+      const qty = p.quantityOrdered ?? p.quantity ?? 0;
+      const price = p.unitPriceTTC ?? p.unitPrice ?? 0;
+      totalPurchaseQty += qty;
+      totalPurchaseCost += (qty * price);
+    });
+    const avgPurchasePrice = totalPurchaseQty > 0 ? (totalPurchaseCost / totalPurchaseQty) : 0;
+
+    // 5. Prix de vente moyen et revenus totaux
+    let totalSalesRevenue = 0;
+    sales.forEach(s => {
+      const qty = s.quantitySold || 0;
+      const price = s.unitSalePrice || 0;
+      totalSalesRevenue += (qty * price);
+    });
+    const avgSalePrice = itemsSold > 0 ? (totalSalesRevenue / itemsSold) : 0;
+
+    // 6. Nombre d'articles en entrepôt (Stock théorique)
+    const itemsInWarehouse = Math.max(0, totalPurchaseQty - itemsSold);
+
+    // 7. Bilan (Ventes - Achats)
+    const balance = totalSalesRevenue - totalPurchaseCost;
+
+    return {
+      itemsSold,
+      itemsInWarehouse,
+      purchasesCount,
+      avgPurchasePrice,
+      salesCount,
+      avgSalePrice,
+      balance
+    };
+  }
 
   initPurchaseForm(): void {
     this.newPurchase = { ...EMPTY_PURCHASE };
@@ -150,8 +198,6 @@ export class TransactionsComponent implements OnInit {
     return this.purchaseLines.reduce((acc, line) => acc + ((line.quantity || 0) * (line.unitPriceTTC || 0)), 0);
   }
 
-  // ── Autocomplete / Dropdown par ligne de produit ────────────────────────────
-
   openLineDropdown(index: number): void {
     this.purchaseLines[index].dropdownOpen = true;
   }
@@ -182,8 +228,6 @@ export class TransactionsComponent implements OnInit {
     line.dropdownOpen = false;
   }
 
-  // ── Getters filtrés (Tableau Principal) ──────────────────────────────────────
-
   get filteredProducts(): any[] {
     let list = this.showAllProducts
         ? [...this.products]
@@ -199,12 +243,8 @@ export class TransactionsComponent implements OnInit {
     return sortAlpha(list);
   }
 
-  // ── Accès données produit ────────────────────────────────────────────────────
-
   getSalesByProduct(productId: number): any[] {
-    return this.type === 'sales'
-        ? this.transactions.filter(t => t.productId === productId || t.idProduct === productId)
-        : [];
+    return this.transactions.filter(t => t.productId === productId || t.idProduct === productId);
   }
 
   getPurchasesByProduct(productId: number): any[] {
@@ -214,20 +254,15 @@ export class TransactionsComponent implements OnInit {
   getSalesCount(productId: number):    number { return this.getSalesByProduct(productId).length; }
   getPurchasesCount(productId: number): number { return this.getPurchasesByProduct(productId).length; }
 
-  // ── Récupération et gestion du statut de paiement ──────────────────────────
-
   private loadPaymentStatusesForProductSales(productId: number): void {
     const sales = this.getSalesByProduct(productId);
 
     sales.forEach(sale => {
-      // Extrait l'ID de facture via toutes les clés envisageables (idBill, billId, invoiceId, id)
       const billId = sale.invoiceNumber;
 
       if (billId && !this.billsCache[billId]) {
-        // Met la clé en état "loading" pour éviter d'appeler l'API en boucle
         this.billsCache[billId] = { paymentStatus: '', loading: true };
 
-        // Appel de l'API /api/bills/{id}
         this.api.getBillById(billId).subscribe({
           next: (billDto: any) => {
             this.billsCache[billId] = {
@@ -275,8 +310,6 @@ export class TransactionsComponent implements OnInit {
     }
   }
 
-  // ── Calculs stock & prix ─────────────────────────────────────────────────────
-
   getStockVendu(productId: number): number {
     return this.getSalesByProduct(productId)
         .reduce((s, v) => s + (v.quantitySold || 0), 0);
@@ -306,12 +339,10 @@ export class TransactionsComponent implements OnInit {
   }
 
   getBilan(productId: number): number {
-    const ventes = this.getSalesByProduct(productId).reduce((s, v) => s + (v.totalSaleAmount  || 0), 0);
-    const achats = this.getPurchasesByProduct(productId).reduce((s, a) => s + (a.totalAmountTTC || 0), 0);
-    return ventes - achats;
+    const vents = this.getSalesByProduct(productId).reduce((s, v) => s + (v.totalSaleAmount  || 0), 0);
+    const achts = this.getPurchasesByProduct(productId).reduce((s, a) => s + (a.totalAmountTTC || 0), 0);
+    return vents - achts;
   }
-
-  // ── Chargement API robuste ───────────────────────────────────────────────────
 
   loadDataWithPurchasesFilter(): void {
     this.loading = true;
@@ -331,9 +362,7 @@ export class TransactionsComponent implements OnInit {
           if (p.lines && Array.isArray(p.lines)) {
             p.lines.forEach((line: any) => {
               const prodId = line.productId ?? line.idProduct;
-              if (prodId) {
-                discoveredProductIds.add(Number(prodId));
-              }
+              if (prodId) discoveredProductIds.add(Number(prodId));
             });
           }
         });
@@ -341,19 +370,16 @@ export class TransactionsComponent implements OnInit {
         const activePurchaseIds = Array.from(discoveredProductIds);
         this.loadPurchasesForProducts(activePurchaseIds);
 
-        if (this.type === 'sales') {
-          this.api.getSales().subscribe({
-            next: (salesData) => {
+        this.api.getSales().subscribe({
+          next: (salesData) => {
+            if (this.type === 'sales') {
               this.transactions = salesData;
-              this.loading = false;
-              this.createCharts();
-            },
-            error: () => this.loading = false
-          });
-        } else {
-          this.loading = false;
-          this.createCharts();
-        }
+            }
+            this.loading = false;
+            this.createCharts();
+          },
+          error: () => this.loading = false
+        });
       },
       error: () => this.loading = false
     });
@@ -438,12 +464,12 @@ export class TransactionsComponent implements OnInit {
   }
 
   createCharts(): void {
-    if (this.type !== 'sales' || !this.products.length || !this.transactions.length || !this.categoryChart) return;
+    if (!this.products.length || !this.categoryChart) return;
 
     const salesByProduct: Record<string, number> = {};
     this.transactions.forEach(sale => {
       const id = sale.productId ?? sale.idProduct;
-      salesByProduct[id] = (salesByProduct[id] ?? 0) + (sale.quantitySold || 0);
+      if(id) salesByProduct[id] = (salesByProduct[id] ?? 0) + (sale.quantitySold || 0);
     });
 
     const top7 = Object.entries(salesByProduct).sort((a, b) => b[1] - a[1]).slice(0, 7);
