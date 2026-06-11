@@ -23,8 +23,9 @@ public class Bill {
     @JoinColumn(name = "customerId")
     private Customer customer;
 
-    @OneToMany(mappedBy = "bill", fetch = FetchType.EAGER)
     @ToString.Exclude // Exclusion de la relation pour éviter la récursion infinie
+    @OneToMany(mappedBy = "bill", fetch = FetchType.EAGER,
+            cascade = CascadeType.ALL, orphanRemoval = true)     // JPA cascade le save sur les BillProduct
     private List<BillProduct> billProducts;
 
     @Column(precision = 19, scale = 3)
