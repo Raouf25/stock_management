@@ -258,3 +258,53 @@
 	from { opacity: 0; }
 	to { opacity: 1; }
 }
+/* ═══════════════════════════════════════
+   RESPONSIVE — Mobile first additions
+═══════════════════════════════════════ */
+
+/* Remplace le selector coûteux [style*="cursor:pointer"] */
+.product-row:hover .expand-loupe { opacity: 0.85; }
+
+@media (max-width: 768px) {
+	/* Layout général */
+	.invoice-page-container { padding: 1rem; }
+	.invoice-page-title { font-size: 1.35rem; }
+
+	/* Formulaire : passe en 1 colonne */
+	.row { flex-direction: column; gap: 0.75rem; }
+	.col-md-6, .col-md-3 { flex: 0 0 100%; max-width: 100%; }
+
+	/* Grille lignes produit : 1 colonne */
+	.purchase-lines-grid {
+		grid-template-columns: 1fr !important;
+	}
+	.purchase-lines-header { display: none !important; }
+
+	/* Tableau produits : scroll horizontal */
+	.desktop-table { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+	.desktop-table table { min-width: 700px; }
+	.desktop-table th, .desktop-table td { padding: 0.55rem 0.65rem; font-size: 0.82rem; }
+
+	/* Drawer : pleine largeur sur mobile */
+	.side-drawer {
+		width: 100vw;
+		right: -100vw;
+	}
+	.side-drawer.open { right: 0; }
+
+	/* Stats grid drawer : 1 colonne sur très petit écran */
+	.drawer-stats-grid { grid-template-columns: 1fr; }
+	.drawer-stat-card-box.full-width { grid-column: span 1; }
+
+	/* Tables dans le drawer : scroll horizontal */
+	.drawer-body table { min-width: 480px; }
+	.drawer-body > div[style*="border"] { overflow-x: auto; }
+}
+
+@media (max-width: 480px) {
+	.invoice-page-title { font-size: 1.1rem; }
+	.invoice-card-header { font-size: 1rem; padding: 0.75rem 1rem; }
+	.drawer-body { padding: 1rem; }
+	.drawer-header { padding: 1rem; }
+	.drawer-product-title { font-size: 1rem; }
+}

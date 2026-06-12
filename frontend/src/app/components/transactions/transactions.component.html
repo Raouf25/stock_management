@@ -4,6 +4,8 @@
         <h1 class="invoice-page-title">Backoffice Produits</h1>
     </div>
 
+
+
     <button class="btn btn-primary mb-3" (click)="showForm = !showForm">
         {{ showForm ? 'Fermer le formulaire' : 'Acheter' }}
     </button>
@@ -20,7 +22,7 @@
                         <label class="form-label">Fournisseur</label>
                         <select class="form-control" [(ngModel)]="newPurchase.supplierId" name="supplierId">
                             <option value="">Sélectionnez un fournisseur...</option>
-                            <option *ngFor="let s of suppliers" [value]="s.id">{{ s.name }}</option>
+                            <option *ngFor="let s of suppliers" [value] darkness="s.id">{{ s.name }}</option>
                         </select>
                     </div>
 
@@ -118,7 +120,7 @@
         </div>
     </div>
 
-    <div class="invoice-card">
+    <div *ngIf="!loading" class="invoice-card">
         <div class="invoice-card-header gradient-purple">
             <span>📦</span>
             <span class="invoice-card-header-title">Produits ({{ filteredProducts.length }})</span>
@@ -198,7 +200,6 @@
         </div>
 
         <div class="drawer-body">
-
             <div *ngIf="drawerProductStats" class="drawer-stats-grid">
                 <div class="drawer-stat-card-box">
                     <span class="drawer-stat-label">Article vendu</span>

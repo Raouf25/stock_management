@@ -1,5 +1,7 @@
-import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import {
+  Component, OnInit, ViewChild, ElementRef,
+  ChangeDetectionStrategy, ChangeDetectorRef
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
@@ -7,228 +9,137 @@ import { Chart, registerables } from 'chart.js';
 
 Chart.register(...registerables);
 
-type TransactionType = 'sales' | 'purchases' | 'movements';
+// ── Types ──────────────────────────────────────────────────────────────────────
+interface PurchaseLine {
+  productId:    string;
+  productSearch: string;
+  productLabel: string;
+  quantity:     number;
+  unitPriceTTC: number;
+  dropdownOpen: boolean;
+}
 
-const EMPTY_PURCHASE = {
-  supplierId: '',
-  invoiceNumber: '',
-  datePurchase: ''
-};
+interface ProductStats {
+  itemsSold:        number;
+  itemsInWarehouse: number;
+  purchasesCount:   number;
+  avgPurchasePrice: number;
+  salesCount:       number;
+  avgSalePrice:     number;
+  balance:          number;
+}
+
+// ── Constantes ─────────────────────────────────────────────────────────────────
+const EMPTY_PURCHASE = { supplierId: '', invoiceNumber: '', datePurchase: '' };
 
 const sortByDate = (a: any, b: any) =>
     new Date(a.datePurchase).getTime() - new Date(b.datePurchase).getTime();
 
 const sortAlpha = (list: any[]) =>
-    [...list].sort((a, b) => (a.name || '').toLowerCase().localeCompare((b.name || '').toLowerCase(), 'fr'));
+    [...list].sort((a, b) =>
+        (a.name || '').toLowerCase().localeCompare((b.name || '').toLowerCase(), 'fr'));
 
 @Component({
-  selector: 'app-transactions',
-  standalone: true,
-  imports: [CommonModule, FormsModule],
+  selector:    'app-transactions',
+  standalone:  true,
+  imports:     [CommonModule, FormsModule],
   templateUrl: './transactions.component.html',
-  styleUrls: ['./transactions.component.css']
+  styleUrls:   ['./transactions.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush   // PERF: évite les CD inutiles
 })
 export class TransactionsComponent implements OnInit {
-  @ViewChild('trendChart')    trendChart!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('trendChart')    trendChart!:    ElementRef<HTMLCanvasElement>;
   @ViewChild('categoryChart') categoryChart!: ElementRef<HTMLCanvasElement>;
 
-  // UI
-  type: TransactionType = 'sales';
-  loading       = true;
-  showForm      = false;
-  productSearch = '';
+  // ── UI ─────────────────────────────────────────────────────────────────────
+  loading         = true;
+  showForm        = false;
+  productSearch   = '';
   showAllProducts = false;
-
-  // Variables d'état pour le panneau latéral (Side Drawer)
-  isDrawerOpen = false;
+  isDrawerOpen    = false;
   selectedProductForDrawer: any = null;
 
-  // Données
-  transactions: any[] = [];
-  purchasesByProduct: Record<number, any[]> = {};
-  movements:  any[] = [];
-  products:   any[] = [];
-  suppliers:  any[] = [];
+  // ── Données brutes ─────────────────────────────────────────────────────────
+  transactions:        any[]                 = [];
+  purchasesByProduct:  Record<number, any[]> = {};
+  products:            any[]                 = [];
+  suppliers:           any[]                 = [];
 
-  // Cache de stockage pour les statuts de paiement par ID de facture
   billsCache: Record<number, { paymentStatus: string; loading: boolean }> = {};
 
-  // Filtres mouvements
-  selectedType   = '';
-  selectedSource = '';
+  // ── Formulaire ─────────────────────────────────────────────────────────────
+  newPurchase  = { ...EMPTY_PURCHASE };
+  purchaseLines: PurchaseLine[] = [];
 
-  // Formulaire achat multi-produits
-  newPurchase = { ...EMPTY_PURCHASE };
-  purchaseLines: any[] = [];
+  // ── Caches calculés (invalidés manuellement) ───────────────────────────────
+  /** Résultats pré-calculés par produit, mis à jour quand les données changent */
+  private _statsCache:    Map<number, ProductStats> = new Map();
+  private _filteredCache: any[] | null = null;
+  private _filterKey     = '';   // clé de cache pour filteredProducts
 
-  private categoryChartInstance?: Chart;
+  constructor(private api: ApiService, private cdr: ChangeDetectorRef) {}
 
-  constructor(
-      private api: ApiService,
-      private route: ActivatedRoute,
-      private router: Router
-  ) {}
+  // ── Lifecycle ───────────────────────────────────────────────────────────────
 
   ngOnInit(): void {
-    this.route.queryParams.subscribe(({ type }) => {
-      if (type === 'movements' || type === 'sales' || type === 'purchases') {
-        this.type = type;
-      }
-    });
     this.initPurchaseForm();
     this.loadSuppliers();
     this.loadProducts();
   }
 
-  switchType(type: TransactionType): void {
-    this.type     = type;
-    this.showForm = false;
-    this.router.navigate([], { relativeTo: this.route, queryParams: { type }, queryParamsHandling: 'merge' });
-    type === 'movements' ? this.loadMovements() : this.loadDataWithPurchasesFilter();
-  }
-
-  // ── Panneau Latéral (Side Drawer) ───────────────────────────────────────────
+  // ── Drawer ──────────────────────────────────────────────────────────────────
 
   openProductDrawer(product: any): void {
     this.selectedProductForDrawer = product;
+    this._drawerStats = null;   // invalide le cache drawer
     this.isDrawerOpen = true;
     this.loadPaymentStatusesForProductSales(product.idProduct);
+    this.cdr.markForCheck();
   }
 
   closeDrawer(): void {
     this.isDrawerOpen = false;
     this.selectedProductForDrawer = null;
+    this.cdr.markForCheck();
   }
 
   toggleShowAllProducts(): void {
     this.showAllProducts = !this.showAllProducts;
+    this._filteredCache = null;   // invalide le cache
 
     if (this.showAllProducts) {
-      const allProductIds = this.products.map(p => p.idProduct ?? p.productId ?? p.id);
-      const missingIds = allProductIds.filter(id => id && this.purchasesByProduct[id] === undefined);
-
-      if (missingIds.length > 0) {
-        this.loadPurchasesForProducts(missingIds);
-      }
+      const missing = this.products
+          .map(p => p.idProduct ?? p.productId ?? p.id)
+          .filter((id: number) => id && this.purchasesByProduct[id] === undefined);
+      if (missing.length) this.loadPurchasesForProducts(missing);
     }
+    this.cdr.markForCheck();
   }
 
-  // ── Calculs Statistiques du Produit dans le Drawer ──────────────────────────
-  get drawerProductStats() {
+  // ── Stats drawer (mémoïsé) ──────────────────────────────────────────────────
+
+  private _drawerStats: ProductStats | null = null;
+
+  get drawerProductStats(): ProductStats | null {
     if (!this.selectedProductForDrawer) return null;
-    const pId = this.selectedProductForDrawer.idProduct ?? this.selectedProductForDrawer.productId ?? this.selectedProductForDrawer.id;
 
-    // Récupération sécurisée des données associées
-    const sales = this.getSalesByProduct(pId);
-    const purchases = this.getPurchasesByProduct(pId);
+    // Retourne le cache si toujours valide
+    if (this._drawerStats) return this._drawerStats;
 
-    // 1. Nombre d'articles vendus
-    const itemsSold = sales.reduce((acc, s) => acc + (s.quantitySold || 0), 0);
+    const pId = this.selectedProductForDrawer.idProduct
+        ?? this.selectedProductForDrawer.productId
+        ?? this.selectedProductForDrawer.id;
 
-    // 2. Nombre d'achats
-    const purchasesCount = purchases.length;
-
-    // 3. Nombre de ventes
-    const salesCount = sales.length;
-
-    // 4. Prix d'achat moyen et volume d'achat total
-    let totalPurchaseQty = 0;
-    let totalPurchaseCost = 0;
-    purchases.forEach(p => {
-      const qty = p.quantityOrdered ?? p.quantity ?? 0;
-      const price = p.unitPriceTTC ?? p.unitPrice ?? 0;
-      totalPurchaseQty += qty;
-      totalPurchaseCost += (qty * price);
-    });
-    const avgPurchasePrice = totalPurchaseQty > 0 ? (totalPurchaseCost / totalPurchaseQty) : 0;
-
-    // 5. Prix de vente moyen et revenus totaux
-    let totalSalesRevenue = 0;
-    sales.forEach(s => {
-      const qty = s.quantitySold || 0;
-      const price = s.unitSalePrice || 0;
-      totalSalesRevenue += (qty * price);
-    });
-    const avgSalePrice = itemsSold > 0 ? (totalSalesRevenue / itemsSold) : 0;
-
-    // 6. Nombre d'articles en entrepôt (Stock théorique)
-    const itemsInWarehouse = Math.max(0, totalPurchaseQty - itemsSold);
-
-    // 7. Bilan (Ventes - Achats)
-    const balance = totalSalesRevenue - totalPurchaseCost;
-
-    return {
-      itemsSold,
-      itemsInWarehouse,
-      purchasesCount,
-      avgPurchasePrice,
-      salesCount,
-      avgSalePrice,
-      balance
-    };
+    this._drawerStats = this._computeStats(pId);
+    return this._drawerStats;
   }
 
-  initPurchaseForm(): void {
-    this.newPurchase = { ...EMPTY_PURCHASE };
-    this.purchaseLines = [this.createEmptyLine()];
-  }
-
-  createEmptyLine(): any {
-    return {
-      productId: '',
-      productSearch: '',
-      productLabel: '',
-      quantity: 1,
-      unitPriceTTC: 0,
-      dropdownOpen: false
-    };
-  }
-
-  addPurchaseLine(): void {
-    this.purchaseLines.push(this.createEmptyLine());
-  }
-
-  removePurchaseLine(index: number): void {
-    if (this.purchaseLines.length > 1) {
-      this.purchaseLines.splice(index, 1);
-    }
-  }
-
-  getPurchaseLinesTotal(): number {
-    return this.purchaseLines.reduce((acc, line) => acc + ((line.quantity || 0) * (line.unitPriceTTC || 0)), 0);
-  }
-
-  openLineDropdown(index: number): void {
-    this.purchaseLines[index].dropdownOpen = true;
-  }
-
-  closeLineDropdown(index: number): void {
-    setTimeout(() => {
-      this.purchaseLines[index].dropdownOpen = false;
-    }, 220);
-  }
-
-  getFilteredProductsForLine(line: any): any[] {
-    const term = (line.productSearch || '').trim().toLowerCase();
-    if (!term) {
-      return sortAlpha(this.products);
-    }
-    const list = this.products.filter(p =>
-        p.name?.toLowerCase().includes(term) ||
-        p.designation?.toLowerCase().includes(term)
-    );
-    return sortAlpha(list);
-  }
-
-  selectProductForLine(index: number, product: any): void {
-    const line = this.purchaseLines[index];
-    line.productId = product.idProduct ?? product.productId ?? product.id;
-    line.productLabel = `${product.name} - ${product.unit}`;
-    line.productSearch = product.name;
-    line.dropdownOpen = false;
-  }
+  // ── filteredProducts (mémoïsé) ──────────────────────────────────────────────
 
   get filteredProducts(): any[] {
+    const key = `${this.showAllProducts}|${this.productSearch}`;
+    if (this._filteredCache && this._filterKey === key) return this._filteredCache;
+
     let list = this.showAllProducts
         ? [...this.products]
         : this.products.filter(p => this.getPurchasesCount(p.idProduct ?? p.productId ?? p.id) > 0);
@@ -237,165 +148,186 @@ export class TransactionsComponent implements OnInit {
     if (term) {
       list = list.filter(p =>
           p.name?.toLowerCase().includes(term) ||
-          p.designation?.toLowerCase().includes(term)
-      );
+          p.designation?.toLowerCase().includes(term));
     }
-    return sortAlpha(list);
+
+    this._filteredCache = sortAlpha(list);
+    this._filterKey     = key;
+    return this._filteredCache;
   }
+
+  // ── Formulaire achat ────────────────────────────────────────────────────────
+
+  initPurchaseForm(): void {
+    this.newPurchase  = { ...EMPTY_PURCHASE };
+    this.purchaseLines = [this._emptyLine()];
+  }
+
+  private _emptyLine(): PurchaseLine {
+    return { productId: '', productSearch: '', productLabel: '', quantity: 1, unitPriceTTC: 0, dropdownOpen: false };
+  }
+
+  addPurchaseLine():             void { this.purchaseLines.push(this._emptyLine()); }
+  removePurchaseLine(i: number): void { if (this.purchaseLines.length > 1) this.purchaseLines.splice(i, 1); }
+
+  getPurchaseLinesTotal(): number {
+    return this.purchaseLines.reduce((acc, l) => acc + (l.quantity * l.unitPriceTTC), 0);
+  }
+
+  openLineDropdown(i: number):  void { this.purchaseLines[i].dropdownOpen = true; }
+  closeLineDropdown(i: number): void {
+    setTimeout(() => { this.purchaseLines[i].dropdownOpen = false; this.cdr.markForCheck(); }, 220);
+  }
+
+  getFilteredProductsForLine(line: PurchaseLine): any[] {
+    const term = line.productSearch.trim().toLowerCase();
+    return sortAlpha(term
+        ? this.products.filter(p => p.name?.toLowerCase().includes(term) || p.designation?.toLowerCase().includes(term))
+        : this.products);
+  }
+
+  selectProductForLine(i: number, p: any): void {
+    const line = this.purchaseLines[i];
+    line.productId    = p.idProduct ?? p.productId ?? p.id;
+    line.productLabel = `${p.name} - ${p.unit}`;
+    line.productSearch = p.name;
+    line.dropdownOpen  = false;
+  }
+
+  // ── Accès données ───────────────────────────────────────────────────────────
 
   getSalesByProduct(productId: number): any[] {
     return this.transactions.filter(t => t.productId === productId || t.idProduct === productId);
   }
 
-  getPurchasesByProduct(productId: number): any[] {
-    return this.purchasesByProduct[productId] ?? [];
-  }
+  getPurchasesByProduct(productId: number): any[] { return this.purchasesByProduct[productId] ?? []; }
 
-  getSalesCount(productId: number):    number { return this.getSalesByProduct(productId).length; }
+  getSalesCount(productId: number):     number { return this.getSalesByProduct(productId).length; }
   getPurchasesCount(productId: number): number { return this.getPurchasesByProduct(productId).length; }
 
+  // ── Calculs mémoïsés ────────────────────────────────────────────────────────
+
+  /** Récupère les stats depuis le cache ou les calcule */
+  private _computeStats(productId: number): ProductStats {
+    if (this._statsCache.has(productId)) return this._statsCache.get(productId)!;
+
+    const sales     = this.getSalesByProduct(productId);
+    const purchases = this.getPurchasesByProduct(productId);
+
+    const itemsSold       = sales.reduce((s, v) => s + (v.quantitySold || 0), 0);
+    const totalPurchaseQty = purchases.reduce((s, p) => s + (p.quantity ?? p.quantityOrdered ?? 0), 0);
+    const totalPurchaseCost = purchases.reduce((s, p) => s + ((p.quantity ?? p.quantityOrdered ?? 0) * (p.unitPriceTTC ?? p.unitPrice ?? 0)), 0);
+    const totalSalesRevenue = sales.reduce((s, v) => s + ((v.quantitySold || 0) * (v.unitSalePrice || 0)), 0);
+
+    const stats: ProductStats = {
+      itemsSold,
+      itemsInWarehouse: Math.max(0, totalPurchaseQty - itemsSold),
+      purchasesCount:   purchases.length,
+      avgPurchasePrice: totalPurchaseQty > 0 ? totalPurchaseCost / totalPurchaseQty : 0,
+      salesCount:       sales.length,
+      avgSalePrice:     itemsSold > 0 ? totalSalesRevenue / itemsSold : 0,
+      balance:          totalSalesRevenue - totalPurchaseCost,
+    };
+
+    this._statsCache.set(productId, stats);
+    return stats;
+  }
+
+  /** Invalide le cache stats pour un produit (appeler après maj données) */
+  private _invalidateStats(productId?: number): void {
+    if (productId !== undefined) {
+      this._statsCache.delete(productId);
+    } else {
+      this._statsCache.clear();
+    }
+    this._filteredCache = null;
+    this._drawerStats   = null;
+  }
+
+  // Méthodes publiques qui délèguent au cache
+  getStockVendu(productId: number):        number { return this._computeStats(productId).itemsSold; }
+  getStockEntrepot(productId: number):     number { return this._computeStats(productId).itemsInWarehouse; }
+  getAveragePurchasePrice(productId: number): number { return this._computeStats(productId).avgPurchasePrice; }
+  getAverageSalePrice(productId: number):  number { return this._computeStats(productId).avgSalePrice; }
+
+  getBilan(productId: number): number {
+    const v = this.getSalesByProduct(productId).reduce((s, x) => s + (x.totalSaleAmount  || 0), 0);
+    const a = this.getPurchasesByProduct(productId).reduce((s, x) => s + (x.totalAmountTTC || 0), 0);
+    return v - a;
+  }
+
+  // ── Statut paiement ─────────────────────────────────────────────────────────
+
   private loadPaymentStatusesForProductSales(productId: number): void {
-    const sales = this.getSalesByProduct(productId);
-
-    sales.forEach(sale => {
+    this.getSalesByProduct(productId).forEach(sale => {
       const billId = sale.invoiceNumber;
+      if (!billId || this.billsCache[billId]) return;
 
-      if (billId && !this.billsCache[billId]) {
-        this.billsCache[billId] = { paymentStatus: '', loading: true };
+      // Spread → nouvel objet → Angular OnPush détecte le changement
+      this.billsCache = { ...this.billsCache, [billId]: { paymentStatus: '', loading: true } };
 
-        this.api.getBillById(billId).subscribe({
-          next: (billDto: any) => {
-            this.billsCache[billId] = {
-              paymentStatus: billDto.paymentStatus,
-              loading: false
-            };
-          },
-          error: () => {
-            this.billsCache[billId] = {
-              paymentStatus: 'ERREUR',
-              loading: false
-            };
-          }
-        });
-      }
+      this.api.getBillById(billId).subscribe({
+        next: (dto: any) => {
+          this.billsCache = { ...this.billsCache, [billId]: { paymentStatus: dto.paymentStatus ?? '', loading: false } };
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.billsCache = { ...this.billsCache, [billId]: { paymentStatus: 'ERREUR', loading: false } };
+          this.cdr.markForCheck();
+        }
+      });
     });
   }
 
   getSalePaymentStatus(sale: any): string {
     const billId = sale.invoiceNumber;
     if (!billId) return 'SANS FACTURE';
-
     const cached = this.billsCache[billId];
     if (!cached) return 'CHARGEMENT';
     if (cached.loading) return '...';
-
     return cached.paymentStatus || 'INCONNU';
   }
 
   getPaymentBadgeClass(status: string): string {
-    if (!status) return 'badge-status default';
-
-    switch(status.toUpperCase()) {
-      case 'PAID':
-      case 'PAYE':
-        return 'badge-status paid';
-      case 'PARTIALLY_PAID':
-      case 'PARTIEL':
-        return 'badge-status partial';
-      case 'UNPAID':
-      case 'IMPAYE':
-        return 'badge-status unpaid';
-      default:
-        return 'badge-status default';
+    switch ((status || '').toUpperCase()) {
+      case 'PAID':            return 'badge-status paid';
+      case 'PARTIALLY_PAID':  return 'badge-status partial';
+      case 'UNPAID':          return 'badge-status unpaid';
+      default:                return 'badge-status default';
     }
   }
 
-  getStockVendu(productId: number): number {
-    return this.getSalesByProduct(productId)
-        .reduce((s, v) => s + (v.quantitySold || 0), 0);
-  }
-
-  getStockEntrepot(productId: number): number {
-    const achats = this.getPurchasesByProduct(productId).reduce((s, a) => s + (a.quantity || 0), 0);
-    return Math.max(0, achats - this.getStockVendu(productId));
-  }
-
-  getCurrentStock(productId: number): number {
-    return this.getStockEntrepot(productId);
-  }
-
-  getAveragePurchasePrice(productId: number): number {
-    return this.weightedAvg(this.getPurchasesByProduct(productId), 'unitPriceTTC', 'quantity');
-  }
-
-  getAverageSalePrice(productId: number): number {
-    return this.weightedAvg(this.getSalesByProduct(productId), 'unitSalePrice', 'quantitySold');
-  }
-
-  private weightedAvg(list: any[], priceKey: string, qtyKey: string): number {
-    const totalQty = list.reduce((s, x) => s + (x[qtyKey] || 0), 0);
-    const totalAmount = list.reduce((s, x) => s + ((x[priceKey] || 0) * (x[qtyKey] || 0)), 0);
-    return totalQty ? totalAmount / totalQty : 0;
-  }
-
-  getBilan(productId: number): number {
-    const vents = this.getSalesByProduct(productId).reduce((s, v) => s + (v.totalSaleAmount  || 0), 0);
-    const achts = this.getPurchasesByProduct(productId).reduce((s, a) => s + (a.totalAmountTTC || 0), 0);
-    return vents - achts;
-  }
+  // ── Chargement API ──────────────────────────────────────────────────────────
 
   loadDataWithPurchasesFilter(): void {
     this.loading = true;
+    this.cdr.markForCheck();
 
     this.api.getPurchases().subscribe({
       next: (purchasesData) => {
-        if (this.type === 'purchases') {
-          this.transactions = purchasesData;
-        }
-
-        const discoveredProductIds = new Set<number>();
-
+        const ids = new Set<number>();
         purchasesData.forEach((p: any) => {
-          if (p.productId) discoveredProductIds.add(Number(p.productId));
-          if (p.idProduct) discoveredProductIds.add(Number(p.idProduct));
-
-          if (p.lines && Array.isArray(p.lines)) {
-            p.lines.forEach((line: any) => {
-              const prodId = line.productId ?? line.idProduct;
-              if (prodId) discoveredProductIds.add(Number(prodId));
-            });
-          }
+          if (p.productId) ids.add(Number(p.productId));
+          if (p.idProduct) ids.add(Number(p.idProduct));
+          (p.lines || []).forEach((l: any) => {
+            const id = l.productId ?? l.idProduct;
+            if (id) ids.add(Number(id));
+          });
         });
 
-        const activePurchaseIds = Array.from(discoveredProductIds);
-        this.loadPurchasesForProducts(activePurchaseIds);
+        this.loadPurchasesForProducts(Array.from(ids));
 
         this.api.getSales().subscribe({
           next: (salesData) => {
-            if (this.type === 'sales') {
-              this.transactions = salesData;
-            }
+            this.transactions = salesData;
+            this._invalidateStats();   // données MAJ → cache stats périmé
             this.loading = false;
-            this.createCharts();
+            this.cdr.markForCheck();
           },
-          error: () => this.loading = false
+          error: () => { this.loading = false; this.cdr.markForCheck(); }
         });
       },
-      error: () => this.loading = false
-    });
-  }
-
-  loadMovements(): void {
-    this.loading = true;
-    this.api.getStockMovements().subscribe({
-      next: (data) => {
-        this.movements = data.filter((m: any) => {
-          return (!this.selectedType   || m.type   === this.selectedType)
-              && (!this.selectedSource || m.source === this.selectedSource);
-        });
-        this.loading = false;
-      },
-      error: () => this.loading = false
+      error: () => { this.loading = false; this.cdr.markForCheck(); }
     });
   }
 
@@ -404,9 +336,10 @@ export class TransactionsComponent implements OnInit {
     this.api.getProducts().subscribe({
       next: (data) => {
         this.products = data;
-        this.type === 'movements' ? this.loadMovements() : this.loadDataWithPurchasesFilter();
+        this._filteredCache = null;
+        this.loadDataWithPurchasesFilter();
       },
-      error: () => this.loading = false
+      error: () => { this.loading = false; this.cdr.markForCheck(); }
     });
   }
 
@@ -417,82 +350,52 @@ export class TransactionsComponent implements OnInit {
   }
 
   loadPurchasesForProducts(ids: number[]): void {
-    ids.forEach(id => {
-      if (id && this.purchasesByProduct[id] === undefined) {
-        this.api.getPurchasesByProduct(id).subscribe({
-          next: (data) => { this.purchasesByProduct[id] = [...data].sort(sortByDate); },
-          error: ()     => { this.purchasesByProduct[id] = []; }
-        });
-      }
+    // Dédoublonner + filtrer les IDs déjà chargés
+    const toLoad = [...new Set(ids)].filter(id => id && this.purchasesByProduct[id] === undefined);
+
+    toLoad.forEach(id => {
+      this.purchasesByProduct[id] = []; // marque "en cours" pour éviter les doubles appels
+
+      this.api.getPurchasesByProduct(id).subscribe({
+        next: (data) => {
+          this.purchasesByProduct[id] = [...data].sort(sortByDate);
+          this._invalidateStats(id);
+          this.cdr.markForCheck();
+        },
+        error: () => { this.purchasesByProduct[id] = []; this.cdr.markForCheck(); }
+      });
     });
   }
 
   createPurchase(): void {
-    const { supplierId, invoiceNumber, datePurchase } = this.newPurchase;
+    const { supplierId, datePurchase } = this.newPurchase;
+    if (!supplierId || !datePurchase) return;
 
-    if (!supplierId || !datePurchase || this.purchaseLines.length === 0) return;
+    const validLines = this.purchaseLines.filter(l => l.productId && l.quantity > 0 && l.unitPriceTTC >= 0);
+    if (!validLines.length) return;
 
-    const isFormValid = this.purchaseLines.every(line => line.productId && line.quantity > 0 && line.unitPriceTTC >= 0);
-    if (!isFormValid) return;
-
-    const purchasePayload = {
-      supplierId,
-      invoiceNumber,
-      datePurchase,
-      lines: this.purchaseLines.map(line => ({
-        productId: Number(line.productId),
-        quantity: Number(line.quantity),
-        unitPriceTTC: Number(line.unitPriceTTC)
+    const payload = {
+      ...this.newPurchase,
+      lines: validLines.map(l => ({
+        productId:    Number(l.productId),
+        quantity:     Number(l.quantity),
+        unitPriceTTC: Number(l.unitPriceTTC)
       }))
     };
 
-    this.api.createPurchase(purchasePayload).subscribe({
+    this.api.createPurchase(payload).subscribe({
       next: () => {
         this.showForm = false;
         this.initPurchaseForm();
         this.loadDataWithPurchasesFilter();
 
-        purchasePayload.lines.forEach(line => {
-          const prodId = Number(line.productId);
-          this.api.getPurchasesByProduct(prodId).subscribe({
-            next: (data) => { this.purchasesByProduct[prodId] = [...data].sort(sortByDate); },
-            error: ()     => { this.purchasesByProduct[prodId] = []; }
-          });
+        // Rafraîchit les achats des produits concernés
+        const ids = validLines.map(l => Number(l.productId));
+        ids.forEach(id => {
+          delete this.purchasesByProduct[id]; // force le rechargement
         });
-      }
-    });
-  }
-
-  createCharts(): void {
-    if (!this.products.length || !this.categoryChart) return;
-
-    const salesByProduct: Record<string, number> = {};
-    this.transactions.forEach(sale => {
-      const id = sale.productId ?? sale.idProduct;
-      if(id) salesByProduct[id] = (salesByProduct[id] ?? 0) + (sale.quantitySold || 0);
-    });
-
-    const top7 = Object.entries(salesByProduct).sort((a, b) => b[1] - a[1]).slice(0, 7);
-    const labels = top7.map(([id]) => this.products.find(p => p.idProduct == id || p.productId == id || p.id == id)?.name ?? 'Produit ' + id);
-    const data   = top7.map(([, qty]) => qty);
-
-    this.categoryChartInstance?.destroy();
-    const ctx = this.categoryChart.nativeElement.getContext('2d');
-    if (!ctx) return;
-
-    this.categoryChartInstance = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels,
-        datasets: [{ label: 'Quantité vendue', data, backgroundColor: '#6366f1', borderRadius: 6, maxBarThickness: 38 }]
-      },
-      options: {
-        responsive: true,
-        plugins: { legend: { display: false }, title: { display: false } },
-        scales: {
-          x: { grid: { display: false } },
-          y: { beginAtZero: true, grid: { color: '#e5e7eb' } }
-        }
+        this.loadPurchasesForProducts(ids);
+        this.cdr.markForCheck();
       }
     });
   }
