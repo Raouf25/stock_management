@@ -4,8 +4,6 @@
         <h1 class="invoice-page-title">Backoffice Produits</h1>
     </div>
 
-
-
     <button class="btn btn-primary mb-3" (click)="showForm = !showForm">
         {{ showForm ? 'Fermer le formulaire' : 'Acheter' }}
     </button>
@@ -22,7 +20,7 @@
                         <label class="form-label">Fournisseur</label>
                         <select class="form-control" [(ngModel)]="newPurchase.supplierId" name="supplierId">
                             <option value="">Sélectionnez un fournisseur...</option>
-                            <option *ngFor="let s of suppliers" [value] darkness="s.id">{{ s.name }}</option>
+                            <option *ngFor="let s of suppliers" [value]="s.id">{{ s.name }}</option>
                         </select>
                     </div>
 

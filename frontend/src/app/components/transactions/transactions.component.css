@@ -280,9 +280,17 @@
 	}
 	.purchase-lines-header { display: none !important; }
 
-	/* Tableau produits : scroll horizontal */
-	.desktop-table { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-	.desktop-table table { min-width: 700px; }
+	/* Tableau produits : Correction complète du bug d'affichage */
+	.desktop-table {
+		display: block !important;
+		width: 100% !important;
+		overflow-x: auto !important;
+		-webkit-overflow-scrolling: touch;
+	}
+	.desktop-table table {
+		width: auto !important;
+		min-width: 850px !important; /* Augmenté pour éviter les chevauchements de colonnes complexes */
+	}
 	.desktop-table th, .desktop-table td { padding: 0.55rem 0.65rem; font-size: 0.82rem; }
 
 	/* Drawer : pleine largeur sur mobile */
