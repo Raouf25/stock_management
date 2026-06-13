@@ -28,6 +28,9 @@ public class PurchaseService {
     @Autowired
     private SupplierRepository supplierRepository;
 
+    @Autowired
+    private ProductDashboardService productDashboardService;
+
     /**
      * Créer un achat groupé multi-produits et générer automatiquement des entrées de stock
      */
@@ -64,6 +67,7 @@ public class PurchaseService {
             }
         }
 
+        productDashboardService.onDataChanged();   // vide le cache
         return savedPurchases;
     }
 

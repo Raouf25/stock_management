@@ -1,7 +1,9 @@
 package com.example.stock_management.api;
 
+import com.example.stock_management.dto.ProductDashboardDTO;
 import com.example.stock_management.dto.ProductInventoryDTO;
 import com.example.stock_management.model.Product;
+import com.example.stock_management.service.ProductDashboardService;
 import com.example.stock_management.service.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -21,10 +23,20 @@ public class ProductController {
     @Autowired
     private ProductService productService;
 
+    @Autowired
+    private ProductDashboardService productDashboardService;
+
     @GetMapping
     @Operation(summary = "Obtenir la liste de tous les products")
     public List<Product> getAllProducts() {
         return productService.findAll();
+    }
+
+
+    @GetMapping("/dashboard")
+    @Operation(summary = "Obtenir la liste de tous les produits enrichis avec achats, ventes et statistiques")
+    public List<ProductDashboardDTO> getAllProductsDashboard() {
+        return productDashboardService.getProductsDashboardData();
     }
 
     @GetMapping("/{id}")

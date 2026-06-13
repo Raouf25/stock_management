@@ -66,7 +66,9 @@
                             <input type="text" class="form-control"
                                    [placeholder]="line.productLabel || 'Rechercher un produit...'"
                                    [(ngModel)]="line.productSearch" [name]="'productSearch_' + i"
-                                   (focus)="openLineDropdown(i)" (blur)="closeLineDropdown(i)" autocomplete="off" />
+                                   (focus)="openLineDropdown(i)"
+                                   (input)="onLineSearchChange(i)"
+                                   (blur)="closeLineDropdown(i)" autocomplete="off" />
                             <div *ngIf="line.dropdownOpen"
                                  style="position:absolute; z-index:1000; background:white; border:1px solid #d1d5db;
                             border-radius:6px; width:100%; max-height:220px; overflow-y:auto;
@@ -76,7 +78,7 @@
                                     Aucun produit trouvé
                                 </div>
                                 <div *ngFor="let p of getFilteredProductsForLine(line)"
-                                     (mousedown)="selectProductForLine(i, p)"
+                                     (mousedown)="$event.preventDefault(); selectProductForLine(i, p)"
                                      style="padding:0.55rem 1rem; cursor:pointer; border-bottom:1px solid #f3f4f6;
                                 font-size:0.88rem; transition:background 0.12s;"
                                      onmouseover="this.style.background='#ede9fe'" onmouseout="this.style.background='white'">
@@ -128,7 +130,7 @@
             <input class="form-control form-control-lg" style="flex: 1; min-width: 200px;"
                    type="text" [(ngModel)]="productSearch" placeholder="🔍 Rechercher un produit..."/>
 
-            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;
+            <!--<label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;
                         white-space: nowrap; user-select: none; font-weight: 500; color: #374151;">
                 <div (click)="toggleShowAllProducts()"
                      [style.background]="showAllProducts ? '#10b981' : '#e5e7eb'"
@@ -138,7 +140,7 @@
                     </div>
                 </div>
                 <span style="font-size: 0.92rem;">Tous les produits</span>
-            </label>
+            </label>-->
         </div>
 
         <div class="desktop-table" style="overflow-x: auto; padding: 1rem;">
@@ -158,22 +160,22 @@
                 <tbody>
                 <ng-container *ngFor="let prod of filteredProducts">
                     <tr (click)="openProductDrawer(prod)"
-                        [ngClass]="{'bilan-positif': getBilan(prod.idProduct) > 0, 'bilan-negatif': getBilan(prod.idProduct) < 0}"
+                        [ngClass]="{'bilan-positif': getBilan(prod) > 0, 'bilan-negatif': getBilan(prod) < 0}"
                         style="cursor:pointer; border-bottom: 1px solid #e5e7eb;">
                         <td style="padding: 0.75rem 1rem; font-weight: 600; color: #1f2937;">
-                            {{ prod.name }} — {{ prod.unit }}
-                            <span *ngIf="prod.designation" style="color:#9ca3af; font-weight:400;"> — {{ prod.designation }}</span>
+                            {{ prod.product?.name }} — {{ prod.product?.unit }}
+                            <span *ngIf="prod.product?.designation" style="color:#9ca3af; font-weight:400;"> — {{ prod.product?.designation }}</span>
                             <span class="expand-loupe" (click)="$event.stopPropagation(); openProductDrawer(prod)">🔍</span>
                         </td>
-                        <td style="padding: 0.75rem 1rem; text-align: right;">{{ getStockVendu(prod.idProduct) }}</td>
-                        <td style="padding: 0.75rem 1rem; text-align: right;">{{ getStockEntrepot(prod.idProduct) }}</td>
-                        <td style="padding: 0.75rem 1rem; text-align: right;">{{ getPurchasesByProduct(prod.idProduct).length }}</td>
-                        <td style="padding: 0.75rem 1rem; text-align: right;">{{ getAveragePurchasePrice(prod.idProduct) | number:'1.3-3' }}</td>
-                        <td style="padding: 0.75rem 1rem; text-align: right;">{{ getSalesCount(prod.idProduct) }}</td>
-                        <td style="padding: 0.75rem 1rem; text-align: right;">{{ getAverageSalePrice(prod.idProduct) | number:'1.3-3' }}</td>
+                        <td style="padding: 0.75rem 1rem; text-align: right;">{{ getStockVendu(prod) }}</td>
+                        <td style="padding: 0.75rem 1rem; text-align: right;">{{ getStockEntrepot(prod) }}</td>
+                        <td style="padding: 0.75rem 1rem; text-align: right;">{{ prod.purchasesCount }}</td>
+                        <td style="padding: 0.75rem 1rem; text-align: right;">{{ getAveragePurchasePrice(prod) | number:'1.3-3' }}</td>
+                        <td style="padding: 0.75rem 1rem; text-align: right;">{{ prod.salesCount }}</td>
+                        <td style="padding: 0.75rem 1rem; text-align: right;">{{ getAverageSalePrice(prod) | number:'1.3-3' }}</td>
                         <td style="padding: 0.75rem 1rem; text-align: right; font-weight:700;"
-                            [style.color]="getBilan(prod.idProduct) > 0 ? '#059669' : getBilan(prod.idProduct) < 0 ? '#dc2626' : 'inherit'">
-                            {{ getBilan(prod.idProduct) | number:'1.3-3' }}
+                            [style.color]="getBilan(prod) > 0 ? '#059669' : getBilan(prod) < 0 ? '#dc2626' : 'inherit'">
+                            {{ getBilan(prod) | number:'1.3-3' }}
                         </td>
                     </tr>
                 </ng-container>
@@ -191,43 +193,43 @@
     <div *ngIf="selectedProductForDrawer" style="display: flex; flex-direction: column; height: 100%;">
         <div class="drawer-header">
             <div>
-                <h3 class="drawer-product-title">{{ selectedProductForDrawer.name }} — {{ selectedProductForDrawer.unit }}</h3>
-                <span *ngIf="selectedProductForDrawer.designation" class="drawer-product-sub">{{ selectedProductForDrawer.designation }}</span>
+                <h3 class="drawer-product-title">{{ selectedProductForDrawer.product?.name }} — {{ selectedProductForDrawer.product?.unit }}</h3>
+                <span *ngIf="selectedProductForDrawer.product?.designation" class="drawer-product-sub">{{ selectedProductForDrawer.product?.designation }}</span>
             </div>
             <button class="btn-close-drawer" (click)="closeDrawer()">✕</button>
         </div>
 
         <div class="drawer-body">
-            <div *ngIf="drawerProductStats" class="drawer-stats-grid">
+            <div *ngIf="selectedProductForDrawer" class="drawer-stats-grid">
                 <div class="drawer-stat-card-box">
                     <span class="drawer-stat-label">Article vendu</span>
-                    <span class="drawer-stat-value">{{ drawerProductStats.itemsSold }}</span>
+                    <span class="drawer-stat-value">{{ selectedProductForDrawer.stockVendu  }}</span>
                 </div>
                 <div class="drawer-stat-card-box">
                     <span class="drawer-stat-label">Article en entrepôt</span>
-                    <span class="drawer-stat-value">{{ drawerProductStats.itemsInWarehouse }}</span>
+                    <span class="drawer-stat-value">{{  selectedProductForDrawer.stockEntrepot }}</span>
                 </div>
                 <div class="drawer-stat-card-box">
                     <span class="drawer-stat-label">Nombre d'achats</span>
-                    <span class="drawer-stat-value">{{ drawerProductStats.purchasesCount }}</span>
+                    <span class="drawer-stat-value">{{ selectedProductForDrawer.purchasesCount }}</span>
                 </div>
                 <div class="drawer-stat-card-box">
                     <span class="drawer-stat-label">Prix d'achat moyen</span>
-                    <span class="drawer-stat-value">{{ drawerProductStats.avgPurchasePrice | number:'1.3-3' }} DT</span>
+                    <span class="drawer-stat-value">{{ selectedProductForDrawer.averagePurchasePrice | number:'1.3-3' }} DT</span>
                 </div>
                 <div class="drawer-stat-card-box">
                     <span class="drawer-stat-label">Nombre de ventes</span>
-                    <span class="drawer-stat-value">{{ drawerProductStats.salesCount }}</span>
+                    <span class="drawer-stat-value">{{ selectedProductForDrawer.salesCount }}</span>
                 </div>
                 <div class="drawer-stat-card-box">
                     <span class="drawer-stat-label">Prix de vente moyen</span>
-                    <span class="drawer-stat-value">{{ drawerProductStats.avgSalePrice | number:'1.3-3' }} DT</span>
+                    <span class="drawer-stat-value">{{ selectedProductForDrawer.averageSalePrice | number:'1.3-3' }} DT</span>
                 </div>
                 <div class="drawer-stat-card-box full-width"
-                     [ngClass]="drawerProductStats.balance >= 0 ? 'bilan-positif-box' : 'bilan-negatif-box'">
+                     [ngClass]="selectedProductForDrawer.bilan >= 0 ? 'bilan-positif-box' : 'bilan-negatif-box'">
                     <span class="drawer-stat-label" style="font-weight: 700;">Bilan financier global</span>
                     <span class="drawer-stat-value" style="font-size: 1.35rem;">
-                        {{ drawerProductStats.balance | number:'1.3-3' }} DT
+                        {{ selectedProductForDrawer.bilan | number:'1.3-3' }} DT
                     </span>
                 </div>
             </div>
@@ -246,17 +248,17 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr *ngFor="let p of getPurchasesByProduct(selectedProductForDrawer.idProduct ?? selectedProductForDrawer.productId ?? selectedProductForDrawer.id)" style="border-bottom: 1px solid #f3f4f6;">
+                    <tr *ngFor="let p of  selectedProductForDrawer.purchases" style="border-bottom: 1px solid #f3f4f6;">
                         <td style="padding: 0.6rem 0.75rem;">{{ p.datePurchase | date:'dd/MM/yyyy' }}</td>
-                        <td style="padding: 0.6rem 0.75rem; font-weight: 500; color: #374151;">{{ p.supplierName }}</td>
+                        <td style="padding: 0.6rem 0.75rem; font-weight: 500; color: #374151;">{{ p.supplier.name }}</td>
                         <td style="padding: 0.6rem 0.75rem; text-align: right;">{{ p.quantity }}</td>
                         <td style="padding: 0.6rem 0.75rem; text-align: right;">{{ p.unitPriceTTC | number:'1.3-3' }}</td>
                         <td style="padding: 0.6rem 0.75rem; text-align: right; font-weight: 600; color: #1f2937;">{{ p.totalAmountTTC | number:'1.3-3' }}</td>
                         <td style="padding: 0.6rem 0.75rem; color: #6b7280;">{{ p.invoiceNumber || '-' }}</td>
-                    </tr>
-                    <tr *ngIf="getPurchasesByProduct(selectedProductForDrawer.idProduct ?? selectedProductForDrawer.productId ?? selectedProductForDrawer.id).length === 0">
-                        <td colspan="6" style="text-align:center; padding: 1.5rem; color:#9ca3af; font-style: italic;">Aucun achat enregistré</td>
-                    </tr>
+                        <!--           </tr>
+                        <tr *ngIf="selectedProductForDrawer.purchases.length === 0">
+                                       <td colspan="6" style="text-align:center; padding: 1.5rem; color:#9ca3af; font-style: italic;">Aucun achat enregistré</td>
+                                   </tr>-->
                     </tbody>
                 </table>
             </div>
@@ -275,20 +277,20 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr *ngFor="let s of getSalesByProduct(selectedProductForDrawer.idProduct ?? selectedProductForDrawer.productId ?? selectedProductForDrawer.id)" style="border-bottom: 1px solid #f3f4f6;">
+                    <tr *ngFor="let s of selectedProductForDrawer.sales" style="border-bottom: 1px solid #f3f4f6;">
                         <td style="padding: 0.6rem 0.75rem;">{{ s.dateSale | date:'dd/MM/yyyy' }}</td>
-                        <td style="padding: 0.6rem 0.75rem; font-weight: 500; color: #374151;">{{ s.customerName || '-' }}</td>
+                        <td style="padding: 0.6rem 0.75rem; font-weight: 500; color: #374151;">{{ s.customer.name || '-' }}</td>
                         <td style="padding: 0.6rem 0.75rem; text-align: right;">{{ s.quantitySold }}</td>
                         <td style="padding: 0.6rem 0.75rem; text-align: right;">{{ s.unitSalePrice | number:'1.3-3' }}</td>
                         <td style="padding: 0.6rem 0.75rem; text-align: right; font-weight: 600; color: #1f2937; white-space: nowrap; display: flex; align-items: center; justify-content: flex-end; gap: 6px;">
-                            <span [ngClass]="getPaymentBadgeClass(getSalePaymentStatus(s))">
-                                {{ getSalePaymentStatus(s) }}
+                            <span [ngClass]="getPaymentBadgeClass(s.paymentStatus)">
+                                {{ s.paymentStatus }}
                             </span>
                             {{ s.totalSaleAmount | number:'1.3-3' }}
                         </td>
                         <td style="padding: 0.6rem 0.75rem; color: #6b7280;">{{ s.invoiceNumber || s.deliveryNoteNumber || '-' }}</td>
                     </tr>
-                    <tr *ngIf="getSalesByProduct(selectedProductForDrawer.idProduct ?? selectedProductForDrawer.productId ?? selectedProductForDrawer.id).length === 0">
+                    <tr *ngIf="selectedProductForDrawer.sales?.length === 0">
                         <td colspan="6" style="text-align:center; padding: 1.5rem; color:#9ca3af; font-style: italic;">Aucune vente enregistrée</td>
                     </tr>
                     </tbody>

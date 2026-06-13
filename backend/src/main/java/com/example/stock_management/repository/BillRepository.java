@@ -9,13 +9,18 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface BillRepository extends JpaRepository<Bill, Long> {
 
+    List<Bill> findByIdBillIn(Collection<Long> idBills);
+
     List<Bill> findByCustomer_CustomerId(Long customerId);
+
+    Optional<Bill> findByIdBill(Long billId);
 
 
     @Query("SELECT b FROM Bill b LEFT JOIN FETCH b.billProducts WHERE b.idBill = :id")

@@ -25,6 +25,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -39,6 +40,46 @@ public class BillService {
     private final SaleRepository saleRepository;
 
     private final Clock clock;
+
+    public Map<Long, PaymentStatus> getStatusesByInvoiceNumbers(Set<Long> idBills) {
+        if (idBills.isEmpty()) return Map.of();
+
+        // Une seule requête pour tous les numéros de facture
+        return billRepository.findByIdBillIn(idBills)
+                .stream()
+                .collect(Collectors.toMap(
+                        Bill::getIdBill,
+                        Bill::getPaymentStatus
+                ));
+    }
+
+    /**
+     * Récupère le statut de paiement d'une facture à partir de son numéro unique.
+     * * @param billId Le numéro de la facture (invoiceNumber)
+     * @return Le statut sous forme de chaîne (ex: "PAID", "PARTIALLY_PAID", "UNPAID", "INCONNU")
+     */
+    public String getPaymentStatusByBillId(String billId) {
+        if (billId == null || billId.trim().isEmpty()) {
+            return "SANS FACTURE";
+        }
+
+        // Recherche de la facture en base de données
+        Optional<Bill> billOpt = billRepository.findByIdBill(Long.valueOf(billId.trim()));
+
+        if (billOpt.isPresent()) {
+            Bill bill = billOpt.get();
+
+            // Si votre statut est une Enum (recommandé), on utilise .name(), sinon un String classique
+            if (bill.getPaymentStatus() != null) {
+                return bill.getPaymentStatus().toString();
+            } else {
+                return "INCONNU";
+            }
+        }
+
+        // Si le numéro de facture est renseigné sur la vente mais introuvable dans la table des factures
+        return "FACTURE INTROUVABLE";
+    }
 
 
     @Transactional(readOnly = true)

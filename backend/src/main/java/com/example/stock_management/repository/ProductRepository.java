@@ -1,6 +1,7 @@
 package com.example.stock_management.repository;
 
 
+import com.example.stock_management.dto.ProductDashboardDTO;
 import com.example.stock_management.dto.ProductInventoryDTO;
 import com.example.stock_management.model.Product;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -15,6 +16,25 @@ import java.util.Map;
 
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
+
+    @Query("SELECT new com.example.stock_management.dto.ProductDashboardDTO(" +
+            "  p, " +
+            "  COALESCE(SUM(DISTINCT s.quantitySold), 0L), " +
+            "  COALESCE(SUM(DISTINCT pur.quantity), 0L), " +
+            "  COUNT(DISTINCT pur.id), " +
+            "  COALESCE(AVG(DISTINCT pur.unitPriceTTC), 0.0), " +
+            "  COUNT(DISTINCT s.id), " +
+            "  COALESCE(AVG(DISTINCT s.unitSalePrice), 0.0), " +
+            "  COALESCE(SUM(DISTINCT s.totalSaleAmount), 0.0), " +
+            "  COALESCE(SUM(DISTINCT pur.totalAmountTTC), 0.0)" +
+            ") " +
+            "FROM Product p " +
+            "LEFT JOIN Sale s ON s.product = p " +
+            "LEFT JOIN Purchase pur ON pur.product = p " +
+            "WHERE EXISTS (SELECT 1 FROM Purchase x WHERE x.product = p) " +
+            "GROUP BY p.id " +
+            "ORDER BY LOWER(p.name) ASC")
+    List<ProductDashboardDTO> findProductsDashboardData();
 
     @Query("SELECT COALESCE(SUM(cp.quantity), 0) FROM BillProduct cp WHERE cp.product.idProduct = :idProduct")
     Integer findTotalArticlesSold(Long idProduct);

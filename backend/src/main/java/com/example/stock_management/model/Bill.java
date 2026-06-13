@@ -17,6 +17,7 @@ public class Bill {
     @Column(name = "id_bill")
     private Long idBill;
 
+
     private LocalDateTime dateBill;
 
     @ManyToOne

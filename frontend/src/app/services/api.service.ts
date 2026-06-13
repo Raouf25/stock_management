@@ -12,6 +12,11 @@ export class ApiService {
   constructor(private http: HttpClient) { }
 
 
+  // === DASHBOARD PRODUCTS ===
+  getDashboardProducts(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/products/dashboard`);
+  }
+
   // === PRODUCTS ===
   getProducts(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/products`);

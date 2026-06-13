@@ -31,4 +31,8 @@ public class Sale {
     private Double totalSaleAmount; // quantitySold × unitSalePrice
     private String comment;
 
+
+    // Ce champ ne sera pas persisté en BDD mais servira à envoyer l'info au Front
+    @Transient
+    private String paymentStatus;
 }

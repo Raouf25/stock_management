@@ -24,6 +24,9 @@ public class SaleService {
     @Autowired
     private ProductRepository productRepository;
 
+    @Autowired
+    private ProductDashboardService productDashboardService;
+
     /**
      * Créer une nouvelle vente et générer automatiquement une sortie de stock
      */
@@ -50,8 +53,8 @@ public class SaleService {
 
         // Vérifier que la quantité vendue ne dépasse pas le stock disponible
         if (product.getCurrentStockQuantity() == null || product.getCurrentStockQuantity() < saleDTO.getQuantitySold()) {
-            throw new Exception("Quantité insuffisante en stock. Stock disponible : " + 
-                (product.getCurrentStockQuantity() != null ? product.getCurrentStockQuantity() : 0) + 
+            throw new Exception("Quantité insuffisante en stock. Stock disponible : " +
+                (product.getCurrentStockQuantity() != null ? product.getCurrentStockQuantity() : 0) +
                 ", Quantité demandée : " + saleDTO.getQuantitySold());
         }
 
@@ -73,6 +76,7 @@ public class SaleService {
         // Mettre à jour le stock du produit
         updateProductStock(product, saleDTO.getQuantitySold(), false);
 
+        productDashboardService.onDataChanged();   // vide le cache
         return savedSale;
     }
 
