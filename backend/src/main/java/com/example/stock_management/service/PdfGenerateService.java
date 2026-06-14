@@ -27,7 +27,7 @@ import java.util.Optional;
 @Service
 public class PdfGenerateService {
 
-    private static final String TEMPLATE_NAME = "facture";
+    private static final String TEMPLATE_NAME = "facture_v3";
 
     /**
      * Résolution du chemin Chromium selon l'environnement :

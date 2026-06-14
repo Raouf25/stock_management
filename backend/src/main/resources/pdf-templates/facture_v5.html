@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+    <title th:text="'Facture - ' + ${billNumber}">Facture - FAC-0018</title>
+    <style>
+        @page { size: A4 portrait; margin: 0; }
+        *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+        :root {
+            --ink:     #18182b;
+            --ink2:    #38305a;
+            --muted:   #857fa8;
+            --faint:   #c8c2e0;
+            --rule:    #edeaf6;
+            --soft:    #f7f5fc;
+            --stripe:  #fbfaff;
+            --violet:  #3D2D6E;
+            --mid:     #6B4FA0;
+            --lilac:   #b8a8f0;
+            --pale:    #ece8f8;
+            --white:   #ffffff;
+            --sb-w:    16mm;
+            --amber:   #f59e0b;
+            --amber-lt:#fef3c7;
+            --amber-dk:#92400e;
+        }
+
+        html, body {
+            background: #ddd9ec;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 10mm 0;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: var(--ink);
+        }
+
+        .page {
+            width: 210mm;
+            height: 297mm;
+            background: var(--white);
+            display: flex;
+            box-shadow: 0 4mm 10mm rgba(24,24,43,0.15);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: var(--sb-w);
+            background: linear-gradient(180deg, var(--violet), var(--mid));
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8mm 0;
+        }
+
+        .sb-dot {
+            width: 5mm;
+            height: 5mm;
+            border-radius: 50%;
+            background: var(--lilac);
+            opacity: 0.8;
+        }
+
+        .sb-text {
+            color: var(--pale);
+            writing-mode: vertical-rl;
+            transform: rotate(180deg);
+            text-transform: uppercase;
+            letter-spacing: 0.8mm;
+            font-size: 2.8mm;
+            font-weight: 600;
+            opacity: 0.75;
+        }
+
+        .main {
+            flex: 1;
+            padding: 12mm 12mm 10mm 12mm;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .header-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            align-items: start;
+            gap: 6mm;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 3.5mm;
+        }
+
+        .logo-square {
+            width: 11mm;
+            height: 11mm;
+            background: var(--soft);
+            border: 0.4mm solid var(--mid);
+            border-radius: 2.5mm;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--violet);
+            font-size: 5mm;
+            font-weight: bold;
+        }
+
+        .brand-name {
+            font-size: 5.5mm;
+            font-weight: 700;
+            color: var(--violet);
+            letter-spacing: -0.2mm;
+            line-height: 1.1;
+        }
+
+        .brand-sub {
+            font-size: 2.8mm;
+            color: var(--muted);
+            margin-top: 0.5mm;
+        }
+
+        .title-area {
+            text-align: right;
+        }
+
+        .doc-title {
+            font-size: 10mm;
+            font-weight: 800;
+            color: var(--violet);
+            letter-spacing: -0.4mm;
+            line-height: 0.9;
+        }
+
+        .pill-status {
+            display: inline-block;
+            margin-top: 2.5mm;
+            font-size: 2.4mm;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.3mm;
+            padding: 1mm 3mm;
+            border-radius: 10mm;
+            background: var(--amber-lt);
+            color: var(--amber-dk);
+            border: 0.25mm solid rgba(245,158,11,0.25);
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 6mm;
+            margin-top: 6mm;
+        }
+
+        .profile-card p {
+            font-size: 3.1mm;
+            color: var(--ink2);
+            line-height: 1.45;
+        }
+        .profile-card .comp-name {
+            font-size: 3.6mm;
+            font-weight: 700;
+            color: var(--violet);
+            margin-bottom: 1.2mm;
+        }
+
+        .meta-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .meta-table td {
+            padding: 1.2mm 0;
+            font-size: 3.1mm;
+            border-bottom: 0.25mm solid var(--soft);
+        }
+        .meta-label {
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.2mm;
+            font-size: 2.5mm;
+            width: 40%;
+        }
+        .meta-val {
+            font-weight: 600;
+            color: var(--ink);
+            text-align: right;
+        }
+
+        .divider {
+            border: none;
+            height: 0.25mm;
+            background: var(--rule);
+            margin: 5mm 0;
+        }
+
+        .parties-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10mm;
+        }
+
+        .party-box {
+            background: var(--stripe);
+            border: 0.25mm solid var(--rule);
+            border-radius: 3mm;
+            padding: 4mm 4.5mm;
+        }
+
+        .party-box.delivery {
+            background: var(--white);
+            border-style: dashed;
+        }
+
+        .party-label {
+            font-size: 2.5mm;
+            text-transform: uppercase;
+            letter-spacing: 0.3mm;
+            color: var(--muted);
+            font-weight: 600;
+            margin-bottom: 2mm;
+        }
+
+        .party-name {
+            font-size: 3.8mm;
+            font-weight: 700;
+            color: var(--ink);
+            margin-bottom: 1.5mm;
+        }
+
+        .party-detail {
+            font-size: 3.1mm;
+            color: var(--ink2);
+            line-height: 1.45;
+            margin-top: 0.5mm;
+        }
+
+        .table-wrap {
+            margin-top: 5mm;
+            flex: 1;
+        }
+
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .items-table th {
+            background: var(--soft);
+            color: var(--violet);
+            font-size: 2.6mm;
+            text-transform: uppercase;
+            letter-spacing: 0.3mm;
+            font-weight: 700;
+            padding: 3mm 3.5mm;
+            text-align: left;
+            border-bottom: 0.4mm solid var(--faint);
+        }
+
+        .items-table th.align-right, .items-table td.align-right {
+            text-align: right;
+        }
+
+        .items-table td {
+            padding: 3.5mm 3.5mm;
+            font-size: 3.2mm;
+            border-bottom: 0.25mm solid var(--rule);
+            color: var(--ink);
+            vertical-align: middle;
+        }
+
+        .items-table tr:nth-child(even) td {
+            background-color: var(--stripe);
+        }
+
+        .item-name {
+            font-weight: 600;
+            color: var(--ink);
+        }
+
+        .item-sub {
+            font-size: 2.8mm;
+            color: var(--muted);
+            margin-top: 0.4mm;
+        }
+
+        .bottom-zone {
+            margin-top: 4mm;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .sum-table-wrap {
+            width: 75mm;
+        }
+
+        .sum-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .sum-table td {
+            padding: 1.8mm 2mm;
+            font-size: 3.1mm;
+            color: var(--ink2);
+        }
+
+        .sum-table td.label {
+            color: var(--muted);
+        }
+
+        .sum-table td.val {
+            font-weight: 600;
+            text-align: right;
+            color: var(--ink);
+        }
+
+        .sum-table tr.total-break td {
+            border-top: 0.3mm solid var(--mid);
+            padding-top: 2mm;
+        }
+
+        .sum-table tr.net-row td {
+            background: linear-gradient(90deg, var(--violet), var(--mid));
+            color: var(--white) !important;
+            font-size: 3.8mm;
+            font-weight: 700;
+            padding: 2.5mm 3.5mm;
+        }
+
+        .sum-table tr.net-row td.label {
+            color: var(--pale) !important;
+            text-transform: uppercase;
+            letter-spacing: 0.2mm;
+            font-size: 2.8mm;
+            border-top-left-radius: 2mm;
+            border-bottom-left-radius: 2mm;
+            vertical-align: middle;
+        }
+
+        .sum-table tr.net-row td.val {
+            text-align: right;
+            font-size: 4.8mm;
+            border-top-right-radius: 2mm;
+            border-bottom-right-radius: 2mm;
+        }
+
+        .page-foot {
+            margin-top: auto;
+            border-top: 0.4mm solid var(--faint);
+            padding-top: 4mm;
+        }
+
+        .foot-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 0.9fr 0.9fr;
+            gap: 6mm;
+        }
+
+        .foot-col {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .foot-title {
+            font-size: 2.6mm;
+            text-transform: uppercase;
+            letter-spacing: 0.2mm;
+            color: var(--mid);
+            font-weight: 700;
+            margin-bottom: 2mm;
+        }
+
+        .foot-text {
+            font-size: 2.8mm;
+            color: var(--muted);
+            line-height: 1.4;
+        }
+
+        .sig-zone {
+            flex: 1;
+            border: 0.25mm solid var(--rule);
+            background: var(--stripe);
+            border-radius: 2mm;
+            min-height: 16mm;
+            display: flex;
+            align-items: flex-end;
+            padding: 2mm;
+        }
+
+        .sig-label {
+            font-size: 2.4mm;
+            color: var(--faint);
+            text-transform: uppercase;
+        }
+
+        .foot-brand {
+            margin-top: 5mm;
+            border-top: 0.25mm solid var(--soft);
+            padding-top: 2.5mm;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .foot-brand-name {
+            font-size: 2.8mm;
+            font-weight: 700;
+            color: var(--violet);
+            opacity: 0.6;
+        }
+
+        .foot-brand-copy {
+            font-size: 2.6mm;
+            color: var(--faint);
+        }
+
+        @media print {
+            body { background: var(--white); padding: 0; }
+            .page { box-shadow: none; border: none; width: 210mm; height: 297mm; }
+        }
+    </style>
+</head>
+<body>
+<div class="page">
+
+    <div class="sidebar">
+        <div class="sb-dot"></div>
+        <div class="sb-text">Bhouri Stock Premium</div>
+        <div class="sb-dot" style="vertical-align: bottom;"></div>
+    </div>
+
+    <div class="main">
+
+        <div class="header-grid">
+            <div class="logo-area">
+                <div class="logo-square">◌</div>
+                <div>
+                    <div class="brand-name" th:text="${companyName}">Nom de l'entreprise</div>
+                    <div class="brand-sub">Gestion de Stock &amp; Facturation</div>
+                </div>
+            </div>
+            <div class="title-area">
+                <div class="doc-title">FACTURE</div>
+                <div class="pill-status">Document Officiel</div>
+            </div>
+        </div>
+
+        <div class="info-grid">
+            <div class="profile-card">
+                <div class="comp-name" th:text="${companyName}">Nom de l'entreprise</div>
+                <p th:text="${companyAddress}">Adresse de l'entreprise</p>
+                <p th:if="${companyPhone}" th:text="'Tél : ' + ${companyPhone}">Tél : (+216) XX XXX XXX</p>
+                <p th:if="${companyTaxId}" th:text="'MF : ' + ${companyTaxId}">Matricule Fiscale : 123456789</p>
+            </div>
+
+            <div>
+                <table class="meta-table">
+                    <tr>
+                        <td class="meta-label">Numéro</td>
+                        <td class="meta-val" th:text="${billNumber}">FAC-0018</td>
+                    </tr>
+                    <tr>
+                        <td class="meta-label">Date</td>
+                        <td class="meta-val" th:text="${billDate}">11/06/2026</td>
+                    </tr>
+                    <tr>
+                        <td class="meta-label">Règlement</td>
+                        <td class="meta-val" th:text="${paymentMethod}">Espèces / Virement / Chèque</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="parties-grid">
+            <div class="party-box">
+                <div class="party-label">Facturé à (Client)</div>
+                <div class="party-name" th:text="${client.name}">Distrimat Services</div>
+                <div class="party-detail" th:if="${client.address}" th:text="${client.address}">456 Boulevard du Commerce, Sfax</div>
+                <div class="party-detail" th:if="${customerPhone}" th:text="'Tél : ' + ${customerPhone}">+216 74 222 222</div>
+                <div class="party-detail" th:if="${client.taxId}" th:text="'MF : ' + ${client.taxId}">987654321/B/M/000</div>
+            </div>
+
+            <div class="party-box delivery">
+                <div class="party-label">Destinataire / Livré à</div>
+                <div class="party-name" th:text="${deliveryFullName}">Ahmed Trabelsi</div>
+                <div class="party-detail" th:if="${deliveryCin}" th:text="'CIN : ' + ${deliveryCin}">02345678</div>
+                <div class="party-detail" th:if="${customer.licensePlate}" style="direction: ltr; text-align: left;">
+                    Immatriculation : <span th:text="${customer.licensePlate}" style="unicode-bidi: isolate; direction: ltr; display: inline-block;">2345 تونس 234</span>
+                </div>
+                <div class="party-detail" th:if="${deliveryAddress != null and deliveryAddress != ''}" th:text="${deliveryAddress}">—</div>
+            </div>
+        </div>
+
+        <div class="table-wrap">
+            <table class="items-table">
+                <thead>
+                <tr>
+                    <th style="width: 10mm; text-align: center;">#</th>
+                    <th>Désignation de l'article</th>
+                    <th class="align-right" style="width: 28mm;">P.U HT</th>
+                    <th class="align-right" style="width: 16mm;">Qté</th>
+                    <th class="align-right" style="width: 20mm;">Remise</th>
+                    <th class="align-right" style="width: 30mm;">Total HT</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="product, iterStat : ${products}">
+                    <td style="text-align: center; color: var(--muted);" th:text="${#numbers.formatInteger(iterStat.index + 1, 2)}">01</td>
+                    <td>
+                        <div class="item-name" th:text="${product.productName}">FISSATIVO 30G</div>
+                        <div class="item-sub" th:if="${product.productDescription}" th:text="${product.productDescription}">Sous-description</div>
+                    </td>
+                    <td class="align-right" th:text="${product.unitPriceFormatted}">78.692</td>
+                    <td class="align-right" th:text="${product.quantity}">1</td>
+                    <td class="align-right" style="color: var(--muted);" th:text="${product.discountFormatted}">0.000</td>
+                    <td class="align-right item-name" th:text="${product.totalPriceFormatted}">78.692</td>
+                </tr>
+                <tr th:remove="all">
+                    <td style="text-align: center; color: var(--muted);">02</td>
+                    <td>
+                        <div class="item-name">VALPRIMER</div>
+                    </td>
+                    <td class="align-right">38.235</td>
+                    <td class="align-right">1</td>
+                    <td class="align-right" style="color: var(--muted);">0.000</td>
+                    <td class="align-right item-name">38.235</td>
+                </tr>
+                <tr th:remove="all">
+                    <td style="text-align: center; color: var(--muted);">03</td>
+                    <td>
+                        <div class="item-name">REPARTOUT</div>
+                    </td>
+                    <td class="align-right">19.625</td>
+                    <td class="align-right">5</td>
+                    <td class="align-right" style="color: var(--muted);">0.000</td>
+                    <td class="align-right item-name">98.125</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="bottom-zone">
+            <div class="sum-table-wrap">
+                <table class="sum-table">
+                    <tr>
+                        <td class="label">Total Brut HT</td>
+                        <td class="val" th:text="${totalGrossHTFormatted}">215.052</td>
+                    </tr>
+                    <tr th:if="${totalDiscountFormatted != '0.000'}">
+                        <td class="label">Total Remises</td>
+                        <td class="val" style="color: var(--muted);" th:text="${totalDiscountFormatted}">0.000</td>
+                    </tr>
+                    <tr th:if="${showTva and applyTva}">
+                        <td class="label">TVA (19%)</td>
+                        <td class="val" th:text="${tvaFormatted}">40.860</td>
+                    </tr>
+                    <tr th:if="${depositFormatted != '0.000'}">
+                        <td class="label">Acompte versé</td>
+                        <td class="val" th:text="${depositFormatted}">55.912</td>
+                    </tr>
+                    <tr class="total-break net-row">
+                        <td class="label" th:text="${applyTva ? 'Net à payer TTC' : 'Net à payer HT'}">Net à payer TTC</td>
+                        <td class="val" th:text="${amountDueFormatted}">200.000</td>
+                    </tr>
+                </table>
+            </div>
+        </div><div class="page-foot">
+        <div class="foot-grid">
+
+            <div class="foot-col">
+                <div class="foot-title">Mentions légales</div>
+                <p class="foot-text">Cette facture est établie conformément aux dispositions de l'article 18 du code de la TVA. Toute contestation doit être signalée dans un délai de 7 jours.</p>
+                <p class="foot-text" style="margin-top:2mm;"><b>Conditions :</b> <span th:text="${paymentTerms}">30 jours</span></p>
+            </div>
+
+            <div class="foot-col">
+                <div class="foot-title">Signature client</div>
+                <div class="sig-zone">
+                    <span class="sig-label">Signature &amp; date</span>
+                </div>
+            </div>
+
+            <div class="foot-col">
+                <div class="foot-title">Cachet &amp; signature</div>
+                <div class="sig-zone">
+                    <span class="sig-label">Bhouri Stock</span>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="foot-brand">
+            <span class="foot-brand-name">Bhouri Stock</span>
+            <span class="foot-brand-copy">&copy; 2026 Bhouri Stock — Tous droits réservés</span>
+        </div>
+    </div>
+
+    </div></div></body>
+</html>

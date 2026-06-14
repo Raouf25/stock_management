@@ -111,7 +111,7 @@ public class InvoicePdfDataService extends AbstractPdfDataService {
     public String buildEmailBody(String billNumber, String customerName, Map<String, Object> data) {
         String billDate = (String) data.get("billDate");
         String totalAmount = (String) data.get("totalTTCFormatted");
-        
+
         // Utiliser le template Thymeleaf premium invoice-notification.html
         return emailTemplateService.renderInvoiceNotification(
                 customerName,
@@ -268,6 +268,7 @@ public class InvoicePdfDataService extends AbstractPdfDataService {
         // Informations de base
         productData.put("productRef", info.reference);
         productData.put("productName", info.name);
+        productData.put("productDescription", info.description);
         productData.put("quantity", info.quantity);
 
         // Prix (bruts + formatés)
@@ -298,11 +299,12 @@ public class InvoicePdfDataService extends AbstractPdfDataService {
         Product product = bp.getProduct();
 
         String name = product != null ? product.getName() : DEFAULT_EMPTY_STRING;
+        String description = product != null ? product.getDescription() : DEFAULT_EMPTY_STRING;
         String reference = product != null ? String.valueOf(product.getReference()) : DEFAULT_EMPTY_STRING;
         int quantity = bp.getQuantity() != null ? bp.getQuantity() : 0;
         double totalPrice = bp.getTotalProductPrice() != null ? bp.getTotalProductPrice() : 0.0;
 
-        return new ProductInfo(name, reference, quantity, totalPrice);
+        return new ProductInfo(name, reference,description, quantity, totalPrice);
     }
 
     /**
@@ -404,12 +406,14 @@ public class InvoicePdfDataService extends AbstractPdfDataService {
      * Informations de base d'un produit extraites de BillProduct.
      *
      * @param name Nom du produit
+     * @param description  Description du produit
      * @param reference Référence du produit
      * @param quantity Quantité commandée
      * @param totalPrice Prix total après remise
      */
     private record ProductInfo(
         String name,
+        String description,
         String reference,
         int quantity,
         double totalPrice
