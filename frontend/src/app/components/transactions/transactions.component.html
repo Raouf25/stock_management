@@ -154,7 +154,14 @@
                     <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: right;">Prix moyen d'achat</th>
                     <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: right;">Ventes</th>
                     <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: right;">Prix moyen de vente</th>
-                    <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: right;">Bilan</th>
+                    <th (click)="toggleBilanSort()" style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: right; cursor: pointer; user-select: none;">
+                        Bilan
+                        <span style="font-size: 0.85rem; margin-left: 4px;">
+        <ng-container *ngIf="bilanSortState === 'none'">↕️</ng-container>
+        <ng-container *ngIf="bilanSortState === 'desc'">▼</ng-container>
+        <ng-container *ngIf="bilanSortState === 'asc'">▲</ng-container>
+    </span>
+                    </th>
                 </tr>
                 </thead>
                 <tbody>

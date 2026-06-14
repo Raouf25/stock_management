@@ -90,6 +90,9 @@ export class TransactionsComponent implements OnInit {
   isDrawerOpen    = false;
   selectedProductForDrawer: DashboardProduct | null = null;
 
+// 👇 AJOUTEZ CETTE LIGNE ICI (État initial par défaut)
+  bilanSortState: 'none' | 'desc' | 'asc' = 'none';
+
   // ── Données brutes et agrégées reçues du Back-end ───────────────────────────
   products:            DashboardProduct[]    = [];
   productsInStock:     Product[]             = [];
@@ -138,7 +141,6 @@ export class TransactionsComponent implements OnInit {
   // ── filteredProducts ────────────────────────────────────────────────────────
 
   get filteredProducts(): DashboardProduct[] {
-    // Si "showAllProducts" est faux, on filtre sur ceux qui ont du stock vendu ou des mouvements (géré par le BE via purchasesCount)
     let list = this.showAllProducts
         ? [...this.products]
         : this.products.filter(p => p.purchasesCount > 0 || p.salesCount > 0);
@@ -152,11 +154,24 @@ export class TransactionsComponent implements OnInit {
       );
     }
 
-    // Adapter aussi le tri alphabétique si nécessaire
+    // 👇 LOGIQUE DE TRI À 3 ÉTATS UNIQUEMENT POUR LE BILAN
+    if (this.bilanSortState === 'none') {
+      // État initial : On garde le tri alphabétique par défaut fourni par votre code original
+      return list.sort((a, b) => {
+        const nameA = a.product?.name || a.name || '';
+        const nameB = b.product?.name || b.name || '';
+        return nameA.toLowerCase().localeCompare(nameB.toLowerCase(), 'fr');
+      });
+    }
+
+    // Tri par Bilan (desc ou asc)
     return list.sort((a, b) => {
-      const nameA = a.product?.name || a.name || '';
-      const nameB = b.product?.name || b.name || '';
-      return nameA.toLowerCase().localeCompare(nameB.toLowerCase(), 'fr');
+      const bilanA = this.getBilan(a);
+      const bilanB = this.getBilan(b);
+
+      return this.bilanSortState === 'asc'
+          ? bilanA - bilanB
+          : bilanB - bilanA;
     });
   }
 
@@ -319,5 +334,17 @@ export class TransactionsComponent implements OnInit {
         this.loadDashboardData();
       }
     });
+  }
+
+  // 👇 AJOUTEZ CETTE MÉTHODE
+  toggleBilanSort(): void {
+    if (this.bilanSortState === 'none') {
+      this.bilanSortState = 'desc'; // 1er clic : Plus gros gains en premier
+    } else if (this.bilanSortState === 'desc') {
+      this.bilanSortState = 'asc';  // 2e clic : Plus grosses pertes en premier
+    } else {
+      this.bilanSortState = 'none'; // 3e clic : Retour à l'ordre initial du Back-end
+    }
+    this.cdr.markForCheck();
   }
 }
