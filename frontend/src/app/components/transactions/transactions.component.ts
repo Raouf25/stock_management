@@ -1,5 +1,5 @@
 import {
-  Component, OnInit, ViewChild, ElementRef,
+  Component, OnInit, OnDestroy, ViewChild, ElementRef,
   ChangeDetectionStrategy, ChangeDetectorRef
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -78,7 +78,7 @@ const EMPTY_PURCHASE = { supplierId: '', invoiceNumber: '', datePurchase: '' };
   styleUrls:   ['./transactions.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush   // PERF: Optimal car les données sont immutables et calculées au tableau de bord
 })
-export class TransactionsComponent implements OnInit {
+export class TransactionsComponent implements OnInit, OnDestroy {
   @ViewChild('trendChart')    trendChart!:    ElementRef<HTMLCanvasElement>;
   @ViewChild('categoryChart') categoryChart!: ElementRef<HTMLCanvasElement>;
 
@@ -93,7 +93,24 @@ export class TransactionsComponent implements OnInit {
 // 👇 AJOUTEZ CETTE LIGNE ICI (État initial par défaut)
   bilanSortState: 'none' | 'desc' | 'asc' = 'none';
 
-  // ── Données brutes et agrégées reçues du Back-end ───────────────────────────
+  // ── Dropdown position (fixed positioning pour éviter le clipping) ───────────
+  dropdownStyle: { top: string; left: string; width: string } = { top: '0px', left: '0px', width: '0px' };
+  private activeDropdownIndex = -1;
+  private activeDropdownInput: HTMLElement | null = null;
+  private scrollHandler = () => this.repositionDropdown();
+
+  private repositionDropdown(): void {
+    if (this.activeDropdownInput && this.activeDropdownIndex >= 0) {
+      const rect = this.activeDropdownInput.getBoundingClientRect();
+      this.dropdownStyle = {
+        top:   `${rect.bottom}px`,
+        left:  `${rect.left}px`,
+        width: `${rect.width}px`
+      };
+      this.cdr.markForCheck();
+    }
+  }
+
   products:            DashboardProduct[]    = [];
   productsInStock:     Product[]             = [];
   suppliers:           any[]                 = [];
@@ -114,6 +131,10 @@ export class TransactionsComponent implements OnInit {
     this.loadDashboardData();
   }
 
+  ngOnDestroy(): void {
+    window.removeEventListener('scroll', this.scrollHandler, true);
+  }
+
   // ── Drawer ──────────────────────────────────────────────────────────────────
 
   openProductDrawer(product: DashboardProduct): void {
@@ -123,6 +144,18 @@ export class TransactionsComponent implements OnInit {
     // Si le Back-end requiert un appel séparé pour enrichir les ventes/achats ou statuts du drawer :
     if (product.idProduct) {
       this.loadPaymentStatusesForProductSales(product.idProduct);
+    }
+    this.cdr.markForCheck();
+  }
+
+  toggleForm(): void {
+    this.showForm = !this.showForm;
+    if (this.showForm) {
+      this.initPurchaseForm();
+      // Recharge les produits si la liste est vide (chargement initial pas encore terminé)
+      if (this.productsInStock.length === 0) {
+        this.loadProducts();
+      }
     }
     this.cdr.markForCheck();
   }
@@ -193,16 +226,43 @@ export class TransactionsComponent implements OnInit {
     return this.purchaseLines.reduce((acc, l) => acc + (l.quantity * l.unitPriceTTC), 0);
   }
 
-  openLineDropdown(i: number): void {
+  openLineDropdown(i: number, event?: Event): void {
+    if (event) {
+      const input = event.target as HTMLElement;
+      this.activeDropdownInput = input;
+      this.activeDropdownIndex = i;
+      const rect = input.getBoundingClientRect();
+      this.dropdownStyle = {
+        top:   `${rect.bottom}px`,
+        left:  `${rect.left}px`,
+        width: `${rect.width}px`
+      };
+      window.addEventListener('scroll', this.scrollHandler, true);
+    }
     this.purchaseLines[i].dropdownOpen = true;
     this.cdr.markForCheck();
   }
 
   closeLineDropdown(i: number): void {
-    setTimeout(() => { this.purchaseLines[i].dropdownOpen = false; this.cdr.markForCheck(); }, 220);
+    setTimeout(() => {
+      this.purchaseLines[i].dropdownOpen = false;
+      this.activeDropdownIndex = -1;
+      this.activeDropdownInput = null;
+      window.removeEventListener('scroll', this.scrollHandler, true);
+      this.cdr.markForCheck();
+    }, 220);
   }
 
-  onLineSearchChange(i: number): void {
+  onLineSearchChange(i: number, event?: Event): void {
+    if (event && !this.purchaseLines[i].dropdownOpen) {
+      const input = event.target as HTMLElement;
+      const rect = input.getBoundingClientRect();
+      this.dropdownStyle = {
+        top:   `${rect.bottom}px`,
+        left:  `${rect.left}px`,
+        width: `${rect.width}px`
+      };
+    }
     this.purchaseLines[i].dropdownOpen = true;
     this.cdr.markForCheck();
   }
@@ -214,7 +274,14 @@ export class TransactionsComponent implements OnInit {
             (p.name || '').toLowerCase().includes(term) ||
             (p.designation || '').toLowerCase().includes(term))
         : [...this.productsInStock];
-    return list.sort((a, b) =>
+    // Déduplication par idProduct (filet de sécurité)
+    const seen = new Set<number>();
+    const unique = list.filter(p => {
+      if (seen.has(p.idProduct)) return false;
+      seen.add(p.idProduct);
+      return true;
+    });
+    return unique.sort((a, b) =>
         (a.name || '').toLowerCase().localeCompare((b.name || '').toLowerCase(), 'fr'));
   }
 
@@ -292,7 +359,13 @@ export class TransactionsComponent implements OnInit {
   loadProducts(): void {
     this.api.getProducts().subscribe({
       next: (data: Product[]) => {
-        this.productsInStock = data;
+        // Déduplique par idProduct au cas où l'API renvoie des doublons (jointure BE)
+        const seen = new Set<number>();
+        this.productsInStock = data.filter(p => {
+          if (seen.has(p.idProduct)) return false;
+          seen.add(p.idProduct);
+          return true;
+        });
         this.cdr.markForCheck();
       },
       error: () => { this.cdr.markForCheck(); }

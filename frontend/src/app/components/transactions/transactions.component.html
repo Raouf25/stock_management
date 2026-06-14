@@ -4,7 +4,7 @@
         <h1 class="invoice-page-title">Backoffice Produits</h1>
     </div>
 
-    <button class="btn btn-primary mb-3" (click)="showForm = !showForm">
+    <button class="btn btn-primary mb-3" (click)="toggleForm()">
         {{ showForm ? 'Fermer le formulaire' : 'Acheter' }}
     </button>
 
@@ -48,9 +48,9 @@
                     </button>
                 </div>
 
-                <div style="border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; background: #fff;">
+                <div style="border: 1px solid #e5e7eb; border-radius: 8px; overflow: visible; background: #fff;">
                     <div style="display: grid; grid-template-columns: 2fr 1fr 1fr auto; gap: 0.75rem;
-                    padding: 0.75rem 1rem; background: #f3f4f6; border-bottom: 1px solid #e5e7eb;">
+                    padding: 0.75rem 1rem; background: #f3f4f6; border-radius: 8px 8px 0 0; border-bottom: 1px solid #e5e7eb;">
                         <span style="font-size: 0.75rem; font-weight: 600; color: #4b5563;">Produit</span>
                         <span style="font-size: 0.75rem; font-weight: 600; color: #4b5563;">Quantité</span>
                         <span style="font-size: 0.75rem; font-weight: 600; color: #4b5563;">Prix Unitaire TTC (DT)</span>
@@ -66,13 +66,16 @@
                             <input type="text" class="form-control"
                                    [placeholder]="line.productLabel || 'Rechercher un produit...'"
                                    [(ngModel)]="line.productSearch" [name]="'productSearch_' + i"
-                                   (focus)="openLineDropdown(i)"
-                                   (input)="onLineSearchChange(i)"
+                                   (focus)="openLineDropdown(i, $event)"
+                                   (input)="onLineSearchChange(i, $event)"
                                    (blur)="closeLineDropdown(i)" autocomplete="off" />
                             <div *ngIf="line.dropdownOpen"
-                                 style="position:absolute; z-index:1000; background:white; border:1px solid #d1d5db;
-                            border-radius:6px; width:100%; max-height:220px; overflow-y:auto;
-                            box-shadow:0 4px 16px rgba(0,0,0,0.12); top:100%; left:0;">
+                                 [style.top]="dropdownStyle.top"
+                                 [style.left]="dropdownStyle.left"
+                                 [style.width]="dropdownStyle.width"
+                                 style="position:fixed; z-index:9999; background:white; border:1px solid #d1d5db;
+                            border-radius:6px; max-height:280px; overflow-y:auto;
+                            box-shadow:0 8px 24px rgba(0,0,0,0.15);">
                                 <div *ngIf="getFilteredProductsForLine(line).length === 0"
                                      style="padding:0.75rem 1rem; color:#9ca3af; font-style:italic; font-size:0.85rem;">
                                     Aucun produit trouvé
