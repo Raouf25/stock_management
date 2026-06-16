@@ -4,7 +4,7 @@
 
 ```
 ┌─────────────────────┐      HTTPS       ┌───────────────────────┐
-│  Vercel (Frontend)  │ ──/api/:path*──▶  │  Railway (Backend)    │
+│  Vercel (Frontend)  │ ──/api/:path*──▶ │  Railway (Backend)    │
 │  Angular 17 SPA     │                  │  Spring Boot :8080    │
 │  stock-app.vercel   │                  │  xxx.up.railway.app   │
 └─────────────────────┘                  └──────────┬────────────┘
