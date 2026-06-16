@@ -166,6 +166,7 @@ public class InvoicePdfDataService extends AbstractPdfDataService {
         String billNumber = BILL_NUMBER_PREFIX + String.format(BILL_NUMBER_FORMAT, bill.getIdBill());
         data.put("billNumber", billNumber);
         data.put("billDate", bill.getDateBill().format(DATE_FORMATTER));
+        data.put("paymentStatus",bill.getPaymentStatus().getLabel());
     }
 
     /**
