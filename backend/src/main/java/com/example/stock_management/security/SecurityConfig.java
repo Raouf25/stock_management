@@ -37,7 +37,13 @@ public class SecurityConfig {
                 .headers(headers -> headers
                         .frameOptions(HeadersConfigurer.FrameOptionsConfig::disable) // Désactive le SAMEORIGIN strict qui bloque Vercel
                         .contentSecurityPolicy(csp -> csp
-                                .policyDirectives("frame-ancestors 'self' https://bhouri-stock.com https://www.bhouri-stock.com https://stock-management-git-develope-makhloufraouf-2306s-projects.vercel.app http://localhost:4200;")
+                                .policyDirectives(
+                                        "frame-ancestors 'self' " +
+                                                "https://bhouri-stock.com " +
+                                                "https://www.bhouri-stock.com " +
+                                                "https://*.vercel.app " +          // couvre tous vos previews Vercel
+                                                "http://localhost:4200"             // dev local
+                                )
                         )
                 )
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))

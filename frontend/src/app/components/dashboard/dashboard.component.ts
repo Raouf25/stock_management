@@ -262,15 +262,16 @@ export class DashboardComponent implements OnInit, AfterViewInit {
 
   loadDashboard(): void {
     this.loading = true;
-    
+
     // Charger toutes les données
-    this.apiService.getStockSummary().subscribe({
+    // to optimize
+/*    this.apiService.getStockSummary().subscribe({
       next: (data) => {
         this.stockTotals = data.totals;
         this.stockSummary = data.products || [];
         this.createCharts();
       }
-    });
+    });*/
 
     this.apiService.getStockTotalValue().subscribe({
       next: (data) => {
@@ -627,7 +628,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
 
   groupByMonth(data: any[], dateField: string, amountField: string): { [key: string]: number } {
     const grouped: { [key: string]: number } = {};
-    
+
     data.forEach(item => {
       const date = new Date(item[dateField]);
       const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;

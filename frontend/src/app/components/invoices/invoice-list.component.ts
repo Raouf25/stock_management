@@ -4,6 +4,7 @@ import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import {environment} from "../../../environments/environment";
 
 @Component({
   selector: 'app-invoice-list',
@@ -393,7 +394,7 @@ export class InvoiceListComponent implements OnInit {
    * Construit et sécurise l'URL du template Thymeleaf rendue par le contrôleur Spring Boot
    */
   getInvoicePreviewUrl(billId: number): SafeResourceUrl {
-    const backendUrl = `/api/invoices/preview/${billId}`;
+    const backendUrl = `${environment.apiUrl}/api/invoices/preview/${billId}`;
     return this.sanitizer.bypassSecurityTrustResourceUrl(backendUrl);
   }
 
