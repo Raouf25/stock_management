@@ -394,7 +394,7 @@ export class InvoiceListComponent implements OnInit {
    * Construit et sécurise l'URL du template Thymeleaf rendue par le contrôleur Spring Boot
    */
   getInvoicePreviewUrl(billId: number): SafeResourceUrl {
-    const backendUrl = `${environment.apiUrl}/api/invoices/preview/${billId}`;
+    const backendUrl = `${environment.apiUrl}/invoices/preview/${billId}`;
     return this.sanitizer.bypassSecurityTrustResourceUrl(backendUrl);
   }
 
