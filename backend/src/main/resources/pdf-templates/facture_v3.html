@@ -5,7 +5,19 @@
     <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
     <title th:text="'Facture - ' + ${billNumber}">Facture</title>
     <style>
-        @page { size: A4 portrait; margin: 0; }
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 0;
+            }
+            body {
+                background: #ffffff !important;
+            }
+            .page {
+                margin: 0 !important;
+                box-shadow: none !important;
+            }
+        }
         *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
 
         :root {
