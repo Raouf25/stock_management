@@ -198,4 +198,14 @@ public class PdfGenerateService {
         context.setVariable("numbers", numberUtils);
         return templateEngine.process(templateName, context);
     }
+
+    /**
+     * Génère et retourne le contenu HTML brut d'une facture sous forme de String.
+     *
+     * @param data Les données requises par le template Thymeleaf (totaux, produits, client, etc.)
+     * @return La page HTML complète calculée par le moteur de rendu
+     */
+    public String generateHtmlPreview(Map<String, Object> data) {
+        return processTemplate(data, TEMPLATE_NAME);
+    }
 }
