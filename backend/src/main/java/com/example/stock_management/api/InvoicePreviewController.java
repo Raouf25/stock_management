@@ -40,6 +40,9 @@ public class InvoicePreviewController {
             String htmlOutput = pdfGenerateService.generateHtmlPreview(templateData);
 
             return ResponseEntity.ok()
+                    .header("X-Frame-Options",            "ALLOWALL")
+                    .header("Content-Security-Policy",
+                            "frame-ancestors 'self' https://bhouri-stock.com https://www.bhouri-stock.com https://*.vercel.app http://localhost:4200")
                     .contentType(MediaType.TEXT_HTML)
                     .body(htmlOutput);
 
