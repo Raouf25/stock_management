@@ -95,8 +95,7 @@ import {environment} from "../../../environments/environment";
               <th style="color:white;font-weight:500;padding:.75rem 1rem;text-align:right;">MONTANT TOTAL</th>
               <th style="color:white;font-weight:500;padding:.75rem 1rem;text-align:right;">ACOMPTE</th>
               <th style="color:white;font-weight:500;padding:.75rem 1rem;text-align:right;">MONTANT DÛ</th>
-              <th style="color:white;font-weight:500;padding:.75rem 1rem;text-align:center;">STATUT</th>
-              <th style="color:white;font-weight:500;padding:.75rem 1rem;text-align:center;">ACTIONS</th>
+              <th style="color:white;font-weight:500;padding:.75rem 1rem;text-align:center;">STATUT</th> 
             </tr>
             </thead>
             <tbody>
@@ -122,23 +121,6 @@ import {environment} from "../../../environments/environment";
                         style="padding:.375rem .75rem;border-radius:.375rem;font-weight:600;font-size:.875rem;display:inline-block;">
                     {{ getPaymentStatusLabel(invoice.paymentStatus) }}
                   </span>
-              </td>
-              <td style="padding:.75rem 1rem;">
-                <div style="display:flex;align-items:center;justify-content:center;gap:.25rem;">
-                  <button (click)="downloadPDF(invoice.billId); $event.stopPropagation()" title="Télécharger"
-                          style="width:2rem;height:2rem;border-radius:.375rem;border:1px solid #bbf7d0;background:#dcfce7;color:#166534;cursor:pointer;font-size:.875rem;display:flex;align-items:center;justify-content:center;"
-                          onmouseover="this.style.background='#bbf7d0'" onmouseout="this.style.background='#dcfce7'">⬇️</button>
-                  <button (click)="sendInvoiceByEmail(invoice); $event.stopPropagation()" [disabled]="sendingEmail === invoice.billId" title="Email"
-                          style="width:2rem;height:2rem;border-radius:.375rem;border:1px solid #a5f3fc;background:#cffafe;color:#155e75;cursor:pointer;font-size:.875rem;display:flex;align-items:center;justify-content:center;"
-                          [style.opacity]="sendingEmail === invoice.billId ? '0.5' : '1'"
-                          onmouseover="if(!this.disabled) this.style.background='#a5f3fc'" onmouseout="this.style.background='#cffafe'">
-                    {{ sendingEmail === invoice.billId ? '⏳' : '✉️' }}
-                  </button>
-                  <button *ngIf="invoice.paymentStatus !== 'PAID'"
-                          (click)="openPaymentModal(invoice); $event.stopPropagation()" title="Paiement"
-                          style="width:2rem;height:2rem;border-radius:.375rem;border:1px solid #fcd34d;background:#fde047;color:white;cursor:pointer;font-size:.875rem;display:flex;align-items:center;justify-content:center;"
-                          onmouseover="this.style.background='#facc15'" onmouseout="this.style.background='#fde047'">💰</button>
-                </div>
               </td>
             </tr>
             </tbody>
