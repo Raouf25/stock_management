@@ -34,56 +34,52 @@ import {environment} from "../../../environments/environment";
       </div>
 
       <div class="invoice-card">
-        <div class="invoice-card-header gradient-purple">
-          <div style="display:flex;align-items:center;gap:.5rem;color:white;">
-            <span>🔍</span>
-            <span class="invoice-card-header-title">Filtres</span>
-          </div>
-        </div>
-        <div style="padding:.75rem 1rem;">
-          <div style="display:grid;grid-template-columns:1fr;gap:.75rem;">
-            <div style="display:flex;flex-direction:column;gap:.25rem;">
-              <label style="font-size:.625rem;font-weight:600;color:#6b7280;text-transform:uppercase;">Statut</label>
-              <select [(ngModel)]="filterStatus" (change)="applyFilters()"
-                      style="height:2.25rem;width:100%;background:white;font-size:.875rem;padding:0 .5rem;border:1px solid #e5e7eb;border-radius:.375rem;outline:none;"
-                      onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e5e7eb'">
-                <option value="">Tous les statuts</option>
-                <option value="PAID">Payé</option>
-                <option value="UNPAID">Impayé</option>
-                <option value="PARTIALLY_PAID">Partiel</option>
-              </select>
-            </div>
-            <div style="display:flex;flex-direction:column;gap:.25rem;">
-              <label style="font-size:.625rem;font-weight:600;color:#6b7280;text-transform:uppercase;">Client</label>
-              <input type="text" [(ngModel)]="filterClient" (keyup)="applyFilters()" placeholder="Rechercher..."
-                     style="height:2.25rem;width:100%;background:white;font-size:.875rem;padding:0 .5rem;border:1px solid #e5e7eb;border-radius:.375rem;outline:none;"
-                     onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e5e7eb'">
-            </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;">
-              <div style="display:flex;flex-direction:column;gap:.25rem;">
-                <label style="font-size:.625rem;font-weight:600;color:#6b7280;text-transform:uppercase;">Date de</label>
-                <input type="date" [(ngModel)]="filterDateFrom" (change)="applyFilters()"
-                       style="height:2.25rem;width:100%;background:white;font-size:.875rem;padding:0 .5rem;border:1px solid #e5e7eb;border-radius:.375rem;outline:none;"
-                       onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e5e7eb'">
-              </div>
-              <div style="display:flex;flex-direction:column;gap:.25rem;">
-                <label style="font-size:.625rem;font-weight:600;color:#6b7280;text-transform:uppercase;">Date à</label>
-                <input type="date" [(ngModel)]="filterDateTo" (change)="applyFilters()"
-                       style="height:2.25rem;width:100%;background:white;font-size:.875rem;padding:0 .5rem;border:1px solid #e5e7eb;border-radius:.375rem;outline:none;"
-                       onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e5e7eb'">
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="invoice-card">
         <div class="invoice-card-header gradient-blue">
           <div style="display:flex;align-items:center;gap:.5rem;color:white;">
             <span style="font-size:1.125rem;">📁</span>
             <span class="invoice-card-header-title">Liste des Factures ({{ filteredInvoices.length }})</span>
           </div>
         </div>
+
+        <div style="padding: 1rem; border-bottom: 1px solid #e5e7eb; background: #fafafa;">
+          <div style="display: flex; flex-direction: row; align-items: center; gap: 1rem; width: 100%; flex-wrap: nowrap;">
+
+            <div style="display:flex; align-items:center; gap:.5rem; flex: 1;">
+              <label style="font-size:.75rem; font-weight:600; color:#6b7280; text-transform:uppercase; white-space:nowrap;">Statut</label>
+              <select [(ngModel)]="filterStatus" (change)="applyFilters()"
+                      style="height:2.25rem; width:100%; background:white; font-size:.875rem; padding:0 .5rem; border:1px solid #e5e7eb; border-radius:.375rem; outline:none;"
+                      onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e5e7eb'">
+                <option value="">Tous</option>
+                <option value="PAID">Payé</option>
+                <option value="UNPAID">Impayé</option>
+                <option value="PARTIALLY_PAID">Partiel</option>
+              </select>
+            </div>
+
+            <div style="display:flex; align-items:center; gap:.5rem; flex: 1.5;">
+              <label style="font-size:.75rem; font-weight:600; color:#6b7280; text-transform:uppercase; white-space:nowrap;">Client</label>
+              <input type="text" [(ngModel)]="filterClient" (keyup)="applyFilters()" placeholder="Rechercher..."
+                     style="height:2.25rem; width:100%; background:white; font-size:.875rem; padding:0 .5rem; border:1px solid #e5e7eb; border-radius:.375rem; outline:none;"
+                     onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e5e7eb'">
+            </div>
+
+            <div style="display:flex; align-items:center; gap:.5rem; flex: 1;">
+              <label style="font-size:.75rem; font-weight:600; color:#6b7280; text-transform:uppercase; white-space:nowrap;">De</label>
+              <input type="date" [(ngModel)]="filterDateFrom" (change)="applyFilters()"
+                     style="height:2.25rem; width:100%; background:white; font-size:.875rem; padding:0 .5rem; border:1px solid #e5e7eb; border-radius:.375rem; outline:none;"
+                     onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e5e7eb'">
+            </div>
+
+            <div style="display:flex; align-items:center; gap:.5rem; flex: 1;">
+              <label style="font-size:.75rem; font-weight:600; color:#6b7280; text-transform:uppercase; white-space:nowrap;">À</label>
+              <input type="date" [(ngModel)]="filterDateTo" (change)="applyFilters()"
+                     style="height:2.25rem; width:100%; background:white; font-size:.875rem; padding:0 .5rem; border:1px solid #e5e7eb; border-radius:.375rem; outline:none;"
+                     onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e5e7eb'">
+            </div>
+
+          </div>
+        </div>
+        
 
         <div class="desktop-table" style="overflow-x:auto;">
           <table style="width:100%;border-collapse:collapse;">
@@ -335,11 +331,6 @@ export class InvoiceListComponent implements OnInit {
     this.loadInvoices();
   }
 
-  getInvoiceItems(invoice: any): any[] {
-    if (!invoice) return [];
-    return invoice.products || invoice.billItems || invoice.items || [];
-  }
-
   // ── Stats ──
   getTotalAmount(): number {
     return this.filteredInvoices.reduce((sum, inv) => sum + (inv.totalAmount || 0), 0);
@@ -396,15 +387,6 @@ export class InvoiceListComponent implements OnInit {
       case 'UNPAID':         return 'Impayé';
       case 'PARTIALLY_PAID': return 'Partiellement Payé';
       default:               return status || '—';
-    }
-  }
-
-  getPaymentStatusKey(status: string): string {
-    switch (status) {
-      case 'PAID':           return 'paid';
-      case 'UNPAID':         return 'unpaid';
-      case 'PARTIALLY_PAID': return 'partial';
-      default:               return 'default';
     }
   }
 
