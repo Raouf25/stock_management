@@ -305,7 +305,7 @@ public class InvoicePdfDataService extends AbstractPdfDataService {
         int quantity = bp.getQuantity() != null ? bp.getQuantity() : 0;
         double totalPrice = bp.getTotalProductPrice() != null ? bp.getTotalProductPrice() : 0.0;
 
-        return new ProductInfo(name, reference,description, quantity, totalPrice);
+        return new ProductInfo(name,description,reference, quantity, totalPrice);
     }
 
     /**
