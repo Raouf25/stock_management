@@ -597,7 +597,8 @@
                 <div class="addr-detail" th:if="${client.taxId}"><b>MF :</b> <span th:text="${client.taxId}">987654321/B/M/000</span></div>
             </div>
             <div class="addr-col">
-                <div class="addr-eyebrow">Livré à</div>
+<!--                <div class="addr-eyebrow">Livré à</div>-->
+                <div class="addr-eyebrow">Livré par</div>
                 <div class="addr-name" th:text="${deliveryFullName}">Ahmed Trabelsi</div>
                 <div class="addr-detail" th:if="${deliveryCin}"><b>CIN :</b> <span th:text="${deliveryCin}">02345678</span></div>
                 <div class="addr-detail" th:if="${customer.licensePlate}">
@@ -627,7 +628,7 @@
                     <td class="td-num" th:text="${#numbers.formatInteger(s.index + 1, 2)}">01</td>
                     <td>
                         <div class="td-prod-name" th:text="${product.productName}">FISSATIVO 30G</div>
-                        <div class="td-prod-sub" th:if="${product.productDescription}" th:text="${product.productDescription}"></div>
+<!--                        <div class="td-prod-sub" th:if="${product.productDescription}" th:text="${product.productDescription}"></div>-->
                     </td>
                     <td class="td-ref td-r" th:text="${product.productRef != null ? product.productRef : '—'}">—</td>
                     <td class="td-r" th:text="${product.unitPriceFormatted}">78.692</td>
@@ -692,7 +693,7 @@
             <div class="fc">
                 <div class="fc-title">Conditions de paiement</div>
                 <p><b th:text="${paymentTerms}">30 jours</b></p>
-                <p>Cette facture est établie conformément aux dispositions de l'article 18 du code de la TVA. Toute contestation doit être signalée dans un délai de 7 jours.</p>
+<!--                <p>Cette facture est établie conformément aux dispositions de l'article 18 du code de la TVA. Toute contestation doit être signalée dans un délai de 7 jours.</p>-->
             </div>
 
             <div class="fc">
