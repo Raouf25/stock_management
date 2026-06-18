@@ -17,6 +17,9 @@ import java.util.Map;
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
 
+    @Query("SELECT p FROM Product p WHERE  p.currentStockQuantity > 0")
+    List<Product> getAvailableProducts();
+
     @Query("SELECT new com.example.stock_management.dto.ProductDashboardDTO(" +
             "  p, " +
             "  COALESCE(SUM(DISTINCT s.quantitySold), 0L), " +
