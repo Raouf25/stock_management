@@ -230,10 +230,9 @@ interface LineItem {
               </select>
             </div>
             <div class="form-group">
-              <label>Représentant de Vente</label>
-              <input type="text" class="form-ctrl"
-                     [(ngModel)]="salesRep" [ngModelOptions]="{standalone:true}"
-                     placeholder="Nom du commercial">
+              <label>Acompte Versé (DNT)</label>
+              <input type="number" class="form-ctrl" formControlName="deposit"
+                     placeholder="0.000" min="0" step="0.001">
             </div>
           </div>
 
@@ -428,9 +427,19 @@ interface LineItem {
         </div>
       </div>
 
+      <div class="aside-meta-row deposit-line"
+           *ngIf="mode==='facture' && currentStep >= 3 && getDeposit() > 0">
+        <span>Acompte versé</span>
+        <strong style="color:#16a34a;">−{{ getDeposit() | number:'1.3-3' }} DNT</strong>
+      </div>
+
       <div class="aside-total">
-        <span>{{ currentStep >= 3 ? 'Total TTC (DNT)' : 'Total (DNT)' }}</span>
-        <span class="aside-total-val">{{ (currentStep >= 3 ? totalTTC : totalHT) | number:'1.3-3' }}</span>
+        <span>{{ currentStep >= 3
+          ? (mode==='facture' && getDeposit() > 0 ? 'Net à Régler (TTC)' : 'Total TTC (DNT)')
+          : 'Total (DNT)' }}</span>
+        <span class="aside-total-val">
+          {{ (currentStep >= 3 ? getNetAPayer() : totalHT) | number:'1.3-3' }}
+        </span>
       </div>
 
       <div class="aside-actions">
@@ -465,12 +474,20 @@ interface LineItem {
             <span>TVA (19%)</span>
             <strong>{{ totalVAT | number:'1.3-3' }} DNT</strong>
           </div>
+          <div class="aside-meta-row" style="border-top:1px solid #f1f5f9;padding-top:.5rem;margin-top:.25rem;">
+            <span>Total TTC</span>
+            <strong>{{ totalTTC | number:'1.3-3' }} DNT</strong>
+          </div>
+          <div class="aside-meta-row deposit-line" *ngIf="mode==='facture' && getDeposit() > 0">
+            <span>Acompte versé</span>
+            <strong style="color:#16a34a;">−{{ getDeposit() | number:'1.3-3' }} DNT</strong>
+          </div>
         </div>
       </div>
 
       <div class="aside-total">
-        <span>Net à Payer (TTC)</span>
-        <span class="aside-total-val">{{ totalTTC | number:'1.3-3' }}</span>
+        <span>{{ mode==='facture' && getDeposit() > 0 ? 'Net à Régler' : 'Net à Payer (TTC)' }}</span>
+        <span class="aside-total-val">{{ getNetAPayer() | number:'1.3-3' }}</span>
       </div>
 
       <div class="aside-actions">
@@ -1313,6 +1330,15 @@ export class CreateDocumentComponent implements OnInit {
   }
 
   // ── Calculs financiers ──────────────────────────────────────────────────────
+
+  getDeposit(): number {
+    if (this.mode !== 'facture') return 0;
+    return Math.max(0, Number(this.invoiceForm?.get('deposit')?.value) || 0);
+  }
+
+  getNetAPayer(): number {
+    return Math.max(0, this.totalTTC - this.getDeposit());
+  }
 
   calculateAllTotals(): void {
     this.totalBrutHT = this.lineItems.reduce((s, i) => s + i.unitPrice * i.quantity, 0);
