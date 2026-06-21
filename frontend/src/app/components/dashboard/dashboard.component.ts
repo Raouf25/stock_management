@@ -1,5 +1,6 @@
 import { Component, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { Chart, ChartConfiguration, registerables } from 'chart.js';
 
@@ -8,643 +9,756 @@ Chart.register(...registerables);
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
   template: `
-    <div class="invoice-page-container">
-      
-      <!-- Header - Responsive -->
-      <div class="invoice-page-header">
-        <span style="font-size: 2rem;">📊</span>
-        <h1 class="invoice-page-title">Dashboard Facturation</h1>
+<div class="page">
+
+  <!-- ══ EN-TÊTE ══════════════════════════════════════════════════════════════ -->
+  <div class="page-head">
+    <div>
+      <h1 class="page-title">Tableau de Bord</h1>
+      <p class="page-sub">Bhouri Stock — Vue d'ensemble en temps réel</p>
+    </div>
+  </div>
+
+  <!-- ══ SKELETON ══════════════════════════════════════════════════════════════ -->
+  <div *ngIf="loading" class="skeleton-grid">
+    <div class="sk-card" *ngFor="let i of [1,2,3,4,5,6,7,8]"></div>
+  </div>
+
+  <ng-container *ngIf="!loading">
+
+    <!-- ══ KPIs FACTURATION ══════════════════════════════════════════════════ -->
+    <div class="section-label">Facturation</div>
+    <div class="kpi-row">
+
+      <div class="kpi-card kpi-blue">
+        <div class="kpi-icon">🧾</div>
+        <div class="kpi-body">
+          <span class="kpi-val">{{ invoiceKPIs.totalInvoices || 0 }}</span>
+          <span class="kpi-lbl">Total Factures</span>
+        </div>
       </div>
 
-        <!-- Stats Cards - Compact 2 cols mobile, 4 cols desktop -->
-        <div class="invoice-stats-grid">
-          <!-- Total Factures -->
-          <div class="invoice-stat-card border-blue">
-            <div style="display: flex; align-items: center; gap: 0.5rem;">
-              <div class="stat-icon-desktop" style="display: none; width: 2.5rem; height: 2.5rem; background: #f3f4f6; border-radius: 9999px; padding: 0.5rem; align-items: center; justify-content: center;">
-                <svg style="width: 1.25rem; height: 1.25rem; color: #4b5563;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                </svg>
-              </div>
-              <div style="flex: 1; min-width: 0; text-align: center;" class="stat-text">
-                <p style="font-size: 1.125rem; font-weight: 700; color: #111827; margin: 0; line-height: 1.2;">{{ invoiceKPIs.totalInvoices || 0 }}</p>
-                <p style="font-size: 0.625rem; font-weight: 600; color: #6b7280; text-transform: uppercase; margin: 0.125rem 0 0; letter-spacing: 0.025em;">Total Factures</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Chiffre d'Affaires -->
-          <div class="invoice-stat-card border-green">
-            <div style="display: flex; align-items: center; gap: 0.5rem;">
-              <div class="stat-icon-desktop" style="display: none; width: 2.5rem; height: 2.5rem; background: #fef3c7; border-radius: 9999px; padding: 0.5rem; align-items: center; justify-content: center;">
-                <svg style="width: 1.25rem; height: 1.25rem; color: #d97706;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-              </div>
-              <div style="flex: 1; min-width: 0; text-align: center;" class="stat-text">
-                <p style="font-size: 1.125rem; font-weight: 700; color: #111827; margin: 0; line-height: 1.2;">{{ invoiceKPIs.totalInvoicedAmount || 0 | number: '1.0-0' }}</p>
-                <p style="font-size: 0.625rem; font-weight: 600; color: #6b7280; text-transform: uppercase; margin: 0.125rem 0 0; letter-spacing: 0.025em;">CA Total (DNT)</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Factures Impayées -->
-          <div class="invoice-stat-card border-red">
-            <div style="display: flex; align-items: center; gap: 0.5rem;">
-              <div class="stat-icon-desktop" style="display: none; width: 2.5rem; height: 2.5rem; background: #fef3c7; border-radius: 9999px; padding: 0.5rem; align-items: center; justify-content: center;">
-                <svg style="width: 1.25rem; height: 1.25rem; color: #d97706;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-                </svg>
-              </div>
-              <div style="flex: 1; min-width: 0; text-align: center;" class="stat-text">
-                <p style="font-size: 1.125rem; font-weight: 700; color: #111827; margin: 0; line-height: 1.2;">{{ invoiceKPIs.unpaidInvoices || 0 }}</p>
-                <p style="font-size: 0.625rem; font-weight: 600; color: #6b7280; text-transform: uppercase; margin: 0.125rem 0 0; letter-spacing: 0.025em;">Impayées</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Ce Mois -->
-          <div class="invoice-stat-card border-orange">
-            <div style="display: flex; align-items: center; gap: 0.5rem;">
-              <div class="stat-icon-desktop" style="display: none; width: 2.5rem; height: 2.5rem; background: #fee2e2; border-radius: 9999px; padding: 0.5rem; align-items: center; justify-content: center;">
-                <svg style="width: 1.25rem; height: 1.25rem; color: #dc2626;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                </svg>
-              </div>
-              <div style="flex: 1; min-width: 0; text-align: center;" class="stat-text">
-                <p style="font-size: 1.125rem; font-weight: 700; color: #111827; margin: 0; line-height: 1.2;">{{ invoiceKPIs.invoicesThisMonth || 0 }}</p>
-                <p style="font-size: 0.625rem; font-weight: 600; color: #6b7280; text-transform: uppercase; margin: 0.125rem 0 0; letter-spacing: 0.025em;">Ce Mois</p>
-              </div>
-            </div>
-          </div>
+      <div class="kpi-card kpi-green">
+        <div class="kpi-icon">💰</div>
+        <div class="kpi-body">
+          <span class="kpi-val">{{ invoiceKPIs.totalInvoicedAmount || 0 | number:'1.3-3' }}</span>
+          <span class="kpi-lbl">CA Total (DNT)</span>
         </div>
+      </div>
 
-        <!-- Bons de Livraison KPIs -->
-        <div style="margin: 1.5rem 0;">
-          <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem;">
-            <span style="font-size: 1.5rem;">📦</span>
-            <h2 style="font-size: 1.25rem; font-weight: 700; color: #111827; margin: 0;">Bons de Livraison</h2>
-          </div>
-          <div class="invoice-stats-grid">
-            <div class="invoice-stat-card border-blue">
-              <div style="flex: 1; min-width: 0; text-align: center;" class="stat-text">
-                <p style="font-size: 1.125rem; font-weight: 700; color: #111827; margin: 0; line-height: 1.2;">{{ deliveryNoteKPIs.totalDeliveryNotes || 0 }}</p>
-                <p style="font-size: 0.625rem; font-weight: 600; color: #6b7280; text-transform: uppercase; margin: 0.125rem 0 0; letter-spacing: 0.025em;">Total BL</p>
-              </div>
-            </div>
-            <div class="invoice-stat-card border-orange">
-              <div style="flex: 1; min-width: 0; text-align: center;" class="stat-text">
-                <p style="font-size: 1.125rem; font-weight: 700; color: #111827; margin: 0; line-height: 1.2;">{{ deliveryNoteKPIs.notInvoiced || 0 }}</p>
-                <p style="font-size: 0.625rem; font-weight: 600; color: #6b7280; text-transform: uppercase; margin: 0.125rem 0 0; letter-spacing: 0.025em;">Non Facturés</p>
-              </div>
-            </div>
-            <div class="invoice-stat-card border-purple" style="border-left-color: #8b5cf6;">
-              <div style="flex: 1; min-width: 0; text-align: center;" class="stat-text">
-                <p style="font-size: 1.125rem; font-weight: 700; color: #111827; margin: 0; line-height: 1.2;">{{ deliveryNoteKPIs.pendingDelivery || 0 }}</p>
-                <p style="font-size: 0.625rem; font-weight: 600; color: #6b7280; text-transform: uppercase; margin: 0.125rem 0 0; letter-spacing: 0.025em;">En Attente</p>
-              </div>
-            </div>
-            <div class="invoice-stat-card border-green">
-              <div style="flex: 1; min-width: 0; text-align: center;" class="stat-text">
-                <p style="font-size: 1.125rem; font-weight: 700; color: #111827; margin: 0; line-height: 1.2;">{{ deliveryNoteKPIs.totalAmountNotInvoiced || 0 | number: '1.0-0' }}</p>
-                <p style="font-size: 0.625rem; font-weight: 600; color: #6b7280; text-transform: uppercase; margin: 0.125rem 0 0; letter-spacing: 0.025em;">Montant Non Facturé (DNT)</p>
-              </div>
-            </div>
-          </div>
+      <div class="kpi-card kpi-orange">
+        <div class="kpi-icon">📅</div>
+        <div class="kpi-body">
+          <span class="kpi-val">{{ invoiceKPIs.revenueThisMonth || 0 | number:'1.3-3' }}</span>
+          <span class="kpi-lbl">CA ce Mois (DNT)</span>
         </div>
+      </div>
 
-        <!-- Statuts & Resume - 1 col mobile, 2 cols desktop -->
-        <div class="invoice-info-grid">
-          <!-- Statuts de Paiement -->
-          <div class="invoice-card">
-            <div class="invoice-card-header gradient-purple">
-              <svg class="invoice-card-header-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-              </svg>
-              <span class="invoice-card-header-title">Statuts de Paiement</span>
-            </div>
-            <div>
-              <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; border-bottom: 1px solid #e5e7eb;">
-                <span style="color: white; font-size: 0.75rem; padding: 0.25rem 0.75rem; border-radius: 0.25rem; background: #f59e0b;">Partiellement Payé</span>
-                <span style="font-size: 1.125rem; font-weight: 600; color: #374151;">{{ invoiceKPIs.paymentStatusDistribution?.PARTIALLY_PAID || 0 }}</span>
-              </div>
-              <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; border-bottom: 1px solid #e5e7eb;">
-                <span style="color: white; font-size: 0.75rem; padding: 0.25rem 0.75rem; border-radius: 0.25rem; background: #10b981;">Payé</span>
-                <span style="font-size: 1.125rem; font-weight: 600; color: #374151;">{{ invoiceKPIs.paymentStatusDistribution?.PAID || 0 }}</span>
-              </div>
-              <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem;">
-                <span style="color: white; font-size: 0.75rem; padding: 0.25rem 0.75rem; border-radius: 0.25rem; background: #ef4444;">Impayé</span>
-                <span style="font-size: 1.125rem; font-weight: 600; color: #374151;">{{ invoiceKPIs.paymentStatusDistribution?.UNPAID || 0 }}</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Resume Financier -->
-          <div class="invoice-card">
-            <div class="invoice-card-header gradient-green">
-              <svg class="invoice-card-header-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
-              </svg>
-              <span class="invoice-card-header-title">Résumé Financier</span>
-            </div>
-            <div style="padding: 0.75rem 1rem;">
-              <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; margin-bottom: 0.75rem;">
-                <div style="text-align: center;">
-                  <p style="font-size: 1.25rem; font-weight: 700; color: #111827; margin: 0;">{{ invoiceKPIs.revenueThisMonth || 0 | number: '1.0-0' }}</p>
-                  <p style="font-size: 0.625rem; color: #6b7280; text-transform: uppercase; letter-spacing: 0.025em; margin: 0.25rem 0 0;">CA ce Mois (DNT)</p>
-                </div>
-                <div style="text-align: center;">
-                  <p style="font-size: 1.25rem; font-weight: 700; color: #ef4444; margin: 0;">{{ invoiceKPIs.totalAmountDue || 0 | number: '1.0-0' }}</p>
-                  <p style="font-size: 0.625rem; color: #6b7280; text-transform: uppercase; letter-spacing: 0.025em; margin: 0.25rem 0 0;">Total Dû (DNT)</p>
-                </div>
-              </div>
-              <div style="border-top: 1px solid #e5e7eb; padding-top: 0.75rem; text-align: center;">
-                <p style="font-size: 1.5rem; font-weight: 700; color: #10b981; margin: 0;">{{ getAverageBasket() | number: '1.0-0' }}</p>
-                <p style="font-size: 0.75rem; color: #6b7280; text-transform: uppercase; letter-spacing: 0.025em; margin: 0.25rem 0 0;">Panier Moyen (DNT)</p>
-              </div>
-            </div>
-          </div>
+      <div class="kpi-card kpi-red">
+        <div class="kpi-icon">⏳</div>
+        <div class="kpi-body">
+          <span class="kpi-val">{{ invoiceKPIs.totalAmountDue || 0 | number:'1.3-3' }}</span>
+          <span class="kpi-lbl">Montant Dû (DNT)</span>
         </div>
+      </div>
 
-        <!-- Charts Section - 1 col mobile, 2 cols desktop -->
-        <div class="invoice-charts-grid">
-          <!-- Stock Chart -->
-          <div class="invoice-card">
-            <div class="invoice-card-header gradient-blue">
-              <svg class="invoice-card-header-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-              </svg>
-              <span class="invoice-card-header-title">Valeur du Stock</span>
-            </div>
-            <div style="padding: 1rem; height: 300px; position: relative;">
-              <canvas #stockChartCanvas></canvas>
-            </div>
-          </div>
-
-          <!-- Sales Chart -->
-          <div class="invoice-card">
-            <div class="invoice-card-header gradient-indigo">
-              <svg class="invoice-card-header-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/>
-              </svg>
-              <span class="invoice-card-header-title">Ventes vs Achats</span>
-            </div>
-            <div style="padding: 1rem; height: 300px; position: relative;">
-              <canvas #salesChartCanvas></canvas>
-            </div>
-          </div>
-
-          <!-- Top Products Chart -->
-          <div class="invoice-card">
-            <div class="invoice-card-header gradient-green">
-              <svg class="invoice-card-header-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"/>
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"/>
-              </svg>
-              <span class="invoice-card-header-title">Top 5 Produits</span>
-            </div>
-            <div style="padding: 1rem; height: 300px; position: relative;">
-              <canvas #topProductsChartCanvas></canvas>
-            </div>
-          </div>
-
-          <!-- Category Chart -->
-          <div class="invoice-card">
-            <div class="invoice-card-header gradient-orange">
-              <svg class="invoice-card-header-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
-              </svg>
-              <span class="invoice-card-header-title">Catégories</span>
-            </div>
-            <div style="padding: 1rem; height: 300px; position: relative;">
-              <canvas #categoryChartCanvas></canvas>
-            </div>
-          </div>
+      <div class="kpi-card kpi-amber">
+        <div class="kpi-icon">⚠️</div>
+        <div class="kpi-body">
+          <span class="kpi-val">{{ invoiceKPIs.unpaidInvoices || 0 }}</span>
+          <span class="kpi-lbl">Impayées</span>
         </div>
+      </div>
+
     </div>
-  `
+
+    <!-- ══ KPIs STOCK & BL ════════════════════════════════════════════════════ -->
+    <div class="section-label">Stock & Livraisons</div>
+    <div class="kpi-row">
+
+      <div class="kpi-card kpi-indigo">
+        <div class="kpi-icon">📦</div>
+        <div class="kpi-body">
+          <span class="kpi-val">{{ products.length }}</span>
+          <span class="kpi-lbl">Produits Actifs</span>
+        </div>
+      </div>
+
+      <div class="kpi-card kpi-teal">
+        <div class="kpi-icon">🏷️</div>
+        <div class="kpi-body">
+          <span class="kpi-val">{{ totalValue | number:'1.3-3' }}</span>
+          <span class="kpi-lbl">Valeur Stock (DNT)</span>
+        </div>
+      </div>
+
+      <div class="kpi-card kpi-purple">
+        <div class="kpi-icon">🚚</div>
+        <div class="kpi-body">
+          <span class="kpi-val">{{ deliveryNoteKPIs.totalDeliveryNotes || 0 }}</span>
+          <span class="kpi-lbl">Total BL</span>
+        </div>
+      </div>
+
+      <div class="kpi-card kpi-orange">
+        <div class="kpi-icon">📋</div>
+        <div class="kpi-body">
+          <span class="kpi-val">{{ deliveryNoteKPIs.notInvoiced || 0 }}</span>
+          <span class="kpi-lbl">BL Non Facturés</span>
+        </div>
+      </div>
+
+      <div class="kpi-card kpi-green">
+        <div class="kpi-icon">📊</div>
+        <div class="kpi-body">
+          <span class="kpi-val">{{ getAverageBasket() | number:'1.3-3' }}</span>
+          <span class="kpi-lbl">Panier Moyen (DNT)</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ══ GRAPHIQUES ════════════════════════════════════════════════════════ -->
+    <div class="charts-layout">
+
+      <!-- Ventes vs Achats (large) -->
+      <div class="chart-card chart-wide">
+        <div class="chart-head">
+          <span class="chart-title">Évolution Ventes vs Achats</span>
+          <div class="chart-legend">
+            <span class="legend-dot" style="background:#10b981;"></span> Ventes
+            <span class="legend-dot" style="background:#ef4444;margin-left:.75rem;"></span> Achats
+          </div>
+        </div>
+        <div class="chart-body">
+          <canvas #salesChartCanvas></canvas>
+        </div>
+      </div>
+
+      <!-- Statuts de paiement (narrow) -->
+      <div class="chart-card">
+        <div class="chart-head">
+          <span class="chart-title">Statuts de Paiement</span>
+        </div>
+        <div class="chart-body chart-body-sm">
+          <canvas #paymentChartCanvas></canvas>
+        </div>
+        <div class="payment-legend">
+          <div class="pl-row">
+            <span class="pl-dot paid"></span>
+            <span class="pl-lbl">Payé</span>
+            <strong>{{ invoiceKPIs.paymentStatusDistribution?.PAID || 0 }}</strong>
+          </div>
+          <div class="pl-row">
+            <span class="pl-dot partial"></span>
+            <span class="pl-lbl">Partiel</span>
+            <strong>{{ invoiceKPIs.paymentStatusDistribution?.PARTIALLY_PAID || 0 }}</strong>
+          </div>
+          <div class="pl-row">
+            <span class="pl-dot unpaid"></span>
+            <span class="pl-lbl">Impayé</span>
+            <strong>{{ invoiceKPIs.paymentStatusDistribution?.UNPAID || 0 }}</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top 5 produits -->
+      <div class="chart-card">
+        <div class="chart-head">
+          <span class="chart-title">Top 5 Produits Vendus</span>
+        </div>
+        <div class="chart-body chart-body-sm">
+          <canvas #topProductsChartCanvas></canvas>
+        </div>
+      </div>
+
+      <!-- Catégories -->
+      <div class="chart-card">
+        <div class="chart-head">
+          <span class="chart-title">Produits par Catégorie</span>
+        </div>
+        <div class="chart-body chart-body-sm">
+          <canvas #categoryChartCanvas></canvas>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ══ ALERTES STOCK ══════════════════════════════════════════════════════ -->
+    <div class="alerts-card" *ngIf="alerts.length > 0">
+      <div class="alerts-head">
+        <span>⚠️ Alertes Stock Faible</span>
+        <span class="alerts-badge">{{ alerts.length }}</span>
+      </div>
+      <div class="alerts-body">
+        <div class="alert-row" *ngFor="let a of alerts">
+          <span class="alert-name">{{ a.productDesignation }}</span>
+          <div class="alert-meta">
+            <span class="alert-qty" [class.qty-critical]="a.alertLevel === 'CRITICAL'">
+              {{ a.currentQuantity }} unités
+            </span>
+            <span class="alert-lvl" [class.lvl-critical]="a.alertLevel === 'CRITICAL'">
+              {{ a.alertLevel === 'CRITICAL' ? '🔴 Critique' : '🟡 Attention' }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </ng-container>
+</div>
+  `,
+  styles: [`
+    :host { display: block; }
+
+    .page {
+      background: #f0f2f8;
+      min-height: 100vh;
+      padding: 1.75rem 2rem;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      box-sizing: border-box;
+    }
+
+    /* ── Header ─────────────────────────────────────── */
+    .page-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 2rem;
+    }
+    .page-title {
+      font-size: 1.625rem;
+      font-weight: 700;
+      color: #0f172a;
+      margin: 0 0 .25rem;
+    }
+    .page-sub {
+      font-size: .85rem;
+      color: #64748b;
+      margin: 0;
+    }
+    .btn-new {
+      display: inline-flex;
+      align-items: center;
+      padding: .6rem 1.25rem;
+      background: linear-gradient(135deg, #4f46e5, #6366f1);
+      color: #fff;
+      border-radius: 10px;
+      text-decoration: none;
+      font-size: .875rem;
+      font-weight: 600;
+      box-shadow: 0 2px 8px rgba(79,70,229,.25);
+      transition: opacity .18s;
+      white-space: nowrap;
+    }
+    .btn-new:hover { opacity: .88; }
+
+    /* ── Section label ───────────────────────────────── */
+    .section-label {
+      font-size: .7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .7px;
+      color: #94a3b8;
+      margin-bottom: .875rem;
+    }
+
+    /* ── KPI Row ─────────────────────────────────────── */
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: .875rem;
+      margin-bottom: 2rem;
+    }
+    .kpi-card {
+      background: #fff;
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
+      border-top-width: 3px;
+      padding: 1.1rem 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: .875rem;
+      box-shadow: 0 1px 4px rgba(0,0,0,.04);
+      transition: transform .15s, box-shadow .15s;
+    }
+    .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 4px 14px rgba(0,0,0,.08); }
+
+    .kpi-blue   { border-top-color: #3b82f6; }
+    .kpi-green  { border-top-color: #10b981; }
+    .kpi-orange { border-top-color: #f59e0b; }
+    .kpi-red    { border-top-color: #ef4444; }
+    .kpi-amber  { border-top-color: #f97316; }
+    .kpi-indigo { border-top-color: #4f46e5; }
+    .kpi-teal   { border-top-color: #14b8a6; }
+    .kpi-purple { border-top-color: #8b5cf6; }
+
+    .kpi-icon { font-size: 1.6rem; flex-shrink: 0; }
+    .kpi-body { display: flex; flex-direction: column; gap: .2rem; min-width: 0; }
+    .kpi-val {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #0f172a;
+      line-height: 1.2;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .kpi-lbl {
+      font-size: .68rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .4px;
+      color: #64748b;
+    }
+
+    /* ── Charts ──────────────────────────────────────── */
+    .charts-layout {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: auto auto;
+      gap: 1.25rem;
+      margin-bottom: 2rem;
+    }
+    .chart-card {
+      background: #fff;
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 1px 4px rgba(0,0,0,.04);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .chart-wide {
+      grid-column: span 2;
+    }
+    .chart-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .chart-title {
+      font-size: .82rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      color: #475569;
+    }
+    .chart-legend {
+      display: flex;
+      align-items: center;
+      font-size: .75rem;
+      color: #64748b;
+      gap: .25rem;
+    }
+    .legend-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: .25rem;
+    }
+    .chart-body {
+      flex: 1;
+      padding: 1.25rem;
+      position: relative;
+      height: 260px;
+    }
+    .chart-body-sm { height: 180px; }
+
+    /* Payment status legend */
+    .payment-legend {
+      padding: .75rem 1.25rem 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: .5rem;
+    }
+    .pl-row {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      font-size: .82rem;
+    }
+    .pl-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%; flex-shrink: 0;
+    }
+    .pl-dot.paid    { background: #10b981; }
+    .pl-dot.partial { background: #f59e0b; }
+    .pl-dot.unpaid  { background: #ef4444; }
+    .pl-lbl { flex: 1; color: #64748b; }
+    .pl-row strong { color: #0f172a; font-weight: 700; }
+
+    /* ── Alerts ──────────────────────────────────────── */
+    .alerts-card {
+      background: #fff;
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
+      border-left: 4px solid #f59e0b;
+      box-shadow: 0 1px 4px rgba(0,0,0,.04);
+      overflow: hidden;
+    }
+    .alerts-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: .875rem 1.25rem;
+      border-bottom: 1px solid #f1f5f9;
+      font-size: .82rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      color: #92400e;
+      background: #fffbeb;
+    }
+    .alerts-badge {
+      background: #f59e0b;
+      color: #fff;
+      font-size: .72rem;
+      font-weight: 700;
+      padding: .2rem .5rem;
+      border-radius: 20px;
+    }
+    .alerts-body {
+      max-height: 240px;
+      overflow-y: auto;
+    }
+    .alert-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: .65rem 1.25rem;
+      border-bottom: 1px solid #f8fafc;
+      font-size: .875rem;
+    }
+    .alert-row:last-child { border-bottom: none; }
+    .alert-name { font-weight: 500; color: #1e293b; }
+    .alert-meta { display: flex; align-items: center; gap: 1rem; }
+    .alert-qty {
+      font-weight: 600;
+      color: #f59e0b;
+      font-size: .82rem;
+    }
+    .alert-qty.qty-critical { color: #ef4444; }
+    .alert-lvl { font-size: .78rem; font-weight: 500; }
+    .alert-lvl.lvl-critical { color: #ef4444; }
+
+    /* ── Skeleton ────────────────────────────────────── */
+    .skeleton-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: .875rem;
+      margin-bottom: 2rem;
+    }
+    .sk-card {
+      height: 80px;
+      background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s infinite;
+      border-radius: 12px;
+    }
+    @keyframes shimmer {
+      0%   { background-position: -200% 0; }
+      100% { background-position:  200% 0; }
+    }
+
+    /* ── Responsive ──────────────────────────────────── */
+    @media (max-width: 1200px) {
+      .kpi-row { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (max-width: 900px) {
+      .page { padding: 1rem; }
+      .kpi-row { grid-template-columns: repeat(2, 1fr); }
+      .charts-layout { grid-template-columns: 1fr; }
+      .chart-wide { grid-column: span 1; }
+    }
+    @media (max-width: 480px) {
+      .kpi-row { grid-template-columns: 1fr 1fr; }
+      .page-head { flex-direction: column; gap: 1rem; }
+    }
+  `]
 })
 export class DashboardComponent implements OnInit, AfterViewInit {
-  @ViewChild('stockChartCanvas') stockChartCanvas!: ElementRef<HTMLCanvasElement>;
-  @ViewChild('salesChartCanvas') salesChartCanvas!: ElementRef<HTMLCanvasElement>;
+
+  @ViewChild('salesChartCanvas')       salesChartCanvas!:       ElementRef<HTMLCanvasElement>;
+  @ViewChild('paymentChartCanvas')     paymentChartCanvas!:     ElementRef<HTMLCanvasElement>;
   @ViewChild('topProductsChartCanvas') topProductsChartCanvas!: ElementRef<HTMLCanvasElement>;
-  @ViewChild('categoryChartCanvas') categoryChartCanvas!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('categoryChartCanvas')    categoryChartCanvas!:    ElementRef<HTMLCanvasElement>;
 
-  stockSummary: any[] = [];
-  stockTotals: any = null;
-  totalValue: number = 0;
-  alerts: any[] = [];
-  products: any[] = [];
-  sales: any[] = [];
-  purchases: any[] = [];
-  invoiceKPIs: any = {};
-  deliveryNoteKPIs: any = {};
-  loading = true;
-  showTable = false;
+  totalValue         = 0;
+  alerts:            any[] = [];
+  products:          any[] = [];
+  sales:             any[] = [];
+  purchases:         any[] = [];
+  invoiceKPIs:       any   = {};
+  deliveryNoteKPIs:  any   = {};
+  loading                  = true;
 
-  // Charts
-  private stockChart: Chart | null = null;
-  private salesChart: Chart | null = null;
+  private salesChart:       Chart | null = null;
+  private paymentChart:     Chart | null = null;
   private topProductsChart: Chart | null = null;
-  private categoryChart: Chart | null = null;
+  private categoryChart:    Chart | null = null;
+
+  private ready = { sales: false, purchases: false, products: false, kpis: false };
 
   constructor(private apiService: ApiService) {}
 
-  ngOnInit(): void {
-    this.loadDashboard();
-  }
-
-  ngAfterViewInit(): void {
-    // Les charts seront créés après le chargement des données
-  }
+  ngOnInit():      void { this.loadDashboard(); }
+  ngAfterViewInit(): void {}
 
   loadDashboard(): void {
     this.loading = true;
 
-    // Charger toutes les données
-    // to optimize
-/*    this.apiService.getStockSummary().subscribe({
-      next: (data) => {
-        this.stockTotals = data.totals;
-        this.stockSummary = data.products || [];
-        this.createCharts();
-      }
-    });*/
-
     this.apiService.getStockTotalValue().subscribe({
-      next: (data) => {
-        // L'API retourne un objet avec une propriété totalValue
-        this.totalValue = typeof data === 'number' ? data : (data?.totalValue || 0);
-      }
+      next: (d) => { this.totalValue = typeof d === 'number' ? d : (d?.totalValue || 0); }
     });
 
     this.apiService.getStockAlerts(20).subscribe({
-      next: (data) => this.alerts = data
+      next: (d) => { this.alerts = d; }
     });
 
     this.apiService.getProducts().subscribe({
-      next: (data) => {
-        this.products = data;
-        this.createCharts();
-      }
+      next: (d) => { this.products = d; this.ready.products = true; this.tryCharts(); }
     });
 
-    this.apiService.getSales().subscribe({
-      next: (data) => {
-        this.sales = data;
-        this.loading = false;
-        this.createCharts();
-      }
+    this.apiService.getCombinedSales().subscribe({
+      next: (d) => { this.sales = d; this.loading = false; this.ready.sales = true; this.tryCharts(); }
     });
 
     this.apiService.getPurchases().subscribe({
-      next: (data) => {
-        this.purchases = data;
-        this.createCharts();
-      }
+      next: (d) => { this.purchases = d; this.ready.purchases = true; this.tryCharts(); }
     });
 
     this.apiService.getInvoiceKPIs().subscribe({
-      next: (data) => {
-        // S'assurer que les valeurs numériques sont des nombres
+      next: (d) => {
         this.invoiceKPIs = {
-          totalInvoicedAmount: typeof data?.totalInvoicedAmount === 'number' ? data.totalInvoicedAmount : 0,
-          totalAmountDue: typeof data?.totalAmountDue === 'number' ? data.totalAmountDue : 0,
-          ...data
+          totalInvoicedAmount: typeof d?.totalInvoicedAmount === 'number' ? d.totalInvoicedAmount : 0,
+          totalAmountDue:      typeof d?.totalAmountDue      === 'number' ? d.totalAmountDue      : 0,
+          ...d
         };
+        this.ready.kpis = true;
+        this.tryCharts();
       }
     });
 
     this.apiService.getDeliveryNoteKPIs().subscribe({
-      next: (data) => {
-        this.deliveryNoteKPIs = data || {};
-      },
-      error: (error) => {
-        console.error('Error loading delivery note KPIs:', error);
-        this.deliveryNoteKPIs = {};
-      }
+      next: (d) => { this.deliveryNoteKPIs = d || {}; },
+      error: ()  => { this.deliveryNoteKPIs = {}; }
     });
   }
 
-  getLowStockPercentage(): number {
-    if (this.stockSummary.length === 0) return 0;
-    const lowStock = this.stockSummary.filter(p => p.finalQuantity < 50).length;
-    return Math.round((lowStock / this.stockSummary.length) * 100);
-  }
-
-  getTotalSales(): number {
-    if (!Array.isArray(this.sales)) return 0;
-    return this.sales.reduce((sum, sale) => {
-      const amount = sale?.totalSaleAmount || 0;
-      return sum + (typeof amount === 'number' ? amount : 0);
-    }, 0);
-  }
-
-  getTotalPurchases(): number {
-    if (!Array.isArray(this.purchases)) return 0;
-    return this.purchases.reduce((sum, purchase) => {
-      const amount = purchase?.totalAmountTTC || 0;
-      return sum + (typeof amount === 'number' ? amount : 0);
-    }, 0);
-  }
-
-  createCharts(): void {
-    // Attendre que toutes les données soient chargées
-    if (this.stockSummary.length === 0 || this.sales.length === 0 || this.products.length === 0) {
-      console.log('Données incomplètes pour créer les graphiques:', {
-        stockSummary: this.stockSummary.length,
-        sales: this.sales.length,
-        products: this.products.length
-      });
-      return;
-    }
-
+  private tryCharts(): void {
+    if (!this.ready.sales || !this.ready.products) return;
     setTimeout(() => {
-      this.createStockValueChart();
-      this.createSalesPurchasesChart();
+      this.createSalesChart();
       this.createTopProductsChart();
       this.createCategoryChart();
-    }, 100);
+      if (this.ready.kpis) this.createPaymentChart();
+    }, 150);
   }
 
-  createStockValueChart(): void {
-    if (!this.stockChartCanvas?.nativeElement) return;
+  // ── Ventes vs Achats ───────────────────────────────────────────────────────
 
-    const ctx = this.stockChartCanvas.nativeElement.getContext('2d');
+  private createSalesChart(): void {
+    const canvas = this.salesChartCanvas?.nativeElement;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
     if (!ctx) return;
+    this.salesChart?.destroy();
 
-    // Détruire le chart existant
-    if (this.stockChart) {
-      this.stockChart.destroy();
-    }
-
-    // Top 10 produits par valeur de stock
-    const topProducts = [...this.stockSummary]
-      .sort((a, b) => b.finalStockValue - a.finalStockValue)
-      .slice(0, 10);
-
-    const config: ChartConfiguration = {
-      type: 'bar',
-      data: {
-        labels: topProducts.map(p => p.productDesignation.substring(0, 20)),
-        datasets: [{
-          label: 'Valeur Stock (DNT)',
-          data: topProducts.map(p => p.finalStockValue),
-          backgroundColor: 'rgba(102, 126, 234, 0.8)',
-          borderColor: 'rgba(102, 126, 234, 1)',
-          borderWidth: 1
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            display: true,
-            position: 'top'
-          },
-          title: {
-            display: true,
-            text: 'Top 10 - Valeur du Stock par Produit'
-          }
-        },
-        scales: {
-          y: {
-            beginAtZero: true,
-            ticks: {
-              callback: function(value) {
-                return value.toLocaleString() + ' DNT';
-              }
-            }
-          }
-        }
-      }
-    };
-
-    this.stockChart = new Chart(ctx, config);
-  }
-
-  createSalesPurchasesChart(): void {
-    if (!this.salesChartCanvas?.nativeElement) return;
-
-    const ctx = this.salesChartCanvas.nativeElement.getContext('2d');
-    if (!ctx) return;
-
-    if (this.salesChart) {
-      this.salesChart.destroy();
-    }
-
-    // Grouper par mois
-    const salesByMonth = this.groupByMonth(this.sales, 'dateSale', 'totalSaleAmount');
+    const salesByMonth    = this.groupByMonth(this.sales,     'dateSale',     'totalSaleAmount');
     const purchasesByMonth = this.groupByMonth(this.purchases, 'datePurchase', 'totalAmountTTC');
+    const months = [...new Set([...Object.keys(salesByMonth), ...Object.keys(purchasesByMonth)])].sort();
 
-    const allMonths = [...new Set([...Object.keys(salesByMonth), ...Object.keys(purchasesByMonth)])].sort();
-
-    const config: ChartConfiguration = {
+    this.salesChart = new Chart(ctx, {
       type: 'line',
       data: {
-        labels: allMonths,
+        labels: months.map(m => {
+          const [y, mo] = m.split('-');
+          return `${['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'][+mo - 1]} ${y}`;
+        }),
         datasets: [
           {
-            label: 'Ventes (DNT)',
-            data: allMonths.map(m => salesByMonth[m] || 0),
-            borderColor: 'rgba(46, 204, 113, 1)',
-            backgroundColor: 'rgba(46, 204, 113, 0.2)',
-            tension: 0.4,
-            fill: true
+            label: 'Ventes',
+            data: months.map(m => salesByMonth[m] || 0),
+            borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,.1)',
+            tension: 0.4, fill: true, pointRadius: 4, pointBackgroundColor: '#10b981'
           },
           {
-            label: 'Achats (DNT)',
-            data: allMonths.map(m => purchasesByMonth[m] || 0),
-            borderColor: 'rgba(231, 76, 60, 1)',
-            backgroundColor: 'rgba(231, 76, 60, 0.2)',
-            tension: 0.4,
-            fill: true
+            label: 'Achats',
+            data: months.map(m => purchasesByMonth[m] || 0),
+            borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,.1)',
+            tension: 0.4, fill: true, pointRadius: 4, pointBackgroundColor: '#ef4444'
           }
         ]
       },
       options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            display: true,
-            position: 'top'
-          },
-          title: {
-            display: true,
-            text: 'Évolution des Ventes vs Achats'
-          }
-        },
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
         scales: {
+          x: { grid: { display: false }, ticks: { font: { size: 11 }, color: '#64748b' } },
           y: {
             beginAtZero: true,
+            grid: { color: 'rgba(0,0,0,.04)' },
             ticks: {
-              callback: function(value) {
-                return value.toLocaleString() + ' DNT';
-              }
+              font: { size: 11 }, color: '#64748b',
+              callback: (v) => `${Number(v).toLocaleString()} DNT`
             }
           }
         }
       }
-    };
-
-    this.salesChart = new Chart(ctx, config);
+    } as ChartConfiguration);
   }
 
-  createTopProductsChart(): void {
-    if (!this.topProductsChartCanvas?.nativeElement) return;
+  // ── Statuts de paiement ────────────────────────────────────────────────────
 
-    const ctx = this.topProductsChartCanvas.nativeElement.getContext('2d');
+  private createPaymentChart(): void {
+    const canvas = this.paymentChartCanvas?.nativeElement;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
     if (!ctx) return;
+    this.paymentChart?.destroy();
 
-    if (this.topProductsChart) {
-      this.topProductsChart.destroy();
-    }
+    const dist = this.invoiceKPIs.paymentStatusDistribution || {};
+    const paid    = dist.PAID           || 0;
+    const partial = dist.PARTIALLY_PAID || 0;
+    const unpaid  = dist.UNPAID         || 0;
 
-    // Vérifier si des ventes existent
-    if (!this.sales || this.sales.length === 0) {
-      console.log('Aucune vente disponible pour le graphique Top 5');
-      return;
-    }
+    if (paid + partial + unpaid === 0) return;
 
-    // Top 5 produits par montant des ventes (revenus)
-    const salesByProduct: { [key: string]: { quantity: number, amount: number } } = {};
-    this.sales.forEach(sale => {
-      const product = sale.productDesignation || 'Produit Inconnu';
-      if (product && sale.quantitySold && sale.totalSaleAmount) {
-        if (!salesByProduct[product]) {
-          salesByProduct[product] = { quantity: 0, amount: 0 };
-        }
-        salesByProduct[product].quantity += sale.quantitySold;
-        salesByProduct[product].amount += sale.totalSaleAmount;
-      }
-    });
-
-    const topSold = Object.entries(salesByProduct)
-      .sort((a, b) => b[1].amount - a[1].amount)
-      .slice(0, 5);
-
-    // Vérifier s'il y a des données
-    if (topSold.length === 0) {
-      console.log('Aucun produit vendu trouvé');
-      return;
-    }
-
-    const config: ChartConfiguration = {
+    this.paymentChart = new Chart(ctx, {
       type: 'doughnut',
       data: {
-        labels: topSold.map(p => p[0].substring(0, 25)),
+        labels: ['Payé', 'Partiel', 'Impayé'],
         datasets: [{
-          label: 'Montant des Ventes (DNT)',
-          data: topSold.map(p => p[1].amount),
-          backgroundColor: [
-            'rgba(102, 126, 234, 0.8)',
-            'rgba(46, 204, 113, 0.8)',
-            'rgba(231, 76, 60, 0.8)',
-            'rgba(241, 196, 15, 0.8)',
-            'rgba(155, 89, 182, 0.8)'
-          ],
-          borderWidth: 2,
-          borderColor: '#fff'
+          data: [paid, partial, unpaid],
+          backgroundColor: ['#10b981', '#f59e0b', '#ef4444'],
+          borderWidth: 3, borderColor: '#fff'
         }]
       },
       options: {
-        responsive: true,
-        maintainAspectRatio: false,
+        responsive: true, maintainAspectRatio: false,
+        cutout: '68%',
         plugins: {
-          legend: {
-            display: true,
-            position: 'right'
-          },
-          title: {
-            display: true,
-            text: 'Top 5 - Produits les Plus Vendus (par Revenus)'
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => ` ${ctx.label}: ${ctx.parsed} facture(s)`
+            }
           }
         }
       }
-    };
-
-    this.topProductsChart = new Chart(ctx, config);
+    } as ChartConfiguration);
   }
 
-  createCategoryChart(): void {
-    if (!this.categoryChartCanvas?.nativeElement) return;
+  // ── Top 5 produits ─────────────────────────────────────────────────────────
 
-    const ctx = this.categoryChartCanvas.nativeElement.getContext('2d');
+  private createTopProductsChart(): void {
+    const canvas = this.topProductsChartCanvas?.nativeElement;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
     if (!ctx) return;
+    this.topProductsChart?.destroy();
 
-    if (this.categoryChart) {
-      this.categoryChart.destroy();
-    }
-
-    // Répartition par catégorie
-    const categoryData: { [key: string]: number } = {};
-    this.products.forEach(product => {
-      const category = product.category || 'Non catégorisé';
-      categoryData[category] = (categoryData[category] || 0) + 1;
+    const byProduct: { [k: string]: number } = {};
+    this.sales.forEach(s => {
+      const name = s.productDesignation || 'Inconnu';
+      if (s.totalSaleAmount) byProduct[name] = (byProduct[name] || 0) + s.totalSaleAmount;
     });
 
-    const config: ChartConfiguration = {
-      type: 'pie',
+    const top5 = Object.entries(byProduct)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5);
+
+    if (!top5.length) return;
+
+    this.topProductsChart = new Chart(ctx, {
+      type: 'bar',
       data: {
-        labels: Object.keys(categoryData),
+        labels: top5.map(([name]) => name.length > 22 ? name.slice(0, 22) + '…' : name),
         datasets: [{
-          label: 'Nombre de Produits',
-          data: Object.values(categoryData),
-          backgroundColor: [
-            'rgba(102, 126, 234, 0.8)',
-            'rgba(46, 204, 113, 0.8)',
-            'rgba(231, 76, 60, 0.8)',
-            'rgba(241, 196, 15, 0.8)',
-            'rgba(155, 89, 182, 0.8)',
-            'rgba(52, 152, 219, 0.8)',
-            'rgba(230, 126, 34, 0.8)'
-          ],
-          borderWidth: 2,
-          borderColor: '#fff'
+          label: 'Ventes (DNT)',
+          data: top5.map(([, v]) => v),
+          backgroundColor: ['#4f46e5','#10b981','#f59e0b','#ef4444','#8b5cf6'],
+          borderRadius: 6, borderWidth: 0
         }]
       },
       options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            display: true,
-            position: 'right'
+        responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+        plugins: { legend: { display: false } },
+        scales: {
+          x: {
+            beginAtZero: true,
+            grid: { color: 'rgba(0,0,0,.04)' },
+            ticks: { font: { size: 10 }, color: '#64748b', callback: (v) => `${Number(v).toLocaleString()}` }
           },
-          title: {
-            display: true,
-            text: 'Répartition des Produits par Catégorie'
-          }
+          y: { grid: { display: false }, ticks: { font: { size: 10 }, color: '#334155' } }
         }
       }
-    };
-
-    this.categoryChart = new Chart(ctx, config);
+    } as ChartConfiguration);
   }
 
-  groupByMonth(data: any[], dateField: string, amountField: string): { [key: string]: number } {
-    const grouped: { [key: string]: number } = {};
+  // ── Catégories ─────────────────────────────────────────────────────────────
 
-    data.forEach(item => {
-      const date = new Date(item[dateField]);
-      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-      grouped[monthKey] = (grouped[monthKey] || 0) + item[amountField];
+  private createCategoryChart(): void {
+    const canvas = this.categoryChartCanvas?.nativeElement;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    this.categoryChart?.destroy();
+
+    const cats: { [k: string]: number } = {};
+    this.products.forEach(p => {
+      const c = (p.category || 'Autre').toUpperCase();
+      cats[c] = (cats[c] || 0) + 1;
     });
 
+    if (!Object.keys(cats).length) return;
+
+    const palette = ['#4f46e5','#10b981','#f59e0b','#ef4444','#8b5cf6','#06b6d4','#f97316'];
+
+    this.categoryChart = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: Object.keys(cats),
+        datasets: [{
+          data: Object.values(cats),
+          backgroundColor: palette,
+          borderWidth: 3, borderColor: '#fff'
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        cutout: '55%',
+        plugins: {
+          legend: { position: 'right', labels: { font: { size: 10 }, boxWidth: 10, padding: 8 } }
+        }
+      }
+    } as ChartConfiguration);
+  }
+
+  // ── Utilitaires ────────────────────────────────────────────────────────────
+
+  private groupByMonth(data: any[], dateField: string, amountField: string): { [k: string]: number } {
+    const grouped: { [k: string]: number } = {};
+    data.forEach(item => {
+      const d = new Date(item[dateField]);
+      if (isNaN(d.getTime())) return;
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      grouped[key] = (grouped[key] || 0) + (item[amountField] || 0);
+    });
     return grouped;
   }
 
+  getTotalSales():    number { return this.sales.reduce((s, x) => s + (x.totalSaleAmount || 0), 0); }
+  getTotalPurchases():number { return this.purchases.reduce((s, x) => s + (x.totalAmountTTC || 0), 0); }
+
   getAverageBasket(): number {
     const total = this.invoiceKPIs.totalInvoicedAmount || 0;
-    const count = this.invoiceKPIs.totalInvoices || 1;
+    const count = this.invoiceKPIs.totalInvoices       || 1;
     return total / count;
-  }
-
-  toggleTable(): void {
-    this.showTable = !this.showTable;
   }
 }

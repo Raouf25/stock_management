@@ -173,14 +173,14 @@
                         [ngClass]="{'bilan-positif': getBilan(prod) > 0, 'bilan-negatif': getBilan(prod) < 0}"
                         style="cursor:pointer; border-bottom: 1px solid #e5e7eb;">
                         <td style="padding: 0.75rem 1rem; font-weight: 600; color: #1f2937;">
-                            {{ prod.product?.name }} — {{ prod.product?.unit }}
+                            {{ prod.product.name }} — {{ prod.product.unit }}
                             <span class="expand-loupe" (click)="$event.stopPropagation(); openProductDrawer(prod)">🔍</span>
                         </td>
                         <td style="padding: 0.75rem 1rem; text-align: right;">{{ getStockVendu(prod) }}</td>
                         <td style="padding: 0.75rem 1rem; text-align: right;">{{ getStockEntrepot(prod) }}</td>
-                        <td style="padding: 0.75rem 1rem; text-align: right;">{{ prod.purchases?.length ?? 0 }}</td>
+                        <td style="padding: 0.75rem 1rem; text-align: right;">{{ prod.purchases.length }}</td>
                         <td style="padding: 0.75rem 1rem; text-align: right;">{{ getAveragePurchasePrice(prod) | number:'1.3-3' }}</td>
-                        <td style="padding: 0.75rem 1rem; text-align: right;">{{ prod.sales?.length ?? 0 }}</td>
+                        <td style="padding: 0.75rem 1rem; text-align: right;">{{ prod.sales.length }}</td>
                         <td style="padding: 0.75rem 1rem; text-align: right;">{{ getAverageSalePrice(prod) | number:'1.3-3' }}</td>
                         <td style="padding: 0.75rem 1rem; text-align: right; font-weight:700;"
                             [style.color]="getBilan(prod) > 0 ? '#059669' : getBilan(prod) < 0 ? '#dc2626' : 'inherit'">
@@ -202,8 +202,8 @@
     <div *ngIf="selectedProductForDrawer" style="display: flex; flex-direction: column; height: 100%;">
         <div class="drawer-header">
             <div>
-                <h3 class="drawer-product-title">{{ selectedProductForDrawer.product?.name }} — {{ selectedProductForDrawer.product?.unit }}</h3>
-                <span *ngIf="selectedProductForDrawer.product?.category" class="drawer-product-sub">{{ selectedProductForDrawer.product?.category }}</span>
+                <h3 class="drawer-product-title">{{ selectedProductForDrawer.product.name }} — {{ selectedProductForDrawer.product.unit }}</h3>
+                <span *ngIf="selectedProductForDrawer.product.category" class="drawer-product-sub">{{ selectedProductForDrawer.product.category }}</span>
             </div>
             <button class="btn-close-drawer" (click)="closeDrawer()">✕</button>
         </div>
@@ -220,7 +220,7 @@
                 </div>
                 <div class="drawer-stat-card-box">
                     <span class="drawer-stat-label">Nombre d'achats</span>
-                    <span class="drawer-stat-value">{{ selectedProductForDrawer.purchases?.length ?? 0 }}</span>
+                    <span class="drawer-stat-value">{{ selectedProductForDrawer.purchases.length }}</span>
                 </div>
                 <div class="drawer-stat-card-box">
                     <span class="drawer-stat-label">Prix d'achat moyen</span>
@@ -228,7 +228,7 @@
                 </div>
                 <div class="drawer-stat-card-box">
                     <span class="drawer-stat-label">Nombre de ventes</span>
-                    <span class="drawer-stat-value">{{ selectedProductForDrawer.sales?.length ?? 0 }}</span>
+                    <span class="drawer-stat-value">{{ selectedProductForDrawer.sales.length }}</span>
                 </div>
                 <div class="drawer-stat-card-box">
                     <span class="drawer-stat-label">Prix de vente moyen</span>

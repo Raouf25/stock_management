@@ -78,6 +78,10 @@ export class ApiService {
     return this.http.get<any[]>(`${this.apiUrl}/sales`);
   }
 
+  getCombinedSales(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/sales/combined`);
+  }
+
   getSaleById(id: number): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/sales/${id}`);
   }
@@ -210,9 +214,8 @@ export class ApiService {
     return this.getAllBills();
   }
 
-  // Register invoice payment
-  registerInvoicePayment(invoiceId: number, amount: number): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/bills/${invoiceId}/register-payment`, { amount });
+  registerInvoicePayment(invoiceId: number): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/bills/${invoiceId}/register-payment`, null);
   }
 
   // ============= Delivery Notes API =============
