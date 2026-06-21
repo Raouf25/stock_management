@@ -1,489 +1,1125 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule, DecimalPipe, DatePipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import {environment} from "../../../environments/environment";
+import { environment } from '../../../environments/environment';
+
+type ActiveTab = 'factures' | 'bl';
+
+interface DeliveryNote {
+  idDeliveryNote: number;
+  deliveryNoteNumber: string;
+  dateDelivery: string;
+  customer: { customerId: number; name: string };
+  totalAmount: number;
+  discount: number;
+  status: string;
+  invoiced: boolean;
+  bill?: { idBill: number };
+}
+
+interface DeliveryNoteKPIs {
+  totalDeliveryNotes: number;
+  notInvoiced: number;
+  pendingDelivery: number;
+  deliveredToday: number;
+  totalAmountNotInvoiced: number;
+  totalAmountPending: number;
+  averageDeliveryValue: number;
+}
 
 @Component({
   selector: 'app-invoice-list',
   standalone: true,
   imports: [CommonModule, RouterModule, FormsModule],
   template: `
-    <div class="invoice-page-container">
+<div class="page">
 
-      <div class="invoice-page-header">
-        <span style="font-size: 2rem;">📁</span>
-        <h1 class="invoice-page-title">Liste des Factures</h1>
-      </div>
+  <!-- ══ EN-TÊTE ══════════════════════════════════════════════════════════ -->
+  <div class="page-header">
+    <h1 class="page-title">
+      {{ activeTab === 'factures' ? 'Factures' : 'Bons de Livraison' }}
+    </h1>
+  </div>
 
-      <div class="invoice-stats-grid stats-3-cols">
-        <div class="invoice-stat-card border-blue">
-          <div class="stat-number">{{ filteredInvoices.length }}</div>
-          <div class="stat-label">Total Factures</div>
-        </div>
-        <div class="invoice-stat-card border-green">
-          <div class="stat-number">{{ getTotalAmount() | number:'1.3-3' }}</div>
-          <div class="stat-label">Montant (DNT)</div>
-        </div>
-        <div class="invoice-stat-card border-orange">
-          <div class="stat-number">{{ getTotalDue() | number:'1.3-3' }}</div>
-          <div class="stat-label">Total Dû (DNT)</div>
-        </div>
-      </div>
+  <!-- ══ TOGGLE ════════════════════════════════════════════════════════════ -->
+  <div class="tab-bar">
+    <button class="tab" [class.tab-on]="activeTab==='factures'" (click)="setTab('factures')">
+      <span>📁</span> Factures
+      <span class="tab-pill">{{ filteredInvoices.length }}</span>
+    </button>
+    <button class="tab" [class.tab-on]="activeTab==='bl'" (click)="setTab('bl')">
+      <span>📦</span> Bons de Livraison
+      <span class="tab-pill">{{ filteredDeliveryNotes.length }}</span>
+    </button>
+  </div>
 
-      <div class="invoice-card">
-        <div class="invoice-card-header gradient-blue">
-          <div style="display:flex;align-items:center;gap:.5rem;color:white;">
-            <span style="font-size:1.125rem;">📁</span>
-            <span class="invoice-card-header-title">Liste des Factures ({{ filteredInvoices.length }})</span>
-          </div>
-        </div>
-
-        <div style="padding: 1rem; border-bottom: 1px solid #e5e7eb; background: #fafafa;">
-          <div style="display: flex; flex-direction: row; align-items: center; gap: 1rem; width: 100%; flex-wrap: nowrap;">
-
-            <div style="display:flex; align-items:center; gap:.5rem; flex: 1;">
-              <label style="font-size:.75rem; font-weight:600; color:#6b7280; text-transform:uppercase; white-space:nowrap;">Statut</label>
-              <select [(ngModel)]="filterStatus" (change)="applyFilters()"
-                      style="height:2.25rem; width:100%; background:white; font-size:.875rem; padding:0 .5rem; border:1px solid #e5e7eb; border-radius:.375rem; outline:none;"
-                      onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e5e7eb'">
-                <option value="">Tous</option>
-                <option value="PAID">Payé</option>
-                <option value="UNPAID">Impayé</option>
-                <option value="PARTIALLY_PAID">Partiel</option>
-              </select>
-            </div>
-
-            <div style="display:flex; align-items:center; gap:.5rem; flex: 1.5;">
-              <label style="font-size:.75rem; font-weight:600; color:#6b7280; text-transform:uppercase; white-space:nowrap;">Client</label>
-              <input type="text" [(ngModel)]="filterClient" (keyup)="applyFilters()" placeholder="Rechercher..."
-                     style="height:2.25rem; width:100%; background:white; font-size:.875rem; padding:0 .5rem; border:1px solid #e5e7eb; border-radius:.375rem; outline:none;"
-                     onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e5e7eb'">
-            </div>
-
-            <div style="display:flex; align-items:center; gap:.5rem; flex: 1;">
-              <label style="font-size:.75rem; font-weight:600; color:#6b7280; text-transform:uppercase; white-space:nowrap;">De</label>
-              <input type="date" [(ngModel)]="filterDateFrom" (change)="applyFilters()"
-                     style="height:2.25rem; width:100%; background:white; font-size:.875rem; padding:0 .5rem; border:1px solid #e5e7eb; border-radius:.375rem; outline:none;"
-                     onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e5e7eb'">
-            </div>
-
-            <div style="display:flex; align-items:center; gap:.5rem; flex: 1;">
-              <label style="font-size:.75rem; font-weight:600; color:#6b7280; text-transform:uppercase; white-space:nowrap;">À</label>
-              <input type="date" [(ngModel)]="filterDateTo" (change)="applyFilters()"
-                     style="height:2.25rem; width:100%; background:white; font-size:.875rem; padding:0 .5rem; border:1px solid #e5e7eb; border-radius:.375rem; outline:none;"
-                     onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e5e7eb'">
-            </div>
-
-          </div>
-        </div>
-        
-
-        <div class="desktop-table" style="overflow-x:auto;">
-          <table style="width:100%;border-collapse:collapse;">
-            <thead>
-            <tr style="background:linear-gradient(135deg,#4f46e5 0%,#6366f1 100%);">
-              <th style="color:white;font-weight:500;padding:.75rem 1rem;text-align:left;">N° FACTURE</th>
-              <th style="color:white;font-weight:500;padding:.75rem 1rem;text-align:left;">DATE</th>
-              <th style="color:white;font-weight:500;padding:.75rem 1rem;text-align:left;">CLIENT</th>
-              <th style="color:white;font-weight:500;padding:.75rem 1rem;text-align:right;">MONTANT TOTAL</th>
-              <th style="color:white;font-weight:500;padding:.75rem 1rem;text-align:right;">ACOMPTE</th>
-              <th style="color:white;font-weight:500;padding:.75rem 1rem;text-align:right;">MONTANT DÛ</th>
-              <th style="color:white;font-weight:500;padding:.75rem 1rem;text-align:center;">STATUT</th> 
-            </tr>
-            </thead>
-            <tbody>
-            <tr *ngFor="let invoice of filteredInvoices; trackBy: trackByInvoiceId"
-                (click)="openDrawer(invoice)"
-                style="border-bottom:1px solid #e5e7eb;transition:background .2s;cursor:pointer;"
-                onmouseover="this.style.background='#f0f4ff'" onmouseout="this.style.background='white'">
-              <td style="padding:.75rem 1rem;">
-                  <span style="display:inline-block;padding:.25rem .75rem;background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe;border-radius:.375rem;font-weight:600;font-size:.875rem;">
-                    #{{ invoice.billId }}
-                  </span>
-              </td>
-              <td style="padding:.75rem 1rem;color:#6b7280;">{{ invoice.billDate | date:'dd/MM/yyyy' }}</td>
-              <td style="padding:.75rem 1rem;">
-                <div style="font-weight:500;color:#1f2937;">{{ invoice.clientName }}</div>
-                <div style="font-size:.875rem;color:#6b7280;">{{ invoice.clientPhone }}</div>
-              </td>
-              <td style="padding:.75rem 1rem;text-align:right;font-weight:500;color:#1f2937;">{{ invoice.totalAmount | number:'1.3-3' }}</td>
-              <td style="padding:.75rem 1rem;text-align:right;color:#0891b2;">{{ (invoice.deposit || 0) | number:'1.3-3' }}</td>
-              <td style="padding:.75rem 1rem;text-align:right;font-weight:500;color:#16a34a;">{{ invoice.amountDue | number:'1.3-3' }}</td>
-              <td style="padding:.75rem 1rem;text-align:center;">
-                  <span [ngClass]="getPaymentStatusClass(invoice.paymentStatus)"
-                        style="padding:.375rem .75rem;border-radius:.375rem;font-weight:600;font-size:.875rem;display:inline-block;">
-                    {{ getPaymentStatusLabel(invoice.paymentStatus) }}
-                  </span>
-              </td>
-            </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <div class="mobile-cards">
-          <div *ngFor="let invoice of filteredInvoices; trackBy: trackByInvoiceId"
-               (click)="openDrawer(invoice)"
-               style="border-bottom:1px solid #e5e7eb;padding:1rem;background:white;cursor:pointer;transition:background .2s;"
-               onmouseover="this.style.background='#f0f4ff'" onmouseout="this.style.background='white'">
-            <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:.75rem;">
-              <div style="display:flex;align-items:center;gap:.5rem;">
-                <span style="display:inline-block;padding:.25rem .75rem;background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe;border-radius:.375rem;font-weight:600;font-size:.75rem;">
-                  #{{ invoice.billId }}
-                </span>
-                <span style="color:#6b7280;font-size:.875rem;">{{ invoice.billDate | date:'dd/MM/yyyy' }}</span>
-              </div>
-              <span [ngClass]="getPaymentStatusClass(invoice.paymentStatus)"
-                    style="padding:.25rem .75rem;border-radius:.375rem;font-weight:600;font-size:.75rem;display:inline-block;">
-                {{ getPaymentStatusLabel(invoice.paymentStatus) }}
-              </span>
-            </div>
-            <div style="margin-bottom:.75rem;">
-              <div style="font-weight:600;color:#1f2937;font-size:.875rem;margin-bottom:.125rem;">{{ invoice.clientName }}</div>
-              <div style="color:#6b7280;font-size:.875rem;">{{ invoice.clientPhone }}</div>
-            </div>
-            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem;margin-bottom:1rem;font-size:.875rem;">
-              <div style="background:#f8fafc;padding:.5rem;border-radius:.5rem;text-align:center;">
-                <div style="font-size:.75rem;color:#6b7280;margin-bottom:.125rem;">Total</div>
-                <div style="font-weight:600;color:#1f2937;">{{ invoice.totalAmount | number:'1.3-3' }}</div>
-              </div>
-              <div style="background:#f8fafc;padding:.5rem;border-radius:.5rem;text-align:center;">
-                <div style="font-size:.75rem;color:#6b7280;margin-bottom:.125rem;">Acompte</div>
-                <div style="font-weight:600;color:#0891b2;">{{ (invoice.deposit || 0) | number:'1.3-3' }}</div>
-              </div>
-              <div style="background:#f8fafc;padding:.5rem;border-radius:.5rem;text-align:center;">
-                <div style="font-size:.75rem;color:#6b7280;margin-bottom:.125rem;">Dû</div>
-                <div style="font-weight:600;color:#16a34a;">{{ invoice.amountDue | number:'1.3-3' }}</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div *ngIf="drawerOpen"
-           (click)="closeDrawer()"
-           style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:1000;animation:fadeIn .25s ease;">
-      </div>
-
-      <div [class.drawer-open]="drawerOpen" class="invoice-drawer">
-        <div class="drawer-iframe-container" *ngIf="selectedInvoice">
-          
-          <div class="drawer-iframe-header">
-            <div>
-              <h3 style="margin:0; color:white; font-size:1.1rem;">Prévisualisation Facture #{{ selectedInvoice.billId }}</h3>
-              <small style="color: #c4b5fd;">{{ selectedInvoice.clientName }}</small>
-            </div>
-            <button (click)="closeDrawer()" class="drawer-iframe-close-btn">✕</button>
-          </div>
-
-          <div class="drawer-iframe-body">
-            <iframe 
-              [src]="getInvoicePreviewUrl(selectedInvoice.billId)" 
-              class="invoice-iframe-render"
-              title="Rendu de la facture Thymeleaf">
-            </iframe>
-          </div>
-
-          <div class="drawer-iframe-footer">
-            <button (click)="downloadPDF(selectedInvoice.billId)" class="iframe-action-btn btn-pdf">⬇️ PDF</button>
-            <button (click)="sendInvoiceByEmail(selectedInvoice)" [disabled]="sendingEmail === selectedInvoice.billId" class="iframe-action-btn btn-mail">
-              {{ sendingEmail === selectedInvoice.billId ? '⏳ Envoi...' : '✉️ Email' }}
-            </button>
-            <button *ngIf="selectedInvoice.paymentStatus !== 'PAID'" (click)="openPaymentModal(selectedInvoice)" class="iframe-action-btn btn-pay-now">💰 Encaisser</button>
-          </div>
-
-        </div>
-      </div>
-
+  <!-- ══ KPIs FACTURES ════════════════════════════════════════════════════ -->
+  <div *ngIf="activeTab==='factures'" class="kpi-row">
+    <div class="kpi-card kpi-blue">
+      <span class="kpi-val">{{ filteredInvoices.length }}</span>
+      <span class="kpi-lbl">Total Factures</span>
     </div>
+    <div class="kpi-card kpi-green">
+      <span class="kpi-val">{{ getTotalAmount() | number:'1.3-3' }}</span>
+      <span class="kpi-lbl">Montant Total (DNT)</span>
+    </div>
+    <div class="kpi-card kpi-orange">
+      <span class="kpi-val">{{ getTotalDue() | number:'1.3-3' }}</span>
+      <span class="kpi-lbl">Total Dû (DNT)</span>
+    </div>
+    <div class="kpi-card kpi-indigo">
+      <span class="kpi-val">{{ getCountByStatus('PAID') }}</span>
+      <span class="kpi-lbl">Payées</span>
+    </div>
+    <div class="kpi-card kpi-red">
+      <span class="kpi-val">{{ getCountByStatus('UNPAID') }}</span>
+      <span class="kpi-lbl">Impayées</span>
+    </div>
+  </div>
+
+  <!-- ══ KPIs BL ══════════════════════════════════════════════════════════ -->
+  <div *ngIf="activeTab==='bl'" class="kpi-row">
+    <div class="kpi-card kpi-blue">
+      <span class="kpi-val">{{ kpis.totalDeliveryNotes }}</span>
+      <span class="kpi-lbl">Total BL</span>
+    </div>
+    <div class="kpi-card kpi-orange">
+      <span class="kpi-val">{{ kpis.notInvoiced }}</span>
+      <span class="kpi-lbl">Non Facturés</span>
+    </div>
+    <div class="kpi-card kpi-indigo">
+      <span class="kpi-val">{{ kpis.pendingDelivery }}</span>
+      <span class="kpi-lbl">En Attente</span>
+    </div>
+    <div class="kpi-card kpi-green">
+      <span class="kpi-val">{{ kpis.totalAmountNotInvoiced | number:'1.3-3' }}</span>
+      <span class="kpi-lbl">Montant Non Facturé (DNT)</span>
+    </div>
+  </div>
+
+  <!-- ══ CARTE PRINCIPALE ══════════════════════════════════════════════════ -->
+  <div class="main-card">
+
+    <!-- ── Filtres Factures ──────────────────────────────────────────────── -->
+    <div *ngIf="activeTab==='factures'" class="filter-bar">
+      <div class="filter-group">
+        <label class="filter-lbl">Statut</label>
+        <select class="filter-ctrl" [(ngModel)]="filterStatus" (change)="applyInvoiceFilters()">
+          <option value="">Tous</option>
+          <option value="PAID">Payé</option>
+          <option value="UNPAID">Impayé</option>
+          <option value="PARTIALLY_PAID">Partiel</option>
+        </select>
+      </div>
+      <div class="filter-group fg-wide">
+        <label class="filter-lbl">Client</label>
+        <input type="text" class="filter-ctrl" [(ngModel)]="filterClient"
+               (keyup)="applyInvoiceFilters()" placeholder="Rechercher un client...">
+      </div>
+      <div class="filter-group">
+        <label class="filter-lbl">Du</label>
+        <input type="date" class="filter-ctrl" [(ngModel)]="filterDateFrom"
+               (change)="applyInvoiceFilters()">
+      </div>
+      <div class="filter-group">
+        <label class="filter-lbl">Au</label>
+        <input type="date" class="filter-ctrl" [(ngModel)]="filterDateTo"
+               (change)="applyInvoiceFilters()">
+      </div>
+      <button *ngIf="filterStatus||filterClient||filterDateFrom||filterDateTo"
+              class="btn-reset" (click)="resetInvoiceFilters()">✕ Réinitialiser</button>
+    </div>
+
+    <!-- ── Filtres BL ────────────────────────────────────────────────────── -->
+    <div *ngIf="activeTab==='bl'" class="filter-bar">
+      <div class="filter-group">
+        <label class="filter-lbl">Statut</label>
+        <select class="filter-ctrl" [(ngModel)]="filterBLStatus" (change)="applyBLFilters()">
+          <option value="">Tous</option>
+          <option value="PENDING">En attente</option>
+          <option value="DELIVERED">Livré</option>
+          <option value="CANCELLED">Annulé</option>
+          <option value="INVOICED">Facturé</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label class="filter-lbl">Facturation</label>
+        <select class="filter-ctrl" [(ngModel)]="filterInvoiced" (change)="applyBLFilters()">
+          <option value="">Tous</option>
+          <option value="true">Facturés</option>
+          <option value="false">Non facturés</option>
+        </select>
+      </div>
+      <div class="filter-group fg-wide">
+        <label class="filter-lbl">Recherche</label>
+        <input type="text" class="filter-ctrl" [(ngModel)]="searchTerm"
+               (ngModelChange)="applyBLFilters()" placeholder="N° BL, client...">
+      </div>
+      <button *ngIf="filterBLStatus||filterInvoiced||searchTerm"
+              class="btn-reset" (click)="resetBLFilters()">✕ Réinitialiser</button>
+    </div>
+
+    <!-- ── Barre de sélection BL ─────────────────────────────────────────── -->
+    <div *ngIf="activeTab==='bl' && selectedDeliveryNotes.length > 0" class="selection-bar">
+      <div class="selection-info">
+        <span class="selection-count">{{ selectedDeliveryNotes.length }} BL sélectionné(s)</span>
+        <span class="selection-total">— {{ getSelectedTotal() | number:'1.3-3' }} DNT</span>
+      </div>
+      <div class="selection-actions">
+        <button class="btn-sel-cancel" (click)="clearSelection()">Annuler</button>
+        <button class="btn-sel-convert"
+                (click)="convertToInvoice()"
+                [disabled]="!canConvertToInvoice()"
+                [class.disabled]="!canConvertToInvoice()">
+          Convertir en Facture →
+        </button>
+      </div>
+    </div>
+
+    <!-- ════════ TABLE FACTURES (desktop) ════════ -->
+    <div *ngIf="activeTab==='factures'" class="desktop-table">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>N° FACTURE</th>
+            <th>DATE</th>
+            <th>CLIENT</th>
+            <th class="ta-r">MONTANT TOTAL</th>
+            <th class="ta-r">ACOMPTE</th>
+            <th class="ta-r">MONTANT DÛ</th>
+            <th class="ta-c">STATUT</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let inv of filteredInvoices; trackBy: trackByInvoiceId"
+              class="data-row" (click)="openDrawer(inv)">
+            <td><span class="id-badge">{{ inv.billId }}</span></td>
+            <td class="td-muted">{{ inv.billDate | date:'dd/MM/yyyy' }}</td>
+            <td>
+              <div class="client-name">{{ inv.clientName }}</div>
+              <div class="client-phone">{{ inv.clientPhone }}</div>
+            </td>
+            <td class="ta-r fw-600">{{ inv.totalAmount | number:'1.3-3' }}</td>
+            <td class="ta-r c-cyan">{{ (inv.deposit || 0) | number:'1.3-3' }}</td>
+            <td class="ta-r c-green fw-600">{{ inv.amountDue | number:'1.3-3' }}</td>
+            <td class="ta-c">
+              <span class="status-badge" [ngClass]="getPaymentStatusClass(inv.paymentStatus)">
+                {{ getPaymentStatusLabel(inv.paymentStatus) }}
+              </span>
+            </td>
+          </tr>
+          <tr *ngIf="filteredInvoices.length === 0">
+            <td colspan="7" class="empty-state">
+              <div class="empty-icon">📭</div>
+              <p>Aucune facture trouvée</p>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ════════ TABLE FACTURES (mobile) ════════ -->
+    <div *ngIf="activeTab==='factures'" class="mobile-cards">
+      <div *ngFor="let inv of filteredInvoices; trackBy: trackByInvoiceId"
+           class="mobile-row" (click)="openDrawer(inv)">
+        <div class="mobile-row-top">
+          <div class="mobile-row-left">
+            <span class="id-badge">{{ inv.billId }}</span>
+            <span class="td-muted">{{ inv.billDate | date:'dd/MM/yyyy' }}</span>
+          </div>
+          <span class="status-badge" [ngClass]="getPaymentStatusClass(inv.paymentStatus)">
+            {{ getPaymentStatusLabel(inv.paymentStatus) }}
+          </span>
+        </div>
+        <div class="client-name" style="margin:.5rem 0 .25rem;">{{ inv.clientName }}</div>
+        <div class="client-phone" style="margin-bottom:.75rem;">{{ inv.clientPhone }}</div>
+        <div class="mobile-grid-3">
+          <div class="mg-cell"><span class="mg-lbl">Total</span><strong>{{ inv.totalAmount | number:'1.3-3' }}</strong></div>
+          <div class="mg-cell"><span class="mg-lbl">Acompte</span><strong class="c-cyan">{{ (inv.deposit||0) | number:'1.3-3' }}</strong></div>
+          <div class="mg-cell"><span class="mg-lbl">Dû</span><strong class="c-green">{{ inv.amountDue | number:'1.3-3' }}</strong></div>
+        </div>
+      </div>
+      <div *ngIf="filteredInvoices.length === 0" class="empty-state">
+        <div class="empty-icon">📭</div><p>Aucune facture trouvée</p>
+      </div>
+    </div>
+
+    <!-- ════════ TABLE BL (desktop) ════════ -->
+    <div *ngIf="activeTab==='bl'" class="desktop-table">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th class="ta-c" style="width:48px;">
+              <input type="checkbox" class="cb" (change)="toggleSelectAll($event)"
+                     [checked]="areAllSelected()">
+            </th>
+            <th>NUMÉRO BL</th>
+            <th>DATE</th>
+            <th>CLIENT</th>
+            <th class="ta-r">MONTANT</th>
+            <th class="ta-c">STATUT</th>
+            <th class="ta-c">FACTURATION</th>
+            <th class="ta-c">ACTIONS</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let dn of filteredDeliveryNotes" class="data-row">
+            <td class="ta-c">
+              <input type="checkbox" class="cb" [checked]="isSelected(dn.idDeliveryNote)"
+                     (change)="toggleSelect(dn)" [disabled]="dn.invoiced">
+            </td>
+            <td><span class="id-badge">{{ dn.deliveryNoteNumber }}</span></td>
+            <td class="td-muted">{{ dn.dateDelivery | date:'dd/MM/yyyy' }}</td>
+            <td class="client-name">{{ dn.customer.name }}</td>
+            <td class="ta-r fw-600">{{ dn.totalAmount | number:'1.3-3' }} DNT</td>
+            <td class="ta-c">
+              <span class="status-pill" [style.background]="getBLStatusColor(dn.status)">
+                {{ getBLStatusLabel(dn.status) }}
+              </span>
+            </td>
+            <td class="ta-c">
+              <div *ngIf="dn.invoiced" class="invoiced-cell">
+                <span class="c-green fw-600">✅ Facturé</span>
+                <span *ngIf="dn.bill?.idBill" class="td-muted" style="font-size:.75rem;">#{{ dn.bill?.idBill }}</span>
+              </div>
+              <span *ngIf="!dn.invoiced" class="c-amber fw-600">⏳ Non facturé</span>
+            </td>
+            <td class="ta-c">
+              <div class="action-group">
+                <button (click)="downloadBLPDF(dn.idDeliveryNote, dn.deliveryNoteNumber)"
+                        class="act-btn act-dl" title="Télécharger PDF">📥</button>
+                <button *ngIf="!dn.invoiced && dn.status==='PENDING'"
+                        (click)="updateBLStatus(dn.idDeliveryNote,'DELIVERED')"
+                        class="act-btn act-deliver" title="Marquer livré">📦</button>
+                <button *ngIf="!dn.invoiced"
+                        (click)="deleteBL(dn.idDeliveryNote)"
+                        class="act-btn act-del" title="Supprimer">🗑️</button>
+                <button *ngIf="dn.invoiced && dn.bill"
+                        class="act-btn act-view" title="Voir facture">📄</button>
+              </div>
+            </td>
+          </tr>
+          <tr *ngIf="filteredDeliveryNotes.length === 0">
+            <td colspan="8" class="empty-state">
+              <div class="empty-icon">📭</div><p>Aucun bon de livraison trouvé</p>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ════════ TABLE BL (mobile) ════════ -->
+    <div *ngIf="activeTab==='bl'" class="mobile-cards">
+      <div *ngFor="let dn of filteredDeliveryNotes" class="mobile-row">
+        <div class="mobile-row-top">
+          <div class="mobile-row-left">
+            <input type="checkbox" class="cb" [checked]="isSelected(dn.idDeliveryNote)"
+                   (change)="toggleSelect(dn)" [disabled]="dn.invoiced">
+            <span class="id-badge">{{ dn.deliveryNoteNumber }}</span>
+            <span class="td-muted">{{ dn.dateDelivery | date:'dd/MM/yyyy' }}</span>
+          </div>
+          <span class="status-pill" [style.background]="getBLStatusColor(dn.status)">
+            {{ getBLStatusLabel(dn.status) }}
+          </span>
+        </div>
+        <div class="client-name" style="margin:.5rem 0 .75rem;">{{ dn.customer.name }}</div>
+        <div class="mobile-grid-2" style="margin-bottom:.75rem;">
+          <div class="mg-cell"><span class="mg-lbl">Montant</span><strong>{{ dn.totalAmount | number:'1.3-3' }} DNT</strong></div>
+          <div class="mg-cell">
+            <span class="mg-lbl">Facturation</span>
+            <strong *ngIf="dn.invoiced" class="c-green">✅ Facturé</strong>
+            <strong *ngIf="!dn.invoiced" class="c-amber">⏳ Non facturé</strong>
+          </div>
+        </div>
+        <div class="action-group" style="justify-content:flex-end;border-top:1px solid #f1f5f9;padding-top:.75rem;">
+          <button (click)="downloadBLPDF(dn.idDeliveryNote,dn.deliveryNoteNumber)"
+                  class="act-btn act-dl" title="PDF">📥</button>
+          <button *ngIf="!dn.invoiced && dn.status==='PENDING'"
+                  (click)="updateBLStatus(dn.idDeliveryNote,'DELIVERED')"
+                  class="act-btn act-deliver" title="Livré">📦</button>
+          <button *ngIf="!dn.invoiced"
+                  (click)="deleteBL(dn.idDeliveryNote)"
+                  class="act-btn act-del" title="Supprimer">🗑️</button>
+        </div>
+      </div>
+      <div *ngIf="filteredDeliveryNotes.length === 0" class="empty-state">
+        <div class="empty-icon">📭</div><p>Aucun bon de livraison trouvé</p>
+      </div>
+    </div>
+
+  </div>
+  <!-- fin main-card -->
+
+  <!-- ══ DRAWER FACTURE ════════════════════════════════════════════════════ -->
+  <div *ngIf="drawerOpen" class="drawer-backdrop" (click)="closeDrawer()"></div>
+
+  <div class="invoice-drawer" [class.drawer-open]="drawerOpen">
+    <div class="drawer-iframe-container" *ngIf="selectedInvoice">
+      <div class="drawer-head">
+        <div>
+          <h3 class="drawer-title">Facture #{{ selectedInvoice.billId }}</h3>
+          <span class="drawer-sub">{{ selectedInvoice.clientName }}</span>
+        </div>
+        <button class="btn-close-drawer" (click)="closeDrawer()">✕</button>
+      </div>
+      <div class="drawer-body">
+        <iframe [src]="iframeSrc"
+                class="invoice-iframe" title="Prévisualisation"></iframe>
+      </div>
+      <div class="drawer-foot">
+        <button (click)="downloadInvoicePDF(selectedInvoice.billId)" class="drawer-btn btn-dl-inv">⬇️ PDF</button>
+        <button (click)="sendInvoiceByEmail(selectedInvoice)"
+                [disabled]="sendingEmail === selectedInvoice.billId"
+                class="drawer-btn btn-email">
+          {{ sendingEmail === selectedInvoice.billId ? '⏳ Envoi...' : '✉️ Email' }}
+        </button>
+        <button *ngIf="selectedInvoice.paymentStatus !== 'PAID'"
+                (click)="openPaymentModal(selectedInvoice)"
+                class="drawer-btn btn-encaisse">💰 Encaisser</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ TOASTS ════════════════════════════════════════════════════════════ -->
+  <div *ngIf="toastError"   class="toast toast-err">{{ toastError }}</div>
+  <div *ngIf="toastSuccess" class="toast toast-ok">{{ toastSuccess }}</div>
+
+</div>
   `,
   styles: [`
-    /* ── VOS STYLES STRUCTURELS ORIGINAUX DU DRAWER SONT EXTÉRIEUREMENT LES MÊMES ── */
-    .invoice-drawer {
-      position: fixed;
-      top: 0; right: 0;
-      height: 100vh;
-      width: 820px;
-      max-width: 96vw;
-      background: #3D2D6E; /* Fond assorti à votre charte */
-      z-index: 1001;
-      box-shadow: -6px 0 40px rgba(61,45,110,.18);
-      transform: translateX(100%);
-      transition: transform .3s cubic-bezier(.4,0,.2,1);
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      font-family: 'Segoe UI', Inter, Arial, sans-serif;
-    }
-    .invoice-drawer.drawer-open { transform: translateX(0); }
+    /* ═══════════════ PAGE ═══════════════ */
+    :host { display: block; }
 
-    /* ── NOUVEAUX STYLES DE CONTRÔLE DE L'IFRAME SANS TOUCHER AUX TABLEAUX DU COMPOSANT ── */
-    .drawer-iframe-container {
-      display: flex;
-      flex-direction: column;
-      flex: 1;
-      height: 100%;
-      background: #f3f4f6;
+    .page {
+      background: #f0f2f8;
+      min-height: 100vh;
+      padding: 1.75rem 2rem;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      box-sizing: border-box;
     }
-    
-    .drawer-iframe-header {
-      background: #3D2D6E;
-      padding: 1rem;
+
+    /* ═══════════════ HEADER ═══════════════ */
+    .page-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
+      margin-bottom: 1.5rem;
     }
-
-    .drawer-iframe-close-btn {
-      background: rgba(255,255,255,0.15);
-      border: 1px solid rgba(255,255,255,0.25);
-      color: white;
-      width: 2rem; height: 2rem;
-      border-radius: 50%;
-      cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 0.9rem;
-      transition: background 0.2s;
+    .page-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #0f172a;
+      margin: 0;
     }
-    .drawer-iframe-close-btn:hover { background: rgba(255,255,255,0.35); }
-
-    .drawer-iframe-body {
-      flex: 1;
-      overflow-y: auto; /* Permet le défilement vertical autonome */
-      position: relative;
-      background: #e9e6f0;
-    }
-
-    .invoice-iframe-render {
-      width: 100%;
-      height: 100%;
-      border: none;
-      display: block;
-    }
-
-    .drawer-iframe-footer {
-      display: flex;
-      gap: 0.5rem;
-      padding: 0.75rem 1rem;
-      background: white;
-      border-top: 1px solid #e5e7eb;
-    }
-
-    .iframe-action-btn {
-      flex: 1;
-      padding: 0.6rem 1rem;
-      border-radius: 0.375rem;
-      border: none;
-      color: white;
+    .btn-create {
+      display: inline-flex;
+      align-items: center;
+      gap: .4rem;
+      padding: .6rem 1.25rem;
+      background: linear-gradient(135deg, #4f46e5, #6366f1);
+      color: #fff;
+      border-radius: 10px;
+      text-decoration: none;
+      font-size: .875rem;
       font-weight: 600;
-      font-size: 0.85rem;
-      cursor: pointer;
+      transition: opacity .18s;
+      box-shadow: 0 2px 8px rgba(79,70,229,.25);
+    }
+    .btn-create:hover { opacity: .88; }
+
+    /* ═══════════════ TOGGLE TAB ═══════════════ */
+    .tab-bar {
+      display: flex;
+      background: #fff;
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
+      padding: .35rem;
+      gap: .35rem;
+      width: fit-content;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 1px 4px rgba(0,0,0,.04);
+    }
+    .tab {
       display: flex;
       align-items: center;
-      justify-content: center;
-      gap: 0.35rem;
-      transition: opacity 0.2s;
+      gap: .5rem;
+      border: none;
+      background: transparent;
+      padding: .6rem 1.25rem;
+      border-radius: 8px;
+      font-size: .875rem;
+      font-weight: 600;
+      color: #64748b;
+      cursor: pointer;
+      transition: all .18s;
+      white-space: nowrap;
     }
-    .iframe-action-btn:hover { opacity: 0.9; }
-    .iframe-action-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-    .btn-pdf { background: linear-gradient(135deg, #16a34a, #22c55e); }
-    .btn-mail { background: linear-gradient(135deg, #0891b2, #06b6d4); }
-    .btn-pay-now { background: linear-gradient(135deg, #d97706, #f59e0b); }
+    .tab:hover { background: #f8fafc; color: #374151; }
+    .tab-on { background: #4f46e5 !important; color: #fff !important; }
+    .tab-pill {
+      background: rgba(255,255,255,.2);
+      padding: .1rem .45rem;
+      border-radius: 20px;
+      font-size: .72rem;
+      font-weight: 700;
+    }
+    .tab:not(.tab-on) .tab-pill { background: #f1f5f9; color: #475569; }
+
+    /* ═══════════════ KPI ROW ═══════════════ */
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: .875rem;
+      margin-bottom: 1.5rem;
+    }
+    .kpi-card {
+      background: #fff;
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
+      padding: 1rem 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: .3rem;
+      box-shadow: 0 1px 4px rgba(0,0,0,.04);
+      border-top-width: 3px;
+      transition: transform .15s, box-shadow .15s;
+    }
+    .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.08); }
+    .kpi-blue   { border-top-color: #3b82f6; }
+    .kpi-green  { border-top-color: #10b981; }
+    .kpi-orange { border-top-color: #f59e0b; }
+    .kpi-indigo { border-top-color: #4f46e5; }
+    .kpi-red    { border-top-color: #ef4444; }
+    .kpi-val {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #0f172a;
+      line-height: 1.2;
+    }
+    .kpi-lbl {
+      font-size: .7rem;
+      font-weight: 600;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: .4px;
+    }
+
+    /* ═══════════════ MAIN CARD ═══════════════ */
+    .main-card {
+      background: #fff;
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 1px 4px rgba(0,0,0,.04);
+      overflow: hidden;
+    }
+
+    /* ═══════════════ FILTER BAR ═══════════════ */
+    .filter-bar {
+      display: flex;
+      align-items: flex-end;
+      gap: .875rem;
+      padding: 1rem 1.25rem;
+      background: #f8fafc;
+      border-bottom: 1px solid #f1f5f9;
+      flex-wrap: wrap;
+    }
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: .35rem;
+      flex: 1;
+      min-width: 120px;
+    }
+    .filter-group.fg-wide { flex: 2; min-width: 180px; }
+    .filter-lbl {
+      font-size: .7rem;
+      font-weight: 700;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+    }
+    .filter-ctrl {
+      height: 38px;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 0 .75rem;
+      font-size: .85rem;
+      background: #fff;
+      color: #0f172a;
+      outline: none;
+      transition: border-color .18s;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .filter-ctrl:focus { border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79,70,229,.08); }
+    .btn-reset {
+      height: 38px;
+      padding: 0 .875rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      background: #fff;
+      color: #64748b;
+      font-size: .8rem;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+      align-self: flex-end;
+      transition: all .15s;
+    }
+    .btn-reset:hover { border-color: #ef4444; color: #ef4444; background: #fef2f2; }
+
+    /* ═══════════════ SELECTION BAR ═══════════════ */
+    .selection-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: .75rem 1.25rem;
+      background: #f0fdf4;
+      border-bottom: 1px solid #bbf7d0;
+    }
+    .selection-info { display: flex; align-items: center; gap: .5rem; }
+    .selection-count { font-weight: 700; color: #166534; }
+    .selection-total { font-size: .875rem; color: #16a34a; }
+    .selection-actions { display: flex; gap: .75rem; }
+    .btn-sel-cancel {
+      padding: .45rem 1rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      background: #fff;
+      color: #475569;
+      font-size: .85rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-sel-convert {
+      padding: .45rem 1rem;
+      border: none;
+      border-radius: 8px;
+      background: linear-gradient(135deg,#10b981,#059669);
+      color: #fff;
+      font-size: .85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity .15s;
+    }
+    .btn-sel-convert:hover:not(.disabled) { opacity: .88; }
+    .btn-sel-convert.disabled { opacity: .5; cursor: not-allowed; }
+
+    /* ═══════════════ TABLE ═══════════════ */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .875rem;
+    }
+    .data-table thead tr {
+      background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+    }
+    .data-table th {
+      color: #fff;
+      font-weight: 500;
+      padding: .8rem 1rem;
+      text-align: left;
+      font-size: .78rem;
+      letter-spacing: .4px;
+      white-space: nowrap;
+    }
+    .data-table td { padding: .8rem 1rem; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+    .data-row { cursor: pointer; transition: background .12s; }
+    .data-row:hover { background: #f5f7ff !important; }
+    .data-row:last-child td { border-bottom: none; }
+
+    .ta-r { text-align: right !important; }
+    .ta-c { text-align: center !important; }
+    .fw-600 { font-weight: 600; }
+    .td-muted { color: #64748b; font-size: .875rem; }
+    .c-cyan  { color: #0891b2 !important; }
+    .c-green { color: #16a34a !important; }
+    .c-amber { color: #d97706 !important; }
+
+    .client-name  { font-weight: 500; color: #1f2937; }
+    .client-phone { font-size: .8rem; color: #6b7280; }
+
+    .id-badge {
+      display: inline-block;
+      padding: .2rem .6rem;
+      background: #eff6ff;
+      color: #1e40af;
+      border: 1px solid #bfdbfe;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: .8rem;
+    }
+
+    /* Status badges */
+    .status-badge {
+      display: inline-block;
+      padding: .3rem .7rem;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: .78rem;
+      white-space: nowrap;
+    }
+    .badge-paid   { background: #d1fae5; color: #065f46; }
+    .badge-unpaid { background: #fee2e2; color: #991b1b; }
+    .badge-partial{ background: #fef3c7; color: #92400e; }
+    .badge-other  { background: #f1f5f9; color: #475569; }
+
+    .status-pill {
+      display: inline-block;
+      padding: .3rem .7rem;
+      border-radius: 9999px;
+      font-size: .78rem;
+      font-weight: 600;
+      color: #fff;
+      white-space: nowrap;
+    }
+
+    .invoiced-cell { display: flex; flex-direction: column; align-items: center; gap: .15rem; }
+
+    /* Checkboxes */
+    .cb { width: 1.1rem; height: 1.1rem; cursor: pointer; accent-color: #4f46e5; }
+
+    /* Action buttons */
+    .action-group { display: flex; gap: .35rem; justify-content: center; }
+    .act-btn {
+      width: 2rem; height: 2rem;
+      border-radius: 6px; border: 1px solid transparent;
+      cursor: pointer; font-size: .875rem;
+      display: flex; align-items: center; justify-content: center;
+      transition: opacity .15s;
+    }
+    .act-btn:hover { opacity: .75; }
+    .act-dl      { background: #e0e7ff; border-color: #c7d2fe; }
+    .act-deliver { background: #dbeafe; border-color: #bfdbfe; }
+    .act-del     { background: #fee2e2; border-color: #fecaca; }
+    .act-view    { background: #d1fae5; border-color: #a7f3d0; }
+
+    /* Empty state */
+    .empty-state {
+      padding: 3.5rem 1rem;
+      text-align: center;
+      color: #94a3b8;
+    }
+    .empty-icon { font-size: 3.5rem; margin-bottom: .75rem; opacity: .6; }
+
+    /* ═══════════════ MOBILE CARDS ═══════════════ */
+    .mobile-row {
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid #f1f5f9;
+      cursor: pointer;
+      transition: background .12s;
+    }
+    .mobile-row:hover { background: #f8fafc; }
+    .mobile-row:last-child { border-bottom: none; }
+    .mobile-row-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: .5rem;
+    }
+    .mobile-row-left { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
+    .mobile-grid-3 {
+      display: grid; grid-template-columns: repeat(3,1fr); gap: .5rem;
+    }
+    .mobile-grid-2 {
+      display: grid; grid-template-columns: repeat(2,1fr); gap: .5rem;
+    }
+    .mg-cell {
+      background: #f8fafc;
+      padding: .5rem;
+      border-radius: 8px;
+      text-align: center;
+      display: flex; flex-direction: column; gap: .1rem;
+    }
+    .mg-lbl { font-size: .7rem; color: #6b7280; }
+
+    /* ═══════════════ DRAWER ═══════════════ */
+    .drawer-backdrop {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.45);
+      z-index: 1000;
+      animation: fadeIn .25s ease;
+    }
+    .invoice-drawer {
+      position: fixed; top: 0; right: 0;
+      height: 100vh; width: 820px; max-width: 96vw;
+      background: #3D2D6E;
+      z-index: 1001;
+      box-shadow: -6px 0 40px rgba(61,45,110,.2);
+      transform: translateX(100%);
+      transition: transform .3s cubic-bezier(.4,0,.2,1);
+      display: flex; flex-direction: column;
+      overflow: hidden;
+    }
+    .invoice-drawer.drawer-open { transform: translateX(0); }
+
+    .drawer-iframe-container { display: flex; flex-direction: column; flex: 1; height: 100%; }
+    .drawer-head {
+      background: #3D2D6E;
+      padding: 1rem 1.25rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255,255,255,.1);
+    }
+    .drawer-title { margin: 0; color: #fff; font-size: 1.05rem; font-weight: 600; }
+    .drawer-sub   { color: #c4b5fd; font-size: .825rem; }
+    .btn-close-drawer {
+      background: rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.2);
+      color: #fff; width: 2rem; height: 2rem;
+      border-radius: 50%; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .9rem; transition: background .15s;
+    }
+    .btn-close-drawer:hover { background: rgba(255,255,255,.28); }
+
+    .drawer-body { flex: 1; overflow-y: auto; background: #e9e6f0; }
+    .invoice-iframe { width: 100%; height: 100%; border: none; display: block; }
+
+    .drawer-foot {
+      display: flex; gap: .5rem;
+      padding: .75rem 1rem;
+      background: #fff;
+      border-top: 1px solid #e5e7eb;
+    }
+    .drawer-btn {
+      flex: 1; padding: .6rem; border-radius: 8px; border: none;
+      color: #fff; font-weight: 600; font-size: .85rem;
+      cursor: pointer; transition: opacity .15s;
+    }
+    .drawer-btn:hover { opacity: .88; }
+    .drawer-btn:disabled { opacity: .5; cursor: not-allowed; }
+    .btn-dl-inv   { background: linear-gradient(135deg,#16a34a,#22c55e); }
+    .btn-email    { background: linear-gradient(135deg,#0891b2,#06b6d4); }
+    .btn-encaisse { background: linear-gradient(135deg,#d97706,#f59e0b); }
+
+    /* ═══════════════ TOASTS ═══════════════ */
+    .toast {
+      position: fixed; bottom: 1.25rem; right: 1.25rem;
+      max-width: 400px; padding: 1rem 1.25rem;
+      border-radius: 10px; font-size: .875rem; font-weight: 500;
+      box-shadow: 0 8px 24px rgba(0,0,0,.12);
+      z-index: 9999; animation: fadeIn .25s ease;
+    }
+    .toast-err { background: #fee2e2; color: #991b1b; border-left: 4px solid #ef4444; }
+    .toast-ok  { background: #d1fae5; color: #065f46; border-left: 4px solid #10b981; }
 
     @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+
+    /* ═══════════════ RESPONSIVE ═══════════════ */
+    .desktop-table { display: none; overflow-x: auto; }
+    .mobile-cards  { display: block; }
+
+    @media (min-width: 1024px) {
+      .desktop-table { display: block; }
+      .mobile-cards  { display: none;  }
+    }
+
     @media (max-width: 768px) {
+      .page { padding: 1rem; }
       .invoice-drawer { width: 100vw; max-width: 100vw; }
+      .tab-bar { width: 100%; }
+      .tab { flex: 1; justify-content: center; font-size: .8rem; padding: .55rem .75rem; }
+      .filter-bar { gap: .625rem; }
+      .filter-group { min-width: 100%; }
+      .kpi-row { grid-template-columns: repeat(2, 1fr); }
     }
   `]
 })
 export class InvoiceListComponent implements OnInit {
-  invoices: any[] = [];
+
+  activeTab: ActiveTab = 'factures';
+
+  // ── Factures ──────────────────────────────────────────────────────────────
+  invoices:         any[] = [];
   filteredInvoices: any[] = [];
-
-  filterStatus = '';
-  filterClient = '';
+  filterStatus   = '';
+  filterClient   = '';
   filterDateFrom = '';
-  filterDateTo = '';
-
+  filterDateTo   = '';
+  selectedInvoice: any       = null;
+  drawerOpen                 = false;
+  iframeSrc: SafeResourceUrl | null = null;
   sendingEmail: number | null = null;
-  emailSuccess = '';
-  emailError = '';
 
-  // Drawer state
-  selectedInvoice: any = null;
-  drawerOpen = false;
+  // ── BL ────────────────────────────────────────────────────────────────────
+  deliveryNotes:         DeliveryNote[] = [];
+  filteredDeliveryNotes: DeliveryNote[] = [];
+  selectedDeliveryNotes: number[]       = [];
 
-  // Payment modal state
-  paymentModalInvoice: any = null;
-  paymentAmount: number = 0;
-  paymentError: string = '';
+  kpis: DeliveryNoteKPIs = {
+    totalDeliveryNotes: 0, notInvoiced: 0, pendingDelivery: 0,
+    deliveredToday: 0, totalAmountNotInvoiced: 0,
+    totalAmountPending: 0, averageDeliveryValue: 0
+  };
 
-  // Injection obligatoire du DomSanitizer pour l'iframe
+  filterBLStatus = '';
+  filterInvoiced = '';
+  searchTerm     = '';
+
+  // ── Toasts ────────────────────────────────────────────────────────────────
+  toastError   = '';
+  toastSuccess = '';
+
   constructor(
-      private apiService: ApiService,
-      private sanitizer: DomSanitizer
+    private apiService: ApiService,
+    private sanitizer:  DomSanitizer
   ) {}
 
   ngOnInit(): void {
     this.loadInvoices();
+    this.loadDeliveryNotes();
+    this.loadKPIs();
   }
 
-  // ── Stats ──
-  getTotalAmount(): number {
-    return this.filteredInvoices.reduce((sum, inv) => sum + (inv.totalAmount || 0), 0);
-  }
-  getTotalDue(): number {
-    return this.filteredInvoices.reduce((sum, inv) => sum + (inv.amountDue || 0), 0);
-  }
+  setTab(tab: ActiveTab): void { this.activeTab = tab; }
 
-  // ── Data ──
+  // ══════════════════════════════════════════════════════════════════════════
+  //  FACTURES
+  // ══════════════════════════════════════════════════════════════════════════
+
   loadInvoices(): void {
     this.apiService.getAllBills().subscribe({
-      next: (data: any[]) => {
-        this.invoices = data;
-        this.applyFilters();
-      },
-      error: (error: any) => {
-        console.error('Erreur lors du chargement des factures:', error);
-      }
+      next: (data: any[]) => { this.invoices = data; this.applyInvoiceFilters(); },
+      error: () => this.showError('Erreur lors du chargement des factures.')
     });
   }
 
-  applyFilters(): void {
-    this.filteredInvoices = this.invoices.filter(invoice => {
-      if (this.filterStatus && invoice.paymentStatus !== this.filterStatus) return false;
-      if (this.filterClient && !invoice.clientName?.toLowerCase().includes(this.filterClient.toLowerCase())) return false;
-      const invoiceDate = new Date(invoice.billDate);
-      if (this.filterDateFrom && invoiceDate < new Date(this.filterDateFrom)) return false;
-      if (this.filterDateTo && invoiceDate > new Date(this.filterDateTo)) return false;
+  applyInvoiceFilters(): void {
+    this.filteredInvoices = this.invoices.filter(inv => {
+      if (this.filterStatus && inv.paymentStatus !== this.filterStatus) return false;
+      if (this.filterClient && !inv.clientName?.toLowerCase().includes(this.filterClient.toLowerCase())) return false;
+      const d = new Date(inv.billDate);
+      if (this.filterDateFrom && d < new Date(this.filterDateFrom)) return false;
+      if (this.filterDateTo   && d > new Date(this.filterDateTo))   return false;
       return true;
     });
   }
 
-  /**
-   * Construit et sécurise l'URL du template Thymeleaf rendue par le contrôleur Spring Boot
-   */
-  getInvoicePreviewUrl(billId: number): SafeResourceUrl {
-    const backendUrl = `${environment.apiUrl}/invoices/preview/${billId}`;
-    return this.sanitizer.bypassSecurityTrustResourceUrl(backendUrl);
+  resetInvoiceFilters(): void {
+    this.filterStatus = '';
+    this.filterClient = '';
+    this.filterDateFrom = '';
+    this.filterDateTo = '';
+    this.applyInvoiceFilters();
   }
 
-  // ── Status helpers ──
+  getTotalAmount(): number { return this.filteredInvoices.reduce((s, i) => s + (i.totalAmount || 0), 0); }
+  getTotalDue():    number { return this.filteredInvoices.reduce((s, i) => s + (i.amountDue || 0), 0); }
+  getCountByStatus(status: string): number {
+    return this.filteredInvoices.filter(i => i.paymentStatus === status).length;
+  }
+
+  private buildIframeSrc(billId: number): SafeResourceUrl {
+    return this.sanitizer.bypassSecurityTrustResourceUrl(
+      `${environment.apiUrl}/invoices/preview/${billId}?t=${Date.now()}`
+    );
+  }
+
   getPaymentStatusClass(status: string): string {
     switch (status) {
-      case 'PAID':           return 'bg-success';
-      case 'UNPAID':         return 'bg-danger';
-      case 'PARTIALLY_PAID': return 'bg-warning text-dark';
-      default:               return 'bg-secondary';
+      case 'PAID':           return 'status-badge badge-paid';
+      case 'UNPAID':         return 'status-badge badge-unpaid';
+      case 'PARTIALLY_PAID': return 'status-badge badge-partial';
+      default:               return 'status-badge badge-other';
     }
   }
-
   getPaymentStatusLabel(status: string): string {
     switch (status) {
       case 'PAID':           return 'Payé';
       case 'UNPAID':         return 'Impayé';
-      case 'PARTIALLY_PAID': return 'Partiellement Payé';
+      case 'PARTIALLY_PAID': return 'Partiel';
       default:               return status || '—';
     }
   }
 
-  trackByInvoiceId(index: number, invoice: any): number {
-    return invoice.billId;
-  }
+  trackByInvoiceId(_: number, inv: any): number { return inv.billId; }
 
-  // ── Drawer ──
   openDrawer(invoice: any): void {
     this.selectedInvoice = invoice;
+    this.iframeSrc = this.buildIframeSrc(invoice.billId);
     this.drawerOpen = true;
   }
-
   closeDrawer(): void {
     this.drawerOpen = false;
     setTimeout(() => { this.selectedInvoice = null; }, 300);
   }
 
-  // ── Actions ──
-  downloadPDF(invoiceId: number): void {
-    this.apiService.downloadInvoicePDF(invoiceId).subscribe({
+  downloadInvoicePDF(id: number): void {
+    this.apiService.downloadInvoicePDF(id).subscribe({
       next: (blob: Blob) => {
         const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `facture-${invoiceId}.pdf`;
-        link.click();
-        window.URL.revokeObjectURL(url);
-      },
-      error: (error: any) => {
-        console.error('Erreur lors du téléchargement PDF:', error);
+        const a   = document.createElement('a');
+        a.href = url; a.download = `facture-${id}.pdf`;
+        a.click(); window.URL.revokeObjectURL(url);
       }
     });
   }
 
   sendInvoiceByEmail(invoice: any): void {
-    if (!invoice.clientEmail) {
-      alert('❌ Ce client n\'a pas d\'adresse email enregistrée.');
-      return;
-    }
-    if (confirm(`Envoyer la facture #${invoice.billId} par email à ${invoice.clientEmail} ?`)) {
-      this.sendingEmail = invoice.billId;
-      this.emailError = '';
-      this.emailSuccess = '';
-      this.apiService.sendInvoiceByEmail(invoice.billId).subscribe({
-        next: () => {
-          this.sendingEmail = null;
-          this.emailSuccess = `✅ Facture #${invoice.billId} envoyée avec succès à ${invoice.clientEmail}`;
-          alert(this.emailSuccess);
-          setTimeout(() => (this.emailSuccess = ''), 5000);
-        },
-        error: (error: any) => {
-          this.sendingEmail = null;
-          this.emailError = `❌ Erreur lors de l'envoi : ${error.message || 'Erreur inconnue'}`;
-          alert(this.emailError);
-          console.error(error);
-        }
-      });
-    }
+    if (!invoice.clientEmail) { alert('Pas d\'email pour ce client.'); return; }
+    if (!confirm(`Envoyer la facture #${invoice.billId} à ${invoice.clientEmail} ?`)) return;
+    this.sendingEmail = invoice.billId;
+    this.apiService.sendInvoiceByEmail(invoice.billId).subscribe({
+      next: () => { this.sendingEmail = null; alert(`✅ Envoyée à ${invoice.clientEmail}`); },
+      error: () => { this.sendingEmail = null; alert('❌ Erreur lors de l\'envoi.'); }
+    });
   }
 
   openPaymentModal(invoice: any): void {
-    this.paymentModalInvoice = invoice;
-    this.paymentAmount = invoice.amountDue;
-    this.paymentError = '';
-    const amountDueFormatted = invoice.amountDue.toFixed(3);
-    const montant = prompt(
-        `Montant à enregistrer pour la facture #${invoice.billId} (max: ${amountDueFormatted} DNT)`,
-        amountDueFormatted
-    );
-    if (montant !== null) {
-      const value = Number(montant);
-      if (isNaN(value) || value <= 0 || value > invoice.amountDue) {
-        alert('Montant invalide ou supérieur au montant dû.');
-        return;
-      }
-      this.registerPayment(invoice, value);
-    }
+    this.apiService.registerInvoicePayment(invoice.billId).subscribe({
+      next: (updated: any) => {
+        // 1. Nouvelle référence de tableau → force la détection de changement Angular
+        this.invoices = this.invoices.map(inv =>
+          inv.billId === invoice.billId ? updated : inv
+        );
+        this.applyInvoiceFilters();
+        // 2. Mettre à jour le drawer
+        this.selectedInvoice = { ...updated };
+        // 3. Recharger l'iframe pour afficher "PAYÉ" dans le PDF
+        this.iframeSrc = this.buildIframeSrc(invoice.billId);
+        this.showSuccess(`Facture #${invoice.billId} marquée comme payée.`);
+      },
+      error: (err) => this.showError(err.error?.error ?? 'Erreur lors de l\'encaissement.')
+    });
   }
 
-  registerPayment(invoice: any, amount: number): void {
-    this.apiService.registerInvoicePayment(invoice.billId, amount).subscribe({
-      next: (updatedInvoice: any) => {
-        const idx = this.invoices.findIndex(inv => inv.billId === invoice.billId);
-        if (idx !== -1) {
-          this.invoices[idx] = updatedInvoice;
-          if (this.selectedInvoice?.billId === invoice.billId) {
-            this.selectedInvoice = updatedInvoice;
-          }
-          this.applyFilters();
-        }
-        alert('✅ Paiement enregistré avec succès !');
-      },
-      error: (error: any) => {
-        alert('❌ Erreur lors de l\'enregistrement du paiement.');
-        console.error(error);
-      }
+  // ══════════════════════════════════════════════════════════════════════════
+  //  BONS DE LIVRAISON
+  // ══════════════════════════════════════════════════════════════════════════
+
+  loadDeliveryNotes(): void {
+    this.apiService.getAllDeliveryNotes().subscribe({
+      next: (data: DeliveryNote[]) => { this.deliveryNotes = data; this.applyBLFilters(); },
+      error: () => this.showError('Erreur lors du chargement des BL.')
     });
+  }
+
+  loadKPIs(): void {
+    this.apiService.getDeliveryNoteKPIs().subscribe({
+      next: (data: DeliveryNoteKPIs) => { this.kpis = data; }
+    });
+  }
+
+  applyBLFilters(): void {
+    this.filteredDeliveryNotes = this.deliveryNotes.filter(dn => {
+      if (this.filterBLStatus && dn.status !== this.filterBLStatus) return false;
+      if (this.filterInvoiced !== '' && dn.invoiced !== (this.filterInvoiced === 'true')) return false;
+      if (this.searchTerm) {
+        const t = this.searchTerm.toLowerCase();
+        if (!dn.deliveryNoteNumber.toLowerCase().includes(t) &&
+            !dn.customer.name.toLowerCase().includes(t)) return false;
+      }
+      return true;
+    });
+  }
+
+  resetBLFilters(): void {
+    this.filterBLStatus = '';
+    this.filterInvoiced = '';
+    this.searchTerm     = '';
+    this.applyBLFilters();
+  }
+
+  toggleSelect(dn: DeliveryNote): void {
+    if (dn.invoiced) return;
+    const idx = this.selectedDeliveryNotes.indexOf(dn.idDeliveryNote);
+    idx > -1
+      ? this.selectedDeliveryNotes.splice(idx, 1)
+      : this.selectedDeliveryNotes.push(dn.idDeliveryNote);
+  }
+  isSelected(id: number): boolean { return this.selectedDeliveryNotes.includes(id); }
+  toggleSelectAll(event: any): void {
+    this.selectedDeliveryNotes = event.target.checked
+      ? this.filteredDeliveryNotes.filter(dn => !dn.invoiced).map(dn => dn.idDeliveryNote)
+      : [];
+  }
+  areAllSelected(): boolean {
+    const sel = this.filteredDeliveryNotes.filter(dn => !dn.invoiced);
+    return sel.length > 0 && this.selectedDeliveryNotes.length === sel.length;
+  }
+  clearSelection(): void { this.selectedDeliveryNotes = []; }
+  getSelectedTotal(): number {
+    return this.deliveryNotes
+      .filter(dn => this.selectedDeliveryNotes.includes(dn.idDeliveryNote))
+      .reduce((s, dn) => s + dn.totalAmount, 0);
+  }
+  canConvertToInvoice(): boolean {
+    if (!this.selectedDeliveryNotes.length) return false;
+    const sel = this.deliveryNotes.filter(dn => this.selectedDeliveryNotes.includes(dn.idDeliveryNote));
+    if (!sel.length) return false;
+    const firstId = sel[0].customer.customerId;
+    return sel.every(dn => dn.customer.customerId === firstId);
+  }
+  convertToInvoice(): void {
+    if (!this.canConvertToInvoice()) {
+      this.showError('Les BL doivent appartenir au même client.');
+      return;
+    }
+    this.apiService.convertDeliveryNotesToInvoice(this.selectedDeliveryNotes).subscribe({
+      next: () => {
+        this.showSuccess('Facture créée depuis les BL sélectionnés.');
+        this.selectedDeliveryNotes = [];
+        this.loadDeliveryNotes();
+        this.loadKPIs();
+      },
+      error: () => this.showError('Erreur lors de la conversion.')
+    });
+  }
+
+  updateBLStatus(id: number, status: string): void {
+    this.apiService.updateDeliveryNoteStatus(id, status).subscribe({
+      next: () => { this.showSuccess('Statut mis à jour.'); this.loadDeliveryNotes(); this.loadKPIs(); },
+      error: () => this.showError('Erreur lors de la mise à jour.')
+    });
+  }
+
+  deleteBL(id: number): void {
+    if (!confirm('Supprimer ce BL ? Le stock sera restauré.')) return;
+    this.apiService.deleteDeliveryNote(id).subscribe({
+      next: () => { this.showSuccess('BL supprimé.'); this.loadDeliveryNotes(); this.loadKPIs(); },
+      error: () => this.showError('Erreur lors de la suppression.')
+    });
+  }
+
+  downloadBLPDF(id: number, num: string): void {
+    this.apiService.downloadDeliveryNotePDF(id).subscribe({
+      next: (blob: Blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a   = document.createElement('a');
+        a.href = url; a.download = `${num}.pdf`;
+        a.click(); window.URL.revokeObjectURL(url);
+      },
+      error: () => this.showError('Erreur téléchargement PDF.')
+    });
+  }
+
+  getBLStatusColor(status: string): string {
+    const map: Record<string, string> = {
+      PENDING: '#f59e0b', DELIVERED: '#10b981',
+      CANCELLED: '#ef4444', INVOICED: '#4f46e5'
+    };
+    return map[status] ?? '#6b7280';
+  }
+  getBLStatusLabel(status: string): string {
+    const map: Record<string, string> = {
+      PENDING: 'En attente', DELIVERED: 'Livré',
+      CANCELLED: 'Annulé',  INVOICED: 'Facturé'
+    };
+    return map[status] ?? status;
+  }
+
+  // ── Toasts ────────────────────────────────────────────────────────────────
+  private showError(msg: string): void {
+    this.toastError = msg;
+    setTimeout(() => this.toastError = '', 5000);
+  }
+  private showSuccess(msg: string): void {
+    this.toastSuccess = msg;
+    setTimeout(() => this.toastSuccess = '', 5000);
   }
 }
