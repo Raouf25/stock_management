@@ -18,7 +18,7 @@ public class Product {
     private String gamme;
     private String unit;
     private Double unitPriceSold;
-    private Double unitPriceBought;
+    private Double unitPrice;
 
     // Image URL du produit
     private String imageUrl;

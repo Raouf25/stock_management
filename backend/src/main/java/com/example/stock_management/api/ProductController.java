@@ -1,6 +1,6 @@
 package com.example.stock_management.api;
 
-import com.example.stock_management.dto.ProductDashboardDTO;
+import com.example.stock_management.dto.ProductDashboardResponseDTO;
 import com.example.stock_management.dto.ProductInventoryDTO;
 import com.example.stock_management.model.Product;
 import com.example.stock_management.service.ProductDashboardService;
@@ -35,7 +35,7 @@ public class ProductController {
 
     @GetMapping("/dashboard")
     @Operation(summary = "Obtenir la liste de tous les produits enrichis avec achats, ventes et statistiques")
-    public List<ProductDashboardDTO> getAllProductsDashboard() {
+    public List<ProductDashboardResponseDTO> getAllProductsDashboard() {
         return productDashboardService.getProductsDashboardData();
     }
 

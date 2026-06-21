@@ -29,7 +29,7 @@ public interface BillMapper {
             @Mapping(source = "product.reference", target = "reference"),
             @Mapping(source = "product.name", target = "productName"),
             @Mapping(source = "product.description", target = "productDescription"),
-            @Mapping(source = "product.unitPriceBought", target = "unitPrice"),
+            @Mapping(source = "product.unitPrice", target = "unitPrice"),
             @Mapping(source = "quantity", target = "quantity"),
             @Mapping(source = "totalProductPrice", target = "totalProductPrice")
     })

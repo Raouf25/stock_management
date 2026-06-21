@@ -55,11 +55,11 @@ public class ProductService {
         productInventoryDTO.setCurrentStock(product.getCurrentStockQuantity());
 
         // Obtenir l'évolution des ventes (sales evolution) via la requête HQL modifiée
-        List<ProductInventoryDTO.SalesEvolution> salesEvolution = productRepository.findSalesEvolution(productId, startDate, endDate);
+      //  List<ProductInventoryDTO.SalesEvolution> salesEvolution = productRepository.findSalesEvolution(productId, startDate, endDate);
 
         // Affecter les résultats au DTO
-        productInventoryDTO.setSalesEvolution(salesEvolution);
-
+     //   productInventoryDTO.setSalesEvolution(salesEvolution);
+//
         return productInventoryDTO;
     }
 

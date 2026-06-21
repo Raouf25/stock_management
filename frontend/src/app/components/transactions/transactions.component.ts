@@ -41,30 +41,50 @@ interface Product {
   supplier?:             any;
 }
 
-// L'objet produit contient désormais directement ses statistiques calculées par le BE
-interface DashboardProduct {
-  idProduct: number;
-  product?: {
-    idProduct?: number;
-    id?: number;
-    name: string;
-    designation: string;
-    unit: string;
-  };
-  name: string;
-  designation: string;
-  unit: string;
-  // Statistiques directement fournies par le Back-end :
-  stockVendu: number;
-  stockEntrepot: number;
-  purchasesCount: number;
+// Interfaces calquées sur ProductDashboardResponseDTO du Back-end
+interface ProductSummary {
+  id:         number;
+  reference?: number;
+  name:       string;
+  category?:  string;
+  unit:       string;
+  salePrice:  number;
+  stock:      number;
+}
+
+interface Statistics {
   averagePurchasePrice: number;
-  salesCount: number;
-  averageSalePrice: number;
-  bilan: number;
-  // Listes associées si nécessaires pour le drawer :
-  purchases?: any[];
-  sales?: any[];
+  averageSalePrice:     number;
+  balance:              number;
+}
+
+interface PurchaseItem {
+  id:            number;
+  date:          string;
+  supplierName:  string;
+  quantity:      number;
+  unitPrice:     number;
+  total:         number;
+  invoiceNumber?: string;
+}
+
+interface SaleItem {
+  id:                  number;
+  date:                string;
+  customerName?:       string;
+  quantity:            number;
+  unitPrice:           number;
+  total:               number;
+  invoiceNumber?:      string;
+  deliveryNoteNumber?: string;
+  paymentStatus:       string;
+}
+
+interface DashboardProduct {
+  product:    ProductSummary;
+  statistics: Statistics;
+  purchases:  PurchaseItem[];
+  sales:      SaleItem[];
 }
 
 // ── Constantes ─────────────────────────────────────────────────────────────────
@@ -76,7 +96,7 @@ const EMPTY_PURCHASE = { supplierId: '', invoiceNumber: '', datePurchase: '' };
   imports:     [CommonModule, FormsModule],
   templateUrl: './transactions.component.html',
   styleUrls:   ['./transactions.component.css'],
-  changeDetection: ChangeDetectionStrategy.OnPush   // PERF: Optimal car les données sont immutables et calculées au tableau de bord
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TransactionsComponent implements OnInit, OnDestroy {
   @ViewChild('trendChart')    trendChart!:    ElementRef<HTMLCanvasElement>;
@@ -90,7 +110,6 @@ export class TransactionsComponent implements OnInit, OnDestroy {
   isDrawerOpen    = false;
   selectedProductForDrawer: DashboardProduct | null = null;
 
-// 👇 AJOUTEZ CETTE LIGNE ICI (État initial par défaut)
   bilanSortState: 'none' | 'desc' | 'asc' = 'none';
 
   // ── Dropdown position (fixed positioning pour éviter le clipping) ───────────
@@ -111,10 +130,9 @@ export class TransactionsComponent implements OnInit, OnDestroy {
     }
   }
 
-  products:            DashboardProduct[]    = [];
-  productsInStock:     Product[]             = [];
-  suppliers:           any[]                 = [];
-  billsCache: Record<number, { paymentStatus: string; loading: boolean }> = {};
+  products:        DashboardProduct[] = [];
+  productsInStock: Product[]          = [];
+  suppliers:       any[]              = [];
 
   // ── Formulaire ─────────────────────────────────────────────────────────────
   newPurchase  = { ...EMPTY_PURCHASE };
@@ -140,11 +158,6 @@ export class TransactionsComponent implements OnInit, OnDestroy {
   openProductDrawer(product: DashboardProduct): void {
     this.selectedProductForDrawer = product;
     this.isDrawerOpen = true;
-
-    // Si le Back-end requiert un appel séparé pour enrichir les ventes/achats ou statuts du drawer :
-    if (product.idProduct) {
-      this.loadPaymentStatusesForProductSales(product.idProduct);
-    }
     this.cdr.markForCheck();
   }
 
@@ -152,7 +165,6 @@ export class TransactionsComponent implements OnInit, OnDestroy {
     this.showForm = !this.showForm;
     if (this.showForm) {
       this.initPurchaseForm();
-      // Recharge les produits si la liste est vide (chargement initial pas encore terminé)
       if (this.productsInStock.length === 0) {
         this.loadProducts();
       }
@@ -166,45 +178,31 @@ export class TransactionsComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
   }
 
-  /* toggleShowAllProducts(): void {
-     this.showAllProducts = !this.showAllProducts;
-     this.cdr.markForCheck();
-   }*/
-
   // ── filteredProducts ────────────────────────────────────────────────────────
 
   get filteredProducts(): DashboardProduct[] {
     let list = this.showAllProducts
         ? [...this.products]
-        : this.products.filter(p => p.purchasesCount > 0 || p.salesCount > 0);
+        : this.products.filter(p => (p.purchases?.length ?? 0) > 0 || (p.sales?.length ?? 0) > 0);
 
     const term = this.productSearch.trim().toLowerCase();
     if (term) {
       list = list.filter(p =>
           p.product?.name?.toLowerCase().includes(term) ||
-          p.product?.designation?.toLowerCase().includes(term) ||
-          p.name?.toLowerCase().includes(term)
+          p.product?.category?.toLowerCase().includes(term)
       );
     }
 
-    // 👇 LOGIQUE DE TRI À 3 ÉTATS UNIQUEMENT POUR LE BILAN
     if (this.bilanSortState === 'none') {
-      // État initial : On garde le tri alphabétique par défaut fourni par votre code original
-      return list.sort((a, b) => {
-        const nameA = a.product?.name || a.name || '';
-        const nameB = b.product?.name || b.name || '';
-        return nameA.toLowerCase().localeCompare(nameB.toLowerCase(), 'fr');
-      });
+      return list.sort((a, b) =>
+          (a.product?.name ?? '').toLowerCase().localeCompare((b.product?.name ?? '').toLowerCase(), 'fr')
+      );
     }
 
-    // Tri par Bilan (desc ou asc)
     return list.sort((a, b) => {
       const bilanA = this.getBilan(a);
       const bilanB = this.getBilan(b);
-
-      return this.bilanSortState === 'asc'
-          ? bilanA - bilanB
-          : bilanB - bilanA;
+      return this.bilanSortState === 'asc' ? bilanA - bilanB : bilanB - bilanA;
     });
   }
 
@@ -274,15 +272,10 @@ export class TransactionsComponent implements OnInit, OnDestroy {
             (p.name || '').toLowerCase().includes(term) ||
             (p.designation || '').toLowerCase().includes(term))
         : [...this.productsInStock];
-    // Déduplication par idProduct (filet de sécurité)
     const seen = new Set<number>();
-    const unique = list.filter(p => {
-      if (seen.has(p.idProduct)) return false;
-      seen.add(p.idProduct);
-      return true;
-    });
-    return unique.sort((a, b) =>
-        (a.name || '').toLowerCase().localeCompare((b.name || '').toLowerCase(), 'fr'));
+    return list
+        .filter(p => { if (seen.has(p.idProduct)) return false; seen.add(p.idProduct); return true; })
+        .sort((a, b) => (a.name || '').toLowerCase().localeCompare((b.name || '').toLowerCase(), 'fr'));
   }
 
   selectProductForLine(i: number, p: Product): void {
@@ -294,38 +287,13 @@ export class TransactionsComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
   }
 
-  // ── Accesseurs directs (Plus aucun calcul ici, lecture directe des propriétés du BE) ──
+  // ── Accesseurs (lecture de la structure imbriquée du Back-end) ──────────────
 
-  getStockVendu(product: DashboardProduct):        number { return product.stockVendu; }
-  getStockEntrepot(product: DashboardProduct):     number { return product.stockEntrepot; }
-  getAveragePurchasePrice(product: DashboardProduct): number { return product.averagePurchasePrice; }
-  getAverageSalePrice(product: DashboardProduct):  number { return product.averageSalePrice; }
-  getBilan(product: DashboardProduct):             number { return product.bilan; }
-
-  // ── Statut paiement ─────────────────────────────────────────────────────────
-
-  private loadPaymentStatusesForProductSales(productId: number): void {
-    const product = this.products.find(p => p.idProduct === productId);
-    if (!product || !product.sales) return;
-
-    product.sales.forEach(sale => {
-      const billId = sale.invoiceNumber;
-      if (!billId || this.billsCache[billId]) return;
-
-      this.billsCache = { ...this.billsCache, [billId]: { paymentStatus: '', loading: true } };
-
-      this.api.getBillById(billId).subscribe({
-        next: (dto: any) => {
-          this.billsCache = { ...this.billsCache, [billId]: { paymentStatus: dto.paymentStatus ?? '', loading: false } };
-          this.cdr.markForCheck();
-        },
-        error: () => {
-          this.billsCache = { ...this.billsCache, [billId]: { paymentStatus: 'ERREUR', loading: false } };
-          this.cdr.markForCheck();
-        }
-      });
-    });
-  }
+  getStockVendu(prod: DashboardProduct):            number { return prod.sales?.reduce((acc, s) => acc + (s.quantity ?? 0), 0) ?? 0; }
+  getStockEntrepot(prod: DashboardProduct):          number { return prod.product?.stock ?? 0; }
+  getAveragePurchasePrice(prod: DashboardProduct):   number { return prod.statistics?.averagePurchasePrice ?? 0; }
+  getAverageSalePrice(prod: DashboardProduct):       number { return prod.statistics?.averageSalePrice ?? 0; }
+  getBilan(prod: DashboardProduct):                  number { return prod.statistics?.balance ?? 0; }
 
   getPaymentBadgeClass(status: string): string {
     switch ((status || '').toUpperCase()) {
@@ -336,16 +304,15 @@ export class TransactionsComponent implements OnInit, OnDestroy {
     }
   }
 
-  // ── Chargement API (Données pré-calculées par le Back-end) ──────────────────
+  // ── Chargement API ──────────────────────────────────────────────────────────
 
   loadDashboardData(): void {
     this.loading = true;
     this.cdr.markForCheck();
 
-    // On appelle l'endpoint du Back-end qui renvoie le tableau complet déjà calculé
     this.api.getDashboardProducts().subscribe({
-      next: (dashboardData: DashboardProduct[]) => {
-        this.products = dashboardData;
+      next: (data: DashboardProduct[]) => {
+        this.products = data;
         this.loading = false;
         this.cdr.markForCheck();
       },
@@ -359,7 +326,6 @@ export class TransactionsComponent implements OnInit, OnDestroy {
   loadProducts(): void {
     this.api.getProducts().subscribe({
       next: (data: Product[]) => {
-        // Déduplique par idProduct au cas où l'API renvoie des doublons (jointure BE)
         const seen = new Set<number>();
         this.productsInStock = data.filter(p => {
           if (seen.has(p.idProduct)) return false;
@@ -371,7 +337,6 @@ export class TransactionsComponent implements OnInit, OnDestroy {
       error: () => { this.cdr.markForCheck(); }
     });
   }
-
 
   loadSuppliers(): void {
     this.api.getSuppliers().subscribe({
@@ -402,21 +367,18 @@ export class TransactionsComponent implements OnInit, OnDestroy {
       next: () => {
         this.showForm = false;
         this.initPurchaseForm();
-        // Une fois l'achat créé, on rafraîchit tout le dashboard.
-        // Le Back-end recalculera instantanément les nouvelles lignes de stock, bilan, etc.
         this.loadDashboardData();
       }
     });
   }
 
-  // 👇 AJOUTEZ CETTE MÉTHODE
   toggleBilanSort(): void {
     if (this.bilanSortState === 'none') {
-      this.bilanSortState = 'desc'; // 1er clic : Plus gros gains en premier
+      this.bilanSortState = 'desc';
     } else if (this.bilanSortState === 'desc') {
-      this.bilanSortState = 'asc';  // 2e clic : Plus grosses pertes en premier
+      this.bilanSortState = 'asc';
     } else {
-      this.bilanSortState = 'none'; // 3e clic : Retour à l'ordre initial du Back-end
+      this.bilanSortState = 'none';
     }
     this.cdr.markForCheck();
   }

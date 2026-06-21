@@ -121,7 +121,7 @@ public class BillService {
             // Create sale record//
           //  createSaleRecord(customer, product, billProductDTO.getQuantite(), billProductDTO.getPrixTotal() / billProductDTO.getQuantite(), "INV-" + Instant.now(clock).toEpochMilli());
 
-            double productTotal = billProductDTO.getQuantite() * product.getUnitPriceBought();
+            double productTotal = billProductDTO.getQuantite() * product.getUnitPrice();
             billProduct.setTotalProductPrice(productTotal);
 
             // Associer la facture aux produits
