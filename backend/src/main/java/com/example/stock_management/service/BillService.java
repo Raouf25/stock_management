@@ -7,17 +7,14 @@ import com.example.stock_management.model.Bill;
 import com.example.stock_management.model.BillProduct;
 import com.example.stock_management.model.Customer;
 import com.example.stock_management.model.Product;
-import com.example.stock_management.model.Sale;
 import com.example.stock_management.repository.BillRepository;
 import com.example.stock_management.repository.CustomerRepository;
 import com.example.stock_management.repository.ProductRepository;
-import com.example.stock_management.repository.SaleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
-
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -36,8 +33,6 @@ public class BillService {
     private final ProductRepository productRepository;
 
     private final CustomerRepository customerRepository;
-
-    private final SaleRepository saleRepository;
 
     private final Clock clock;
 
@@ -196,8 +191,6 @@ public class BillService {
         double totalHT = 0.0;
         List<BillProduct> billProducts = new java.util.ArrayList<>();
 
-        List<Sale> saleList = new ArrayList<>();
-
         for (InvoiceCreationDTO.InvoiceLineItemDTO lineItem : invoiceDto.getProducts()) {
             Product product = productRepository.findById(lineItem.getProductId())
                 .orElseThrow(() -> new RuntimeException("Product not found with ID: " + lineItem.getProductId()));
@@ -216,16 +209,12 @@ public class BillService {
             billProduct.setProduct(product);
             billProduct.setQuantity(lineItem.getQuantity());
             billProduct.setTotalProductPrice(lineTotalHT);
-            billProduct.setDiscountPercentage(lineDiscount); // Stocker la remise par article
+            billProduct.setDiscountPercentage(lineDiscount);
             billProduct.setBill(bill);
             billProducts.add(billProduct);
 
             // Update stock
             productRepository.updateStock(lineItem.getProductId(), lineItem.getQuantity());
-
-            // Create sale record
-            Sale saleRecord = createSaleRecord(customer, product, lineItem.getQuantity(), lineTotalHT / lineItem.getQuantity());
-            saleList.add(saleRecord);
         }
 
         bill.setBillProducts(billProducts);
@@ -261,13 +250,7 @@ public class BillService {
             bill.setPaymentStatus(PaymentStatus.UNPAID);
         }
 
-        Bill savedBill = billRepository.save(bill);
-       // private String invoiceNumber;
-        saleList.forEach(sale -> {
-            sale.setInvoiceNumber(String.valueOf(savedBill.getIdBill()));
-        });
-        saleRepository.saveAll(saleList);
-        return savedBill;
+        return billRepository.save(bill);
     }
 
 
@@ -330,65 +313,18 @@ public class BillService {
         return kpis;
     }
 
-    /**
-     * Create a sale record for tracking sales
-     */
-    private Sale createSaleRecord(Customer customer, Product product, Integer quantity, Double unitPrice) {
-        Sale sale = new Sale();
-        sale.setDateSale(LocalDate.now(clock));
-        sale.setCustomer(customer);
-        sale.setProduct(product);
-      //  sale.setInvoiceNumber(String.valueOf(invoiceNumber));
-        sale.setQuantitySold(quantity);
-
-        // Use provided unit price or fallback to product's unit price sold
-        double salePrice = (unitPrice != null) ? unitPrice : product.getUnitPriceSold();
-        sale.setUnitSalePrice(salePrice);
-        sale.setTotalSaleAmount(quantity * salePrice);
-        sale.setComment("Vente automatique via facturation");
-
-       return sale;
-    }
-
     @Transactional
-    public Bill registerPayment(Long billId, double amount) {
+    public Bill registerPayment(Long billId) {
         Bill bill = billRepository.findById(billId)
             .orElseThrow(() -> new RuntimeException("Facture non trouvée avec l'ID: " + billId));
 
-        BigDecimal paymentAmount = BigDecimal.valueOf(amount).setScale(3, RoundingMode.HALF_UP);
-
-        if (paymentAmount.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new RuntimeException("Le montant doit être positif.");
-        }
-        if (bill.getAmountDue().compareTo(BigDecimal.ZERO) <= 0) {
-            throw new RuntimeException("La facture est déjà totalement payée.");
-        }
-        if (paymentAmount.compareTo(bill.getAmountDue()) > 0) {
-            throw new RuntimeException("Le montant dépasse le montant dû.");
+        if (bill.getPaymentStatus() == PaymentStatus.PAID) {
+            throw new RuntimeException("La facture est déjà marquée comme payée.");
         }
 
-        // Met à jour l'acompte
-        BigDecimal currentDeposit = bill.getDeposit() != null ? bill.getDeposit() : BigDecimal.ZERO;
-        BigDecimal newDeposit = currentDeposit.add(paymentAmount);
-        bill.setDeposit(newDeposit);
+        bill.setPaymentStatus(PaymentStatus.PAID);
+        bill.setAmountDue(BigDecimal.ZERO);
 
-        // Recalcule le montant dû
-        BigDecimal newAmountDue = bill.getTotal().subtract(newDeposit);
-        if (newAmountDue.compareTo(BigDecimal.ZERO) < 0) {
-            newAmountDue = BigDecimal.ZERO;
-        }
-        bill.setAmountDue(newAmountDue);
-
-        // Met à jour le statut de paiement
-        if (newAmountDue.compareTo(BigDecimal.ZERO) == 0) {
-            bill.setPaymentStatus(PaymentStatus.PAID);
-        } else if (newDeposit.compareTo(BigDecimal.ZERO) > 0 && newDeposit.compareTo(bill.getTotal()) < 0) {
-            bill.setPaymentStatus(PaymentStatus.PARTIALLY_PAID);
-        } else {
-            bill.setPaymentStatus(PaymentStatus.UNPAID);
-        }
-
-        // Sauvegarde
         return billRepository.save(bill);
     }
 }

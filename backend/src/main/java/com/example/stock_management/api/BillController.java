@@ -136,20 +136,16 @@ public class BillController {
     }
 
     @PostMapping("/{id}/register-payment")
-    @Operation(summary = "Enregistrer un paiement sur une facture")
-    public ResponseEntity<?> registerPayment(@PathVariable Long id, @RequestBody Map<String, Object> payload) {
+    @Operation(summary = "Marquer une facture comme payée")
+    public ResponseEntity<?> registerPayment(@PathVariable Long id) {
         try {
-            double amount = Double.parseDouble(payload.getOrDefault("amount", 0).toString());
-            var updatedBill = billService.registerPayment(id, amount);
-            // Convertir l'entité Bill en DTO pour éviter les problèmes de sérialisation
-            var responseDTO = billMapper.sourceToDestination(updatedBill);
-            return ResponseEntity.ok(responseDTO);
+            var updatedBill = billService.registerPayment(id);
+            return ResponseEntity.ok(billMapper.sourceToDestination(updatedBill));
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest()
-                    .body(Map.of("error", e.getMessage()));
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Erreur lors de l'enregistrement du paiement: " + e.getMessage()));
+                    .body(Map.of("error", "Erreur lors du marquage de la facture: " + e.getMessage()));
         }
     }
 }
