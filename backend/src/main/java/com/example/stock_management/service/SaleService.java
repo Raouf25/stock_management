@@ -1,8 +1,10 @@
 package com.example.stock_management.service;
 
 import com.example.stock_management.dto.SaleDTO;
+import com.example.stock_management.model.BillProduct;
 import com.example.stock_management.model.Sale;
 import com.example.stock_management.model.Product;
+import com.example.stock_management.repository.BillProductRepository;
 import com.example.stock_management.repository.SaleRepository;
 import com.example.stock_management.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +12,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,6 +27,9 @@ public class SaleService {
 
     @Autowired
     private ProductRepository productRepository;
+
+    @Autowired
+    private BillProductRepository billProductRepository;
 
     @Autowired
     private ProductDashboardService productDashboardService;
@@ -168,6 +175,40 @@ public class SaleService {
         }
 
         productRepository.save(product);
+    }
+
+    /**
+     * Retourne toutes les ventes (directes + issues des factures) sous forme de SaleDTO.
+     * Utilisé par le dashboard pour les graphiques.
+     */
+    public List<SaleDTO> getAllSalesCombined() {
+        List<SaleDTO> result = new ArrayList<>(convertToDTO(saleRepository.findAll()));
+
+        billProductRepository.findAllWithBillAndProduct().stream()
+            .filter(bp -> bp.getBill() != null && bp.getProduct() != null)
+            .map(bp -> {
+                SaleDTO dto = new SaleDTO();
+                dto.setId(bp.getId());
+                dto.setDateSale(bp.getBill().getDateBill() != null
+                        ? bp.getBill().getDateBill().toLocalDate() : null);
+                dto.setProductId(bp.getProduct().getIdProduct());
+                dto.setProductName(bp.getProduct().getName());
+                dto.setProductDesignation(bp.getProduct().getDesignation());
+                dto.setCustomerName(bp.getBill().getCustomer() != null
+                        ? bp.getBill().getCustomer().getName() : null);
+                dto.setQuantitySold(bp.getQuantity());
+                double unitPrice = (bp.getQuantity() != null && bp.getQuantity() > 0)
+                        ? bp.getTotalProductPrice() / bp.getQuantity() : 0.0;
+                dto.setUnitSalePrice(unitPrice);
+                dto.setTotalSaleAmount(bp.getTotalProductPrice());
+                dto.setInvoiceNumber(String.valueOf(bp.getBill().getIdBill()));
+                return dto;
+            })
+            .forEach(result::add);
+
+        result.sort(Comparator.comparing(SaleDTO::getDateSale,
+                Comparator.nullsLast(Comparator.reverseOrder())));
+        return result;
     }
 
     /**

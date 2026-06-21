@@ -3,8 +3,10 @@ package com.example.stock_management.service;
 import com.example.stock_management.dto.PaymentStatus;
 import com.example.stock_management.dto.ProductDashboardDTO;
 import com.example.stock_management.dto.ProductDashboardResponseDTO;
+import com.example.stock_management.model.BillProduct;
 import com.example.stock_management.model.Purchase;
 import com.example.stock_management.model.Sale;
+import com.example.stock_management.repository.BillProductRepository;
 import com.example.stock_management.repository.ProductRepository;
 import com.example.stock_management.repository.PurchaseRepository;
 import com.example.stock_management.repository.SaleRepository;
@@ -12,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +32,9 @@ public class ProductDashboardService {
 
     @Autowired
     private SaleRepository saleRepository;
+
+    @Autowired
+    private BillProductRepository billProductRepository;
 
     @Autowired
     private BillService billService;
@@ -52,21 +58,13 @@ public class ProductDashboardService {
                 .stream()
                 .collect(Collectors.groupingBy(s -> s.getProduct().getIdProduct()));
 
-        Set<Long> invoiceIds = salesByProduct.values().stream()
-                .flatMap(Collection::stream)
-                .map(Sale::getInvoiceNumber)
-                .filter(n -> n != null && !n.trim().isEmpty())
-                .map(n -> {
-                    try { return Long.valueOf(n.trim()); }
-                    catch (NumberFormatException e) { return null; }
-                })
-                .filter(n -> n != null)
-                .collect(Collectors.toSet());
-
-        Map<Long, PaymentStatus> billStatuses = billService.getStatusesByInvoiceNumbers(invoiceIds);
+        Map<Long, List<BillProduct>> billProductsByProduct = billProductRepository
+                .findAllWithBillByProductIds(productIds)
+                .stream()
+                .collect(Collectors.groupingBy(bp -> bp.getProduct().getIdProduct()));
 
         return projections.stream()
-                .map(p -> toResponseDTO(p, purchasesByProduct, salesByProduct, billStatuses))
+                .map(p -> toResponseDTO(p, purchasesByProduct, salesByProduct, billProductsByProduct))
                 .collect(Collectors.toList());
     }
 
@@ -74,7 +72,7 @@ public class ProductDashboardService {
             ProductDashboardDTO p,
             Map<Long, List<Purchase>> purchasesByProduct,
             Map<Long, List<Sale>> salesByProduct,
-            Map<Long, PaymentStatus> billStatuses) {
+            Map<Long, List<BillProduct>> billProductsByProduct) {
 
         List<ProductDashboardResponseDTO.PurchaseItem> purchaseItems =
                 purchasesByProduct.getOrDefault(p.getProductId(), List.of()).stream()
@@ -89,7 +87,8 @@ public class ProductDashboardService {
                         ))
                         .collect(Collectors.toList());
 
-        List<ProductDashboardResponseDTO.SaleItem> saleItems =
+        // Standalone sales (not from a bill)
+        List<ProductDashboardResponseDTO.SaleItem> saleItems = new ArrayList<>(
                 salesByProduct.getOrDefault(p.getProductId(), List.of()).stream()
                         .map(sale -> new ProductDashboardResponseDTO.SaleItem(
                                 sale.getId(),
@@ -100,9 +99,33 @@ public class ProductDashboardService {
                                 sale.getTotalSaleAmount(),
                                 sale.getInvoiceNumber(),
                                 sale.getDeliveryNoteNumber(),
-                                resolvePaymentStatus(sale.getInvoiceNumber(), billStatuses)
+                                "SANS FACTURE"
                         ))
-                        .collect(Collectors.toList());
+                        .collect(Collectors.toList())
+        );
+
+        // Bill-originated sales from bill_product
+        billProductsByProduct.getOrDefault(p.getProductId(), List.of()).stream()
+                .filter(bp -> bp.getBill() != null)
+                .map(bp -> {
+                    String invoiceNum = String.valueOf(bp.getBill().getIdBill());
+                    String paymentStatus = bp.getBill().getPaymentStatus() != null
+                            ? bp.getBill().getPaymentStatus().name() : "INCONNU";
+                    double unitPrice = bp.getQuantity() != null && bp.getQuantity() > 0
+                            ? bp.getTotalProductPrice() / bp.getQuantity() : 0.0;
+                    return new ProductDashboardResponseDTO.SaleItem(
+                            bp.getId(),
+                            bp.getBill().getDateBill() != null ? bp.getBill().getDateBill().toLocalDate() : null,
+                            bp.getBill().getCustomer() != null ? bp.getBill().getCustomer().getName() : null,
+                            bp.getQuantity(),
+                            unitPrice,
+                            bp.getTotalProductPrice(),
+                            invoiceNum,
+                            null,
+                            paymentStatus
+                    );
+                })
+                .forEach(saleItems::add);
 
         return new ProductDashboardResponseDTO(
                 new ProductDashboardResponseDTO.ProductSummary(
@@ -122,18 +145,6 @@ public class ProductDashboardService {
                 purchaseItems,
                 saleItems
         );
-    }
-
-    private String resolvePaymentStatus(String invoiceNumber, Map<Long, PaymentStatus> billStatuses) {
-        if (invoiceNumber == null || invoiceNumber.trim().isEmpty()) {
-            return "SANS FACTURE";
-        }
-        try {
-            Long invoiceId = Long.valueOf(invoiceNumber.trim());
-            return billStatuses.getOrDefault(invoiceId, PaymentStatus.GIFT).name();
-        } catch (NumberFormatException e) {
-            return "SANS FACTURE";
-        }
     }
 
     // ── Invalidation du cache sur toute écriture ──────────────────────────────

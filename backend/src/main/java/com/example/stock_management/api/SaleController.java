@@ -50,6 +50,16 @@ public class SaleController {
     }
 
     /**
+     * Récupérer toutes les ventes combinées (directes + issues des factures).
+     * Utilisé par le dashboard pour les graphiques.
+     */
+    @GetMapping("/combined")
+    @Operation(summary = "Récupérer toutes les ventes (directes + factures)")
+    public ResponseEntity<List<SaleDTO>> getAllSalesCombined() {
+        return ResponseEntity.ok(saleService.getAllSalesCombined());
+    }
+
+    /**
      * Récupérer une vente par ID
      */
     @GetMapping("/{id}")

@@ -66,19 +66,36 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             "  p.unitPrice," +
             "  p.unitPriceSold," +
             "  p.currentStockQuantity," +
-            "  COALESCE((SELECT SUM(sv.quantitySold)   FROM Sale sv     WHERE sv.product  = p), 0L)," +
-            "  COALESCE((SELECT SUM(pa.quantity)        FROM Purchase pa  WHERE pa.product  = p), 0L)" +
-            "    - COALESCE((SELECT SUM(sv2.quantitySold) FROM Sale sv2   WHERE sv2.product = p), 0L)," +
-            "  COALESCE((SELECT COUNT(pa2)              FROM Purchase pa2 WHERE pa2.product = p), 0L)," +
+            // stockVendu = standalone sales + bill product quantities
+            "  COALESCE((SELECT SUM(sv.quantitySold) FROM Sale sv WHERE sv.product = p), 0L)" +
+            "  + COALESCE((SELECT SUM(bp.quantity) FROM BillProduct bp WHERE bp.product = p), 0L)," +
+            // stockEntrepot = purchases - (standalone sales + bill products)
+            "  COALESCE((SELECT SUM(pa.quantity) FROM Purchase pa WHERE pa.product = p), 0L)" +
+            "  - COALESCE((SELECT SUM(sv2.quantitySold) FROM Sale sv2 WHERE sv2.product = p), 0L)" +
+            "  - COALESCE((SELECT SUM(bp2.quantity) FROM BillProduct bp2 WHERE bp2.product = p), 0L)," +
+            // purchasesCount
+            "  COALESCE((SELECT COUNT(pa2) FROM Purchase pa2 WHERE pa2.product = p), 0L)," +
+            // averagePurchasePrice
             "  COALESCE((SELECT SUM(pa3.totalAmountTTC) / SUM(pa3.quantity) FROM Purchase pa3 WHERE pa3.product = p), 0.0)," +
-            "  COALESCE((SELECT COUNT(sv3)              FROM Sale sv3     WHERE sv3.product = p), 0L)," +
-            "  COALESCE((SELECT SUM(sv4.totalSaleAmount) / SUM(sv4.quantitySold) FROM Sale sv4 WHERE sv4.product = p), 0.0)," +
-            "  COALESCE((SELECT SUM(sv5.totalSaleAmount) FROM Sale sv5   WHERE sv5.product = p), 0.0)" +
-            "    - COALESCE((SELECT SUM(pa4.totalAmountTTC) FROM Purchase pa4 WHERE pa4.product = p), 0.0)" +
+            // salesCount = standalone sales + bill product line counts
+            "  COALESCE((SELECT COUNT(sv3) FROM Sale sv3 WHERE sv3.product = p), 0L)" +
+            "  + COALESCE((SELECT COUNT(bp3) FROM BillProduct bp3 WHERE bp3.product = p), 0L)," +
+            // averageSalePrice = total amount / total qty (NULLIF avoids division by zero)
+            "  COALESCE(" +
+            "    (COALESCE((SELECT SUM(sv4.totalSaleAmount) FROM Sale sv4 WHERE sv4.product = p), 0.0)" +
+            "    + COALESCE((SELECT SUM(bp4.totalProductPrice) FROM BillProduct bp4 WHERE bp4.product = p), 0.0))" +
+            "    / NULLIF(COALESCE((SELECT SUM(sv5.quantitySold) FROM Sale sv5 WHERE sv5.product = p), 0L)" +
+            "            + COALESCE((SELECT SUM(bp5.quantity) FROM BillProduct bp5 WHERE bp5.product = p), 0L), 0)" +
+            "  , 0.0)," +
+            // bilan = (standalone sales + bill products) - purchases
+            "  COALESCE((SELECT SUM(sv6.totalSaleAmount) FROM Sale sv6 WHERE sv6.product = p), 0.0)" +
+            "  + COALESCE((SELECT SUM(bp6.totalProductPrice) FROM BillProduct bp6 WHERE bp6.product = p), 0.0)" +
+            "  - COALESCE((SELECT SUM(pa4.totalAmountTTC) FROM Purchase pa4 WHERE pa4.product = p), 0.0)" +
             ") " +
             "FROM Product p " +
             "WHERE EXISTS (SELECT 1 FROM Purchase px WHERE px.product = p)" +
-            "   OR EXISTS (SELECT 1 FROM Sale sx WHERE sx.product = p) " +
+            "   OR EXISTS (SELECT 1 FROM Sale sx WHERE sx.product = p)" +
+            "   OR EXISTS (SELECT 1 FROM BillProduct bpx WHERE bpx.product = p) " +
             "ORDER BY LOWER(p.name) ASC")
     List<ProductDashboardDTO> findProductsDashboardData();
 

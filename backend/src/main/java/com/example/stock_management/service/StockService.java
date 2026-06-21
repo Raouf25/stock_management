@@ -3,6 +3,7 @@ package com.example.stock_management.service;
 import com.example.stock_management.dto.StockSummaryDTO;
 import com.example.stock_management.dto.StockAlertDTO;
 import com.example.stock_management.model.Product;
+import com.example.stock_management.repository.BillProductRepository;
 import com.example.stock_management.repository.ProductRepository;
 import com.example.stock_management.repository.PurchaseRepository;
 import com.example.stock_management.repository.SaleRepository;
@@ -24,6 +25,9 @@ public class StockService {
 
     @Autowired
     private SaleRepository saleRepository;
+
+    @Autowired
+    private BillProductRepository billProductRepository;
 
     /**
      * Générer un résumé de stock pour tous les produits
@@ -63,21 +67,25 @@ public class StockService {
         Double totalPurchasesAmount = purchaseRepository.findTotalPurchasesAmountByProduct(product.getIdProduct());
         summary.setTotalPurchasesAmount(totalPurchasesAmount != null ? totalPurchasesAmount : 0.0);
 
-        // Totaux ventes
-        Double totalSalesAmount = saleRepository.findTotalSalesAmountByProduct(product.getIdProduct());
-        summary.setTotalSalesAmount(totalSalesAmount != null ? totalSalesAmount : 0.0);
+        // Totaux ventes : ventes directes (sale) + lignes de facture (bill_product)
+        double standaloneSalesAmount = saleRepository.findTotalSalesAmountByProduct(product.getIdProduct());
+        double billProductSalesAmount = billProductRepository.findTotalAmountByProduct(product.getIdProduct());
+        double totalSalesAmount = standaloneSalesAmount + billProductSalesAmount;
+        summary.setTotalSalesAmount(totalSalesAmount);
+
+        int purchasesQty = purchaseRepository.findTotalPurchasesQuantityByProduct(product.getIdProduct()) != null
+            ? purchaseRepository.findTotalPurchasesQuantityByProduct(product.getIdProduct()) : 0;
+        int standaloneSalesQty = saleRepository.findTotalSalesQuantityByProduct(product.getIdProduct()) != null
+            ? saleRepository.findTotalSalesQuantityByProduct(product.getIdProduct()) : 0;
+        int billProductSalesQty = billProductRepository.findTotalQuantityByProduct(product.getIdProduct()) != null
+            ? billProductRepository.findTotalQuantityByProduct(product.getIdProduct()) : 0;
 
         // Règle de calcul : Stock final = Stock Initial + Total Achats - Total Ventes
-        Integer finalQuantity = initialQuantity + 
-            (purchaseRepository.findTotalPurchasesQuantityByProduct(product.getIdProduct()) != null ? 
-                purchaseRepository.findTotalPurchasesQuantityByProduct(product.getIdProduct()) : 0) -
-            (saleRepository.findTotalSalesQuantityByProduct(product.getIdProduct()) != null ? 
-                saleRepository.findTotalSalesQuantityByProduct(product.getIdProduct()) : 0);
-
+        Integer finalQuantity = initialQuantity + purchasesQty - standaloneSalesQty - billProductSalesQty;
         summary.setFinalQuantity(finalQuantity);
 
         // Règle de calcul : Valeur stock final = Valeur Initiale + Montant Achats - Montant Ventes
-        Double finalStockValue = initialValue + totalPurchasesAmount - totalSalesAmount;
+        Double finalStockValue = initialValue + (totalPurchasesAmount != null ? totalPurchasesAmount : 0.0) - totalSalesAmount;
         summary.setFinalStockValue(finalStockValue);
 
         // Règle de calcul : CMP = Valeur Stock Final / Quantité Stock Final
