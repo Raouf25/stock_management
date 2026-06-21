@@ -5,132 +5,101 @@
 
 <!-- Main app with sidebar -->
 <ng-container *ngIf="!isAuthRoute()">
-  <!-- Overlay for mobile -->
+
+  <!-- Mobile overlay -->
   <div class="sidebar-overlay" *ngIf="sidebarOpen" (click)="toggleSidebarOpen()"></div>
 
-  <!-- Sidebar -->
-  <div class="sidebar" [class.show]="sidebarOpen" [class.collapsed]="sidebarCollapsed">
+  <!-- ══ SIDEBAR ══ -->
+  <aside class="sidebar" [class.show]="sidebarOpen" [class.collapsed]="sidebarCollapsed">
 
-    <!-- ── Header / Logo ── -->
-    <div class="sidebar-header">
-      <div class="logo-wrapper" (click)="toggleSidebar()">
-        <div class="logo-icon"><i class="bi bi-gear-fill"></i></div>
-        <span class="logo-text">Bhouri Stock</span>
+    <!-- Logo -->
+    <div class="sidebar-logo" (click)="toggleSidebar()">
+      <div class="logo-icon">
+        <i class="bi bi-boxes"></i>
       </div>
+      <span class="logo-text">Bhouri Stock</span>
     </div>
 
-    <!-- ── Navigation ── -->
+    <!-- Navigation -->
     <nav class="sidebar-nav">
-      <ul class="nav-menu">
 
-        <!-- ─ SECTION: GÉNÉRAL ─ -->
-        <li class="nav-section-label">
-          <span>Général</span>
-        </li>
+      <!-- ── GÉNÉRAL ── -->
+      <p class="nav-section">Général</p>
 
-        <li class="nav-item">
-          <a class="nav-link" routerLink="/" routerLinkActive="active"
-             [routerLinkActiveOptions]="{ exact: true }" (click)="closeSidebarOnMobile()">
-            <i class="bi bi-speedometer2"></i>
-            <span>Dashboard</span>
-          </a>
-        </li>
+      <a class="nav-link" routerLink="/" routerLinkActive="active"
+         [routerLinkActiveOptions]="{ exact: true }" (click)="closeSidebarOnMobile()">
+        <i class="bi bi-speedometer2"></i>
+        <span>Dashboard</span>
+      </a>
 
-        <li class="nav-item">
-          <a class="nav-link" routerLink="/products" routerLinkActive="active" (click)="closeSidebarOnMobile()">
-            <i class="bi bi-box-seam"></i>
-            <span>Produits</span>
-          </a>
-        </li>
+      <a class="nav-link" routerLink="/products" routerLinkActive="active"
+         (click)="closeSidebarOnMobile()">
+        <i class="bi bi-box-seam"></i>
+        <span>Produits</span>
+      </a>
 
-        <li class="nav-item">
-          <a class="nav-link" routerLink="/transactions" routerLinkActive="active" (click)="closeSidebarOnMobile()">
-            <i class="bi bi-arrow-left-right"></i>
-            <span>Transactions</span>
-          </a>
-        </li>
+      <a class="nav-link" routerLink="/customers" routerLinkActive="active"
+         (click)="closeSidebarOnMobile()">
+        <i class="bi bi-people"></i>
+        <span>Clients</span>
+      </a>
 
-        <!-- ─ SECTION: TIERS ─ -->
-        <li class="nav-section-label">
-          <span>Tiers</span>
-        </li>
+      <a class="nav-link" routerLink="/suppliers" routerLinkActive="active"
+         (click)="closeSidebarOnMobile()">
+        <i class="bi bi-building"></i>
+        <span>Fournisseurs</span>
+      </a>
 
-        <li class="nav-item">
-          <a class="nav-link" routerLink="/customers" routerLinkActive="active" (click)="closeSidebarOnMobile()">
-            <i class="bi bi-people"></i>
-            <span>Clients</span>
-          </a>
-        </li>
+      <a class="nav-link" routerLink="/transactions" routerLinkActive="active"
+         (click)="closeSidebarOnMobile()">
+        <i class="bi bi-arrow-left-right"></i>
+        <span>Transactions</span>
+      </a>
 
-        <li class="nav-item">
-          <a class="nav-link" routerLink="/suppliers" routerLinkActive="active" (click)="closeSidebarOnMobile()">
-            <i class="bi bi-building"></i>
-            <span>Fournisseurs</span>
-          </a>
-        </li>
+      <!-- ── DOCUMENTS ── -->
+      <p class="nav-section">Documents</p>
 
-        <!-- ─ SECTION: DOCUMENTS ─ -->
-        <li class="nav-section-label">
-          <span>Documents</span>
-        </li>
+      <a class="nav-link nav-link--cta" routerLink="/documents/create"
+         routerLinkActive="active" (click)="closeSidebarOnMobile()">
+        <i class="bi bi-plus-circle-fill"></i>
+        <span>Nouveau Document</span>
+      </a>
 
-        <!-- CTA: Créer Facture / BL -->
-        <li class="nav-item">
-          <a class="nav-link nav-link--create" routerLink="/documents/create"
-             routerLinkActive="active" (click)="closeSidebarOnMobile()">
-            <i class="bi bi-plus-circle-fill"></i>
-            <span>Créer Facture / BL</span>
-          </a>
-        </li>
+      <a class="nav-link" routerLink="/invoices/list" routerLinkActive="active"
+         (click)="closeSidebarOnMobile()">
+        <i class="bi bi-receipt"></i>
+        <span>Factures</span>
+      </a>
 
-        <!-- Collapsible group: Facturation + BL -->
-        <li class="nav-item has-submenu" [class.open]="documentsMenuOpen">
-          <a class="nav-link" (click)="toggleDocumentsMenu()" [class.active]="isDocumentListRouteActive()">
-            <i class="bi bi-folder2-open"></i>
-            <span>Archives</span>
-            <i class="bi chevron-icon"
-               [class.bi-chevron-down]="!documentsMenuOpen"
-               [class.bi-chevron-up]="documentsMenuOpen"></i>
-          </a>
-          <ul class="submenu" [class.show]="documentsMenuOpen">
-            <li>
-              <a class="submenu-link" routerLink="/invoices/list"
-                 routerLinkActive="active" (click)="closeSidebarOnMobile()">
-                <i class="bi bi-receipt"></i>
-                <span>Factures</span>
-              </a>
-            </li>
-            <li>
-              <a class="submenu-link" routerLink="/delivery-notes/list"
-                 routerLinkActive="active" (click)="closeSidebarOnMobile()">
-                <i class="bi bi-truck"></i>
-                <span>Bons de Livraison</span>
-              </a>
-            </li>
-          </ul>
-        </li>
+      <a class="nav-link" routerLink="/delivery-notes/list" routerLinkActive="active"
+         (click)="closeSidebarOnMobile()">
+        <i class="bi bi-truck"></i>
+        <span>Bons Livraison</span>
+      </a>
 
-      </ul>
     </nav>
 
-    <!-- ── Footer / User ── -->
+    <!-- Footer / User -->
     <div class="sidebar-footer">
-      <div class="user-card">
+      <a class="user-card" routerLink="/profile" routerLinkActive="user-card--active"
+         (click)="closeSidebarOnMobile()">
         <div class="user-avatar">
-          <span class="avatar-text">{{ getUserInitials() }}</span>
+          <span>{{ getUserInitials() }}</span>
         </div>
         <div class="user-info">
           <div class="user-name">{{ authService.currentUser?.name || 'Utilisateur' }}</div>
           <div class="user-email">{{ getTruncatedEmail() }}</div>
         </div>
-        <button class="btn-logout" (click)="logout()" title="Déconnexion">
+        <button class="btn-logout" (click)="$event.preventDefault(); $event.stopPropagation(); logout()"
+                title="Déconnexion">
           <i class="bi bi-box-arrow-right"></i>
         </button>
-      </div>
+      </a>
     </div>
-  </div>
 
-  <!-- ── Main Content ── -->
+  </aside>
+
+  <!-- ══ MAIN CONTENT ══ -->
   <div class="main-content" [class.sidebar-collapsed]="sidebarCollapsed">
     <button class="mobile-hamburger" (click)="toggleSidebarOpen()">
       <i class="bi bi-list"></i>
@@ -139,4 +108,5 @@
       <router-outlet></router-outlet>
     </div>
   </div>
+
 </ng-container>

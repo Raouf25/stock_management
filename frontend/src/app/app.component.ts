@@ -16,7 +16,6 @@ export class AppComponent implements OnInit {
   sidebarCollapsed = false;
   sidebarOpen = false;
   currentRoute = '';
-  documentsMenuOpen = false;
 
   constructor(
     private router: Router,
@@ -29,10 +28,6 @@ export class AppComponent implements OnInit {
       filter((event): event is NavigationEnd => event instanceof NavigationEnd)
     ).subscribe((event: NavigationEnd) => {
       this.currentRoute = event.urlAfterRedirects;
-      // Auto-ouvrir Archives si on est sur une route de liste documents
-      if (this.isDocumentListRouteActive()) {
-        this.documentsMenuOpen = true;
-      }
       this.closeSidebarOnMobile();
     });
   }
@@ -42,9 +37,6 @@ export class AppComponent implements OnInit {
       this.sidebarOpen = false;
     } else {
       this.sidebarCollapsed = !this.sidebarCollapsed;
-      if (this.sidebarCollapsed) {
-        this.documentsMenuOpen = false;
-      }
       localStorage.setItem('sidebarCollapsed', this.sidebarCollapsed.toString());
     }
   }
@@ -57,24 +49,6 @@ export class AppComponent implements OnInit {
     if (window.innerWidth <= 768) {
       this.sidebarOpen = false;
     }
-  }
-
-  toggleDocumentsMenu() {
-    if (!this.sidebarCollapsed) {
-      this.documentsMenuOpen = !this.documentsMenuOpen;
-    }
-  }
-
-  isInvoiceRouteActive(): boolean {
-    return this.currentRoute.startsWith('/invoices') || this.currentRoute.startsWith('/documents/create');
-  }
-
-  isDeliveryRouteActive(): boolean {
-    return this.currentRoute.startsWith('/delivery-notes');
-  }
-
-  isDocumentListRouteActive(): boolean {
-    return this.currentRoute.startsWith('/invoices') || this.currentRoute.startsWith('/delivery-notes');
   }
 
   isAuthRoute(): boolean {
