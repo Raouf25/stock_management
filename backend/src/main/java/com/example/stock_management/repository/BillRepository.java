@@ -25,13 +25,13 @@ public interface BillRepository extends JpaRepository<Bill, Long> {
     Optional<Bill> findByIdBill(Long billId);
 
 
-    @Query("SELECT b FROM Bill b LEFT JOIN FETCH b.billProducts WHERE b.idBill = :id")
+    @Query("SELECT b FROM Bill b LEFT JOIN FETCH b.customer LEFT JOIN FETCH b.billProducts WHERE b.idBill = :id")
     Optional<Bill> findByIdWithProducts(@NonNull Long id);
 
-    @Query("SELECT DISTINCT b FROM Bill b LEFT JOIN FETCH b.billProducts")
+    @Query("SELECT DISTINCT b FROM Bill b LEFT JOIN FETCH b.customer LEFT JOIN FETCH b.billProducts")
     List<Bill> findAllWithProducts();
 
-    @Query(value = "SELECT b FROM Bill b LEFT JOIN FETCH b.billProducts",
+    @Query(value = "SELECT b FROM Bill b LEFT JOIN FETCH b.customer LEFT JOIN FETCH b.billProducts",
            countQuery = "SELECT COUNT(b) FROM Bill b")
     Page<Bill> findAllWithProductsPaged(Pageable pageable);
 
