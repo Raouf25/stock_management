@@ -263,7 +263,7 @@ export class ApiService {
   }
 
   downloadDeliveryNotePDF(id: number): Observable<Blob> {
-    return this.http.get(`${this.apiUrl}/delivery-notes/generate/${id}`, {
+    return this.http.get(`${this.apiUrl}/delivery-notes/${id}/generate`, {
       responseType: 'blob'
     });
   }

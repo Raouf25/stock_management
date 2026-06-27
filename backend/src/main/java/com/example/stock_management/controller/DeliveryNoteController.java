@@ -109,7 +109,7 @@ public class DeliveryNoteController {
         return ResponseEntity.ok(deliveryNoteService.getKPIs());
     }
 
-    @GetMapping("/generate/{id}")
+    @GetMapping({"/{id}/generate", "/generate/{id}"})
     public void generatePdf(@PathVariable Long id, HttpServletResponse response) {
         Map<String, Object> data = deliveryNotePdfDataService.preparePdfData(id);
         pdfGenerateService.generatePdfFileAPI(data, response, "bon-livraison");
