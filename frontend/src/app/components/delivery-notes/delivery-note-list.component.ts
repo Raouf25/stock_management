@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { ApiService } from '../../services/api.service';
+import { ToastService } from '../../services/toast.service';
 
 interface DeliveryNote {
   idDeliveryNote: number;
@@ -314,13 +315,6 @@ interface DeliveryNoteKPIs {
         </div>
       </div>
 
-      <!-- Messages -->
-      <div *ngIf="errorMessage" style="position: fixed; bottom: 1rem; right: 1rem; max-width: 400px; padding: 1rem; background: #fee2e2; color: #dc2626; border-radius: 0.5rem; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-left: 4px solid #dc2626;">
-        {{ errorMessage }}
-      </div>
-      <div *ngIf="successMessage" style="position: fixed; bottom: 1rem; right: 1rem; max-width: 400px; padding: 1rem; background: #d1fae5; color: #065f46; border-radius: 0.5rem; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-left: 4px solid #10b981;">
-        {{ successMessage }}
-      </div>
     </div>
   `,
   styles: [`
@@ -349,10 +343,7 @@ export class DeliveryNoteListComponent implements OnInit {
   filterInvoiced: string = '';
   searchTerm: string = '';
   
-  errorMessage: string = '';
-  successMessage: string = '';
-
-  constructor(private apiService: ApiService) {}
+  constructor(private apiService: ApiService, private toast: ToastService) {}
 
   ngOnInit(): void {
     this.loadDeliveryNotes();
@@ -366,7 +357,6 @@ export class DeliveryNoteListComponent implements OnInit {
         this.applyFilters();
       },
       error: (error: any) => {
-        console.error('Error loading delivery notes:', error);
         this.showError('Erreur lors du chargement des bons de livraison');
       }
     });
@@ -378,7 +368,6 @@ export class DeliveryNoteListComponent implements OnInit {
         this.kpis = data;
       },
       error: (error: any) => {
-        console.error('Error loading KPIs:', error);
       }
     });
   }
@@ -479,7 +468,6 @@ export class DeliveryNoteListComponent implements OnInit {
         this.loadKPIs();
       },
       error: (error: any) => {
-        console.error('Error converting to invoice:', error);
         this.showError('Erreur lors de la conversion en facture');
       }
     });
@@ -493,7 +481,6 @@ export class DeliveryNoteListComponent implements OnInit {
         this.loadKPIs();
       },
       error: (error: any) => {
-        console.error('Error updating status:', error);
         this.showError('Erreur lors de la mise à jour du statut');
       }
     });
@@ -511,7 +498,6 @@ export class DeliveryNoteListComponent implements OnInit {
         this.loadKPIs();
       },
       error: (error: any) => {
-        console.error('Error deleting delivery note:', error);
         this.showError('Erreur lors de la suppression');
       }
     });
@@ -528,7 +514,6 @@ export class DeliveryNoteListComponent implements OnInit {
         window.URL.revokeObjectURL(url);
       },
       error: (error: any) => {
-        console.error('Erreur lors du téléchargement PDF:', error);
         this.showError('Erreur lors du téléchargement du PDF');
       }
     });
@@ -554,13 +539,6 @@ export class DeliveryNoteListComponent implements OnInit {
     }
   }
 
-  showError(message: string): void {
-    this.errorMessage = message;
-    setTimeout(() => this.errorMessage = '', 5000);
-  }
-
-  showSuccess(message: string): void {
-    this.successMessage = message;
-    setTimeout(() => this.successMessage = '', 5000);
-  }
+  showError(message: string):   void { this.toast.error(message); }
+  showSuccess(message: string): void { this.toast.success(message); }
 }

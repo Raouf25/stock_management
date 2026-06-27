@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { ApiService } from '../../services/api.service';
+import { ToastService } from '../../services/toast.service';
 
 interface CustomerWithStats {
   customer: {
@@ -196,9 +197,6 @@ interface CustomerKPIs {
 
   </div><!-- /main-card -->
 
-  <!-- ══ TOASTS ════════════════════════════════════════════════════════════ -->
-  <div *ngIf="toastError"   class="toast toast-err">{{ toastError }}</div>
-  <div *ngIf="toastSuccess" class="toast toast-ok">{{ toastSuccess }}</div>
 
 </div><!-- /page -->
   `,
@@ -346,17 +344,6 @@ interface CustomerKPIs {
       border-top: 1px solid #f1f5f9; padding-top: .75rem;
     }
 
-    .toast {
-      position: fixed; bottom: 1.25rem; right: 1.25rem;
-      max-width: 400px; padding: 1rem 1.25rem;
-      border-radius: 10px; font-size: .875rem; font-weight: 500;
-      box-shadow: 0 8px 24px rgba(0,0,0,.12);
-      z-index: 9999; animation: fadeIn .25s ease;
-    }
-    .toast-err { background: #fee2e2; color: #991b1b; border-left: 4px solid #ef4444; }
-    .toast-ok  { background: #d1fae5; color: #065f46; border-left: 4px solid #10b981; }
-    @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
-
     .desktop-table { display: none; overflow-x: auto; }
     .mobile-cards  { display: block; }
 
@@ -377,9 +364,6 @@ export class CustomerListComponent implements OnInit {
   statusFilter  = '';
   addressFilter = '';
 
-  toastError   = '';
-  toastSuccess = '';
-
   kpis: CustomerKPIs = {
     totalCustomers: 0,
     activeCustomers: 0,
@@ -390,7 +374,7 @@ export class CustomerListComponent implements OnInit {
     totalOutstanding: 0
   };
 
-  constructor(private apiService: ApiService, private router: Router) {}
+  constructor(private apiService: ApiService, private router: Router, private toast: ToastService) {}
 
   ngOnInit(): void {
     this.loadCustomers();
@@ -453,13 +437,6 @@ export class CustomerListComponent implements OnInit {
     });
   }
 
-  private showError(msg: string): void {
-    this.toastError = msg;
-    setTimeout(() => this.toastError = '', 5000);
-  }
-
-  private showSuccess(msg: string): void {
-    this.toastSuccess = msg;
-    setTimeout(() => this.toastSuccess = '', 5000);
-  }
+  private showError(msg: string):   void { this.toast.error(msg); }
+  private showSuccess(msg: string): void { this.toast.success(msg); }
 }

@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { RouterOutlet, RouterLink, RouterLinkActive, Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { AuthService } from './services/auth.service';
+import { ToastOutletComponent } from './shared/toast-outlet.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive],
+  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, ToastOutletComponent],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })

@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { environment } from '../../../environments/environment';
+import { ToastService } from '../../services/toast.service';
 
 type ActiveTab = 'factures' | 'bl';
 
@@ -383,9 +384,6 @@ interface DeliveryNoteKPIs {
     </div>
   </div>
 
-  <!-- ══ TOASTS ════════════════════════════════════════════════════════════ -->
-  <div *ngIf="toastError"   class="toast toast-err">{{ toastError }}</div>
-  <div *ngIf="toastSuccess" class="toast toast-ok">{{ toastSuccess }}</div>
 
 </div>
   `,
@@ -797,19 +795,6 @@ interface DeliveryNoteKPIs {
     .btn-email    { background: linear-gradient(135deg,#0891b2,#06b6d4); }
     .btn-encaisse { background: linear-gradient(135deg,#d97706,#f59e0b); }
 
-    /* ═══════════════ TOASTS ═══════════════ */
-    .toast {
-      position: fixed; bottom: 1.25rem; right: 1.25rem;
-      max-width: 400px; padding: 1rem 1.25rem;
-      border-radius: 10px; font-size: .875rem; font-weight: 500;
-      box-shadow: 0 8px 24px rgba(0,0,0,.12);
-      z-index: 9999; animation: fadeIn .25s ease;
-    }
-    .toast-err { background: #fee2e2; color: #991b1b; border-left: 4px solid #ef4444; }
-    .toast-ok  { background: #d1fae5; color: #065f46; border-left: 4px solid #10b981; }
-
-    @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
-
     /* ═══════════════ RESPONSIVE ═══════════════ */
     .desktop-table { display: none; overflow-x: auto; }
     .mobile-cards  { display: block; }
@@ -861,13 +846,10 @@ export class InvoiceListComponent implements OnInit {
   filterInvoiced = '';
   searchTerm     = '';
 
-  // ── Toasts ────────────────────────────────────────────────────────────────
-  toastError   = '';
-  toastSuccess = '';
-
   constructor(
     private apiService: ApiService,
-    private sanitizer:  DomSanitizer
+    private sanitizer:  DomSanitizer,
+    private toast:      ToastService
   ) {}
 
   ngOnInit(): void {
@@ -1114,13 +1096,6 @@ export class InvoiceListComponent implements OnInit {
     return map[status] ?? status;
   }
 
-  // ── Toasts ────────────────────────────────────────────────────────────────
-  private showError(msg: string): void {
-    this.toastError = msg;
-    setTimeout(() => this.toastError = '', 5000);
-  }
-  private showSuccess(msg: string): void {
-    this.toastSuccess = msg;
-    setTimeout(() => this.toastSuccess = '', 5000);
-  }
+  private showError(msg: string):   void { this.toast.error(msg); }
+  private showSuccess(msg: string): void { this.toast.success(msg); }
 }
