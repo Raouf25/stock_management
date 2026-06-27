@@ -173,8 +173,10 @@ export class ApiService {
   }
 
   // === INVOICES / BILLS ===
-  getAllBills(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/bills`);
+  getAllBills(page = 0, size = 200, sortBy = 'dateBill', sortDir = 'desc'): Observable<{ content: any[]; totalElements: number; totalPages: number; number: number; size: number }> {
+    return this.http.get<any>(`${this.apiUrl}/bills`, {
+      params: { page: page.toString(), size: size.toString(), sortBy, sortDir }
+    });
   }
 
   getBillById(id: number): Observable<any> {

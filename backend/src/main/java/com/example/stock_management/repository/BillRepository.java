@@ -3,6 +3,8 @@ package com.example.stock_management.repository;
 
 import com.example.stock_management.model.Bill;
 import lombok.NonNull;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -28,6 +30,10 @@ public interface BillRepository extends JpaRepository<Bill, Long> {
 
     @Query("SELECT DISTINCT b FROM Bill b LEFT JOIN FETCH b.billProducts")
     List<Bill> findAllWithProducts();
+
+    @Query(value = "SELECT b FROM Bill b LEFT JOIN FETCH b.billProducts",
+           countQuery = "SELECT COUNT(b) FROM Bill b")
+    Page<Bill> findAllWithProductsPaged(Pageable pageable);
 
     @Query("SELECT COALESCE(SUM(b.total), 0) FROM Bill b WHERE b.customer.customerId = :customerId")
     BigDecimal sumTotalByCustomerId(@Param("customerId") Long customerId);

@@ -7,6 +7,10 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,10 +42,16 @@ public class PurchaseController {
      * Récupérer tous les achats
      */
     @GetMapping
-    @Operation(summary = "Récupérer tous les achats")
-    public ResponseEntity<List<PurchaseDTO>> getAllPurchases() {
-        List<Purchase> purchases = purchaseService.getAllPurchases();
-        return ResponseEntity.ok(purchaseService.convertToDTO(purchases));
+    @Operation(summary = "Récupérer tous les achats (paginé)")
+    public ResponseEntity<Page<PurchaseDTO>> getAllPurchases(
+            @RequestParam(defaultValue = "0")             int page,
+            @RequestParam(defaultValue = "50")            int size,
+            @RequestParam(defaultValue = "datePurchase")  String sortBy,
+            @RequestParam(defaultValue = "desc")          String sortDir) {
+        Sort sort = sortDir.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+        Page<Purchase> paged = purchaseService.getAllPurchasesPaged(PageRequest.of(page, size, sort));
+        Page<PurchaseDTO> result = paged.map(purchaseService::convertToDTO);
+        return ResponseEntity.ok(result);
     }
 
     /**

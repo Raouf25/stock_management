@@ -884,7 +884,7 @@ export class InvoiceListComponent implements OnInit {
 
   loadInvoices(): void {
     this.apiService.getAllBills().subscribe({
-      next: (data: any[]) => { this.invoices = data; this.applyInvoiceFilters(); },
+      next: (res) => { this.invoices = res.content; this.applyInvoiceFilters(); },
       error: () => this.showError('Erreur lors du chargement des factures.')
     });
   }

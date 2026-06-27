@@ -11,6 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
@@ -70,6 +72,10 @@ public class PurchaseService {
 
     public List<Purchase> getAllPurchases() {
         return purchaseRepository.findAll();
+    }
+
+    public Page<Purchase> getAllPurchasesPaged(Pageable pageable) {
+        return purchaseRepository.findAll(pageable);
     }
 
     public Optional<Purchase> getPurchaseById(Long id) {

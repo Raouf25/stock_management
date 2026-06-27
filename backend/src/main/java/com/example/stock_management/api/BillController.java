@@ -13,6 +13,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -37,11 +41,15 @@ public class BillController {
     private final InvoicePdfDataService invoicePdfDataService;
 
     @GetMapping
-    @Operation(summary = "Obtenir la liste de toutes les bills")
-    public List<CreatedBillDTO> getAllBills() {
-        return billService.findAll().stream()
-                .map(billMapper::sourceToDestination)
-                .toList();
+    @Operation(summary = "Obtenir la liste des factures (paginée)")
+    public Page<CreatedBillDTO> getAllBills(
+            @RequestParam(defaultValue = "0")   int page,
+            @RequestParam(defaultValue = "50")  int size,
+            @RequestParam(defaultValue = "dateBill") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir) {
+        Sort sort = sortDir.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+        return billService.findAllPaged(PageRequest.of(page, size, sort))
+                .map(billMapper::sourceToDestination);
     }
 
     @GetMapping("/{id}")
