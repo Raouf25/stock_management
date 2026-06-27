@@ -5,6 +5,7 @@ import { Router, RouterLink } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { ToastService } from '../../services/toast.service';
 import { ConfirmDialogService } from '../../services/confirm-dialog.service';
+import { StatusBadgeComponent } from '../../shared/status-badge.component';
 
 interface CustomerWithStats {
   customer: {
@@ -33,7 +34,7 @@ interface CustomerKPIs {
 @Component({
   selector: 'app-customer-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, StatusBadgeComponent],
   template: `
 <div class="page">
 
@@ -127,9 +128,7 @@ interface CustomerKPIs {
               </span>
             </td>
             <td class="ta-c" (click)="$event.stopPropagation()">
-              <span class="status-badge" [ngClass]="getStatusClass(item.customer.status)">
-                {{ item.customer.status || 'ACTIVE' }}
-              </span>
+              <app-status-badge [value]="item.customer.status || 'ACTIVE'"></app-status-badge>
             </td>
             <td class="ta-c" (click)="$event.stopPropagation()">
               <div class="action-group">
@@ -159,9 +158,7 @@ interface CustomerKPIs {
            (click)="viewCustomer(item.customer.customerId)">
         <div class="mobile-row-top">
           <span class="client-name">{{ item.customer.name }}</span>
-          <span class="status-badge" [ngClass]="getStatusClass(item.customer.status)">
-            {{ item.customer.status || 'ACTIVE' }}
-          </span>
+          <app-status-badge [value]="item.customer.status || 'ACTIVE'" [showIcon]="false"></app-status-badge>
         </div>
         <div *ngIf="item.customer.fullName" class="td-muted" style="margin:.15rem 0 .3rem;">
           {{ item.customer.fullName }}

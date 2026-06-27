@@ -8,6 +8,7 @@ import { environment } from '../../../environments/environment';
 import { ToastService } from '../../services/toast.service';
 import { ConfirmDialogService } from '../../services/confirm-dialog.service';
 import { PaginatorComponent } from '../../shared/paginator.component';
+import { StatusBadgeComponent } from '../../shared/status-badge.component';
 
 type ActiveTab = 'factures' | 'bl';
 
@@ -36,7 +37,7 @@ interface DeliveryNoteKPIs {
 @Component({
   selector: 'app-invoice-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, PaginatorComponent],
+  imports: [CommonModule, RouterModule, FormsModule, PaginatorComponent, StatusBadgeComponent],
   template: `
 <div class="page">
 
@@ -209,9 +210,7 @@ interface DeliveryNoteKPIs {
             <td class="ta-r c-cyan">{{ (inv.deposit || 0) | number:'1.3-3' }}</td>
             <td class="ta-r c-green fw-600">{{ inv.amountDue | number:'1.3-3' }}</td>
             <td class="ta-c">
-              <span class="status-badge" [ngClass]="getPaymentStatusClass(inv.paymentStatus)">
-                {{ getPaymentStatusLabel(inv.paymentStatus) }}
-              </span>
+              <app-status-badge [value]="inv.paymentStatus"></app-status-badge>
             </td>
           </tr>
           <tr *ngIf="filteredInvoices.length === 0">
@@ -289,16 +288,14 @@ interface DeliveryNoteKPIs {
             <td class="client-name">{{ dn.customer.name }}</td>
             <td class="ta-r fw-600">{{ dn.totalAmount | number:'1.3-3' }} DNT</td>
             <td class="ta-c">
-              <span class="status-pill" [style.background]="getBLStatusColor(dn.status)">
-                {{ getBLStatusLabel(dn.status) }}
-              </span>
+              <app-status-badge [value]="dn.status"></app-status-badge>
             </td>
             <td class="ta-c">
               <div *ngIf="dn.invoiced" class="invoiced-cell">
-                <span class="c-green fw-600">✅ Facturé</span>
+                <app-status-badge value="INVOICED"></app-status-badge>
                 <span *ngIf="dn.bill?.idBill" class="td-muted" style="font-size:.75rem;">#{{ dn.bill?.idBill }}</span>
               </div>
-              <span *ngIf="!dn.invoiced" class="c-amber fw-600">⏳ Non facturé</span>
+              <app-status-badge *ngIf="!dn.invoiced" value="PENDING"></app-status-badge>
             </td>
             <td class="ta-c">
               <div class="action-group">
