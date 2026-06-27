@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
+import { ConfirmDialogService } from '../../services/confirm-dialog.service';
 
 type DocumentMode = 'facture' | 'bl';
 type Step = 1 | 2 | 3 | 4;
@@ -1098,10 +1099,11 @@ export class CreateDocumentComponent implements OnInit {
   };
 
   constructor(
-    private fb:         FormBuilder,
-    private apiService: ApiService,
-    private router:     Router,
-    private route:      ActivatedRoute
+    private fb:            FormBuilder,
+    private apiService:    ApiService,
+    private router:        Router,
+    private route:         ActivatedRoute,
+    private confirmDialog: ConfirmDialogService
   ) {}
 
   ngOnInit(): void {
@@ -1450,8 +1452,11 @@ export class CreateDocumentComponent implements OnInit {
   }
 
   abortWorkflowAndLeave(): void {
-    if (confirm('Abandonner la saisie en cours ? Le panier sera perdu.')) {
-      this.router.navigate(['/invoices/list']);
-    }
+    this.confirmDialog.confirm({
+      title:       'Abandonner la saisie',
+      message:     'Abandonner la saisie en cours ? Le panier sera perdu.',
+      confirmText: 'Abandonner',
+      danger:      true
+    }).then(ok => { if (ok) this.router.navigate(['/invoices/list']); });
   }
 }

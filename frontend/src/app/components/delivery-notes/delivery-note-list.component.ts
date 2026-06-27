@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { ToastService } from '../../services/toast.service';
+import { ConfirmDialogService } from '../../services/confirm-dialog.service';
 
 interface DeliveryNote {
   idDeliveryNote: number;
@@ -343,7 +344,7 @@ export class DeliveryNoteListComponent implements OnInit {
   filterInvoiced: string = '';
   searchTerm: string = '';
   
-  constructor(private apiService: ApiService, private toast: ToastService) {}
+  constructor(private apiService: ApiService, private toast: ToastService, private confirmDialog: ConfirmDialogService) {}
 
   ngOnInit(): void {
     this.loadDeliveryNotes();
@@ -487,19 +488,23 @@ export class DeliveryNoteListComponent implements OnInit {
   }
 
   deleteDeliveryNote(id: number): void {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer ce bon de livraison ? Le stock sera restauré.')) {
-      return;
-    }
-
-    this.apiService.deleteDeliveryNote(id).subscribe({
-      next: () => {
-        this.showSuccess('Bon de livraison supprimé avec succès');
-        this.loadDeliveryNotes();
-        this.loadKPIs();
-      },
-      error: (error: any) => {
-        this.showError('Erreur lors de la suppression');
-      }
+    this.confirmDialog.confirm({
+      title:       'Supprimer le BL',
+      message:     'Supprimer ce bon de livraison ? Le stock sera restauré.',
+      confirmText: 'Supprimer',
+      danger:      true
+    }).then(ok => {
+      if (!ok) return;
+      this.apiService.deleteDeliveryNote(id).subscribe({
+        next: () => {
+          this.showSuccess('Bon de livraison supprimé avec succès');
+          this.loadDeliveryNotes();
+          this.loadKPIs();
+        },
+        error: () => {
+          this.showError('Erreur lors de la suppression');
+        }
+      });
     });
   }
 

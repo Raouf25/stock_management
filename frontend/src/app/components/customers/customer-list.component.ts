@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { ToastService } from '../../services/toast.service';
+import { ConfirmDialogService } from '../../services/confirm-dialog.service';
 
 interface CustomerWithStats {
   customer: {
@@ -374,7 +375,7 @@ export class CustomerListComponent implements OnInit {
     totalOutstanding: 0
   };
 
-  constructor(private apiService: ApiService, private router: Router, private toast: ToastService) {}
+  constructor(private apiService: ApiService, private router: Router, private toast: ToastService, private confirmDialog: ConfirmDialogService) {}
 
   ngOnInit(): void {
     this.loadCustomers();
@@ -430,10 +431,17 @@ export class CustomerListComponent implements OnInit {
   editCustomer(id: number): void { this.router.navigate(['/customers/edit', id]); }
 
   deleteCustomer(id: number): void {
-    if (!confirm('Voulez-vous vraiment supprimer ce client ?')) return;
-    this.apiService.deleteCustomer(id).subscribe({
-      next: () => { this.showSuccess('Client supprimé.'); this.loadCustomers(); this.loadKPIs(); },
-      error: () => this.showError('Erreur lors de la suppression.')
+    this.confirmDialog.confirm({
+      title: 'Supprimer le client',
+      message: 'Voulez-vous vraiment supprimer ce client ? Cette action est irréversible.',
+      confirmText: 'Supprimer',
+      danger: true
+    }).then(ok => {
+      if (!ok) return;
+      this.apiService.deleteCustomer(id).subscribe({
+        next: () => { this.showSuccess('Client supprimé.'); this.loadCustomers(); this.loadKPIs(); },
+        error: () => this.showError('Erreur lors de la suppression.')
+      });
     });
   }
 

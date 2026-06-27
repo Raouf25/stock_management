@@ -6,6 +6,7 @@ import { Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { ApiService } from '../../services/api.service';
 import { ToastService } from '../../services/toast.service';
+import { ConfirmDialogService } from '../../services/confirm-dialog.service';
 
 @Component({
   selector: 'app-suppliers',
@@ -337,7 +338,7 @@ export class SuppliersComponent implements OnInit, OnDestroy {
   private searchSubject = new Subject<string>();
   private searchSub?: Subscription;
 
-  constructor(private apiService: ApiService, private router: Router, private toast: ToastService) {}
+  constructor(private apiService: ApiService, private router: Router, private toast: ToastService, private confirmDialog: ConfirmDialogService) {}
 
   ngOnInit(): void {
     this.loadSuppliers();
@@ -391,10 +392,17 @@ export class SuppliersComponent implements OnInit, OnDestroy {
   editSupplier(id: number): void   { this.router.navigate(['/suppliers/edit', id]); }
 
   deleteSupplier(id: number): void {
-    if (!confirm('Voulez-vous vraiment supprimer ce fournisseur ?')) return;
-    this.apiService.deleteSupplier(id).subscribe({
-      next: () => { this.showSuccess('Fournisseur supprimé.'); this.loadSuppliers(); this.loadKPIs(); },
-      error: () => this.showError('Erreur lors de la suppression.')
+    this.confirmDialog.confirm({
+      title: 'Supprimer le fournisseur',
+      message: 'Voulez-vous vraiment supprimer ce fournisseur ? Cette action est irréversible.',
+      confirmText: 'Supprimer',
+      danger: true
+    }).then(ok => {
+      if (!ok) return;
+      this.apiService.deleteSupplier(id).subscribe({
+        next: () => { this.showSuccess('Fournisseur supprimé.'); this.loadSuppliers(); this.loadKPIs(); },
+        error: () => this.showError('Erreur lors de la suppression.')
+      });
     });
   }
 

@@ -4,11 +4,12 @@ import { RouterOutlet, RouterLink, RouterLinkActive, Router, NavigationEnd } fro
 import { filter } from 'rxjs/operators';
 import { AuthService } from './services/auth.service';
 import { ToastOutletComponent } from './shared/toast-outlet.component';
+import { ConfirmDialogComponent } from './shared/confirm-dialog.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, ToastOutletComponent],
+  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, ToastOutletComponent, ConfirmDialogComponent],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })

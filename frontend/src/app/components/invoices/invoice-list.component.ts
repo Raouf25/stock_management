@@ -6,6 +6,7 @@ import { ApiService } from '../../services/api.service';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { environment } from '../../../environments/environment';
 import { ToastService } from '../../services/toast.service';
+import { ConfirmDialogService } from '../../services/confirm-dialog.service';
 
 type ActiveTab = 'factures' | 'bl';
 
@@ -847,9 +848,10 @@ export class InvoiceListComponent implements OnInit {
   searchTerm     = '';
 
   constructor(
-    private apiService: ApiService,
-    private sanitizer:  DomSanitizer,
-    private toast:      ToastService
+    private apiService:     ApiService,
+    private sanitizer:      DomSanitizer,
+    private toast:          ToastService,
+    private confirmDialog:  ConfirmDialogService
   ) {}
 
   ngOnInit(): void {
@@ -943,12 +945,19 @@ export class InvoiceListComponent implements OnInit {
   }
 
   sendInvoiceByEmail(invoice: any): void {
-    if (!invoice.clientEmail) { alert('Pas d\'email pour ce client.'); return; }
-    if (!confirm(`Envoyer la facture #${invoice.billId} à ${invoice.clientEmail} ?`)) return;
-    this.sendingEmail = invoice.billId;
-    this.apiService.sendInvoiceByEmail(invoice.billId).subscribe({
-      next: () => { this.sendingEmail = null; alert(`✅ Envoyée à ${invoice.clientEmail}`); },
-      error: () => { this.sendingEmail = null; alert('❌ Erreur lors de l\'envoi.'); }
+    if (!invoice.clientEmail) { this.toast.warning('Pas d\'email pour ce client.'); return; }
+    this.confirmDialog.confirm({
+      title:       'Envoyer par email',
+      message:     `Envoyer la facture #${invoice.billId} à ${invoice.clientEmail} ?`,
+      confirmText: 'Envoyer',
+      danger:      false
+    }).then(ok => {
+      if (!ok) return;
+      this.sendingEmail = invoice.billId;
+      this.apiService.sendInvoiceByEmail(invoice.billId).subscribe({
+        next: () => { this.sendingEmail = null; this.toast.success(`Facture envoyée à ${invoice.clientEmail}`); },
+        error: () => { this.sendingEmail = null; this.toast.error('Erreur lors de l\'envoi.'); }
+      });
     });
   }
 
@@ -1062,10 +1071,17 @@ export class InvoiceListComponent implements OnInit {
   }
 
   deleteBL(id: number): void {
-    if (!confirm('Supprimer ce BL ? Le stock sera restauré.')) return;
-    this.apiService.deleteDeliveryNote(id).subscribe({
-      next: () => { this.showSuccess('BL supprimé.'); this.loadDeliveryNotes(); this.loadKPIs(); },
-      error: () => this.showError('Erreur lors de la suppression.')
+    this.confirmDialog.confirm({
+      title:       'Supprimer le BL',
+      message:     'Supprimer ce bon de livraison ? Le stock sera restauré.',
+      confirmText: 'Supprimer',
+      danger:      true
+    }).then(ok => {
+      if (!ok) return;
+      this.apiService.deleteDeliveryNote(id).subscribe({
+        next: () => { this.showSuccess('BL supprimé.'); this.loadDeliveryNotes(); this.loadKPIs(); },
+        error: () => this.showError('Erreur lors de la suppression.')
+      });
     });
   }
 
