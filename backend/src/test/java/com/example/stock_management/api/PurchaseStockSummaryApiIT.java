@@ -311,7 +311,7 @@ class PurchaseStockSummaryApiIT {
         product.setSupplier(supplier);
         product.setDesignation(designation);
         product.setInitialStockQuantity(initialQuantity);
-        product.setInitialStockValue(initialValue);
+        product.setInitialStockValue(java.math.BigDecimal.valueOf(initialValue));
         return productRepository.save(product);
     }
 
