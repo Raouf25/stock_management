@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -18,6 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Limits brute-force attempts on auth endpoints to MAX_REQUESTS per WINDOW_MS per IP.
  * Uses a sliding-window counter stored in memory — no external dependency required.
+ * Inactive IP entries are evicted every 5 minutes to prevent unbounded map growth.
  */
 @Slf4j
 @Component
@@ -33,6 +35,22 @@ public class LoginRateLimitFilter extends OncePerRequestFilter {
 
     // IP → timestamps of recent requests within the current window
     private final ConcurrentHashMap<String, Deque<Long>> requestLog = new ConcurrentHashMap<>();
+
+    /** Remove IPs whose last request is older than the sliding window. */
+    @Scheduled(fixedDelay = 5 * 60 * 1000)
+    void evictStaleEntries() {
+        long cutoff = System.currentTimeMillis() - WINDOW_MS;
+        int before = requestLog.size();
+        requestLog.entrySet().removeIf(entry -> {
+            synchronized (entry.getValue()) {
+                return entry.getValue().isEmpty() || entry.getValue().peekLast() < cutoff;
+            }
+        });
+        int removed = before - requestLog.size();
+        if (removed > 0) {
+            log.debug("Rate limiter: evicted {} stale IP entries", removed);
+        }
+    }
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
