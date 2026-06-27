@@ -158,7 +158,7 @@ Chart.register(...registerables);
         </div>
         <span class="kpi-val">{{ getAverageBasket() | number:'1.3-3' }}</span>
         <span class="kpi-lbl">Panier Moyen (DNT)</span>
-        </div>
+        <span class="kpi-sub">Par facture</span>
       </div>
 
     </div>
