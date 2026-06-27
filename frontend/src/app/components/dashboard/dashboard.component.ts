@@ -4,13 +4,14 @@ import { RouterModule } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { Chart, ChartConfiguration, registerables } from 'chart.js';
 import { StockAlertBannerComponent } from '../../shared/stock-alert-banner.component';
+import { SkeletonCardsComponent } from '../../shared/skeleton.component';
 
 Chart.register(...registerables);
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule, StockAlertBannerComponent],
+  imports: [CommonModule, RouterModule, StockAlertBannerComponent, SkeletonCardsComponent],
   template: `
 <div class="page">
 
@@ -26,9 +27,7 @@ Chart.register(...registerables);
   </div>
 
   <!-- ══ SKELETON ══════════════════════════════════════════════════════════════ -->
-  <div *ngIf="loading" class="skeleton-grid">
-    <div class="sk-card" *ngFor="let i of [1,2,3,4,5,6,7,8]"></div>
-  </div>
+  <app-skeleton-cards *ngIf="loading" [count]="10" [cols]="5" style="margin-bottom:1.5rem;display:block;"></app-skeleton-cards>
 
   <ng-container *ngIf="!loading">
 
@@ -453,25 +452,6 @@ Chart.register(...registerables);
     .pl-dot.unpaid  { background: #ef4444; }
     .pl-lbl { flex: 1; color: #64748b; }
     .pl-row strong { color: #0f172a; font-weight: 700; }
-
-    /* ── Skeleton ────────────────────────────────────── */
-    .skeleton-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: .875rem;
-      margin-bottom: 1.5rem;
-    }
-    .sk-card {
-      height: 80px;
-      background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
-      background-size: 200% 100%;
-      animation: shimmer 1.4s infinite;
-      border-radius: 12px;
-    }
-    @keyframes shimmer {
-      0%   { background-position: -200% 0; }
-      100% { background-position:  200% 0; }
-    }
 
     /* ── Responsive ──────────────────────────────────── */
     @media (max-width: 1200px) {

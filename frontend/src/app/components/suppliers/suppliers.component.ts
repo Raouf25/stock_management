@@ -7,11 +7,12 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { ApiService } from '../../services/api.service';
 import { ToastService } from '../../services/toast.service';
 import { ConfirmDialogService } from '../../services/confirm-dialog.service';
+import { SkeletonTableComponent } from '../../shared/skeleton.component';
 
 @Component({
   selector: 'app-suppliers',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, SkeletonTableComponent],
   template: `
 <div class="page">
 
@@ -54,8 +55,11 @@ import { ConfirmDialogService } from '../../services/confirm-dialog.service';
       <button *ngIf="searchText" class="btn-reset" (click)="searchText=''">✕ Réinitialiser</button>
     </div>
 
+    <!-- Skeleton loading -->
+    <app-skeleton-table *ngIf="loading" [rows]="5" [cols]="7" style="margin:.5rem 0;display:block;"></app-skeleton-table>
+
     <!-- ════════ TABLE (desktop) ════════ -->
-    <div class="desktop-table">
+    <div *ngIf="!loading" class="desktop-table">
       <table class="data-table">
         <thead>
           <tr>
@@ -109,7 +113,7 @@ import { ConfirmDialogService } from '../../services/confirm-dialog.service';
     </div>
 
     <!-- ════════ CARTES (mobile) ════════ -->
-    <div class="mobile-cards">
+    <div *ngIf="!loading" class="mobile-cards">
       <div *ngFor="let item of getFilteredSuppliers(); trackBy: trackById"
            class="mobile-row"
            (click)="viewSupplier(item.supplier.supplierId || item.supplier.id)">
