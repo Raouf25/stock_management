@@ -28,6 +28,11 @@ public class User {
     @Builder.Default
     private boolean enabled = true;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 10)
+    @Builder.Default
+    private UserRole role = UserRole.USER;
+
     private LocalDateTime createdAt;
 
     private LocalDateTime lastLogin;

@@ -8,6 +8,7 @@ import com.example.stock_management.service.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -71,7 +72,8 @@ public class ProductController {
     }
 
     @DeleteMapping("/{id}")
-    @Operation(summary = "Supprimer un product par ID")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Supprimer un produit par ID (ADMIN uniquement)")
     public void deleteProduct(@PathVariable Long id) {
         productService.deleteById(id);
     }

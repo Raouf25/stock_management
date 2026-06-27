@@ -147,7 +147,8 @@ public class AuthService {
     }
 
     private AuthResponse buildAuthResponse(String message, User user) {
-        String token = jwtService.generateToken(user.getId(), user.getEmail(), user.getName());
+        String token = jwtService.generateToken(user.getId(), user.getEmail(), user.getName(),
+                user.getRole() != null ? user.getRole().name() : "USER");
         
         AuthResponse.UserInfo userInfo = AuthResponse.UserInfo.builder()
                 .id(user.getId())

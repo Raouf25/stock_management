@@ -13,8 +13,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import java.io.IOException;
-import java.util.Collections;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -34,9 +35,14 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         if (token != null && jwtService.validateToken(token)) {
             String email = jwtService.getEmailFromToken(token);
             Long userId = jwtService.getUserIdFromToken(token);
+            String role = jwtService.getRoleFromToken(token);
+
+            var authorities = role != null
+                ? List.of(new SimpleGrantedAuthority("ROLE_" + role))
+                : List.<SimpleGrantedAuthority>of();
 
             var authentication = new UsernamePasswordAuthenticationToken(
-                    email, userId, Collections.emptyList()
+                    email, userId, authorities
             );
             authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(authentication);
