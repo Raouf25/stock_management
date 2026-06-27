@@ -131,6 +131,38 @@
 }
 .nav-link--cta.active i { color: #fff; }
 
+/* ── ⌘K Search Hint ────────────────────────────────── */
+.sidebar-search-hint {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0.875rem 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background var(--transition);
+  color: rgba(255,255,255,0.40);
+  font-size: 0.8125rem;
+}
+.sidebar-search-hint:hover {
+  background: rgba(255,255,255,0.10);
+  color: rgba(255,255,255,0.65);
+}
+.sidebar-search-hint i { font-size: 0.875rem; flex-shrink: 0; }
+.sidebar-search-hint span { flex: 1; }
+.sidebar-search-hint kbd {
+  background: rgba(255,255,255,0.10);
+  border: 1px solid rgba(255,255,255,0.16);
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-size: 0.625rem;
+  font-family: var(--font-sans);
+  color: rgba(255,255,255,0.55);
+  flex-shrink: 0;
+}
+
 /* ── Footer / User ──────────────────────────────────── */
 .sidebar-footer {
   padding: 0.875rem;

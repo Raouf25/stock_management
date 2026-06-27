@@ -5,11 +5,12 @@ import { filter } from 'rxjs/operators';
 import { AuthService } from './services/auth.service';
 import { ToastOutletComponent } from './shared/toast-outlet.component';
 import { ConfirmDialogComponent } from './shared/confirm-dialog.component';
+import { CommandPaletteComponent } from './shared/command-palette.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, ToastOutletComponent, ConfirmDialogComponent],
+  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, ToastOutletComponent, ConfirmDialogComponent, CommandPaletteComponent],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
@@ -51,6 +52,12 @@ export class AppComponent implements OnInit {
     if (window.innerWidth <= 768) {
       this.sidebarOpen = false;
     }
+  }
+
+  openCommandPalette(): void {
+    document.dispatchEvent(new KeyboardEvent('keydown', {
+      key: 'k', metaKey: true, bubbles: true
+    }));
   }
 
   isAuthRoute(): boolean {

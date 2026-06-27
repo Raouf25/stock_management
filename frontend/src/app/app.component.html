@@ -74,6 +74,13 @@
 
     </nav>
 
+    <!-- ⌘K hint -->
+    <div class="sidebar-search-hint" *ngIf="!sidebarCollapsed" (click)="openCommandPalette()">
+      <i class="bi bi-search"></i>
+      <span>Rechercher…</span>
+      <kbd>⌘K</kbd>
+    </div>
+
     <!-- Footer / User -->
     <div class="sidebar-footer">
       <a class="user-card" routerLink="/profile" routerLinkActive="user-card--active"
@@ -111,3 +118,6 @@
 
 <!-- Global confirm dialog -->
 <app-confirm-dialog></app-confirm-dialog>
+
+<!-- Command Palette ⌘K -->
+<app-command-palette></app-command-palette>
