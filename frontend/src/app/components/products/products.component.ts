@@ -1,6 +1,8 @@
-import { Component, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { ApiService } from '../../services/api.service';
 import { Chart, ChartConfiguration, registerables } from 'chart.js';
 
@@ -61,7 +63,8 @@ Chart.register(...registerables);
     <div class="filter-bar">
       <div class="filter-group fg-wide">
         <label class="filter-lbl">Recherche</label>
-        <input type="text" class="filter-ctrl" [(ngModel)]="searchText"
+        <input type="text" class="filter-ctrl" [ngModel]="searchText"
+               (ngModelChange)="onSearchInput($event)"
                placeholder="Nom, désignation, gamme…">
       </div>
       <div class="filter-group" style="justify-content:flex-end;">
@@ -359,11 +362,26 @@ export class ProductsComponent implements OnInit, AfterViewInit {
 
   private distributionChart: Chart | null = null;
   private catChart: Chart | null = null;
+  private searchSubject = new Subject<string>();
+  private searchSub?: Subscription;
 
   constructor(private apiService: ApiService) {}
 
   ngOnInit(): void {
     this.loadProducts();
+    this.searchSub = this.searchSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged()
+    ).subscribe(value => { this.searchText = value; });
+  }
+
+  ngOnDestroy(): void {
+    this.searchSub?.unsubscribe();
+    this.searchSubject.complete();
+  }
+
+  onSearchInput(value: string): void {
+    this.searchSubject.next(value);
   }
 
   ngAfterViewInit(): void {}

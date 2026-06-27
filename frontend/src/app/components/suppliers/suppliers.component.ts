@@ -1,7 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { ApiService } from '../../services/api.service';
 
 @Component({
@@ -44,7 +46,7 @@ import { ApiService } from '../../services/api.service';
     <div class="filter-bar">
       <div class="filter-group fg-wide">
         <label class="filter-lbl">Recherche</label>
-        <input type="text" class="filter-ctrl" [(ngModel)]="searchText"
+        <input type="text" class="filter-ctrl" [ngModel]="searchText" (ngModelChange)="onSearchInput($event)"
                placeholder="Nom, email, téléphone, contact…">
       </div>
       <button *ngIf="searchText" class="btn-reset" (click)="searchText=''">✕ Réinitialiser</button>
@@ -340,7 +342,7 @@ import { ApiService } from '../../services/api.service';
     }
   `]
 })
-export class SuppliersComponent implements OnInit {
+export class SuppliersComponent implements OnInit, OnDestroy {
   suppliers: any[] = [];
   loading = true;
   searchText = '';
@@ -349,11 +351,27 @@ export class SuppliersComponent implements OnInit {
   toastError   = '';
   toastSuccess = '';
 
+  private searchSubject = new Subject<string>();
+  private searchSub?: Subscription;
+
   constructor(private apiService: ApiService, private router: Router) {}
 
   ngOnInit(): void {
     this.loadSuppliers();
     this.loadKPIs();
+    this.searchSub = this.searchSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged()
+    ).subscribe(value => { this.searchText = value; });
+  }
+
+  ngOnDestroy(): void {
+    this.searchSub?.unsubscribe();
+    this.searchSubject.complete();
+  }
+
+  onSearchInput(value: string): void {
+    this.searchSubject.next(value);
   }
 
   loadSuppliers(): void {
