@@ -44,4 +44,5 @@ logs/
 
 # Environment
 .env
+.env.*
 .env.localrailway-variables.txt
