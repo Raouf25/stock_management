@@ -27,8 +27,6 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -75,7 +73,7 @@ class BillServiceTest {
     void createInvoice_withTva_applies19PercentTax() {
         when(customerRepository.findById(5L)).thenReturn(Optional.of(customer));
         when(productRepository.findById(1L)).thenReturn(Optional.of(product));
-        doNothing().when(productRepository).updateStock(anyLong(), anyInt());
+        when(productRepository.save(any(Product.class))).thenAnswer(inv -> inv.getArgument(0));
         when(billRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
         Bill bill = billService.createInvoice(buildDto(6, "18.260", true, BigDecimal.ZERO));
@@ -89,7 +87,7 @@ class BillServiceTest {
     void createInvoice_withoutTva_totalEqualsHT() {
         when(customerRepository.findById(5L)).thenReturn(Optional.of(customer));
         when(productRepository.findById(1L)).thenReturn(Optional.of(product));
-        doNothing().when(productRepository).updateStock(anyLong(), anyInt());
+        when(productRepository.save(any(Product.class))).thenAnswer(inv -> inv.getArgument(0));
         when(billRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
         Bill bill = billService.createInvoice(buildDto(6, "18.260", false, BigDecimal.ZERO));
@@ -104,7 +102,7 @@ class BillServiceTest {
     void createInvoice_withNoDeposit_setsUnpaid() {
         when(customerRepository.findById(5L)).thenReturn(Optional.of(customer));
         when(productRepository.findById(1L)).thenReturn(Optional.of(product));
-        doNothing().when(productRepository).updateStock(anyLong(), anyInt());
+        when(productRepository.save(any(Product.class))).thenAnswer(inv -> inv.getArgument(0));
         when(billRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
         Bill bill = billService.createInvoice(buildDto(1, "100.000", false, BigDecimal.ZERO));
@@ -117,7 +115,7 @@ class BillServiceTest {
     void createInvoice_withPartialDeposit_setsPartiallyPaid() {
         when(customerRepository.findById(5L)).thenReturn(Optional.of(customer));
         when(productRepository.findById(1L)).thenReturn(Optional.of(product));
-        doNothing().when(productRepository).updateStock(anyLong(), anyInt());
+        when(productRepository.save(any(Product.class))).thenAnswer(inv -> inv.getArgument(0));
         when(billRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
         Bill bill = billService.createInvoice(buildDto(1, "100.000", false, new BigDecimal("40.000")));
@@ -130,7 +128,7 @@ class BillServiceTest {
     void createInvoice_withFullDeposit_setsPaid() {
         when(customerRepository.findById(5L)).thenReturn(Optional.of(customer));
         when(productRepository.findById(1L)).thenReturn(Optional.of(product));
-        doNothing().when(productRepository).updateStock(anyLong(), anyInt());
+        when(productRepository.save(any(Product.class))).thenAnswer(inv -> inv.getArgument(0));
         when(billRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
         Bill bill = billService.createInvoice(buildDto(1, "100.000", false, new BigDecimal("100.000")));
@@ -143,7 +141,7 @@ class BillServiceTest {
     void createInvoice_depositExceedsTotal_amountDueIsZeroNotNegative() {
         when(customerRepository.findById(5L)).thenReturn(Optional.of(customer));
         when(productRepository.findById(1L)).thenReturn(Optional.of(product));
-        doNothing().when(productRepository).updateStock(anyLong(), anyInt());
+        when(productRepository.save(any(Product.class))).thenAnswer(inv -> inv.getArgument(0));
         when(billRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
         Bill bill = billService.createInvoice(buildDto(1, "50.000", false, new BigDecimal("200.000")));

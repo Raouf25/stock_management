@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.Objects;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -111,7 +112,9 @@ public class BillService {
             // Associer l'objet produit récupéré à BillProduct
             billProduct.setProduct(product);
             billProduct.setQuantity(billProductDTO.getQuantite());
-            productRepository.updateStock(billProductDTO.getIdProduct(), billProductDTO.getQuantite());
+            int newQty = Math.max(0, Objects.requireNonNullElse(product.getCurrentStockQuantity(), 0) - billProductDTO.getQuantite());
+            product.setCurrentStockQuantity(newQty);
+            productRepository.save(product);
 
             // Create sale record//
           //  createSaleRecord(customer, product, billProductDTO.getQuantite(), billProductDTO.getPrixTotal() / billProductDTO.getQuantite(), "INV-" + Instant.now(clock).toEpochMilli());
@@ -213,8 +216,10 @@ public class BillService {
             billProduct.setBill(bill);
             billProducts.add(billProduct);
 
-            // Update stock
-            productRepository.updateStock(lineItem.getProductId(), lineItem.getQuantity());
+            // Decrement stock via entity so Hibernate first-level cache stays consistent
+            int newQty = Math.max(0, Objects.requireNonNullElse(product.getCurrentStockQuantity(), 0) - lineItem.getQuantity());
+            product.setCurrentStockQuantity(newQty);
+            productRepository.save(product);
         }
 
         bill.setBillProducts(billProducts);
