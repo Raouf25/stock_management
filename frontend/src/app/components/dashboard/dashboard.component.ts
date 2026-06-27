@@ -3,13 +3,14 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { Chart, ChartConfiguration, registerables } from 'chart.js';
+import { StockAlertBannerComponent } from '../../shared/stock-alert-banner.component';
 
 Chart.register(...registerables);
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, StockAlertBannerComponent],
   template: `
 <div class="page">
 
@@ -30,6 +31,9 @@ Chart.register(...registerables);
   </div>
 
   <ng-container *ngIf="!loading">
+
+    <!-- ══ BANNIÈRE ALERTES STOCK ═══════════════════════════════════════════ -->
+    <app-stock-alert-banner [alerts]="alerts"></app-stock-alert-banner>
 
     <!-- ══ KPIs FACTURATION ══════════════════════════════════════════════════ -->
     <div class="section-label">Facturation</div>
@@ -226,26 +230,6 @@ Chart.register(...registerables);
 
     </div>
 
-    <!-- ══ ALERTES STOCK ══════════════════════════════════════════════════════ -->
-    <div class="alerts-card" *ngIf="alerts.length > 0">
-      <div class="alerts-head">
-        <span>⚠️ Alertes Stock Faible</span>
-        <span class="alerts-badge">{{ alerts.length }}</span>
-      </div>
-      <div class="alerts-body">
-        <div class="alert-row" *ngFor="let a of alerts">
-          <span class="alert-name">{{ a.productDesignation }}</span>
-          <div class="alert-meta">
-            <span class="alert-qty" [class.qty-critical]="a.alertLevel === 'CRITICAL'">
-              {{ a.currentQuantity }} unités
-            </span>
-            <span class="alert-lvl" [class.lvl-critical]="a.alertLevel === 'CRITICAL'">
-              {{ a.alertLevel === 'CRITICAL' ? '🔴 Critique' : '🟡 Attention' }}
-            </span>
-          </div>
-        </div>
-      </div>
-    </div>
 
   </ng-container>
 </div>
@@ -469,61 +453,6 @@ Chart.register(...registerables);
     .pl-dot.unpaid  { background: #ef4444; }
     .pl-lbl { flex: 1; color: #64748b; }
     .pl-row strong { color: #0f172a; font-weight: 700; }
-
-    /* ── Alerts ──────────────────────────────────────── */
-    .alerts-card {
-      background: #fff;
-      border-radius: 12px;
-      border: 1px solid #e2e8f0;
-      box-shadow: 0 1px 4px rgba(0,0,0,.04);
-      overflow: hidden;
-      margin-bottom: 1.5rem;
-    }
-    .alerts-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: .75rem 1.25rem;
-      border-bottom: 1px solid #f1f5f9;
-      font-size: .82rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: .5px;
-      color: #fff;
-      background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
-    }
-    .alerts-badge {
-      background: rgba(255,255,255,.25);
-      color: #fff;
-      font-size: .72rem;
-      font-weight: 700;
-      padding: .2rem .6rem;
-      border-radius: 20px;
-      border: 1px solid rgba(255,255,255,.4);
-    }
-    .alerts-body {
-      max-height: 240px;
-      overflow-y: auto;
-    }
-    .alert-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: .65rem 1.25rem;
-      border-bottom: 1px solid #f8fafc;
-      font-size: .875rem;
-    }
-    .alert-row:last-child { border-bottom: none; }
-    .alert-name { font-weight: 500; color: #1e293b; }
-    .alert-meta { display: flex; align-items: center; gap: 1rem; }
-    .alert-qty {
-      font-weight: 600;
-      color: #f59e0b;
-      font-size: .82rem;
-    }
-    .alert-qty.qty-critical { color: #ef4444; }
-    .alert-lvl { font-size: .78rem; font-weight: 500; }
-    .alert-lvl.lvl-critical { color: #ef4444; }
 
     /* ── Skeleton ────────────────────────────────────── */
     .skeleton-grid {
