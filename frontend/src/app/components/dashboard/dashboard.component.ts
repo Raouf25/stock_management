@@ -36,43 +36,66 @@ Chart.register(...registerables);
     <div class="kpi-row">
 
       <div class="kpi-card kpi-blue">
-        <div class="kpi-icon">🧾</div>
-        <div class="kpi-body">
-          <span class="kpi-val">{{ invoiceKPIs.totalInvoices || 0 }}</span>
-          <span class="kpi-lbl">Total Factures</span>
+        <div class="kpi-top">
+          <div class="kpi-ic-wrap kpi-ic-blue"><i class="bi bi-receipt"></i></div>
+          <span *ngIf="trends['invoices']" class="kpi-trend"
+                [class.up]="trends['invoices'].dir==='up'"
+                [class.down]="trends['invoices'].dir==='down'"
+                [class.neutral]="trends['invoices'].dir==='neutral'">
+            <i class="bi" [class.bi-arrow-up-short]="trends['invoices'].dir==='up'"
+                          [class.bi-arrow-down-short]="trends['invoices'].dir==='down'"
+                          [class.bi-dash]="trends['invoices'].dir==='neutral'"></i>
+            {{ trends['invoices'].pct }}%
+          </span>
         </div>
+        <span class="kpi-val">{{ invoiceKPIs.totalInvoices || 0 }}</span>
+        <span class="kpi-lbl">Total Factures</span>
+        <span *ngIf="trends['invoices']" class="kpi-sub">{{ trends['invoices'].label }}</span>
       </div>
 
       <div class="kpi-card kpi-green">
-        <div class="kpi-icon">💰</div>
-        <div class="kpi-body">
-          <span class="kpi-val">{{ invoiceKPIs.totalInvoicedAmount || 0 | number:'1.3-3' }}</span>
-          <span class="kpi-lbl">CA Total (DNT)</span>
+        <div class="kpi-top">
+          <div class="kpi-ic-wrap kpi-ic-green"><i class="bi bi-currency-dollar"></i></div>
+          <span *ngIf="trends['revenue']" class="kpi-trend"
+                [class.up]="trends['revenue'].dir==='up'"
+                [class.down]="trends['revenue'].dir==='down'"
+                [class.neutral]="trends['revenue'].dir==='neutral'">
+            <i class="bi" [class.bi-arrow-up-short]="trends['revenue'].dir==='up'"
+                          [class.bi-arrow-down-short]="trends['revenue'].dir==='down'"
+                          [class.bi-dash]="trends['revenue'].dir==='neutral'"></i>
+            {{ trends['revenue'].pct }}%
+          </span>
         </div>
+        <span class="kpi-val">{{ invoiceKPIs.totalInvoicedAmount || 0 | number:'1.3-3' }}</span>
+        <span class="kpi-lbl">CA Total (DNT)</span>
+        <span *ngIf="trends['revenue']" class="kpi-sub">{{ trends['revenue'].label }}</span>
       </div>
 
       <div class="kpi-card kpi-orange">
-        <div class="kpi-icon">📅</div>
-        <div class="kpi-body">
-          <span class="kpi-val">{{ invoiceKPIs.revenueThisMonth || 0 | number:'1.3-3' }}</span>
-          <span class="kpi-lbl">CA ce Mois (DNT)</span>
+        <div class="kpi-top">
+          <div class="kpi-ic-wrap kpi-ic-orange"><i class="bi bi-calendar-check"></i></div>
         </div>
+        <span class="kpi-val">{{ invoiceKPIs.revenueThisMonth || 0 | number:'1.3-3' }}</span>
+        <span class="kpi-lbl">CA ce Mois (DNT)</span>
+        <span class="kpi-sub">Mois courant</span>
       </div>
 
       <div class="kpi-card kpi-red">
-        <div class="kpi-icon">⏳</div>
-        <div class="kpi-body">
-          <span class="kpi-val">{{ invoiceKPIs.totalAmountDue || 0 | number:'1.3-3' }}</span>
-          <span class="kpi-lbl">Montant Dû (DNT)</span>
+        <div class="kpi-top">
+          <div class="kpi-ic-wrap kpi-ic-red"><i class="bi bi-hourglass-split"></i></div>
         </div>
+        <span class="kpi-val">{{ invoiceKPIs.totalAmountDue || 0 | number:'1.3-3' }}</span>
+        <span class="kpi-lbl">Montant Dû (DNT)</span>
+        <span class="kpi-sub">{{ invoiceKPIs.unpaidInvoices || 0 }} facture(s) en attente</span>
       </div>
 
       <div class="kpi-card kpi-amber">
-        <div class="kpi-icon">⚠️</div>
-        <div class="kpi-body">
-          <span class="kpi-val">{{ invoiceKPIs.unpaidInvoices || 0 }}</span>
-          <span class="kpi-lbl">Impayées</span>
+        <div class="kpi-top">
+          <div class="kpi-ic-wrap kpi-ic-amber"><i class="bi bi-exclamation-triangle"></i></div>
         </div>
+        <span class="kpi-val">{{ invoiceKPIs.unpaidInvoices || 0 }}</span>
+        <span class="kpi-lbl">Impayées</span>
+        <span class="kpi-sub">À recouvrer</span>
       </div>
 
     </div>
@@ -82,42 +105,56 @@ Chart.register(...registerables);
     <div class="kpi-row">
 
       <div class="kpi-card kpi-indigo">
-        <div class="kpi-icon">📦</div>
-        <div class="kpi-body">
-          <span class="kpi-val">{{ products.length }}</span>
-          <span class="kpi-lbl">Produits Actifs</span>
+        <div class="kpi-top">
+          <div class="kpi-ic-wrap kpi-ic-indigo"><i class="bi bi-box-seam"></i></div>
         </div>
+        <span class="kpi-val">{{ products.length }}</span>
+        <span class="kpi-lbl">Produits Actifs</span>
+        <span class="kpi-sub">{{ alerts.length }} en alerte</span>
       </div>
 
       <div class="kpi-card kpi-teal">
-        <div class="kpi-icon">🏷️</div>
-        <div class="kpi-body">
-          <span class="kpi-val">{{ totalValue | number:'1.3-3' }}</span>
-          <span class="kpi-lbl">Valeur Stock (DNT)</span>
+        <div class="kpi-top">
+          <div class="kpi-ic-wrap kpi-ic-teal"><i class="bi bi-tags"></i></div>
         </div>
+        <span class="kpi-val">{{ totalValue | number:'1.3-3' }}</span>
+        <span class="kpi-lbl">Valeur Stock (DNT)</span>
+        <span class="kpi-sub">Coût total inventaire</span>
       </div>
 
       <div class="kpi-card kpi-purple">
-        <div class="kpi-icon">🚚</div>
-        <div class="kpi-body">
-          <span class="kpi-val">{{ deliveryNoteKPIs.totalDeliveryNotes || 0 }}</span>
-          <span class="kpi-lbl">Total BL</span>
+        <div class="kpi-top">
+          <div class="kpi-ic-wrap kpi-ic-purple"><i class="bi bi-truck"></i></div>
         </div>
+        <span class="kpi-val">{{ deliveryNoteKPIs.totalDeliveryNotes || 0 }}</span>
+        <span class="kpi-lbl">Total BL</span>
+        <span class="kpi-sub">{{ deliveryNoteKPIs.notInvoiced || 0 }} non facturés</span>
       </div>
 
       <div class="kpi-card kpi-orange">
-        <div class="kpi-icon">📋</div>
-        <div class="kpi-body">
-          <span class="kpi-val">{{ deliveryNoteKPIs.notInvoiced || 0 }}</span>
-          <span class="kpi-lbl">BL Non Facturés</span>
+        <div class="kpi-top">
+          <div class="kpi-ic-wrap kpi-ic-orange"><i class="bi bi-file-earmark-text"></i></div>
+          <span *ngIf="trends['purchases']" class="kpi-trend"
+                [class.up]="trends['purchases'].dir==='up'"
+                [class.down]="trends['purchases'].dir==='down'"
+                [class.neutral]="trends['purchases'].dir==='neutral'">
+            <i class="bi" [class.bi-arrow-up-short]="trends['purchases'].dir==='up'"
+                          [class.bi-arrow-down-short]="trends['purchases'].dir==='down'"
+                          [class.bi-dash]="trends['purchases'].dir==='neutral'"></i>
+            {{ trends['purchases'].pct }}%
+          </span>
         </div>
+        <span class="kpi-val">{{ deliveryNoteKPIs.notInvoiced || 0 }}</span>
+        <span class="kpi-lbl">BL Non Facturés</span>
+        <span *ngIf="trends['purchases']" class="kpi-sub">{{ trends['purchases'].label }}</span>
       </div>
 
       <div class="kpi-card kpi-green">
-        <div class="kpi-icon">📊</div>
-        <div class="kpi-body">
-          <span class="kpi-val">{{ getAverageBasket() | number:'1.3-3' }}</span>
-          <span class="kpi-lbl">Panier Moyen (DNT)</span>
+        <div class="kpi-top">
+          <div class="kpi-ic-wrap kpi-ic-green"><i class="bi bi-bar-chart"></i></div>
+        </div>
+        <span class="kpi-val">{{ getAverageBasket() | number:'1.3-3' }}</span>
+        <span class="kpi-lbl">Panier Moyen (DNT)</span>
         </div>
       </div>
 
@@ -280,11 +317,11 @@ Chart.register(...registerables);
       background: #fff;
       border-radius: 12px;
       border: 1px solid #e2e8f0;
-      border-top-width: 3px;
+      border-top: 3px solid #e2e8f0;
       padding: 1rem 1.25rem;
       display: flex;
-      align-items: center;
-      gap: .875rem;
+      flex-direction: column;
+      gap: .1rem;
       box-shadow: 0 1px 4px rgba(0,0,0,.04);
       transition: transform .15s, box-shadow .15s;
     }
@@ -299,23 +336,63 @@ Chart.register(...registerables);
     .kpi-teal   { border-top-color: #14b8a6; }
     .kpi-purple { border-top-color: #8b5cf6; }
 
-    .kpi-icon { font-size: 1.6rem; flex-shrink: 0; }
-    .kpi-body { display: flex; flex-direction: column; gap: .2rem; min-width: 0; }
+    /* ── KPI inner structure ──────────── */
+    .kpi-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: .375rem;
+    }
+    .kpi-ic-wrap {
+      width: 2rem; height: 2rem;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem;
+    }
+    .kpi-ic-blue   { background: #dbeafe; color: #1d4ed8; }
+    .kpi-ic-green  { background: #d1fae5; color: #059669; }
+    .kpi-ic-orange { background: #fef3c7; color: #d97706; }
+    .kpi-ic-red    { background: #fee2e2; color: #dc2626; }
+    .kpi-ic-amber  { background: #ffedd5; color: #ea580c; }
+    .kpi-ic-indigo { background: #e0e7ff; color: #4338ca; }
+    .kpi-ic-teal   { background: #ccfbf1; color: #0f766e; }
+    .kpi-ic-purple { background: #ede9fe; color: #7c3aed; }
+
+    /* trend badge */
+    .kpi-trend {
+      display: inline-flex; align-items: center; gap: 1px;
+      font-size: .6875rem; font-weight: 600;
+      padding: 2px 7px; border-radius: 999px;
+    }
+    .kpi-trend.up      { background: #d1fae5; color: #065f46; }
+    .kpi-trend.down    { background: #fee2e2; color: #991b1b; }
+    .kpi-trend.neutral { background: #f1f5f9; color: #64748b; }
+
     .kpi-val {
-      font-size: 1.2rem;
+      display: block;
+      font-size: 1.375rem;
       font-weight: 700;
       color: #0f172a;
-      line-height: 1.2;
+      line-height: 1.15;
+      letter-spacing: -.02em;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
     .kpi-lbl {
-      font-size: .68rem;
+      display: block;
+      font-size: .6875rem;
       font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: .4px;
+      letter-spacing: .05em;
       color: #64748b;
+      margin-top: .125rem;
+    }
+    .kpi-sub {
+      display: block;
+      font-size: .6875rem;
+      color: #94a3b8;
+      margin-top: .125rem;
     }
 
     /* ── Charts ──────────────────────────────────────── */
@@ -499,6 +576,8 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   deliveryNoteKPIs:  any   = {};
   loading                  = true;
 
+  trends: Record<string, { pct: number; dir: 'up' | 'down' | 'neutral'; label: string }> = {};
+
   private salesChart:       Chart | null = null;
   private paymentChart:     Chart | null = null;
   private topProductsChart: Chart | null = null;
@@ -527,11 +606,22 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     });
 
     this.apiService.getCombinedSales().subscribe({
-      next: (d) => { this.sales = d; this.loading = false; this.ready.sales = true; this.tryCharts(); }
+      next: (d) => {
+        this.sales = d;
+        this.loading = false;
+        this.ready.sales = true;
+        this.computeTrends();
+        this.tryCharts();
+      }
     });
 
     this.apiService.getPurchases().subscribe({
-      next: (d) => { this.purchases = d; this.ready.purchases = true; this.tryCharts(); }
+      next: (d) => {
+        this.purchases = d;
+        this.ready.purchases = true;
+        this.computeTrends();
+        this.tryCharts();
+      }
     });
 
     this.apiService.getInvoiceKPIs().subscribe({
@@ -550,6 +640,41 @@ export class DashboardComponent implements OnInit, AfterViewInit {
       next: (d) => { this.deliveryNoteKPIs = d || {}; },
       error: ()  => { this.deliveryNoteKPIs = {}; }
     });
+  }
+
+  private computeTrends(): void {
+    const now   = new Date();
+    const curM  = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    const prevD = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const prevM = `${prevD.getFullYear()}-${String(prevD.getMonth() + 1).padStart(2, '0')}`;
+
+    const sumMonth = (rows: any[], dateField: string, amtField: string, month: string): number =>
+      rows.filter(r => (r[dateField] || '').startsWith(month))
+          .reduce((acc, r) => acc + (Number(r[amtField]) || 0), 0);
+
+    const pct = (cur: number, prev: number): number =>
+      prev === 0 ? (cur > 0 ? 100 : 0) : Math.round(((cur - prev) / prev) * 100);
+
+    const dir = (p: number): 'up' | 'down' | 'neutral' =>
+      p > 0 ? 'up' : p < 0 ? 'down' : 'neutral';
+
+    const curSales  = sumMonth(this.sales,     'dateSale',     'totalSaleAmount', curM);
+    const prevSales = sumMonth(this.sales,     'dateSale',     'totalSaleAmount', prevM);
+    const salesPct  = pct(curSales, prevSales);
+
+    const curPurch  = sumMonth(this.purchases, 'datePurchase', 'totalAmountTTC',  curM);
+    const prevPurch = sumMonth(this.purchases, 'datePurchase', 'totalAmountTTC',  prevM);
+    const purchPct  = pct(curPurch, prevPurch);
+
+    const curInv    = this.sales.filter(r => (r['dateSale'] || '').startsWith(curM)).length;
+    const prevInv   = this.sales.filter(r => (r['dateSale'] || '').startsWith(prevM)).length;
+    const invPct    = pct(curInv, prevInv);
+
+    this.trends = {
+      revenue:   { pct: Math.abs(salesPct),  dir: dir(salesPct),  label: `${salesPct > 0 ? '+' : ''}${salesPct}% vs mois préc.` },
+      purchases: { pct: Math.abs(purchPct),  dir: dir(purchPct),  label: `${purchPct > 0 ? '+' : ''}${purchPct}% vs mois préc.` },
+      invoices:  { pct: Math.abs(invPct),    dir: dir(invPct),    label: `${invPct > 0 ? '+' : ''}${invPct}% vs mois préc.` },
+    };
   }
 
   private tryCharts(): void {
