@@ -525,8 +525,8 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     });
 
     this.apiService.getPurchases().subscribe({
-      next: (d) => {
-        this.purchases = d;
+      next: (d: any) => {
+        this.purchases = Array.isArray(d) ? d : (d?.content ?? []);
         this.ready.purchases = true;
         this.computeTrends();
         this.tryCharts();
