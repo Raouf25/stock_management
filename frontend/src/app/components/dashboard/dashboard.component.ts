@@ -503,7 +503,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     this.loading = true;
 
     this.apiService.getStockTotalValue().subscribe({
-      next: (d) => { this.totalValue = typeof d === 'number' ? d : (d?.totalValue || 0); }
+      next: (d) => { this.totalValue = typeof d === 'number' ? d : (d?.totalStockValue || 0); }
     });
 
     this.apiService.getStockAlerts(20).subscribe({
