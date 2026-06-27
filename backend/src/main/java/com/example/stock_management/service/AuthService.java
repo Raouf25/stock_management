@@ -13,6 +13,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -146,10 +148,10 @@ public class AuthService {
         return AuthResponse.success("Token valide");
     }
 
-    private AuthResponse buildAuthResponse(String message, User user) {
+    public AuthResponse buildAuthResponse(String message, User user) {
         String token = jwtService.generateToken(user.getId(), user.getEmail(), user.getName(),
                 user.getRole() != null ? user.getRole().name() : "USER");
-        
+
         AuthResponse.UserInfo userInfo = AuthResponse.UserInfo.builder()
                 .id(user.getId())
                 .name(user.getName())
@@ -157,5 +159,45 @@ public class AuthService {
                 .build();
 
         return AuthResponse.success(message, token, userInfo);
+    }
+
+    public String buildRefreshToken(User user) {
+        return jwtService.generateRefreshToken(user.getId(), user.getEmail());
+    }
+
+    public String buildRefreshTokenForCredentials(Long userId, String email) {
+        return jwtService.generateRefreshToken(userId, email);
+    }
+
+    public void setRefreshTokenCookie(HttpServletResponse response, String refreshToken) {
+        int maxAgeSeconds = (int) (jwtService.getRefreshExpirationMs() / 1000);
+        Cookie cookie = new Cookie("refreshToken", refreshToken);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true);
+        cookie.setPath("/api/auth");
+        cookie.setMaxAge(maxAgeSeconds);
+        response.addCookie(cookie);
+    }
+
+    public void clearRefreshTokenCookie(HttpServletResponse response) {
+        Cookie cookie = new Cookie("refreshToken", "");
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true);
+        cookie.setPath("/api/auth");
+        cookie.setMaxAge(0);
+        response.addCookie(cookie);
+    }
+
+    public AuthResponse refreshAccessToken(String refreshToken) {
+        if (!jwtService.validateToken(refreshToken) || !jwtService.isRefreshToken(refreshToken)) {
+            return AuthResponse.error("Refresh token invalide ou expiré");
+        }
+        String email = jwtService.getEmailFromToken(refreshToken);
+        User user = userRepository.findByEmail(email)
+                .orElse(null);
+        if (user == null || !user.isEnabled()) {
+            return AuthResponse.error("Utilisateur introuvable ou désactivé");
+        }
+        return buildAuthResponse("Token renouvelé", user);
     }
 }
