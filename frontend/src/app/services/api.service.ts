@@ -212,7 +212,7 @@ export class ApiService {
   }
 
   // Get all invoices (alias for getAllBills)
-  getInvoices(): Observable<any[]> {
+  getInvoices(): Observable<{ content: any[]; totalElements: number; totalPages: number; number: number; size: number }> {
     return this.getAllBills();
   }
 

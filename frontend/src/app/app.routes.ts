@@ -1,57 +1,39 @@
 import { Routes } from '@angular/router';
-import { DashboardComponent } from './components/dashboard/dashboard.component';
-import { ProductsComponent } from './components/products/products.component';
-import { TransactionsComponent } from './components/transactions/transactions.component';
-import { StockMovementComponent } from './components/stock-movement/stock-movement.component';
-import { InvoiceListComponent } from './components/invoices/invoice-list.component';
-
-import { CreateDocumentComponent } from './components/create-document/create-document.component';
-import { CustomerListComponent } from './components/customers/customer-list.component';
-import { CustomerCreateComponent } from './components/customers/customer-create.component';
-import { CustomerEditComponent } from './components/customers/customer-edit.component';
-import { SuppliersComponent } from './components/suppliers/suppliers.component';
-import { SupplierEditComponent } from './components/suppliers/supplier-edit.component';
-import { SupplierCreateComponent } from './components/suppliers/supplier-create.component';
-import { SupplierDetailComponent } from './components/suppliers/supplier-detail.component';
-import { LoginComponent } from './components/auth/login.component';
-import { ForgotPasswordComponent } from './components/auth/forgot-password.component';
-import { ResetPasswordComponent } from './components/auth/reset-password.component';
-import { ProfileComponent } from './components/profile/profile.component';
 import { authGuard } from './services/auth.guard';
 
 export const routes: Routes = [
   // Auth routes (public)
-  { path: 'login', component: LoginComponent },
-  { path: 'forgot-password', component: ForgotPasswordComponent },
-  { path: 'reset-password', component: ResetPasswordComponent },
+  { path: 'login', loadComponent: () => import('./components/auth/login.component').then(m => m.LoginComponent) },
+  { path: 'forgot-password', loadComponent: () => import('./components/auth/forgot-password.component').then(m => m.ForgotPasswordComponent) },
+  { path: 'reset-password', loadComponent: () => import('./components/auth/reset-password.component').then(m => m.ResetPasswordComponent) },
 
   // Protected routes
-  { path: '', component: DashboardComponent, canActivate: [authGuard] },
-  { path: 'dashboard', component: DashboardComponent, canActivate: [authGuard] },
-  { path: 'products', component: ProductsComponent, canActivate: [authGuard] },
-  { path: 'transactions', component: TransactionsComponent, canActivate: [authGuard] },
+  { path: '', loadComponent: () => import('./components/dashboard/dashboard.component').then(m => m.DashboardComponent), canActivate: [authGuard] },
+  { path: 'dashboard', loadComponent: () => import('./components/dashboard/dashboard.component').then(m => m.DashboardComponent), canActivate: [authGuard] },
+  { path: 'products', loadComponent: () => import('./components/products/products.component').then(m => m.ProductsComponent), canActivate: [authGuard] },
+  { path: 'transactions', loadComponent: () => import('./components/transactions/transactions.component').then(m => m.TransactionsComponent), canActivate: [authGuard] },
 
   // Clients (protected)
-  { path: 'customers', component: CustomerListComponent, canActivate: [authGuard] },
-  { path: 'customers/create', component: CustomerCreateComponent, canActivate: [authGuard] },
-  { path: 'customers/edit/:id', component: CustomerEditComponent, canActivate: [authGuard] },
+  { path: 'customers', loadComponent: () => import('./components/customers/customer-list.component').then(m => m.CustomerListComponent), canActivate: [authGuard] },
+  { path: 'customers/create', loadComponent: () => import('./components/customers/customer-create.component').then(m => m.CustomerCreateComponent), canActivate: [authGuard] },
+  { path: 'customers/edit/:id', loadComponent: () => import('./components/customers/customer-edit.component').then(m => m.CustomerEditComponent), canActivate: [authGuard] },
 
   // Fournisseurs (protected)
-  { path: 'suppliers', component: SuppliersComponent, canActivate: [authGuard] },
-  { path: 'suppliers/create', component: SupplierCreateComponent, canActivate: [authGuard] },
-  { path: 'suppliers/edit/:id', component: SupplierEditComponent, canActivate: [authGuard] },
-  { path: 'suppliers/view/:id', component: SupplierDetailComponent, canActivate: [authGuard] },
+  { path: 'suppliers', loadComponent: () => import('./components/suppliers/suppliers.component').then(m => m.SuppliersComponent), canActivate: [authGuard] },
+  { path: 'suppliers/create', loadComponent: () => import('./components/suppliers/supplier-create.component').then(m => m.SupplierCreateComponent), canActivate: [authGuard] },
+  { path: 'suppliers/edit/:id', loadComponent: () => import('./components/suppliers/supplier-edit.component').then(m => m.SupplierEditComponent), canActivate: [authGuard] },
+  { path: 'suppliers/view/:id', loadComponent: () => import('./components/suppliers/supplier-detail.component').then(m => m.SupplierDetailComponent), canActivate: [authGuard] },
 
   // Page unifiée Créer Facture / BL (protected)
-  { path: 'documents/create', component: CreateDocumentComponent, canActivate: [authGuard] },
+  { path: 'documents/create', loadComponent: () => import('./components/create-document/create-document.component').then(m => m.CreateDocumentComponent), canActivate: [authGuard] },
 
   // Facturation (protected)
   { path: 'invoices', redirectTo: 'invoices/list', pathMatch: 'full' },
   { path: 'invoices/create', redirectTo: 'documents/create', pathMatch: 'full' },
-  { path: 'invoices/list', component: InvoiceListComponent, canActivate: [authGuard] },
+  { path: 'invoices/list', loadComponent: () => import('./components/invoices/invoice-list.component').then(m => m.InvoiceListComponent), canActivate: [authGuard] },
 
   // Profil utilisateur (protected)
-  { path: 'profile', component: ProfileComponent, canActivate: [authGuard] },
+  { path: 'profile', loadComponent: () => import('./components/profile/profile.component').then(m => m.ProfileComponent), canActivate: [authGuard] },
 
   // Bons de Livraison — liste intégrée dans /invoices/list (onglet BL)
   { path: 'delivery-notes', redirectTo: 'invoices/list', pathMatch: 'full' },
