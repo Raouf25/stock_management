@@ -4,6 +4,8 @@ import com.example.stock_management.model.Bill;
 import com.example.stock_management.model.BillProduct;
 import com.example.stock_management.model.Product;
 import com.example.stock_management.util.NumberUtils;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.time.format.DateTimeFormatter;
@@ -83,6 +85,7 @@ public class InvoicePdfDataService extends AbstractPdfDataService {
      * @return Une Map contenant toutes les données formatées pour le template PDF
      * @throws IllegalArgumentException si billId est null
      */
+    @Cacheable(value = "bill-pdf", key = "#billId")
     public Map<String, Object> preparePdfData(Long billId) {
         Objects.requireNonNull(billId, "Bill ID cannot be null");
 

@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import java.util.*;
@@ -326,6 +327,7 @@ public class BillService {
     }
 
     @Transactional
+    @CacheEvict(value = "bill-pdf", key = "#billId")
     public Bill registerPayment(Long billId) {
         Bill bill = billRepository.findById(billId)
             .orElseThrow(() -> new RuntimeException("Facture non trouvée avec l'ID: " + billId));
