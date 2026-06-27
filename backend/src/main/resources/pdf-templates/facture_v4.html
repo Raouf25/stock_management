@@ -755,7 +755,11 @@
                     <div class="addr-line" th:if="${deliveryCin}"><b>CIN :</b> <span th:text="${deliveryCin}">02345678</span></div>
                     <div class="addr-line" th:if="${customer.licensePlate}">
                         <b>Immat. :</b>
-                        <span th:text="${customer.licensePlate}" style="unicode-bidi:isolate;direction:ltr;display:inline-block;">234 TN 2345</span>
+                        <span style="display: inline-flex; gap: 0.25em; direction: ltr;">
+                            <span th:text="${licensePlateY}">7890</span>
+                            <span>تونس</span>
+                            <span th:text="${licensePlateX}">789</span>
+                        </span>
                     </div>
                     <div class="addr-line" th:if="${deliveryAddress}" th:text="${deliveryAddress}"></div>
                 </div>

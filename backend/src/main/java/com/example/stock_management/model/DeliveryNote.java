@@ -54,7 +54,7 @@ public class DeliveryNote {
     // Relation vers la facture si le BL a été transformé
     @ManyToOne
     @JoinColumn(name = "bill_id")
-    @JsonIgnoreProperties({"deliveryNotes", "customer", "billProducts"})
+    @JsonIgnoreProperties({"deliveryNotes", "customer", "billProducts", "hibernateLazyInitializer", "handler"})
     private Bill bill;
 
     @Column(name = "invoiced", nullable = false)

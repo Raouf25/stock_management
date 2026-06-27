@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Data
@@ -17,8 +18,8 @@ public class SaleDTO {
     private String productDesignation;
     private String customerName;
     private Integer quantitySold;
-    private Double unitSalePrice;
-    private Double totalSaleAmount;
+    private BigDecimal unitSalePrice;
+    private BigDecimal totalSaleAmount;
     private String invoiceNumber;
     private String deliveryNoteNumber;
 }

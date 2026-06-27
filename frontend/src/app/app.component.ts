@@ -67,9 +67,8 @@ export class AppComponent implements OnInit {
       '/documents/create': 'Créer Facture / BL',
       '/invoices/create': 'Créer Facture',
       '/invoices/list': 'Liste des Factures',
-      '/delivery-notes': 'Gestion des BL',
-      '/delivery-notes/create': 'Créer BL',
-      '/delivery-notes/list': 'Liste des BL'
+      '/delivery-notes': 'Bons de Livraison',
+      '/delivery-notes/create': 'Créer BL'
     };
 
     return routeTitles[this.currentRoute] || 'Stock Management ERP';

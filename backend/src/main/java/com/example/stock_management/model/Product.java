@@ -3,41 +3,68 @@ package com.example.stock_management.model;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
 @Data
 @Entity
 public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idProduct;
-    private Long reference;
 
+    private Long reference;
     private String designation;
     private String name;
     private String description;
     private String category;
     private String gamme;
     private String unit;
-    private Double unitPriceSold;
-    private Double unitPrice;
 
-    // Image URL du produit
+    @Column(precision = 19, scale = 3)
+    private BigDecimal unitPriceSold;
+
+    @Column(precision = 19, scale = 3)
+    private BigDecimal unitPrice;
+
     private String imageUrl;
 
     // Stock initial
     private Integer initialStockQuantity;
-    private Double initialUnitPrice; // prix unitaire initial TTC
-    private Double initialStockValue; // valeur initiale = quantiteInitiale * prixUnitaireInitial
+
+    @Column(precision = 19, scale = 3)
+    private BigDecimal initialUnitPrice;
+
+    @Column(precision = 19, scale = 3)
+    private BigDecimal initialStockValue;
 
     // Stock actuel
     private Integer currentStockQuantity;
 
-    // Valeur du stock actuel
-    private Double currentStockValue; // valeur stock final
+    @Column(precision = 19, scale = 3)
+    private BigDecimal currentStockValue;
 
-    // CMP (Coût Moyen Pondéré)
-    private Double cmp; // = valeurStockFinal / quantiteStockFinal
+    // CMP = currentStockValue / currentStockQuantity
+    @Column(precision = 19, scale = 3)
+    private BigDecimal cmp;
 
     @ManyToOne
     @JoinColumn(name = "supplier_id")
     private Supplier supplier;
+
+    @Column(updatable = false)
+    private LocalDateTime createdAt;
+
+    private LocalDateTime updatedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
 }

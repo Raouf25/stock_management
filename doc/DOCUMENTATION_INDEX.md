@@ -2,8 +2,8 @@
 
 **Stock Management System - All Documentation**
 
-Last Updated: April 13, 2026  
-Total Documentation: 14+ guides with real code examples
+Last Updated: June 24, 2026  
+Total Documentation: 15+ guides with real code examples
 
 ---
 
@@ -50,13 +50,14 @@ Total Documentation: 14+ guides with real code examples
 | Document | Purpose | Audience | Status |
 |----------|---------|----------|--------|
 | [README.md](README.md) | Project overview, setup instructions | Everyone | ✅ Updated |
-| [IMPLEMENTATION_GUIDE.md](IMPLEMENTATION_GUIDE.md) | Architecture, code patterns, best practices | Backend developers | ✅ NEW |
+| [DATABASE_GUIDE.md](DATABASE_GUIDE.md) | Schema, migrations V1–V11, indexes, monetary types | Backend / DBA | ✅ NEW |
+| [IMPLEMENTATION_GUIDE.md](IMPLEMENTATION_GUIDE.md) | Architecture, code patterns, best practices | Backend developers | ✅ Updated |
 | [API_DOCUMENTATION.md](API_DOCUMENTATION.md) | Complete endpoint reference | API consumers | ✅ Updated |
 | [API_EXAMPLES.md](API_EXAMPLES.md) | curl & postman examples | API testers | ✅ Updated |
 | [STARTUP_GUIDE.md](STARTUP_GUIDE.md) | Step-by-step startup instructions | Everyone | ✅ Updated |
 | [DOCKER_SETUP.md](DOCKER_SETUP.md) | Docker & compose configuration | DevOps | ✅ Updated |
-| [TESTING_GUIDE.md](TESTING_GUIDE.md) | Unit & integration testing | Testers, developers | ✅ NEW |
-| [TROUBLESHOOTING_GUIDE.md](TROUBLESHOOTING_GUIDE.md) | Common issues & solutions | Everyone | ✅ NEW |
+| [TESTING_GUIDE.md](TESTING_GUIDE.md) | Unit & integration testing | Testers, developers | ✅ Updated |
+| [TROUBLESHOOTING_GUIDE.md](TROUBLESHOOTING_GUIDE.md) | Common issues & solutions | Everyone | ✅ Updated |
 
 ### Backend Documentation
 
@@ -94,6 +95,7 @@ Total Documentation: 14+ guides with real code examples
 
 ### Architecture & Design
 - [IMPLEMENTATION_GUIDE.md](IMPLEMENTATION_GUIDE.md) - Architecture layers
+- [DATABASE_GUIDE.md](DATABASE_GUIDE.md) - Database schema, migrations, indexes
 - [backend/README.md](backend/README.md) - Service structure
 - [frontend/README.md](frontend/README.md) - Frontend structure
 
@@ -293,7 +295,7 @@ When making changes, remember to update:
 
 ---
 
-**Last Updated**: April 13, 2026  
+**Last Updated**: June 24, 2026  
 **Documentation Status**: ✅ Complete with real code examples  
 **Maintainability**: High - tied to actual codebase
 

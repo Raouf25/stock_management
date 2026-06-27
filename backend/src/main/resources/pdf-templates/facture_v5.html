@@ -496,7 +496,12 @@
                 <div class="party-name" th:text="${deliveryFullName}">Ahmed Trabelsi</div>
                 <div class="party-detail" th:if="${deliveryCin}" th:text="'CIN : ' + ${deliveryCin}">02345678</div>
                 <div class="party-detail" th:if="${customer.licensePlate}" style="direction: ltr; text-align: left;">
-                    Immatriculation : <span th:text="${customer.licensePlate}" style="unicode-bidi: isolate; direction: ltr; display: inline-block;">2345 تونس 234</span>
+                    Immatriculation :
+                    <span style="display: inline-flex; gap: 0.25em; direction: ltr;">
+                        <span th:text="${licensePlateY}">7890</span>
+                        <span>تونس</span>
+                        <span th:text="${licensePlateX}">789</span>
+                    </span>
                 </div>
                 <div class="party-detail" th:if="${deliveryAddress != null and deliveryAddress != ''}" th:text="${deliveryAddress}">—</div>
             </div>

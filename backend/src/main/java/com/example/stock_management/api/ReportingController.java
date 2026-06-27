@@ -73,9 +73,9 @@ public class ReportingController {
      */
     @GetMapping("/total-value")
     @Operation(summary = "Récupérer la valeur totale du stock")
-    public ResponseEntity<Map<String, Double>> getTotalStockValue() {
-        Double totalValue = stockService.getTotalStockValue();
-        Map<String, Double> response = new HashMap<>();
+    public ResponseEntity<Map<String, Object>> getTotalStockValue() {
+        var totalValue = stockService.getTotalStockValue();
+        Map<String, Object> response = new HashMap<>();
         response.put("totalStockValue", totalValue);
         return ResponseEntity.ok(response);
     }

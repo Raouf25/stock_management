@@ -33,243 +33,353 @@ interface CustomerKPIs {
   standalone: true,
   imports: [CommonModule, FormsModule, RouterLink],
   template: `
-    <div class="invoice-page-container">
-      <!-- Header -->
-      <div class="invoice-page-header">
-        <div style="display: flex; align-items: center; gap: 1rem;">
-          <span style="font-size: 2rem;">👥</span>
-          <h1 class="invoice-page-title">Gestion des Clients</h1>
-        </div>
-        <a routerLink="/customers/create" 
-           style="padding: 0.75rem 1.5rem; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; border-radius: 0.5rem; text-decoration: none; font-weight: 600;">
-          + Nouveau Client
-        </a>
-      </div>
+<div class="page">
 
-      <!-- KPIs -->
-      <div class="invoice-stats-grid">
-        <div class="invoice-stat-card border-blue">
-          <div class="stat-number">{{ kpis.totalCustomers }}</div>
-          <div class="stat-label">Total Clients</div>
-        </div>
-        <div class="invoice-stat-card border-green">
-          <div class="stat-number">{{ kpis.activeCustomers }}</div>
-          <div class="stat-label">Clients Actifs</div>
-        </div>
-        <div class="invoice-stat-card border-orange">
-          <div class="stat-number">{{ kpis.newCustomersThisMonth }}</div>
-          <div class="stat-label">Nouveaux ce Mois</div>
-        </div>
-        <div class="invoice-stat-card border-red">
-          <div class="stat-number">{{ kpis.totalOutstanding | number:'1.0-0' }}</div>
-          <div class="stat-label">Impayés (DNT)</div>
-        </div>
-      </div>
+  <!-- ══ EN-TÊTE ═══════════════════════════════════════════════════════════ -->
+  <div class="page-header">
+    <h1 class="page-title">Clients</h1>
+    <a routerLink="/customers/create" class="btn-create">+ Nouveau Client</a>
+  </div>
 
-      <!-- Filtres -->
-      <div class="invoice-card" style="margin-bottom: 1.5rem;">
-        <div class="invoice-card-header gradient-purple">
-          <span style="font-size: 1rem;">🔍</span>
-          <span class="invoice-card-header-title">Filtres</span>
-        </div>
-        <div style="padding: 1rem;">
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
-            <div>
-              <label style="display: block; font-size: 0.875rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem;">
-                Rechercher
-              </label>
-              <input type="text" [(ngModel)]="searchQuery" (input)="applyFilters()" 
-                     placeholder="Nom du client..."
-                     style="width: 100%; padding: 0.625rem; border: 1px solid #d1d5db; border-radius: 0.375rem; font-size: 0.875rem;">
-            </div>
-            
-            <div>
-              <label style="display: block; font-size: 0.875rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem;">
-                Statut
-              </label>
-              <select [(ngModel)]="statusFilter" (change)="applyFilters()"
-                      style="width: 100%; padding: 0.625rem; border: 1px solid #d1d5db; border-radius: 0.375rem; font-size: 0.875rem;">
-                <option value="">Tous les statuts</option>
-                <option value="ACTIVE">Actif</option>
-                <option value="INACTIVE">Inactif</option>
-                <option value="BLOCKED">Bloqué</option>
-                <option value="PROSPECT">Prospect</option>
-              </select>
-            </div>
-            
-            <div>
-              <label style="display: block; font-size: 0.875rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem;">
-                Adresse
-              </label>
-              <input type="text" [(ngModel)]="addressFilter" (input)="applyFilters()" 
-                     placeholder="Adresse..."
-                     style="width: 100%; padding: 0.625rem; border: 1px solid #d1d5db; border-radius: 0.375rem; font-size: 0.875rem;">
-            </div>
-          </div>
-        </div>
-      </div>
+  <!-- ══ KPIs ══════════════════════════════════════════════════════════════ -->
+  <div class="kpi-row">
+    <div class="kpi-card kpi-blue">
+      <span class="kpi-val">{{ kpis.totalCustomers }}</span>
+      <span class="kpi-lbl">Total Clients</span>
+    </div>
+    <div class="kpi-card kpi-green">
+      <span class="kpi-val">{{ kpis.activeCustomers }}</span>
+      <span class="kpi-lbl">Clients Actifs</span>
+    </div>
+    <div class="kpi-card kpi-orange">
+      <span class="kpi-val">{{ kpis.newCustomersThisMonth }}</span>
+      <span class="kpi-lbl">Nouveaux ce Mois</span>
+    </div>
+    <div class="kpi-card kpi-red">
+      <span class="kpi-val">{{ kpis.totalOutstanding | number:'1.0-0' }}</span>
+      <span class="kpi-lbl">Impayés (DNT)</span>
+    </div>
+  </div>
 
-      <!-- Liste des clients -->
-      <div class="invoice-card">
-        <div class="invoice-card-header gradient-purple">
-          <span style="font-size: 1rem;">📋</span>
-          <span class="invoice-card-header-title">Liste des Clients ({{ filteredCustomers.length }})</span>
-        </div>
-        
-        <!-- Desktop Table -->
-        <div class="desktop-table" style="overflow-x: auto;">
-          <table style="width: 100%; border-collapse: collapse;">
-            <thead>
-              <tr style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);">
-                <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: left;">NOM</th>
-                <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: left;">CONTACT</th>
-                <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: left;">COORDONNÉES</th>
-                <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: left;">ADRESSE</th>
-                <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: right;">CA TOTAL</th>
-                <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: right;">IMPAYÉS</th>
-                <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: center;">STATUT</th>
-                <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: center;">ACTIONS</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let item of filteredCustomers" 
-                  style="border-bottom: 1px solid #e5e7eb; transition: background 0.2s;"
-                  onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">
-                <td style="padding: 0.75rem 1rem;">
-                  <div style="font-weight: 600; color: #111827;">{{ item.customer.name }}</div>
-                </td>
-                <td style="padding: 0.75rem 1rem;">
-                  <div style="font-size: 0.875rem;">{{ item.customer.fullName || '-' }}</div>
-                </td>
-                <td style="padding: 0.75rem 1rem;">
-                  <div style="color: #111827;">📧 {{ item.customer.email || '-' }}</div>
-                  <div style="font-size: 0.75rem; color: #6b7280;">📞 {{ item.customer.phone || '-' }}</div>
-                </td>
-                <td style="padding: 0.75rem 1rem; color: #6b7280;">{{ item.customer.address || '-' }}</td>
-                <td style="padding: 0.75rem 1rem; text-align: right; font-weight: 600; color: #059669;">
-                  {{ item.totalCA | number:'1.0-0' }} DNT
-                </td>
-                <td style="padding: 0.75rem 1rem; text-align: right;">
-                  <span [style.color]="item.unpaidAmount > 0 ? '#dc2626' : '#6b7280'" 
-                        [style.fontWeight]="item.unpaidAmount > 0 ? '600' : '400'">
-                    {{ item.unpaidAmount | number:'1.0-0' }} DNT
-                  </span>
-                </td>
-                <td style="padding: 0.75rem 1rem; text-align: center;">
-                  <span [style.background]="getStatusColor(item.customer.status)" 
-                        style="padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; color: white;">
-                    {{ item.customer.status || 'ACTIVE' }}
-                  </span>
-                </td>
-                <td style="padding: 0.75rem 1rem;">
-                  <div style="display: flex; align-items: center; justify-content: center; gap: 0.25rem;">
-                    <button (click)="viewCustomer(item.customer.customerId)" title="Voir"
-                            style="width: 2rem; height: 2rem; border-radius: 0.375rem; border: 1px solid #bfdbfe; background: #eff6ff; color: #1e40af; cursor: pointer; font-size: 0.875rem; display: flex; align-items: center; justify-content: center;"
-                            onmouseover="this.style.background='#dbeafe'" onmouseout="this.style.background='#eff6ff'">👁️</button>
-                    <button (click)="editCustomer(item.customer.customerId)" title="Modifier"
-                            style="width: 2rem; height: 2rem; border-radius: 0.375rem; border: 1px solid #fcd34d; background: #fef3c7; color: #92400e; cursor: pointer; font-size: 0.875rem; display: flex; align-items: center; justify-content: center;"
-                            onmouseover="this.style.background='#fde68a'" onmouseout="this.style.background='#fef3c7'">✏️</button>
-                    <button (click)="deleteCustomer(item.customer.customerId)" title="Supprimer"
-                            style="width: 2rem; height: 2rem; border-radius: 0.375rem; border: 1px solid #fecaca; background: #fee2e2; color: #991b1b; cursor: pointer; font-size: 0.875rem; display: flex; align-items: center; justify-content: center;"
-                            onmouseover="this.style.background='#fecaca'" onmouseout="this.style.background='#fee2e2'">🗑️</button>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        
-        <!-- Mobile Cards -->
-        <div class="mobile-cards">
-          <div *ngFor="let item of filteredCustomers"
-               style="border-bottom: 1px solid #e5e7eb; padding: 1rem; background: white;">
-            <!-- Header: Client Name & Status -->
-            <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 0.75rem;">
-              <div style="font-weight: 600; color: #111827; font-size: 1rem;">{{ item.customer.name }}</div>
-              <span [style.background]="getStatusColor(item.customer.status)" 
-                    style="padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; color: white;">
+  <!-- ══ CARTE PRINCIPALE ═══════════════════════════════════════════════════ -->
+  <div class="main-card">
+
+    <!-- ── Filtres ─────────────────────────────────────────────────────────── -->
+    <div class="filter-bar">
+      <div class="filter-group fg-wide">
+        <label class="filter-lbl">Recherche</label>
+        <input type="text" class="filter-ctrl" [(ngModel)]="searchQuery"
+               (input)="applyFilters()" placeholder="Nom, email, téléphone…">
+      </div>
+      <div class="filter-group">
+        <label class="filter-lbl">Statut</label>
+        <select class="filter-ctrl" [(ngModel)]="statusFilter" (change)="applyFilters()">
+          <option value="">Tous</option>
+          <option value="ACTIVE">Actif</option>
+          <option value="INACTIVE">Inactif</option>
+          <option value="BLOCKED">Bloqué</option>
+          <option value="PROSPECT">Prospect</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label class="filter-lbl">Adresse</label>
+        <input type="text" class="filter-ctrl" [(ngModel)]="addressFilter"
+               (input)="applyFilters()" placeholder="Ville, région…">
+      </div>
+      <button *ngIf="searchQuery || statusFilter || addressFilter"
+              class="btn-reset" (click)="resetFilters()">✕ Réinitialiser</button>
+    </div>
+
+    <!-- ════════ TABLE (desktop) ════════ -->
+    <div class="desktop-table">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>CLIENT</th>
+            <th>CONTACT</th>
+            <th>COORDONNÉES</th>
+            <th>ADRESSE</th>
+            <th class="ta-r">CA TOTAL (DNT)</th>
+            <th class="ta-r">IMPAYÉS (DNT)</th>
+            <th class="ta-c">STATUT</th>
+            <th class="ta-c">ACTIONS</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of filteredCustomers; trackBy: trackById"
+              class="data-row"
+              (click)="viewCustomer(item.customer.customerId)">
+            <td><span class="client-name">{{ item.customer.name }}</span></td>
+            <td class="td-muted">{{ item.customer.fullName || '—' }}</td>
+            <td>
+              <div class="td-muted">📧 {{ item.customer.email || '—' }}</div>
+              <div class="td-muted" style="font-size:.8rem;">📞 {{ item.customer.phone || '—' }}</div>
+            </td>
+            <td class="td-muted">{{ item.customer.address || '—' }}</td>
+            <td class="ta-r fw-600 c-green">{{ item.totalCA | number:'1.0-0' }}</td>
+            <td class="ta-r">
+              <span [class.c-red]="item.unpaidAmount > 0"
+                    [class.fw-600]="item.unpaidAmount > 0"
+                    [class.td-muted]="item.unpaidAmount === 0">
+                {{ item.unpaidAmount | number:'1.0-0' }}
+              </span>
+            </td>
+            <td class="ta-c" (click)="$event.stopPropagation()">
+              <span class="status-badge" [ngClass]="getStatusClass(item.customer.status)">
                 {{ item.customer.status || 'ACTIVE' }}
               </span>
-            </div>
-            
-            <!-- Contact Info -->
-            <div style="margin-bottom: 0.75rem;">
-              <div *ngIf="item.customer.fullName" style="font-weight: 500; color: #374151; font-size: 0.875rem;">{{ item.customer.fullName }}</div>
-              <div style="color: #6b7280; font-size: 0.875rem;">📧 {{ item.customer.email || '-' }}</div>
-              <div style="color: #6b7280; font-size: 0.75rem;">📞 {{ item.customer.phone || '-' }}</div>
-              <div *ngIf="item.customer.address" style="color: #6b7280; font-size: 0.75rem; margin-top: 0.25rem;">📍 {{ item.customer.address }}</div>
-            </div>
-            
-            <!-- Amounts - 2 Columns Grid -->
-            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; margin-bottom: 1rem; font-size: 0.875rem;">
-              <div style="background: #f0fdf4; padding: 0.5rem; border-radius: 0.5rem; text-align: center;">
-                <div style="font-size: 0.75rem; color: #6b7280; margin-bottom: 0.125rem;">CA Total</div>
-                <div style="font-weight: 600; color: #059669; font-size: 0.875rem;">{{ item.totalCA | number:'1.0-0' }} DNT</div>
+            </td>
+            <td class="ta-c" (click)="$event.stopPropagation()">
+              <div class="action-group">
+                <button (click)="viewCustomer(item.customer.customerId)"
+                        class="act-btn act-view" title="Voir">👁️</button>
+                <button (click)="editCustomer(item.customer.customerId)"
+                        class="act-btn act-edit" title="Modifier">✏️</button>
+                <button (click)="deleteCustomer(item.customer.customerId)"
+                        class="act-btn act-del" title="Supprimer">🗑️</button>
               </div>
-              <div style="background: #fef2f2; padding: 0.5rem; border-radius: 0.5rem; text-align: center;">
-                <div style="font-size: 0.75rem; color: #6b7280; margin-bottom: 0.125rem;">Impayés</div>
-                <div [style.color]="item.unpaidAmount > 0 ? '#dc2626' : '#6b7280'" 
-                     [style.fontWeight]="item.unpaidAmount > 0 ? '600' : '400'"
-                     style="font-size: 0.875rem;">{{ item.unpaidAmount | number:'1.0-0' }} DNT</div>
-              </div>
-            </div>
-            
-            <!-- Actions -->
-            <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 0.25rem; border-top: 1px solid #e5e7eb; padding-top: 0.75rem;">
-              <button (click)="viewCustomer(item.customer.customerId)" title="Voir"
-                      style="width: 2rem; height: 2rem; border-radius: 0.375rem; border: 1px solid #bfdbfe; background: #eff6ff; color: #1e40af; cursor: pointer; font-size: 0.875rem; display: flex; align-items: center; justify-content: center;">👁️</button>
-              <button (click)="editCustomer(item.customer.customerId)" title="Modifier"
-                      style="width: 2rem; height: 2rem; border-radius: 0.375rem; border: 1px solid #fcd34d; background: #fef3c7; color: #92400e; cursor: pointer; font-size: 0.875rem; display: flex; align-items: center; justify-content: center;">✏️</button>
-              <button (click)="deleteCustomer(item.customer.customerId)" title="Supprimer"
-                      style="width: 2rem; height: 2rem; border-radius: 0.375rem; border: 1px solid #fecaca; background: #fee2e2; color: #991b1b; cursor: pointer; font-size: 0.875rem; display: flex; align-items: center; justify-content: center;">🗑️</button>
-            </div>
+            </td>
+          </tr>
+          <tr *ngIf="filteredCustomers.length === 0">
+            <td colspan="8" class="empty-state">
+              <div class="empty-icon">📭</div>
+              <p>Aucun client trouvé</p>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ════════ CARTES (mobile) ════════ -->
+    <div class="mobile-cards">
+      <div *ngFor="let item of filteredCustomers; trackBy: trackById"
+           class="mobile-row"
+           (click)="viewCustomer(item.customer.customerId)">
+        <div class="mobile-row-top">
+          <span class="client-name">{{ item.customer.name }}</span>
+          <span class="status-badge" [ngClass]="getStatusClass(item.customer.status)">
+            {{ item.customer.status || 'ACTIVE' }}
+          </span>
+        </div>
+        <div *ngIf="item.customer.fullName" class="td-muted" style="margin:.15rem 0 .3rem;">
+          {{ item.customer.fullName }}
+        </div>
+        <div class="td-muted" style="font-size:.8rem;margin-bottom:.75rem;">
+          📧 {{ item.customer.email || '—' }}&nbsp; 📞 {{ item.customer.phone || '—' }}
+        </div>
+        <div class="mobile-grid-2" style="margin-bottom:.75rem;">
+          <div class="mg-cell">
+            <span class="mg-lbl">CA Total</span>
+            <strong class="c-green" style="font-size:.8rem;">{{ item.totalCA | number:'1.0-0' }} DNT</strong>
           </div>
-          
-          <!-- Empty State -->
-          <div *ngIf="filteredCustomers.length === 0" style="text-align: center; padding: 3rem 1rem; color: #7f8c8d;">
-            <div style="font-size: 4rem; margin-bottom: 1rem; opacity: 0.5;">👥</div>
-            <p style="font-size: 1.1rem; margin: 0;">Aucun client trouvé</p>
+          <div class="mg-cell">
+            <span class="mg-lbl">Impayés</span>
+            <strong [class.c-red]="item.unpaidAmount > 0" style="font-size:.8rem;">
+              {{ item.unpaidAmount | number:'1.0-0' }} DNT
+            </strong>
           </div>
         </div>
+        <div class="mobile-actions" (click)="$event.stopPropagation()">
+          <button (click)="viewCustomer(item.customer.customerId)"
+                  class="act-btn act-view" title="Voir">👁️</button>
+          <button (click)="editCustomer(item.customer.customerId)"
+                  class="act-btn act-edit" title="Modifier">✏️</button>
+          <button (click)="deleteCustomer(item.customer.customerId)"
+                  class="act-btn act-del" title="Supprimer">🗑️</button>
+        </div>
+      </div>
+      <div *ngIf="filteredCustomers.length === 0" class="empty-state">
+        <div class="empty-icon">📭</div>
+        <p>Aucun client trouvé</p>
       </div>
     </div>
+
+  </div><!-- /main-card -->
+
+  <!-- ══ TOASTS ════════════════════════════════════════════════════════════ -->
+  <div *ngIf="toastError"   class="toast toast-err">{{ toastError }}</div>
+  <div *ngIf="toastSuccess" class="toast toast-ok">{{ toastSuccess }}</div>
+
+</div><!-- /page -->
   `,
   styles: [`
-    .invoice-page-container {
-      padding: 2rem;
-      background: #f3f4f6;
-      min-height: 100vh;
+    *, *::before, *::after {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      box-sizing: border-box;
     }
 
-    .invoice-page-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 2rem;
+    .page { padding: 1.5rem; background: #f8fafc; min-height: 100vh; }
+
+    .page-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 1.5rem;
+    }
+    .page-title { font-size: 1.5rem; font-weight: 700; color: #0f172a; margin: 0; }
+    .btn-create {
+      display: inline-flex; align-items: center; gap: .4rem;
+      padding: .6rem 1.25rem;
+      background: linear-gradient(135deg, #4f46e5, #6366f1);
+      color: #fff; border-radius: 10px; text-decoration: none;
+      font-size: .875rem; font-weight: 600;
+      transition: opacity .18s;
+      box-shadow: 0 2px 8px rgba(79,70,229,.25);
+    }
+    .btn-create:hover { opacity: .88; }
+
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: .875rem; margin-bottom: 1.5rem;
+    }
+    .kpi-card {
+      background: #fff; border-radius: 12px; border: 1px solid #e2e8f0;
+      padding: 1rem 1.25rem; display: flex; flex-direction: column; gap: .3rem;
+      box-shadow: 0 1px 4px rgba(0,0,0,.04); border-top-width: 3px;
+      transition: transform .15s, box-shadow .15s;
+    }
+    .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.08); }
+    .kpi-blue   { border-top-color: #3b82f6; }
+    .kpi-green  { border-top-color: #10b981; }
+    .kpi-orange { border-top-color: #f59e0b; }
+    .kpi-red    { border-top-color: #ef4444; }
+    .kpi-val { font-size: 1.25rem; font-weight: 700; color: #0f172a; line-height: 1.2; }
+    .kpi-lbl {
+      font-size: .7rem; font-weight: 600; color: #64748b;
+      text-transform: uppercase; letter-spacing: .4px;
     }
 
-    .invoice-page-title {
-      font-size: 1.875rem;
-      font-weight: 700;
-      color: #111827;
-      margin: 0;
+    .main-card {
+      background: #fff; border-radius: 12px; border: 1px solid #e2e8f0;
+      box-shadow: 0 1px 4px rgba(0,0,0,.04); overflow: hidden;
     }
 
+    .filter-bar {
+      display: flex; align-items: flex-end; gap: .875rem;
+      padding: 1rem 1.25rem;
+      background: #f8fafc; border-bottom: 1px solid #f1f5f9;
+      flex-wrap: wrap;
+    }
+    .filter-group { display: flex; flex-direction: column; gap: .35rem; flex: 1; min-width: 120px; }
+    .filter-group.fg-wide { flex: 2; min-width: 180px; }
+    .filter-lbl {
+      font-size: .7rem; font-weight: 700; color: #64748b;
+      text-transform: uppercase; letter-spacing: .5px;
+    }
+    .filter-ctrl {
+      height: 38px; border: 1px solid #e2e8f0; border-radius: 8px;
+      padding: 0 .75rem; font-size: .85rem;
+      background: #fff; color: #0f172a; outline: none;
+      transition: border-color .18s; width: 100%;
+    }
+    .filter-ctrl:focus { border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79,70,229,.08); }
+    .btn-reset {
+      height: 38px; padding: 0 .875rem;
+      border: 1px solid #e2e8f0; border-radius: 8px;
+      background: #fff; color: #64748b; font-size: .8rem;
+      font-weight: 500; cursor: pointer; white-space: nowrap;
+      align-self: flex-end; transition: all .15s;
+    }
+    .btn-reset:hover { border-color: #ef4444; color: #ef4444; background: #fef2f2; }
 
+    .data-table { width: 100%; border-collapse: collapse; font-size: .875rem; }
+    .data-table thead tr { background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%); }
+    .data-table th {
+      color: #fff; font-weight: 500; padding: .8rem 1rem; text-align: left;
+      font-size: .78rem; letter-spacing: .4px; white-space: nowrap;
+    }
+    .data-table td { padding: .8rem 1rem; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+    .data-row { cursor: pointer; transition: background .12s; }
+    .data-row:hover { background: #f5f7ff !important; }
+    .data-row:last-child td { border-bottom: none; }
 
-    .invoice-card-header-title {
-      font-weight: 600;
-      font-size: 1.125rem;
+    .ta-r { text-align: right !important; }
+    .ta-c { text-align: center !important; }
+    .fw-600 { font-weight: 600; }
+    .td-muted { color: #64748b; font-size: .875rem; }
+    .c-green { color: #16a34a !important; }
+    .c-red   { color: #dc2626 !important; }
+    .client-name { font-weight: 600; color: #1f2937; }
+
+    .status-badge {
+      display: inline-block; padding: .2rem .65rem;
+      border-radius: 9999px; font-size: .72rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .4px;
+    }
+    .status-active   { background: #d1fae5; color: #065f46; }
+    .status-inactive { background: #f1f5f9; color: #475569; }
+    .status-blocked  { background: #fee2e2; color: #991b1b; }
+    .status-prospect { background: #eff6ff; color: #1d4ed8; }
+
+    .action-group { display: flex; gap: .35rem; justify-content: center; }
+    .act-btn {
+      width: 2rem; height: 2rem; border-radius: 6px;
+      border: 1px solid transparent; cursor: pointer; font-size: .875rem;
+      display: flex; align-items: center; justify-content: center;
+      transition: opacity .15s;
+    }
+    .act-btn:hover { opacity: .75; }
+    .act-view { background: #d1fae5; border-color: #a7f3d0; }
+    .act-edit { background: #fef3c7; border-color: #fde68a; }
+    .act-del  { background: #fee2e2; border-color: #fecaca; }
+
+    .empty-state { padding: 3.5rem 1rem; text-align: center; color: #94a3b8; }
+    .empty-icon  { font-size: 3.5rem; margin-bottom: .75rem; opacity: .6; }
+
+    .mobile-row {
+      padding: 1rem 1.25rem; border-bottom: 1px solid #f1f5f9;
+      cursor: pointer; transition: background .12s;
+    }
+    .mobile-row:hover { background: #f8fafc; }
+    .mobile-row:last-child { border-bottom: none; }
+    .mobile-row-top {
+      display: flex; justify-content: space-between;
+      align-items: flex-start; margin-bottom: .4rem;
+    }
+    .mobile-grid-2 { display: grid; grid-template-columns: repeat(2,1fr); gap: .5rem; }
+    .mg-cell {
+      background: #f8fafc; padding: .5rem; border-radius: 8px;
+      text-align: center; display: flex; flex-direction: column; gap: .1rem;
+    }
+    .mg-lbl { font-size: .7rem; color: #6b7280; }
+    .mobile-actions {
+      display: flex; gap: .5rem; justify-content: flex-end;
+      border-top: 1px solid #f1f5f9; padding-top: .75rem;
+    }
+
+    .toast {
+      position: fixed; bottom: 1.25rem; right: 1.25rem;
+      max-width: 400px; padding: 1rem 1.25rem;
+      border-radius: 10px; font-size: .875rem; font-weight: 500;
+      box-shadow: 0 8px 24px rgba(0,0,0,.12);
+      z-index: 9999; animation: fadeIn .25s ease;
+    }
+    .toast-err { background: #fee2e2; color: #991b1b; border-left: 4px solid #ef4444; }
+    .toast-ok  { background: #d1fae5; color: #065f46; border-left: 4px solid #10b981; }
+    @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+
+    .desktop-table { display: none; overflow-x: auto; }
+    .mobile-cards  { display: block; }
+
+    @media (min-width: 1024px) {
+      .desktop-table { display: block; }
+      .mobile-cards  { display: none; }
+    }
+    @media (max-width: 768px) {
+      .page { padding: 1rem; }
+      .filter-bar { gap: .625rem; }
     }
   `]
 })
 export class CustomerListComponent implements OnInit {
   customers: CustomerWithStats[] = [];
   filteredCustomers: CustomerWithStats[] = [];
-  searchQuery = '';
-  statusFilter = '';
+  searchQuery   = '';
+  statusFilter  = '';
   addressFilter = '';
-  
+
+  toastError   = '';
+  toastSuccess = '';
+
   kpis: CustomerKPIs = {
     totalCustomers: 0,
     activeCustomers: 0,
@@ -280,10 +390,7 @@ export class CustomerListComponent implements OnInit {
     totalOutstanding: 0
   };
 
-  constructor(
-    private apiService: ApiService,
-    private router: Router
-  ) {}
+  constructor(private apiService: ApiService, private router: Router) {}
 
   ngOnInit(): void {
     this.loadCustomers();
@@ -292,70 +399,67 @@ export class CustomerListComponent implements OnInit {
 
   loadCustomers(): void {
     this.apiService.searchCustomers().subscribe({
-      next: (data) => {
-        this.customers = data;
-        this.applyFilters();
-      },
-      error: (error) => console.error('Error loading customers:', error)
+      next: (data) => { this.customers = data; this.applyFilters(); },
+      error: () => this.showError('Erreur lors du chargement des clients.')
     });
   }
 
   applyFilters(): void {
     this.filteredCustomers = this.customers.filter(item => {
-      const customer = item.customer;
-      
-      // Filtre par recherche (nom)
-      if (this.searchQuery && !customer.name?.toLowerCase().includes(this.searchQuery.toLowerCase())) {
-        return false;
-      }
-      
-      // Filtre par statut
-      if (this.statusFilter && customer.status !== this.statusFilter) {
-        return false;
-      }
-      
-      // Filtre par adresse
-      if (this.addressFilter && !customer.address?.toLowerCase().includes(this.addressFilter.toLowerCase())) {
-        return false;
-      }
-      
+      const c = item.customer;
+      if (this.searchQuery && !c.name?.toLowerCase().includes(this.searchQuery.toLowerCase())) return false;
+      if (this.statusFilter && c.status !== this.statusFilter) return false;
+      if (this.addressFilter && !c.address?.toLowerCase().includes(this.addressFilter.toLowerCase())) return false;
       return true;
     });
   }
 
+  resetFilters(): void {
+    this.searchQuery   = '';
+    this.statusFilter  = '';
+    this.addressFilter = '';
+    this.applyFilters();
+  }
+
   loadKPIs(): void {
     this.apiService.getCustomerKPIs().subscribe({
-      next: (data) => this.kpis = data,
-      error: (error) => console.error('Error loading KPIs:', error)
+      next: (data) => { this.kpis = data; },
+      error: () => {}
     });
   }
 
-  getStatusColor(status: string): string {
-    switch (status) {
-      case 'ACTIVE': return '#10b981';
-      case 'BLOCKED': return '#ef4444';
-      case 'INACTIVE': return '#6b7280';
-      default: return '#3b82f6';
-    }
+  getStatusClass(status: string): string {
+    const map: Record<string, string> = {
+      ACTIVE:   'status-active',
+      INACTIVE: 'status-inactive',
+      BLOCKED:  'status-blocked',
+      PROSPECT: 'status-prospect'
+    };
+    return map[status] ?? 'status-active';
   }
 
-  viewCustomer(id: number): void {
-    this.router.navigate(['/customers/edit', id]);
+  trackById(_: number, item: CustomerWithStats): number {
+    return item.customer.customerId;
   }
 
-  editCustomer(id: number): void {
-    this.router.navigate(['/customers/edit', id]);
-  }
+  viewCustomer(id: number): void { this.router.navigate(['/customers/edit', id]); }
+  editCustomer(id: number): void { this.router.navigate(['/customers/edit', id]); }
 
   deleteCustomer(id: number): void {
-    if (confirm('Êtes-vous sûr de vouloir supprimer ce client ?')) {
-      this.apiService.deleteCustomer(id).subscribe({
-        next: () => {
-          this.loadCustomers();
-          this.loadKPIs();
-        },
-        error: (error) => console.error('Error deleting customer:', error)
-      });
-    }
+    if (!confirm('Voulez-vous vraiment supprimer ce client ?')) return;
+    this.apiService.deleteCustomer(id).subscribe({
+      next: () => { this.showSuccess('Client supprimé.'); this.loadCustomers(); this.loadKPIs(); },
+      error: () => this.showError('Erreur lors de la suppression.')
+    });
+  }
+
+  private showError(msg: string): void {
+    this.toastError = msg;
+    setTimeout(() => this.toastError = '', 5000);
+  }
+
+  private showSuccess(msg: string): void {
+    this.toastSuccess = msg;
+    setTimeout(() => this.toastSuccess = '', 5000);
   }
 }

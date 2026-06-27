@@ -96,16 +96,16 @@ import { AuthService } from '../../services/auth.service';
   `,
   styles: [`
     .page {
-      background: #f0f2f8;
+      background: #f8fafc;
       min-height: 100vh;
-      padding: 1.75rem 2rem;
+      padding: 1.5rem;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       box-sizing: border-box;
     }
 
-    .page-head { margin-bottom: 1.75rem; }
-    .page-title { font-size: 1.625rem; font-weight: 700; color: #0f172a; margin: 0 0 .25rem; }
-    .page-sub   { font-size: .85rem; color: #64748b; margin: 0; }
+    .page-head { margin-bottom: 1.5rem; }
+    .page-title { font-size: 1.5rem; font-weight: 700; color: #0f172a; margin: 0 0 .2rem; }
+    .page-sub   { font-size: .82rem; color: #64748b; margin: 0; }
 
     /* Hero */
     .profile-hero {
@@ -113,10 +113,10 @@ import { AuthService } from '../../services/auth.service';
       align-items: center;
       gap: 1.5rem;
       background: #fff;
-      border-radius: 14px;
+      border-radius: 12px;
       border: 1px solid #e2e8f0;
-      padding: 1.5rem 2rem;
-      margin-bottom: 1.5rem;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1.25rem;
       box-shadow: 0 1px 4px rgba(0,0,0,.04);
     }
 
@@ -153,7 +153,7 @@ import { AuthService } from '../../services/auth.service';
     .cards-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-      gap: 1.25rem;
+      gap: 1rem;
     }
 
     .card {
@@ -168,16 +168,16 @@ import { AuthService } from '../../services/auth.service';
       display: flex;
       align-items: center;
       gap: .625rem;
-      padding: 1rem 1.25rem;
-      border-bottom: 1px solid #f1f5f9;
+      padding: .75rem 1.25rem;
       font-size: .82rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: .05em;
-      color: #475569;
+      font-weight: 600;
+      color: #fff;
+      background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
     }
-    .card-head i { font-size: 1rem; color: #4f46e5; }
-    .card-danger .card-head i { color: #ef4444; }
+    .card-head i { font-size: 1rem; color: #fff; opacity: .9; }
+    .card-danger .card-head {
+      background: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
+    }
 
     .card-body { padding: 1.25rem; }
 

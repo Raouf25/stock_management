@@ -1,377 +1,237 @@
-# Backend - Stock Management API
+# Backend — Stock Management API
 
-API REST Spring Boot 3.3.3 pour la gestion complète du stock avec calcul automatique du CMP.
+API REST Spring Boot pour la gestion de stock, facturation et livraison, conforme à la législation tunisienne.
 
-## 🎯 Fonctionnalités
+## Stack technique
 
-- ✅ Gestion des produits (10 produits de test)
-- ✅ Gestion des fournisseurs (3 fournisseurs de test)
-- ✅ Gestion des clients (30 clients de test)
-- ✅ Gestion des achats avec mouvement stock automatique (30 achats)
-- ✅ Gestion des ventes avec validation stock (80 ventes)
-- ✅ Gestion des factures avec génération PDF (80 factures)
-- ✅ Template PDF conforme législation tunisienne
-- ✅ Historique complet des mouvements (110 mouvements de stock)
-- ✅ Calcul Coût Moyen Pondéré (CMP)
-- ✅ Alertes de stock faible
-- ✅ Schéma de base de données auto-généré par JPA
-- ✅ Données de test chargées au démarrage
-- ✅ API REST complète (30+ endpoints)
-- ✅ Documentation Swagger/OpenAPI
-- ✅ Transactions ACID
+| Technologie          | Version  | Rôle                                    |
+|----------------------|----------|-----------------------------------------|
+| Spring Boot          | 3.3.7    | Framework principal                     |
+| Java                 | 21       | Langage                                 |
+| PostgreSQL           | 15       | Base de données                         |
+| Flyway               | —        | Migrations DB (V1 → V12)               |
+| Spring Security + JWT| —        | Authentification stateless              |
+| Thymeleaf            | —        | Rendu des templates PDF / email         |
+| Playwright (Chromium)| —        | Génération PDF via headless browser     |
+| Resend               | —        | Envoi d'emails transactionnels          |
+| Lombok               | 1.18.36  | Réduction du boilerplate                |
+| MapStruct            | —        | Mapping entités ↔ DTOs                  |
+| SpringDoc / Swagger  | —        | Documentation API interactive           |
+| Spring Cache         | —        | Cache mémoire simple                    |
+| Spring Actuator      | —        | Health check, métriques                 |
 
-## 🗄️ Base de Données
+## Architecture en couches
 
-### Création Automatique du Schéma
+```
+api/          → Contrôleurs REST + gestion des erreurs globale
+service/      → Logique métier (BillService, SaleService, PdfGenerateService…)
+repository/   → Accès données Spring Data JPA
+model/        → Entités JPA
+dto/          → Objets de transfert de données
+security/     → JwtAuthFilter, JwtService, SecurityConfig
+configuration/→ CORS, cache, Spring beans
+util/         → NumberUtils, utilitaires
+```
 
-Le schéma est **automatiquement créé par JPA/Hibernate** à partir des entités Java :
+## Entités principales
 
-- ✅ **Pas de schema.sql** - Tables générées depuis les annotations `@Entity`
-- ✅ **data.sql uniquement** - Insère les données de test au démarrage
-- ✅ **`spring.jpa.hibernate.ddl-auto=create`** - Recrée le schéma à chaque démarrage
+| Entité           | Table                | Description                                  |
+|------------------|----------------------|----------------------------------------------|
+| `User`           | `user`               | Comptes utilisateurs (email + mot de passe)  |
+| `Product`        | `product`            | Articles en stock (CMP, quantités)           |
+| `Supplier`       | `supplier`           | Fournisseurs                                 |
+| `Customer`       | `customer`           | Clients (CIN, plaque d'immatriculation)      |
+| `Purchase`       | `purchase`           | Achats fournisseurs                          |
+| `Sale`           | `sale`               | Ventes clients                               |
+| `Bill`           | `bill`               | Factures (TVA, dépôt, statut paiement)      |
+| `BillProduct`    | `bill_product`       | Lignes de facture                            |
+| `DeliveryNote`   | `delivery_note`      | Bons de livraison                            |
+| `PasswordResetToken` | `password_reset_token` | Tokens de réinitialisation           |
 
-### Données de Test Incluses
+## Migrations Flyway
 
-Le fichier `data.sql` contient :
+Les migrations sont dans `src/main/resources/db/migration/` :
 
-| Table | Nombre d'enregistrements | Description |
-|-------|--------------------------|-------------|
-| `supplier` | 3 | Fournisseurs (Fournitures Générales, Technologie & Co, Aldecco) |
-| `customer` | 30 | Clients répartis en Tunisie |
-| `product` | 10 | Produits (VALPRIMER, VALFIX, FISSATIVO, VALMAT, VALTEX, VALBLANC, VALPRO MAT) |
-| `purchase` | 30 | Achats de Jan 2025 à Jan 2026 |
-| `sale` | 80 | Ventes de Jan 2025 à Jan 2026 |
-| `bill` | 80 | Factures correspondant aux ventes |
-| `bill_product` | 80 | Produits de factures |
-| `stock_mouvement` | 110 | 30 ENTREE (achats) + 80 SORTIE (ventes) |
+| Version | Description                               |
+|---------|-------------------------------------------|
+| V1      | Création des tables principales           |
+| V2      | Données initiales                         |
+| V3      | Ajout gamme produit                       |
+| V4      | Suppression données de démo               |
+| V5      | Nettoyage des ventes dupliquées           |
+| V6      | Index manquants                           |
+| V7      | Types monétaires (NUMERIC précis)         |
+| V8      | Horodatage d'audit (created_at, updated_at) |
+| V9      | Contraintes d'intégrité                   |
+| V10     | Lien vente → facture                      |
+| V11     | Vue dashboard produits                    |
+| V12     | Suppression colonnes purchase orphelines  |
 
-## 🚀 Démarrage
+## Endpoints REST
+
+### Authentification — `/api/auth`
+| Méthode | Route                       | Description                       |
+|---------|-----------------------------|-----------------------------------|
+| POST    | `/register`                 | Créer un compte                   |
+| POST    | `/login`                    | Connexion → JWT                   |
+| POST    | `/forgot-password`          | Demande de réinitialisation       |
+| POST    | `/reset-password`           | Réinitialiser avec token          |
+| GET     | `/validate-reset-token`     | Valider un token de reset         |
+
+### Produits — `/api/products`
+| Méthode | Route                       | Description                       |
+|---------|-----------------------------|-----------------------------------|
+| GET     | `/`                         | Liste complète                    |
+| GET     | `/dashboard`                | Vue dashboard (CMP, stock, KPIs)  |
+| GET     | `/{id}`                     | Détail produit                    |
+| GET     | `/{id}/stock`               | Stock actuel                      |
+| GET     | `/{id}/vendus`              | Quantité vendue                   |
+| GET     | `/{id}/inventory`           | Inventaire complet                |
+| GET     | `/categories`               | Liste des catégories              |
+| GET     | `/stats/categories`         | Stats par catégorie               |
+| GET     | `/supplier/{supplierId}`    | Produits par fournisseur          |
+| POST    | `/`                         | Créer produit                     |
+| PUT     | `/{id}`                     | Modifier produit                  |
+| DELETE  | `/{id}`                     | Supprimer produit                 |
+
+### Achats — `/api/purchases`
+| Méthode | Route                   | Description                       |
+|---------|-------------------------|-----------------------------------|
+| GET     | `/`                     | Liste des achats                  |
+| GET     | `/{id}`                 | Détail achat                      |
+| GET     | `/search`               | Recherche par filtre              |
+| GET     | `/product/{productId}`  | Achats par produit                |
+| POST    | `/`                     | Créer achat (→ mouvement stock)   |
+
+### Ventes — `/api/sales`
+| Méthode | Route                   | Description                              |
+|---------|-------------------------|------------------------------------------|
+| GET     | `/`                     | Liste des ventes                         |
+| GET     | `/combined`             | Vue combinée pour dashboard/graphiques   |
+| GET     | `/{id}`                 | Détail vente                             |
+| GET     | `/search`               | Recherche par filtre                     |
+| GET     | `/product/{productId}`  | Ventes par produit                       |
+| POST    | `/`                     | Créer vente (→ validation stock)         |
+
+### Factures — `/api/bills`
+| Méthode | Route                    | Description                             |
+|---------|--------------------------|-----------------------------------------|
+| GET     | `/`                      | Liste des factures                      |
+| GET     | `/{id}`                  | Détail facture                          |
+| GET     | `/kpis`                  | KPIs (total, payées, impayées…)         |
+| GET     | `/generate/{id}`         | Téléchargement PDF                      |
+| POST    | `/create`                | Créer facture                           |
+| POST    | `/{id}/send-email`       | Envoyer par email (Resend)              |
+| POST    | `/{id}/register-payment` | Enregistrer un paiement                 |
+
+### Prévisualisation — `/api/invoices`
+| Méthode | Route               | Description                              |
+|---------|---------------------|------------------------------------------|
+| GET     | `/preview/{billId}` | HTML temps réel pour iframe Angular      |
+
+### Stock — `/api/stock`
+| Méthode | Route                    | Description                   |
+|---------|--------------------------|-------------------------------|
+| GET     | `/summary`               | Résumé global (tous produits) |
+| GET     | `/summary/{productId}`   | Résumé par produit            |
+| GET     | `/alerts`                | Alertes stock faible          |
+| GET     | `/total-value`           | Valeur totale du stock        |
+| POST    | `/recalculate-cmp`       | Recalcul du CMP               |
+
+### Clients — `/api/customers`
+| Méthode | Route        | Description               |
+|---------|--------------|---------------------------|
+| GET     | `/`          | Liste des clients         |
+| GET     | `/search`    | Recherche par nom / ville |
+| GET     | `/kpis`      | KPIs clients              |
+| GET     | `/{id}`      | Détail client             |
+| POST    | `/`          | Créer client              |
+| PUT     | `/{id}`      | Modifier client           |
+| DELETE  | `/{id}`      | Supprimer client          |
+
+### Fournisseurs — `/api/suppliers`
+| Méthode | Route    | Description                |
+|---------|----------|----------------------------|
+| GET     | `/`      | Liste des fournisseurs     |
+| GET     | `/kpis`  | KPIs fournisseurs          |
+| GET     | `/{id}`  | Détail fournisseur         |
+| POST    | `/`      | Créer fournisseur          |
+| PUT     | `/{id}`  | Modifier fournisseur       |
+| DELETE  | `/{id}`  | Supprimer fournisseur      |
+
+## Génération de PDF
+
+Le service `PdfGenerateService` utilise **Playwright (Chromium headless)** pour convertir les templates Thymeleaf en PDF haute qualité :
+
+- `facture_v3.html` — template actif (prévisualisation + PDF)
+- `bon-livraison.html` — bon de livraison
+- `facture_v4.html`, `facture_v5.html` — variantes
+
+La plaque d'immatriculation tunisienne (ex : `7890 تونس 789`) est rendue via 3 spans en `inline-flex` pour éviter le réordonnancement bidi du navigateur.
+
+## Emails (Resend)
+
+4 templates HTML Thymeleaf dans `email-templates/` :
+
+| Template                        | Déclencheur                        |
+|---------------------------------|------------------------------------|
+| `invoice-notification.html`     | Envoi de facture                   |
+| `delivery-note-notification.html` | Envoi de bon de livraison        |
+| `password-reset.html`           | Réinitialisation mot de passe     |
+| `generic-notification.html`     | Notifications génériques           |
+
+## Règles métier
+
+**Calcul du CMP :**
+```
+CMP = Valeur stock courante / Quantité stock courante
+```
+
+**Mise à jour au déclenchement d'un achat :**
+```
+Nouvelle valeur = (CMP actuel × Qté actuelle) + (Prix unitaire × Qté achetée)
+Nouvelle Qté    = Qté actuelle + Qté achetée
+Nouveau CMP     = Nouvelle valeur / Nouvelle Qté
+```
+
+**Validation d'une vente :**
+```
+Qté disponible >= Qté demandée  → OK
+Qté disponible <  Qté demandée  → Exception HTTP 400
+```
+
+## Démarrage
 
 ### Prérequis
-- Java 21+
-- Maven 3.9+
-- PostgreSQL 15+
-- Docker (optionnel)
+- Java 21+, Maven 3.9+, PostgreSQL 15+
 
-### Option 1: Docker Compose (Recommandé)
+### Local
 ```bash
-cd /workspaces/stock_management
-docker-compose up -d --build
-```
+# PostgreSQL via Docker
+docker run -d --name pg -e POSTGRES_DB=stock_db -e POSTGRES_PASSWORD=postgres -p 5432:5432 postgres:15
 
-Au démarrage :
-1. PostgreSQL démarre et crée la base `stock_db`
-2. Le backend démarre et Hibernate crée automatiquement toutes les tables
-3. Le fichier `data.sql` insère les 471 enregistrements de test
-4. L'API est prête sur `http://localhost:8080/api`
-
-### Option 2: Local avec Docker DB
-```bash
-# Lancer PostgreSQL
-docker run -d --name postgres \
-  -e POSTGRES_DB=stock_db \
-  -e POSTGRES_PASSWORD=postgres \
-  -p 5432:5432 \
-  postgres:15
-
-# Compiler et lancer
 cd backend
-./mvnw clean install
 ./mvnw spring-boot:run
 ```
 
-### Option 3: Local complet
-1. Créer la base de données :
-```sql
-CREATE DATABASE stock_db;
+L'application démarre sur `http://localhost:8080`. Flyway applique automatiquement les migrations V1→V12.
+
+### Variables d'environnement requises en production
+```
+SPRING_DATASOURCE_URL
+SPRING_DATASOURCE_USERNAME
+SPRING_DATASOURCE_PASSWORD
+JWT_SECRET
+RESEND_API_KEY
+RESEND_FROM_EMAIL
+CORS_ALLOWED_ORIGINS
+FRONTEND_URL
 ```
 
-2. Configurer `application.properties` avec vos identifiants PostgreSQL
+## Swagger / OpenAPI
 
-3. Lancer l'application :
-```bash
-./mvnw spring-boot:run
-```
-
-## 📡 Endpoints Principaux
-
-### Produits
-- `GET /api/products` - Tous les produits
-- `GET /api/products/{id}` - Un produit
-- `POST /api/products` - Créer produit
-
-### Achats
-- `POST /api/purchases` - Créer achat
-- `GET /api/purchases` - Tous les achats
-- `GET /api/purchases/{id}` - Un achat
-- `GET /api/purchases/search?dateFrom=&dateTo=` - Filtrer
-
-### Ventes
-- `POST /api/sales` - Créer vente
-- `GET /api/sales` - Toutes les ventes
-- `GET /api/sales/{id}` - Une vente
-- `GET /api/sales/search?dateFrom=&dateTo=` - Filtrer
-
-### Stock
-- `GET /api/stock/summary` - Résumé du stock
-- `GET /api/stock/{id}/summary` - Stock par produit
-- `GET /api/stock/alerts?threshold=20` - Alertes
-- `GET /api/stock/total-value` - Valeur totale
-- `POST /api/stock/recalculate-cmp` - Recalculer CMP
-
-### Mouvements
-- `GET /api/stock-movements` - Tous mouvements
-- `GET /api/stock-movements/search?type=ENTREE&source=ACHAT` - Filtrer
-
-### Fournisseurs/Clients
-- `GET /api/suppliers` - Fournisseurs
-- `GET /api/customers` - Clients
-
-## 📊 Architecture
-
-```
-backend/
-├── src/main/java/com/example/stock_management/
-│   ├── api/                    # Contrôleurs REST
-│   ├── model/                  # Entités JPA
-│   ├── dto/                    # DTOs pour API
-│   ├── service/                # Logique métier
-│   ├── repository/             # Accès données
-│   ├── configuration/          # Configuration Spring
-│   └── StockManagementApplication.java
-│
-├── src/main/resources/
-│   ├── application.properties   # Config PostgreSQL
-│   ├── application-postgresql.properties
-│   ├── Products.csv            # Données initiales
-│   └── data.sql                # Données d'initialisation
-│
-└── pom.xml
-```
-
-## 🗄️ Base de Données
-
-**PostgreSQL 15**
-
-**Entités** :
-- `Product` - Articles en stock
-- `Purchase` - Achats fournisseurs (relation `@OneToMany` avec `StockMouvement`)
-- `Sale` - Ventes clients (relation `@OneToMany` avec `StockMouvement`)
-- `StockMouvement` - Historique mouvements (relation `@ManyToOne` avec `Purchase` et `Sale`)
-- `Supplier` - Fournisseurs
-- `Customer` - Clients
-- `Bill` - Factures
-- `BillProduct` - Détails factures
-
-**Relations bidirectionnelles** :
-- Un `Purchase` peut avoir plusieurs `StockMouvement` (`@OneToMany`)
-- Un `Sale` peut avoir plusieurs `StockMouvement` (`@OneToMany`)
-- Un `StockMouvement` appartient à un seul `Purchase` ou `Sale` (`@ManyToOne`)
-
-## 🔧 Configuration
-
-### application.properties
-
-```properties
-# Database
-spring.datasource.url=jdbc:postgresql://postgres:5432/stock_db
-spring.datasource.username=postgres
-spring.datasource.password=postgres
-
-# JPA
-spring.jpa.hibernate.ddl-auto=update
-spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect
-
-# CSV Loading
-spring.sql.init.mode=never
-spring.jpa.defer-datasource-initialization=false
-
-# Server
-server.port=8080
-
-# Swagger
-springdoc.swagger-ui.path=/swagger-ui.html
-```
-
-## 💼 Règles Métier
-
-### Calcul du Stock Final
-```
-Stock Final = Stock Initial + Total Achats - Total Ventes
-```
-
-### Calcul du CMP
-```
-CMP = Valeur Stock Final / Quantité Stock Final
-CMP = 0 si Quantité = 0
-```
-
-### Montants
-Tous les montants en **TTC (inclusif de taxes)**
-
-## 📚 Services Clés
-
-### PurchaseService
-- `createPurchase()` - Crée achat + mouvement + update stock + CMP
-
-**Implémentation :**
-```java
-public Purchase createPurchase(PurchaseDTO purchaseDTO) {
-    Product product = productRepository.findById(purchaseDTO.getProductId())
-        .orElseThrow(() -> new RuntimeException("Produit non trouvé"));
-    
-    Purchase purchase = new Purchase();
-    purchase.setDatePurchase(purchaseDTO.getDatePurchase());
-    purchase.setSupplier(supplierRepository.findById(purchaseDTO.getSupplierId())
-        .orElseThrow(() -> new RuntimeException("Fournisseur non trouvé")));
-    purchase.setProduct(product);
-    purchase.setInvoiceNumber(purchaseDTO.getInvoiceNumber());
-    purchase.setQuantity(purchaseDTO.getQuantity());
-    purchase.setUnitPriceTTC(purchaseDTO.getUnitPriceTTC());
-    purchase.setComment(purchaseDTO.getComment());
-    
-    return purchaseRepository.save(purchase);
-}
-```
-
-- `getPurchasesByFilter()` - Recherche avancée
-- `getTotalPurchasesAmount()` - Montant total
-
-### SaleService
-- `createSale()` - Crée vente + validation stock + mouvement + CMP
-
-**Implémentation :**
-```java
-public Sale createSale(SaleDTO saleDTO) {
-    Product product = productRepository.findById(saleDTO.getProductId())
-        .orElseThrow(() -> new RuntimeException("Produit non trouvé"));
-    
-    // Business rule validation
-    if (product.getCurrentStockQuantity() < saleDTO.getQuantitySold()) {
-        throw new RuntimeException(
-            "Quantité insuffisante en stock. Stock disponible : " + 
-    bill.setDateBill(LocalDateTime.now(clock));
-    
-    // Process products and calculate totals...
-    
-    return billRepository.save(bill);
-}
-```
-
-- `createInvoice()` - Crée facture complète avec TVA, adresse, conditions
-- `getInvoiceKPIs()` - KPIs des factures
-
-### StockService
-- `getGlobalStockSummary()` - Résumé tous produits
-- `getProductStockSummary()` - Résumé 1 produit
-- `getStockAlerts()` - Produits en alerte
-- `getTotalStockValue()` - Valeur totale
-
-### CsvDataLoaderService
-- `loadDataFromCsv()` - Auto-triggered au démarrage
-- Charge `Products.csv` si pas de données
-- Idempotent (ne reload pas si données existent)
-
-## 🧪 Tests
-
-```bash
-# Compiler tests
-mvn test-compile
-
-# Lancer tests
-mvn test
-
-# Coverage
-mvn jacoco:report
-```
-
-## 📦 Build
-
-```bash
-# Build JAR
-mvn clean package
-
-# Taille
-ls -lh target/*.jar
-```
-
-## 🚨 Troubleshooting
-
-### Port 8080 utilisé
-```bash
-mvn spring-boot:run -Dspring-boot.run.arguments=--server.port=8081
-```
-
-### Connexion DB échouée
-```bash
-    "unitSalePrice": 75.00,
-    "dateSale": "2024-01-19T12:00:00"
-  }'
-```
-
-### Consulter résumé stock
-```bash
-curl http://localhost:8080/api/stock/summary | jq '.[0]'
-```
-
-## 🔐 CORS
-
-Configuration pour Angular frontend (port 4200) :
-
-```java
-// CorsConfig.java
-cors.allowedOrigins=http://localhost:4200
-```
-
-## 📝 Logs
-
-```properties
-logging.level.com.example.stock_management=DEBUG
-logging.level.org.springframework.web=INFO
-logging.file.name=logs/stock_management.log
-```
-
-## 🎓 Documentation
-
-- [Swagger UI](http://localhost:8080/swagger-ui.html) - API interactive
-- [API Docs](http://localhost:8080/v3/api-docs) - OpenAPI JSON
-- [DEPLOYMENT.md](../DEPLOYMENT.md) - Guide complet
-
-## 🔄 DevOps
-
-### Docker Build
-```bash
-docker build -t stock-management-backend:1.0 .
-docker run -p 8080:8080 stock-management-backend:1.0
-```
-
-### Docker Compose
-```bash
-docker-compose up -d
-```
-
-## 📈 Performance
-
-- Requêtes JPA optimisées
-- Indices DB sur clés étrangères
-- Pagination incluse
-- Caching possible (à implémenter)
-
-## 🤝 Contributing
-
-1. Fork
-2. Create feature branch
-3. Commit changes
-4. Push branch
-5. Create PR
-
-## 📄 License
-
-MIT
+Accessible en local sur : `http://localhost:8080/swagger-ui.html`
 
 ---
 
-**Version** : 1.0.0  
-**Framework** : Spring Boot 3.3.3  
-**Java** : 21+  
-**BD** : PostgreSQL 15+
+**Version** : 1.0.0 | **Spring Boot** : 3.3.7 | **Java** : 21 | **BD** : PostgreSQL 15

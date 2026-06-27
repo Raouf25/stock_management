@@ -11,9 +11,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -31,9 +34,6 @@ public class PurchaseService {
     @Autowired
     private ProductDashboardService productDashboardService;
 
-    /**
-     * Créer un achat groupé multi-produits et générer automatiquement des entrées de stock
-     */
     @Transactional
     public List<Purchase> createPurchase(PurchaseDTO purchaseDTO) {
         Supplier supplier = supplierRepository.findById(purchaseDTO.getSupplierId())
@@ -44,7 +44,6 @@ public class PurchaseService {
 
         if (purchaseDTO.getLines() != null) {
             for (PurchaseDTO.PurchaseLineDTO line : purchaseDTO.getLines()) {
-
                 Product product = productRepository.findById(line.getProductId())
                         .orElseThrow(() -> new IllegalArgumentException("Produit non trouvé avec l'ID : " + line.getProductId()));
 
@@ -54,40 +53,29 @@ public class PurchaseService {
                 purchase.setProduct(product);
                 purchase.setInvoiceNumber(purchaseDTO.getInvoiceNumber());
                 purchase.setComment(purchaseDTO.getComment());
-
                 purchase.setQuantity(line.getQuantity());
                 purchase.setUnitPriceTTC(line.getUnitPriceTTC());
-                purchase.setTotalAmountTTC(line.getQuantity() * line.getUnitPriceTTC());
+                purchase.setTotalAmountTTC(
+                    BigDecimal.valueOf(line.getQuantity()).multiply(line.getUnitPriceTTC())
+                );
 
-                Purchase savedLine = purchaseRepository.save(purchase);
-                savedPurchases.add(savedLine);
-
-                // Mettre à jour le stock du produit et la valeur du stock
+                savedPurchases.add(purchaseRepository.save(purchase));
                 updateProductStock(product, line.getQuantity(), line.getUnitPriceTTC(), true);
             }
         }
 
-        productDashboardService.onDataChanged();   // vide le cache
+        productDashboardService.onDataChanged();
         return savedPurchases;
     }
 
-    /**
-     * Récupérer tous les achats
-     */
     public List<Purchase> getAllPurchases() {
         return purchaseRepository.findAll();
     }
 
-    /**
-     * Récupérer un achat par ID
-     */
     public Optional<Purchase> getPurchaseById(Long id) {
         return purchaseRepository.findById(id);
     }
 
-    /**
-     * Récupérer les achats filtrés
-     */
     public List<Purchase> getPurchasesByFilter(LocalDate dateFrom, LocalDate dateTo, Long supplierId) {
         if (supplierId != null && dateFrom != null && dateTo != null) {
             return purchaseRepository.findBySupplierAndDateRange(supplierId, dateFrom, dateTo);
@@ -99,16 +87,10 @@ public class PurchaseService {
         return purchaseRepository.findAll();
     }
 
-    /**
-     * Récupérer les achats par produit
-     */
     public List<Purchase> getPurchasesByProduct(Long productId) {
         return purchaseRepository.findByProduct_IdProduct(productId);
     }
 
-    /**
-     * Convertir une entité Purchase en DTO (Format hybride : Racine + Lignes imbriquées)
-     */
     public PurchaseDTO convertToDTO(Purchase purchase) {
         PurchaseDTO dto = new PurchaseDTO();
         dto.setId(purchase.getId());
@@ -118,12 +100,10 @@ public class PurchaseService {
         dto.setInvoiceNumber(purchase.getInvoiceNumber());
         dto.setComment(purchase.getComment());
 
-        // FIX REGRESSION : Réassignation des champs racines indispensables au tableau HTML
         dto.setQuantity(purchase.getQuantity());
         dto.setUnitPriceTTC(purchase.getUnitPriceTTC());
         dto.setTotalAmountTTC(purchase.getTotalAmountTTC());
 
-        // Mapping de l'objet imbriqué ligne par ligne (Utile pour d'éventuelles lectures côté front)
         PurchaseDTO.PurchaseLineDTO lineDto = new PurchaseDTO.PurchaseLineDTO();
         lineDto.setProductId(purchase.getProduct().getIdProduct());
         lineDto.setProductName(purchase.getProduct().getName());
@@ -136,73 +116,44 @@ public class PurchaseService {
         return dto;
     }
 
-    /**
-     * Convertir une liste d'entités Purchase en liste de DTOs
-     */
     public List<PurchaseDTO> convertToDTO(List<Purchase> purchases) {
         return purchases.stream()
                 .map(this::convertToDTO)
                 .collect(java.util.stream.Collectors.toList());
     }
 
-    /**
-     * Mettre à jour le stock et la valeur du produit
-     */
-    private void updateProductStock(Product product, Integer quantity, Double unitPrice, boolean isEntry) {
+    private void updateProductStock(Product product, Integer quantity, BigDecimal unitPrice, boolean isEntry) {
+        BigDecimal currentValue = Objects.requireNonNullElse(product.getCurrentStockValue(), BigDecimal.ZERO);
+        int        currentQty  = Objects.requireNonNullElse(product.getCurrentStockQuantity(), 0);
+
         if (isEntry) {
-            if (product.getCurrentStockQuantity() == null) {
-                product.setCurrentStockQuantity(0);
-            }
-            if (product.getCurrentStockValue() == null) {
-                product.setCurrentStockValue(0.0);
-            }
+            int        newQty   = currentQty + quantity;
+            BigDecimal newValue = currentValue.add(BigDecimal.valueOf(quantity).multiply(unitPrice));
 
-            int newQuantity = product.getCurrentStockQuantity() + quantity;
-            double newValue = product.getCurrentStockValue() + (quantity * unitPrice);
-
-            product.setCurrentStockQuantity(newQuantity);
+            product.setCurrentStockQuantity(newQty);
             product.setCurrentStockValue(newValue);
-
-            if (newQuantity > 0) {
-                product.setCmp(newValue / newQuantity);
-            } else {
-                product.setCmp(0.0);
-            }
+            product.setCmp(newQty > 0
+                ? newValue.divide(BigDecimal.valueOf(newQty), 3, RoundingMode.HALF_UP)
+                : BigDecimal.ZERO);
         } else {
-            if (product.getCurrentStockQuantity() == null) {
-                product.setCurrentStockQuantity(0);
-            }
-            if (product.getCurrentStockValue() == null) {
-                product.setCurrentStockValue(0.0);
-            }
+            BigDecimal cmp      = Objects.requireNonNullElse(product.getCmp(), unitPrice);
+            int        newQty   = Math.max(0, currentQty - quantity);
+            BigDecimal newValue = currentValue.subtract(BigDecimal.valueOf(quantity).multiply(cmp)).max(BigDecimal.ZERO);
 
-            int newQuantity = Math.max(0, product.getCurrentStockQuantity() - quantity);
-            Double cmpValue = product.getCmp() != null ? product.getCmp() : unitPrice;
-            double newValue = Math.max(0, product.getCurrentStockValue() - (quantity * cmpValue));
-
-            product.setCurrentStockQuantity(newQuantity);
+            product.setCurrentStockQuantity(newQty);
             product.setCurrentStockValue(newValue);
-
-            if (newQuantity > 0) {
-                product.setCmp(newValue / newQuantity);
-            } else {
-                product.setCmp(0.0);
-            }
+            product.setCmp(newQty > 0
+                ? newValue.divide(BigDecimal.valueOf(newQty), 3, RoundingMode.HALF_UP)
+                : BigDecimal.ZERO);
         }
 
         productRepository.save(product);
     }
 
-    /**
-     * Récupérer le total des achats pour un produit
-     */
-    public Double getTotalPurchasesAmount(Long productId) {
+    public BigDecimal getTotalPurchasesAmount(Long productId) {
         return purchaseRepository.findTotalPurchasesAmountByProduct(productId);
     }
 
-    /**
-     * Récupérer le total des quantités achetées pour un produit
-     */
     public Integer getTotalPurchasesQuantity(Long productId) {
         return purchaseRepository.findTotalPurchasesQuantityByProduct(productId);
     }

@@ -1,272 +1,152 @@
-# 📱 Stock Management Frontend - Angular
+# Frontend — Bhouri Stock
 
-Interface web moderne pour visualiser et gérer toutes les fonctionnalités de l'API de gestion de stock.
+SPA Angular 17 pour la gestion de stock, la facturation et les livraisons.
 
-## 🎯 Fonctionnalités
+## Stack technique
 
-### 📊 Dashboard
-- Résumé global du stock
-- Valeur totale de l'inventaire
-- Alertes de stock faible
-- Tableau récapitulatif par produit
+| Technologie           | Version   | Rôle                              |
+|-----------------------|-----------|-----------------------------------|
+| Angular               | 17.3.10   | Framework SPA (Standalone Components) |
+| TypeScript            | ~5.2.2    | Langage                           |
+| Angular CDK           | 17.3.10   | Composants utilitaires            |
+| RxJS                  | —         | Programmation réactive            |
+| Angular Router        | —         | Navigation SPA                    |
+| HttpClient            | —         | Appels API REST                   |
 
-### 📦 Gestion des Produits
-- Liste complète des produits
-- Recherche en temps réel
-- Affichage du CMP (Coût Moyen Pondéré)
-- Suivi des valeurs initiales et actuelles
+Pas de bibliothèque CSS externe — styles entièrement custom (CSS natif par composant).
 
-### 🛒 Gestion des Achats
-- Création de nouveaux achats
-- Suivi des fournisseurs
-- Historique des factures
-- Montants TTC calculés automatiquement
+## Routes et composants
 
-### 💰 Gestion des Ventes
-- Enregistrement des ventes
-- Validation du stock disponible
-- Suivi des montants de vente
-- Historique complet
+| Route                        | Composant                    | Accès     |
+|------------------------------|------------------------------|-----------|
+| `/login`                     | `LoginComponent`             | Public    |
+| `/forgot-password`           | `ForgotPasswordComponent`    | Public    |
+| `/reset-password`            | `ResetPasswordComponent`     | Public    |
+| `/dashboard`                 | `DashboardComponent`         | Protégé   |
+| `/products`                  | `ProductsComponent`          | Protégé   |
+| `/transactions`              | `TransactionsComponent`      | Protégé   |
+| `/customers`                 | `CustomerListComponent`      | Protégé   |
+| `/customers/create`          | `CustomerCreateComponent`    | Protégé   |
+| `/customers/edit/:id`        | `CustomerEditComponent`      | Protégé   |
+| `/suppliers`                 | `SuppliersComponent`         | Protégé   |
+| `/suppliers/create`          | `SupplierCreateComponent`    | Protégé   |
+| `/suppliers/edit/:id`        | `SupplierEditComponent`      | Protégé   |
+| `/suppliers/view/:id`        | `SupplierDetailComponent`    | Protégé   |
+| `/documents/create`          | `CreateDocumentComponent`    | Protégé   |
+| `/invoices/list`             | `InvoiceListComponent`       | Protégé   |
+| `/profile`                   | `ProfileComponent`           | Protégé   |
+| `/delivery-notes`            | → redirect `/invoices/list`  | Protégé   |
 
-### 📊 Mouvements de Stock
-- Vue d'ensemble des mouvements (entrées/sorties)
-- Filtrage par type (ENTREE/SORTIE)
-- Filtrage par source (ACHAT/VENTE/AJUSTEMENT)
-- Traçabilité complète
+Toutes les routes protégées passent par `authGuard` (vérification JWT).
 
-### 🧧 Gestion des Factures
-- Liste des factures avec filtres avancés
-- Recherche par numéro, client, montant
-- Filtrage par plage de dates
-- Tri par date ou montant (croissant/décroissant)
-- Téléchargement PDF conforme législation tunisienne
-- Affichage des statuts (PAID, UNPAID, PARTIAL)
-- Totaux et reste à encaisser
+## Fonctionnalités par composant
 
-## 🚀 Installation
+### Dashboard
+- KPIs temps réel : CA total, ventes du jour, stock faible, valeur inventaire
+- Graphiques des ventes (données `/api/sales/combined`)
+- Tableau des produits disponibles avec alertes stock
 
-### Prérequis
-- Node.js 18+ avec npm
-- Angular CLI 17+
-- Backend API en cours d'exécution sur `http://localhost:8080`
+### Authentification (`auth/`)
+- Login avec JWT stocké en `localStorage`
+- Demande de réinitialisation par email
+- Formulaire de nouveau mot de passe via token
 
-### Installation des dépendances
+### Produits (`products/`)
+- Liste avec recherche en temps réel
+- Affichage CMP, stock actuel, valeur initiale/actuelle
+
+### Transactions (`transactions/`)
+- Onglets Achats / Ventes dans la même vue
+- Création d'achat avec sélection fournisseur + produit
+- Création de vente avec validation stock côté frontend
+- Historique complet avec filtres
+
+### Clients (`customers/`)
+- Liste avec recherche et KPIs (total, actifs, chiffre d'affaires)
+- Création / édition : nom, adresse, téléphone, MF fiscal, CIN, plaque d'immatriculation
+- Suppression avec confirmation
+
+### Fournisseurs (`suppliers/`)
+- Liste avec KPIs
+- CRUD complet
+- Vue détail avec historique achats
+
+### Créer un document (`create-document/`)
+- Stepper 3 étapes : Produits → Informations → Récapitulatif
+- Mode **Facture** ou **Bon de Livraison** (toggle)
+- Calcul TVA (19%) optionnel
+- Champ dépôt / acompte → calcul Net à Régler
+- Génération et émission directe depuis le formulaire
+
+### Factures & BL (`invoices/`)
+- Vue unifiée avec onglets **Factures** / **Bons de Livraison**
+- KPIs : total, montant total, total dû, payées, impayées
+- Drawer latéral avec prévisualisation HTML temps réel (iframe → `/api/invoices/preview/{id}`)
+- Actions : télécharger PDF, envoyer par email, encaisser
+- Filtres : numéro, client, statut, plage de dates
+
+### Profil (`profile/`)
+- Affichage des informations de l'utilisateur connecté
+- Modification du mot de passe
+
+## Structure des dossiers
+
+```
+frontend/src/app/
+├── components/
+│   ├── auth/               # login, forgot-password, reset-password
+│   ├── create-document/    # création facture / BL (stepper)
+│   ├── customers/          # list, create, edit
+│   ├── dashboard/          # tableau de bord
+│   ├── delivery-notes/     # liste BL (standalone, redirigé)
+│   ├── invoices/           # liste unifiée factures + BL + drawer
+│   ├── products/           # liste produits
+│   ├── profile/            # profil utilisateur
+│   ├── shared/             # composants partagés (navbar, sidebar)
+│   ├── stock-movement/     # historique mouvements
+│   ├── suppliers/          # list, create, edit, detail
+│   └── transactions/       # achats + ventes
+├── services/
+│   ├── api.service.ts      # appels HTTP vers le backend
+│   └── auth.guard.ts       # protection des routes JWT
+├── app.routes.ts
+├── app.component.ts        # shell avec sidebar
+└── environments/
+    ├── environment.ts
+    └── environment.prod.ts
+```
+
+## Configuration API
+
+L'URL du backend est définie dans `environments/environment.ts` :
+
+```typescript
+export const environment = {
+  production: false,
+  apiUrl: 'http://localhost:8080/api'
+};
+```
+
+En développement, le proxy Angular (`proxy.conf.json`) route `/api` vers `http://localhost:8080`.
+
+## Démarrage
 
 ```bash
 cd frontend
 npm install
+npm start          # http://localhost:4200
+npm run build      # build de production → dist/
 ```
 
-## 💻 Développement
+## Déploiement
 
-### Lancer en mode développement
-```bash
-npm start
-```
-L'application s'ouvre automatiquement à `http://localhost:4200`
+Production sur **Vercel** : `https://bhouri-stock.com`
 
-### Compilation
 ```bash
 npm run build
+# dist/ déployé sur Vercel (ou tout serveur statique / nginx)
 ```
-
-### Tests
-```bash
-npm test
-```
-
-## 🌐 Configuration API
-
-Modifier `src/proxy.conf.json` pour changer l'URL de l'API :
-
-```json
-{
-  "/api": {
-    "target": "http://localhost:8080",
-    "secure": false,
-    "changeOrigin": true
-  }
-}
-```
-
-## 📁 Structure des Dossiers
-
-```
-frontend/
-├── src/
-│   ├── app/
-│   │   ├── components/
-│   │   │   ├── dashboard/         # Tableau de bord principal
-│   │   │   ├── products/          # Gestion des produits
-│   │   │   ├── purchases/         # Gestion des achats
-│   │   │   ├── sales/             # Gestion des ventes
-│   │   │   └── stock-movement/    # Mouvements de stock
-│   │   ├── services/
-│   │   │   └── api.service.ts     # Service d'appel API
-│   │   ├── app.routes.ts          # Routes de l'application
-│   │   ├── app.component.ts       # Composant principal
-│   │   └── app.component.html
-│   ├── styles.css                 # Styles globaux
-│   ├── main.ts                    # Point d'entrée
-│   └── index.html
-├── angular.json                   # Configuration Angular
-├── tsconfig.json                  # Configuration TypeScript
-└── package.json
-```
-
-## 🎨 Technologie
-
-- **Framework** : Angular 17 (Standalone Components)
-- **Styling** : Bootstrap 5 + CSS personnalisé
-- **HTTP** : HttpClient avec RxJS
-- **Charting** : Chart.js (optionnel pour graphiques)
-- **TypeScript** : Dernière version
-
-## 🌟 Fonctionnalités principales
-
-### 1. Affichage du Dashboard
-```
-- Carte de statistiques (KPI)
-- Alertes de stock faible
-- Tableau récapitulatif complet
-```
-
-### 2. Gestion des Produits
-```
-- Recherche dynamique
-- Affichage du CMP
-- Suivi des valeurs
-- Filtrage smart
-```
-
-### 3. Transactions (Achats/Ventes)
-```
-- Formulaire intuitif
-- Validation côté client
-- Intégration automatique stock
-- Historique complet
-```
-
-### 4. Traçabilité
-```
-- Tous les mouvements enregistrés
-- Filtrage par type et source
-- Dates et références
-- Export possible
-```
-
-## 📡 API Endpoints Utilisés
-
-Le frontend appelle ces endpoints du backend :
-
-```
-GET    /api/products                      # Liste des produits
-GET    /api/stock/summary                 # Résumé du stock
-GET    /api/stock/total-value             # Valeur totale
-GET    /api/stock/alerts?threshold=10     # Alertes
-GET    /api/purchases                     # Liste des achats
-POST   /api/purchases                     # Créer achat
-GET    /api/sales                         # Liste des ventes
-POST   /api/sales                         # Créer vente
-GET    /api/stock-movements               # Mouvements
-GET    /api/suppliers                     # Fournisseurs
-GET    /api/customers                     # Clients
-```
-
-## 🔐 CORS
-
-L'API backend doit avoir CORS configuré pour accepter les requêtes du frontend :
-
-```java
-// Voir CorsConfig.java dans le backend
-@CrossOrigin(origins = "http://localhost:4200")
-```
-
-## 📦 Déploiement
-
-### Production Build
-```bash
-npm run prod
-```
-
-### Serveur Static
-```bash
-ng serve --prod
-```
-
-### Docker (optionnel)
-```dockerfile
-FROM node:18 as builder
-WORKDIR /app
-COPY . .
-RUN npm install
-RUN npm run build
-
-FROM nginx:alpine
-COPY --from=builder /app/dist /usr/share/nginx/html
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
-```
-
-## 🐛 Troubleshooting
-
-### Port 4200 déjà utilisé
-```bash
-ng serve --port 4201
-```
-
-### CORS Error
-Vérifier que le backend a CORS activé et que l'URL proxy est correcte
-
-### Module not found
-```bash
-rm -rf node_modules package-lock.json
-npm install
-```
-
-## 📊 Exemples d'Utilisation
-
-### Créer un achat
-1. Aller à "Achats"
-2. Cliquer "Nouveau Achat"
-3. Sélectionner fournisseur et produit
-4. Entrer quantité et prix
-5. Cliquer "Créer Achat"
-
-### Vérifier les alertes
-1. Aller au Dashboard
-2. Voir la section "Alertes"
-3. Cliquer sur le produit pour plus de détails
-
-## 🔄 Cycle de Vie
-
-```
-1. Chargement de l'app (main.ts)
-2. Bootstrap du composant racine (AppComponent)
-3. Routing vers Dashboard par défaut
-4. ApiService appelle les endpoints
-5. Composants affichent les données
-```
-
-## 📝 Notes
-
-- Les données sont chargées dynamiquement à chaque navigation
-- Les modifications prennent effet immédiatement après création
-- Les formules CMP sont calculées côté backend
-- L'interface est responsive (mobile-friendly)
-
-## 💡 Prochaines Étapes
-
-- [ ] Ajouter graphiques Dashboard
-- [ ] Exporter PDF/Excel
-- [ ] Pagination des tableaux
-- [ ] Filtres avancés
-- [ ] Authentification JWT
-- [ ] Notifications push
-- [ ] Mode hors-ligne
 
 ---
 
-**Version** : 1.0.0  
-**Dernière mise à jour** : 2024  
-**License** : MIT
+**Version** : 1.0.0 | **Angular** : 17.3.10 | **TypeScript** : 5.2.2 | **Node** : 18+

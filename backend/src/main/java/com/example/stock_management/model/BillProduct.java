@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.math.BigDecimal;
+
 @Data
 @Entity
 public class BillProduct {
@@ -22,9 +24,10 @@ public class BillProduct {
     private Product product;
 
     private Integer quantity;
-    private Double totalProductPrice;
-    
-    @Column(name = "discount_percentage")
-    private Double discountPercentage; // Remise en pourcentage (0-100)
 
+    @Column(precision = 19, scale = 3)
+    private BigDecimal totalProductPrice;
+
+    @Column(name = "discount_percentage", precision = 5, scale = 2)
+    private BigDecimal discountPercentage;
 }

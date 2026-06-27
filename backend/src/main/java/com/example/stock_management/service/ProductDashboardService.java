@@ -1,6 +1,5 @@
 package com.example.stock_management.service;
 
-import com.example.stock_management.dto.PaymentStatus;
 import com.example.stock_management.dto.ProductDashboardDTO;
 import com.example.stock_management.dto.ProductDashboardResponseDTO;
 import com.example.stock_management.model.BillProduct;
@@ -14,8 +13,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -35,9 +35,6 @@ public class ProductDashboardService {
 
     @Autowired
     private BillProductRepository billProductRepository;
-
-    @Autowired
-    private BillService billService;
 
     @CacheEvict(value = "dashboard-products", allEntries = true)
     public List<ProductDashboardResponseDTO> getProductsDashboardData() {
@@ -74,8 +71,10 @@ public class ProductDashboardService {
             Map<Long, List<Sale>> salesByProduct,
             Map<Long, List<BillProduct>> billProductsByProduct) {
 
+        List<Purchase> rawPurchases = purchasesByProduct.getOrDefault(p.getProductId(), List.of());
+
         List<ProductDashboardResponseDTO.PurchaseItem> purchaseItems =
-                purchasesByProduct.getOrDefault(p.getProductId(), List.of()).stream()
+                rawPurchases.stream()
                         .map(pur -> new ProductDashboardResponseDTO.PurchaseItem(
                                 pur.getId(),
                                 pur.getDatePurchase(),
@@ -87,7 +86,20 @@ public class ProductDashboardService {
                         ))
                         .collect(Collectors.toList());
 
-        // Standalone sales (not from a bill)
+        // Weighted average purchase price — computed in Java to avoid JPQL type issues
+        // (HQL BigDecimal / Long division and NULL totalAmountTTC on legacy rows)
+        BigDecimal totalPurchaseAmount = rawPurchases.stream()
+                .filter(pur -> pur.getUnitPriceTTC() != null && pur.getQuantity() != null)
+                .map(pur -> pur.getUnitPriceTTC().multiply(BigDecimal.valueOf(pur.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        int totalPurchaseQty = rawPurchases.stream()
+                .filter(pur -> pur.getQuantity() != null)
+                .mapToInt(Purchase::getQuantity)
+                .sum();
+        BigDecimal avgPurchasePrice = totalPurchaseQty > 0
+                ? totalPurchaseAmount.divide(BigDecimal.valueOf(totalPurchaseQty), 3, RoundingMode.HALF_UP)
+                : BigDecimal.ZERO;
+
         List<ProductDashboardResponseDTO.SaleItem> saleItems = new ArrayList<>(
                 salesByProduct.getOrDefault(p.getProductId(), List.of()).stream()
                         .map(sale -> new ProductDashboardResponseDTO.SaleItem(
@@ -104,15 +116,15 @@ public class ProductDashboardService {
                         .collect(Collectors.toList())
         );
 
-        // Bill-originated sales from bill_product
         billProductsByProduct.getOrDefault(p.getProductId(), List.of()).stream()
                 .filter(bp -> bp.getBill() != null)
                 .map(bp -> {
-                    String invoiceNum = String.valueOf(bp.getBill().getIdBill());
                     String paymentStatus = bp.getBill().getPaymentStatus() != null
                             ? bp.getBill().getPaymentStatus().name() : "INCONNU";
-                    double unitPrice = bp.getQuantity() != null && bp.getQuantity() > 0
-                            ? bp.getTotalProductPrice() / bp.getQuantity() : 0.0;
+                    BigDecimal unitPrice = (bp.getQuantity() != null && bp.getQuantity() > 0
+                            && bp.getTotalProductPrice() != null)
+                        ? bp.getTotalProductPrice().divide(BigDecimal.valueOf(bp.getQuantity()), 3, RoundingMode.HALF_UP)
+                        : BigDecimal.ZERO;
                     return new ProductDashboardResponseDTO.SaleItem(
                             bp.getId(),
                             bp.getBill().getDateBill() != null ? bp.getBill().getDateBill().toLocalDate() : null,
@@ -120,7 +132,7 @@ public class ProductDashboardService {
                             bp.getQuantity(),
                             unitPrice,
                             bp.getTotalProductPrice(),
-                            invoiceNum,
+                            String.valueOf(bp.getBill().getIdBill()),
                             null,
                             paymentStatus
                     );
@@ -138,7 +150,7 @@ public class ProductDashboardService {
                         p.getCurrentStockQuantity()
                 ),
                 new ProductDashboardResponseDTO.Statistics(
-                        p.getAveragePurchasePrice(),
+                        avgPurchasePrice,
                         p.getAverageSalePrice(),
                         p.getBilan()
                 ),
@@ -147,9 +159,9 @@ public class ProductDashboardService {
         );
     }
 
-    // ── Invalidation du cache sur toute écriture ──────────────────────────────
+    // Called after every write — evicts the Spring cache AND refreshes the materialized view
     @CacheEvict(value = "dashboard-products", allEntries = true)
-    public void onDataChanged() { /* appelé après createPurchase, createSale, etc. */ }
-
-
+    public void onDataChanged() {
+        productRepository.refreshDashboardView();
+    }
 }

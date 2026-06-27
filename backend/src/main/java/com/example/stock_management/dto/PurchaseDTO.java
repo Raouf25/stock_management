@@ -1,13 +1,13 @@
 package com.example.stock_management.dto;
 
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -27,16 +27,14 @@ public class PurchaseDTO {
     private String invoiceNumber;
     private String comment;
 
-    // Rétrocompatibilité et Correction Régression (Données historiques à la racine)
+    // Rétrocompatibilité — champs racines pour l'affichage HTML du tableau
     private Integer quantity;
-    private Double unitPriceTTC;
-    private Double totalAmountTTC;
+    private BigDecimal unitPriceTTC;
+    private BigDecimal totalAmountTTC;
 
-    // Pour l'envoi depuis le formulaire multi-produits du Front-end
     @Valid
     private List<PurchaseLineDTO> lines;
 
-    // Classe interne pour représenter une ligne de produit au sein d'un achat groupé
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
@@ -53,8 +51,8 @@ public class PurchaseDTO {
 
         @NotNull(message = "unitPriceTTC is required")
         @Positive(message = "unitPriceTTC must be greater than 0")
-        private Double unitPriceTTC;
+        private BigDecimal unitPriceTTC;
 
-        private Double totalLineAmountTTC;
+        private BigDecimal totalLineAmountTTC;
     }
 }

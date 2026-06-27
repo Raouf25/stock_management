@@ -1439,7 +1439,7 @@ export class CreateDocumentComponent implements OnInit {
       this.apiService.createDeliveryNote(payload).subscribe({
         next: () => {
           this.success = 'Bon de livraison créé avec succès !';
-          setTimeout(() => this.router.navigate(['/delivery-notes/list']), 1500);
+          setTimeout(() => this.router.navigate(['/invoices/list']), 1500);
         },
         error: (err) => {
           this.loading = false;

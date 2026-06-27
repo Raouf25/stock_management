@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -13,14 +15,14 @@ public class ProductDashboardDTO {
     private String name;
     private String category;
     private String unit;
-    private Double unitPrice;
-    private Double unitPriceSold;
+    private BigDecimal unitPrice;
+    private BigDecimal unitPriceSold;
     private Integer currentStockQuantity;
     private Long stockVendu;
     private Long stockEntrepot;
     private Long purchasesCount;
-    private Double averagePurchasePrice;
+    private BigDecimal averagePurchasePrice;
     private Long salesCount;
-    private Double averageSalePrice;
-    private Double bilan;
+    private BigDecimal averageSalePrice;
+    private BigDecimal bilan;
 }

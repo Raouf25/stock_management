@@ -4,7 +4,7 @@ import { ProductsComponent } from './components/products/products.component';
 import { TransactionsComponent } from './components/transactions/transactions.component';
 import { StockMovementComponent } from './components/stock-movement/stock-movement.component';
 import { InvoiceListComponent } from './components/invoices/invoice-list.component';
-import { DeliveryNoteListComponent } from './components/delivery-notes/delivery-note-list.component';
+
 import { CreateDocumentComponent } from './components/create-document/create-document.component';
 import { CustomerListComponent } from './components/customers/customer-list.component';
 import { CustomerCreateComponent } from './components/customers/customer-create.component';
@@ -53,10 +53,10 @@ export const routes: Routes = [
   // Profil utilisateur (protected)
   { path: 'profile', component: ProfileComponent, canActivate: [authGuard] },
 
-  // Bons de Livraison (protected)
-  { path: 'delivery-notes', redirectTo: 'delivery-notes/list', pathMatch: 'full' },
+  // Bons de Livraison — liste intégrée dans /invoices/list (onglet BL)
+  { path: 'delivery-notes', redirectTo: 'invoices/list', pathMatch: 'full' },
+  { path: 'delivery-notes/list', redirectTo: 'invoices/list', pathMatch: 'full' },
   { path: 'delivery-notes/create', redirectTo: 'documents/create', pathMatch: 'full' },
-  { path: 'delivery-notes/list', component: DeliveryNoteListComponent, canActivate: [authGuard] },
 
   { path: '**', redirectTo: 'login' }
 ];

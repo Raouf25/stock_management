@@ -35,7 +35,9 @@ public class Customer {
     
     @Column(updatable = false)
     private LocalDateTime createdAt;
-    
+
+    private LocalDateTime updatedAt;
+
     @PrePersist
     protected void onCreate() {
         if (createdAt == null) {
@@ -44,5 +46,11 @@ public class Customer {
         if (status == null) {
             status = CustomerStatus.ACTIVE;
         }
+        updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
     }
 }

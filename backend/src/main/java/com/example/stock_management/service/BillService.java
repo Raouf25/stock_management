@@ -116,7 +116,8 @@ public class BillService {
             // Create sale record//
           //  createSaleRecord(customer, product, billProductDTO.getQuantite(), billProductDTO.getPrixTotal() / billProductDTO.getQuantite(), "INV-" + Instant.now(clock).toEpochMilli());
 
-            double productTotal = billProductDTO.getQuantite() * product.getUnitPrice();
+            BigDecimal productTotal = BigDecimal.valueOf(billProductDTO.getQuantite())
+                    .multiply(product.getUnitPrice() != null ? product.getUnitPrice() : BigDecimal.ZERO);
             billProduct.setTotalProductPrice(productTotal);
 
             // Associer la facture aux produits
@@ -127,7 +128,7 @@ public class BillService {
 
         // Calculate total from all products
         runningTotal = billProducts.stream()
-            .map(bp -> BigDecimal.valueOf(bp.getTotalProductPrice()))
+            .map(BillProduct::getTotalProductPrice)
             .reduce(BigDecimal.ZERO, BigDecimal::add)
             .setScale(3, RoundingMode.HALF_UP);
 
@@ -188,28 +189,27 @@ public class BillService {
         bill.setDeposit(invoiceDto.getDeposit());
 
         // Calculate total from line items
-        double totalHT = 0.0;
+        BigDecimal totalHT = BigDecimal.ZERO;
         List<BillProduct> billProducts = new java.util.ArrayList<>();
 
         for (InvoiceCreationDTO.InvoiceLineItemDTO lineItem : invoiceDto.getProducts()) {
             Product product = productRepository.findById(lineItem.getProductId())
                 .orElseThrow(() -> new RuntimeException("Product not found with ID: " + lineItem.getProductId()));
 
-            // Calculate line total before discount
-            double subtotal = lineItem.getQuantity() * lineItem.getUnitPrice().doubleValue();
+            BigDecimal subtotal = BigDecimal.valueOf(lineItem.getQuantity()).multiply(lineItem.getUnitPrice());
 
-            // Apply per-item discount if specified
-            double lineDiscount = lineItem.getDiscount() != null ? lineItem.getDiscount().doubleValue() : 0.0;
-            double discountAmount = (subtotal * lineDiscount) / 100.0;
-            double lineTotalHT = subtotal - discountAmount;
+            BigDecimal lineDiscountPct = lineItem.getDiscount() != null ? lineItem.getDiscount() : BigDecimal.ZERO;
+            BigDecimal discountAmount = subtotal.multiply(lineDiscountPct)
+                    .divide(BigDecimal.valueOf(100), 3, RoundingMode.HALF_UP);
+            BigDecimal lineTotalHT = subtotal.subtract(discountAmount);
 
-            totalHT += lineTotalHT;
+            totalHT = totalHT.add(lineTotalHT);
 
             BillProduct billProduct = new BillProduct();
             billProduct.setProduct(product);
             billProduct.setQuantity(lineItem.getQuantity());
             billProduct.setTotalProductPrice(lineTotalHT);
-            billProduct.setDiscountPercentage(lineDiscount);
+            billProduct.setDiscountPercentage(lineDiscountPct);
             billProduct.setBill(bill);
             billProducts.add(billProduct);
 
@@ -227,9 +227,9 @@ public class BillService {
         BigDecimal VAT_RATE = new BigDecimal("0.19");
         BigDecimal totalWithVAT;
         if (applyTva) {
-            totalWithVAT = new BigDecimal(totalHT).multiply(BigDecimal.ONE.add(VAT_RATE)).setScale(3, RoundingMode.HALF_UP);
+            totalWithVAT = totalHT.multiply(BigDecimal.ONE.add(VAT_RATE)).setScale(3, RoundingMode.HALF_UP);
         } else {
-            totalWithVAT = new BigDecimal(totalHT).setScale(3, RoundingMode.HALF_UP);
+            totalWithVAT = totalHT.setScale(3, RoundingMode.HALF_UP);
         }
         bill.setTotal(totalWithVAT);
 

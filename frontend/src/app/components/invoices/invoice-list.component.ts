@@ -1064,6 +1064,7 @@ export class InvoiceListComponent implements OnInit {
       next: () => {
         this.showSuccess('Facture créée depuis les BL sélectionnés.');
         this.selectedDeliveryNotes = [];
+        this.loadInvoices();
         this.loadDeliveryNotes();
         this.loadKPIs();
       },

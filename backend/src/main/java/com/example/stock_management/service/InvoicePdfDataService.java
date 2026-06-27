@@ -303,7 +303,7 @@ public class InvoicePdfDataService extends AbstractPdfDataService {
         String description = product != null ? product.getDescription() : DEFAULT_EMPTY_STRING;
         String reference = product != null ? String.valueOf(product.getReference()) : DEFAULT_EMPTY_STRING;
         int quantity = bp.getQuantity() != null ? bp.getQuantity() : 0;
-        double totalPrice = bp.getTotalProductPrice() != null ? bp.getTotalProductPrice() : 0.0;
+        double totalPrice = bp.getTotalProductPrice() != null ? bp.getTotalProductPrice().doubleValue() : 0.0;
 
         return new ProductInfo(name,description,reference, quantity, totalPrice);
     }
@@ -315,7 +315,7 @@ public class InvoicePdfDataService extends AbstractPdfDataService {
         if (totalPrice > 0.0 && qty > 0) {
             return totalPrice / qty;
         } else if (bp.getProduct() != null && bp.getProduct().getUnitPriceSold() != null) {
-            return bp.getProduct().getUnitPriceSold();
+            return bp.getProduct().getUnitPriceSold().doubleValue();
         }
         return 0.0;
     }
@@ -327,7 +327,7 @@ public class InvoicePdfDataService extends AbstractPdfDataService {
         double expectedGross = unitPrice * qty;
         double discountAmount = Math.max(expectedGross - totalPrice, 0.0);
 
-        double discountPercentage = bp.getDiscountPercentage() != null ? bp.getDiscountPercentage() : 0.0;
+        double discountPercentage = bp.getDiscountPercentage() != null ? bp.getDiscountPercentage().doubleValue() : 0.0;
         if (discountPercentage == 0.0 && expectedGross > 0) {
             discountPercentage = (discountAmount / expectedGross) * 100;
         }

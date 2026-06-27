@@ -3,6 +3,7 @@ package com.example.stock_management.dto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -23,16 +24,16 @@ public class ProductDashboardResponseDTO {
         private String name;
         private String category;
         private String unit;
-        private Double salePrice;
+        private BigDecimal salePrice;
         private Integer stock;
     }
 
     @Data
     @AllArgsConstructor
     public static class Statistics {
-        private Double averagePurchasePrice;
-        private Double averageSalePrice;
-        private Double balance;
+        private BigDecimal averagePurchasePrice;
+        private BigDecimal averageSalePrice;
+        private BigDecimal balance;
     }
 
     @Data
@@ -42,8 +43,8 @@ public class ProductDashboardResponseDTO {
         private LocalDate date;
         private String supplierName;
         private Integer quantity;
-        private Double unitPrice;
-        private Double total;
+        private BigDecimal unitPrice;
+        private BigDecimal total;
         private String invoiceNumber;
     }
 
@@ -54,8 +55,8 @@ public class ProductDashboardResponseDTO {
         private LocalDate date;
         private String customerName;
         private Integer quantity;
-        private Double unitPrice;
-        private Double total;
+        private BigDecimal unitPrice;
+        private BigDecimal total;
         private String invoiceNumber;
         private String deliveryNoteNumber;
         private String paymentStatus;

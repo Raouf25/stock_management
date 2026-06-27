@@ -79,7 +79,7 @@ public class DeliveryNoteService {
             dnProduct.setProduct(product);
             dnProduct.setQuantity(productDTO.getQuantity());
             dnProduct.setUnitPrice(productDTO.getUnitPrice() != null ?
-                    productDTO.getUnitPrice() : BigDecimal.valueOf(product.getUnitPriceSold()));
+                    productDTO.getUnitPrice() : product.getUnitPriceSold());
             dnProduct.setDiscount(productDTO.getDiscount() != null ? productDTO.getDiscount() : BigDecimal.ZERO);
             dnProduct.setDeliveryNote(deliveryNote);
 
@@ -196,14 +196,14 @@ public class DeliveryNoteService {
                     // Additionner les quantités si le produit existe déjà
                     BillProduct existing = productMap.get(productId);
                     existing.setQuantity(existing.getQuantity() + dnp.getQuantity());
-                    double newTotal = existing.getQuantity() * dnp.getUnitPrice().doubleValue();
+                    BigDecimal newTotal = BigDecimal.valueOf(existing.getQuantity()).multiply(dnp.getUnitPrice());
                     existing.setTotalProductPrice(newTotal);
                 } else {
                     // Créer un nouveau BillProduct
                     BillProduct billProduct = new BillProduct();
                     billProduct.setProduct(dnp.getProduct());
                     billProduct.setQuantity(dnp.getQuantity());
-                    billProduct.setTotalProductPrice(dnp.getTotalPrice().doubleValue());
+                    billProduct.setTotalProductPrice(dnp.getTotalPrice());
                     billProduct.setBill(bill);
                     productMap.put(productId, billProduct);
                 }

@@ -10,8 +10,11 @@ import com.example.stock_management.repository.SaleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,74 +32,52 @@ public class StockService {
     @Autowired
     private BillProductRepository billProductRepository;
 
-    /**
-     * Générer un résumé de stock pour tous les produits
-     */
     public List<StockSummaryDTO> getGlobalStockSummary() {
         return productRepository.findAll().stream()
             .map(this::calculateProductSummary)
             .collect(Collectors.toList());
     }
 
-    /**
-     * Générer un résumé de stock pour un produit spécifique
-     */
     public StockSummaryDTO getProductStockSummary(Long productId) throws Exception {
         Product product = productRepository.findById(productId)
             .orElseThrow(() -> new Exception("Produit non trouvé avec l'ID : " + productId));
         return calculateProductSummary(product);
     }
 
-    /**
-     * Calculer le résumé pour un produit
-     * Applique les règles métier de calcul
-     */
     private StockSummaryDTO calculateProductSummary(Product product) {
         StockSummaryDTO summary = new StockSummaryDTO();
         summary.setProductId(product.getIdProduct());
         summary.setProductDesignation(product.getDesignation() != null ? product.getDesignation() : product.getName());
 
-        // Stock initial et valeur initiale
-        Integer initialQuantity = product.getInitialStockQuantity() != null ? product.getInitialStockQuantity() : 0;
-        Double initialValue = product.getInitialStockValue() != null ? product.getInitialStockValue() : 0.0;
-
+        Integer initialQuantity = Objects.requireNonNullElse(product.getInitialStockQuantity(), 0);
+        BigDecimal initialValue = Objects.requireNonNullElse(product.getInitialStockValue(), BigDecimal.ZERO);
         summary.setInitialQuantity(initialQuantity);
         summary.setInitialValue(initialValue);
 
-        // Totaux achats
-        Double totalPurchasesAmount = purchaseRepository.findTotalPurchasesAmountByProduct(product.getIdProduct());
-        summary.setTotalPurchasesAmount(totalPurchasesAmount != null ? totalPurchasesAmount : 0.0);
+        BigDecimal totalPurchasesAmount = purchaseRepository.findTotalPurchasesAmountByProduct(product.getIdProduct());
+        summary.setTotalPurchasesAmount(totalPurchasesAmount);
 
-        // Totaux ventes : ventes directes (sale) + lignes de facture (bill_product)
-        double standaloneSalesAmount = saleRepository.findTotalSalesAmountByProduct(product.getIdProduct());
-        double billProductSalesAmount = billProductRepository.findTotalAmountByProduct(product.getIdProduct());
-        double totalSalesAmount = standaloneSalesAmount + billProductSalesAmount;
+        BigDecimal standaloneSalesAmount = saleRepository.findTotalSalesAmountByProduct(product.getIdProduct());
+        BigDecimal billProductSalesAmount = billProductRepository.findTotalAmountByProduct(product.getIdProduct());
+        BigDecimal totalSalesAmount = standaloneSalesAmount.add(billProductSalesAmount);
         summary.setTotalSalesAmount(totalSalesAmount);
 
-        int purchasesQty = purchaseRepository.findTotalPurchasesQuantityByProduct(product.getIdProduct()) != null
-            ? purchaseRepository.findTotalPurchasesQuantityByProduct(product.getIdProduct()) : 0;
-        int standaloneSalesQty = saleRepository.findTotalSalesQuantityByProduct(product.getIdProduct()) != null
-            ? saleRepository.findTotalSalesQuantityByProduct(product.getIdProduct()) : 0;
-        int billProductSalesQty = billProductRepository.findTotalQuantityByProduct(product.getIdProduct()) != null
-            ? billProductRepository.findTotalQuantityByProduct(product.getIdProduct()) : 0;
+        int purchasesQty = Objects.requireNonNullElse(purchaseRepository.findTotalPurchasesQuantityByProduct(product.getIdProduct()), 0);
+        int standaloneSalesQty = Objects.requireNonNullElse(saleRepository.findTotalSalesQuantityByProduct(product.getIdProduct()), 0);
+        int billProductSalesQty = Objects.requireNonNullElse(billProductRepository.findTotalQuantityByProduct(product.getIdProduct()), 0);
 
-        // Règle de calcul : Stock final = Stock Initial + Total Achats - Total Ventes
         Integer finalQuantity = initialQuantity + purchasesQty - standaloneSalesQty - billProductSalesQty;
         summary.setFinalQuantity(finalQuantity);
 
-        // Règle de calcul : Valeur stock final = Valeur Initiale + Montant Achats - Montant Ventes
-        Double finalStockValue = initialValue + (totalPurchasesAmount != null ? totalPurchasesAmount : 0.0) - totalSalesAmount;
+        BigDecimal finalStockValue = initialValue.add(totalPurchasesAmount).subtract(totalSalesAmount);
         summary.setFinalStockValue(finalStockValue);
 
-        // Règle de calcul : CMP = Valeur Stock Final / Quantité Stock Final
-        // CMP = 0 si stock final = 0
-        Double cmp = 0.0;
+        BigDecimal cmp = BigDecimal.ZERO;
         if (finalQuantity > 0) {
-            cmp = finalStockValue / finalQuantity;
+            cmp = finalStockValue.divide(BigDecimal.valueOf(finalQuantity), 3, RoundingMode.HALF_UP);
         }
         summary.setCmp(cmp);
 
-        // Mettre à jour le produit avec les valeurs calculées
         product.setCurrentStockQuantity(finalQuantity);
         product.setCurrentStockValue(finalStockValue);
         product.setCmp(cmp);
@@ -105,102 +86,64 @@ public class StockService {
         return summary;
     }
 
-    /**
-     * Obtenir les alertes de stock
-     * Les produits avec stock <= au seuil critique
-     */
     public List<StockAlertDTO> getStockAlerts() {
-        return getStockAlerts(10); // Seuil par défaut
+        return getStockAlerts(10);
     }
 
-    /**
-     * Obtenir les alertes de stock avec un seuil configurable
-     */
     public List<StockAlertDTO> getStockAlerts(Integer threshold) {
         return productRepository.findAll().stream()
             .filter(product -> {
-                Integer currentQuantity = product.getCurrentStockQuantity() != null ? product.getCurrentStockQuantity() : 0;
+                Integer currentQuantity = Objects.requireNonNullElse(product.getCurrentStockQuantity(), 0);
                 return currentQuantity <= threshold;
             })
             .map(product -> {
                 StockAlertDTO alert = new StockAlertDTO();
                 alert.setProductId(product.getIdProduct());
                 alert.setProductDesignation(product.getDesignation() != null ? product.getDesignation() : product.getName());
-                Integer currentQuantity = product.getCurrentStockQuantity() != null ? product.getCurrentStockQuantity() : 0;
+                Integer currentQuantity = Objects.requireNonNullElse(product.getCurrentStockQuantity(), 0);
                 alert.setCurrentQuantity(currentQuantity);
                 alert.setThreshold(threshold);
-                
-                // Déterminer le niveau d'alerte
-                if (currentQuantity <= 5) {
-                    alert.setAlertLevel("CRITICAL");
-                } else {
-                    alert.setAlertLevel("LOW");
-                }
-                
+                alert.setAlertLevel(currentQuantity <= 5 ? "CRITICAL" : "LOW");
                 return alert;
             })
             .collect(Collectors.toList());
     }
 
-    /**
-     * Obtenir la valeur totale du stock
-     */
-    public Double getTotalStockValue() {
+    public BigDecimal getTotalStockValue() {
         return productRepository.findAll().stream()
-            .mapToDouble(product -> {
-                Double value = product.getCurrentStockValue() != null ? product.getCurrentStockValue() : 0.0;
-                return value;
-            })
-            .sum();
+            .map(p -> Objects.requireNonNullElse(p.getCurrentStockValue(), BigDecimal.ZERO))
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
-    /**
-     * Récalculer le CMP pour tous les produits
-     */
     public void recalculateAllCmp() {
         productRepository.findAll().forEach(product -> {
-            Double currentValue = product.getCurrentStockValue() != null ? product.getCurrentStockValue() : 0.0;
-            Integer currentQuantity = product.getCurrentStockQuantity() != null ? product.getCurrentStockQuantity() : 0;
-            
-            if (currentQuantity > 0) {
-                product.setCmp(currentValue / currentQuantity);
-            } else {
-                product.setCmp(0.0);
-            }
+            BigDecimal currentValue = Objects.requireNonNullElse(product.getCurrentStockValue(), BigDecimal.ZERO);
+            Integer currentQuantity = Objects.requireNonNullElse(product.getCurrentStockQuantity(), 0);
+            product.setCmp(currentQuantity > 0
+                ? currentValue.divide(BigDecimal.valueOf(currentQuantity), 3, RoundingMode.HALF_UP)
+                : BigDecimal.ZERO);
             productRepository.save(product);
         });
     }
 
-    /**
-     * Calculer les totaux globaux pour un résumé de stock
-     * Logique métier : agrégation des valeurs pour un dashboard
-     */
     public Map<String, Object> calculateGlobalTotals(List<StockSummaryDTO> summaries) {
-        int totalInitialQuantity = summaries.stream()
-                .mapToInt(StockSummaryDTO::getInitialQuantity)
-                .sum();
+        int totalInitialQuantity = summaries.stream().mapToInt(StockSummaryDTO::getInitialQuantity).sum();
 
-        double totalInitialValue = summaries.stream()
-                .mapToDouble(StockSummaryDTO::getInitialValue)
-                .sum();
+        BigDecimal totalInitialValue = summaries.stream()
+                .map(StockSummaryDTO::getInitialValue).reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        double totalPurchasesAmount = summaries.stream()
-                .mapToDouble(StockSummaryDTO::getTotalPurchasesAmount)
-                .sum();
+        BigDecimal totalPurchasesAmount = summaries.stream()
+                .map(StockSummaryDTO::getTotalPurchasesAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        double totalSalesAmount = summaries.stream()
-                .mapToDouble(StockSummaryDTO::getTotalSalesAmount)
-                .sum();
+        BigDecimal totalSalesAmount = summaries.stream()
+                .map(StockSummaryDTO::getTotalSalesAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        int totalFinalQuantity = summaries.stream()
-                .mapToInt(StockSummaryDTO::getFinalQuantity)
-                .sum();
+        int totalFinalQuantity = summaries.stream().mapToInt(StockSummaryDTO::getFinalQuantity).sum();
 
-        double totalFinalStockValue = summaries.stream()
-                .mapToDouble(StockSummaryDTO::getFinalStockValue)
-                .sum();
+        BigDecimal totalFinalStockValue = summaries.stream()
+                .map(StockSummaryDTO::getFinalStockValue).reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        return java.util.Map.of(
+        return Map.of(
                 "initialQuantity", totalInitialQuantity,
                 "initialValue", totalInitialValue,
                 "totalPurchasesAmount", totalPurchasesAmount,

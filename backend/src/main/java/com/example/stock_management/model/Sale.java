@@ -3,8 +3,9 @@ package com.example.stock_management.model;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.List;
+import java.time.LocalDateTime;
 
 @Data
 @Entity
@@ -24,15 +25,27 @@ public class Sale {
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "bill_id")
+    private Bill bill;
+
     private String invoiceNumber;
     private String deliveryNoteNumber;
     private Integer quantitySold;
-    private Double unitSalePrice; // Prix unitaire de vente TTC
-    private Double totalSaleAmount; // quantitySold × unitSalePrice
+
+    @Column(precision = 19, scale = 3)
+    private BigDecimal unitSalePrice;
+
+    @Column(precision = 19, scale = 3)
+    private BigDecimal totalSaleAmount;
+
     private String comment;
 
+    @Column(updatable = false)
+    private LocalDateTime createdAt;
 
-    // Ce champ ne sera pas persisté en BDD mais servira à envoyer l'info au Front
-    @Transient
-    private String paymentStatus;
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+    }
 }

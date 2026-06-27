@@ -59,10 +59,7 @@ public class SupplierService {
         long suppliersWithRecentPurchases = purchaseRepository.countDistinctSuppliersWithPurchasesSince(threeMonthsAgo);
         
         long totalPurchases = purchaseRepository.count();
-        Double totalPurchaseAmountDouble = purchaseRepository.sumAllPurchaseAmount();
-        BigDecimal totalPurchaseAmount = totalPurchaseAmountDouble != null 
-                ? BigDecimal.valueOf(totalPurchaseAmountDouble) 
-                : BigDecimal.ZERO;
+        BigDecimal totalPurchaseAmount = purchaseRepository.sumAllPurchaseAmount();
         
         BigDecimal averagePurchasePerSupplier = totalSuppliers > 0
                 ? totalPurchaseAmount.divide(BigDecimal.valueOf(totalSuppliers), 2, RoundingMode.HALF_UP)
@@ -80,10 +77,7 @@ public class SupplierService {
     
     private SupplierWithStatsDTO enrichSupplierWithStats(Supplier supplier) {
         Long totalPurchases = purchaseRepository.countPurchasesBySupplierId(supplier.getId());
-        Double totalAmountDouble = purchaseRepository.sumTotalAmountBySupplierId(supplier.getId());
-        BigDecimal totalAmount = totalAmountDouble != null 
-                ? BigDecimal.valueOf(totalAmountDouble) 
-                : BigDecimal.ZERO;
+        BigDecimal totalAmount = purchaseRepository.sumTotalAmountBySupplierId(supplier.getId());
         Long totalProductsSupplied = purchaseRepository.countDistinctProductsBySupplierId(supplier.getId());
         
         return new SupplierWithStatsDTO(

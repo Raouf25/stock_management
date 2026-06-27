@@ -87,120 +87,107 @@ Système professionnel et transactionnel pour la gestion complète du stock.
 
 ### Diagramme Entité-Relation
 
+Le modèle s'organise en trois niveaux. Les flèches indiquent la direction « parent → enfant » (1 → N).
+
 ```
-┌─────────────┐
-│  Supplier   │
-└──────┬──────┘
-       │ 1
-       │ ┌─────────┐ n
-       └─┤ Product ├────────┐
-         └────┬─────┘       │
-              │ 1           │
-              │ ┌─────────┐ n  │ 1
-              ├─┤ Purchase├────┤
-              │ └────┬────┘    │
-              │      │ n       │
-              │      │ ┌──────────────────┐
-              │      └─┤ StockMouvement   │
-              │        └────┬─────────────┘
-              │             │ 1
-              │        ┌────▼─────┐
-              │ 1      │          │ n
-              ├────────┤   Sale   │───┐
-              │        └──────┬───┘   │
-              │               │ 1     │ n
-   ┌──────────┤          ┌────▼────┐  │
-   │          │          │Customer │  │
-   │ 1        │          └─────────┘  │
-   │          │ 1                     │
-   │          │ ┌─────────────┐ n    │
-   │          └─┤ BillProduct ├──┐   │
-   │            └─────────────┘  │   │
-   │                             │ 1 │
-   │                       ┌─────▼───▼┐
-   └───────────────────────┤   Bill   │
-                           └──────────┘
+RÉFÉRENTIELS
+┌──────────┐          ┌───────────────────────┐          ┌──────────┐
+│ supplier │          │        product        │          │ customer │
+└────┬─────┘          └──┬────────┬─────┬─────┘          └──┬────┬──┘
+     │                   │        │     │                    │    │
+     │ 1:N               │ 1:N    │ 1:N │ 1:N           1:N │    │ 1:N
+     │                   │        │     │                    │    │
+DOCUMENTS COMMERCIAUX    │        │     │                    │    │
+     │                   │        │     │                    │    │
+┌────▼──────┐       ┌────▼──┐     │  ┌──▼──────────┐   ┌────▼──┐ │
+│ purchase  │       │ sale  │     │  │delivery_note│   │ bill  │ │
+└───────────┘       └───────┘     │  └──────┬──────┘   └───┬───┘ │
+                (opt) sale.bill_id│          │              │     │
+                points vers bill ─┘─────────┼─────────────►│     │
+                                            │ 1:N          │ 1:N │
+LIGNES DE DÉTAIL                            │              │     │
+                                  ┌─────────▼─────────┐ ┌──▼────────────┐
+                                  │delivery_note_      │ │ bill_product  │
+                                  │product             │ │               │
+                                  └────────────────────┘ └───────────────┘
+                                  (réf. product via FK)   (réf. product via FK)
 ```
+
+> `sale.bill_id` est **nullable** : une vente directe peut pointer vers une facture existante,
+> mais n'y est pas obligée. Voir [DATABASE_GUIDE.md](DATABASE_GUIDE.md) pour le détail complet.
 
 ### Tables Principales
 
 #### `supplier`
-- Fournisseurs du système
-- Relation 1:N avec `product`
+- Fournisseurs (nom, adresse, RIB, IBAN, contact)
+- Relation 1:N avec `product` et `purchase`
+- Audit : `created_at`, `updated_at`
 
 #### `customer`
-- Clients du système
-- Relation 1:N avec `sale` et `bill`
+- Clients (nom, CIN, plaque d'immatriculation tunisienne, statut)
+- Statuts : `ACTIVE`, `INACTIVE`, `BLOCKED`, `PROSPECT`
+- Audit : `created_at`, `updated_at`
 
 #### `product`
-- Produits en stock
-- Champs de stock : `initial_stock_quantity`, `current_stock_quantity`
-- Champ calculé : `cmp` (Coût Moyen Pondéré)
-- Relation N:1 avec `supplier`
+- Produits en stock avec valorisation CMP
+- Champs stock : `initial_stock_quantity`, `current_stock_quantity`, `current_stock_value`
+- Champ calculé : `cmp` (Coût Moyen Pondéré = `current_stock_value / current_stock_quantity`)
+- Tous les prix en `NUMERIC(19,3)` — jamais de `DOUBLE PRECISION`
+- Audit : `created_at`, `updated_at`
 
 #### `purchase`
-- Achats de produits auprès des fournisseurs
-- Crée automatiquement un mouvement de stock ENTREE
-- Met à jour le stock et recalcule le CMP
-- Relation bidirectionnelle `@OneToMany` avec `stock_mouvement`
+- Achats fournisseurs — met à jour `current_stock_quantity` et recalcule le CMP
+- Prix en `NUMERIC(19,3)`
+- Audit : `created_at`
 
 #### `sale`
-- Ventes de produits aux clients
-- Crée automatiquement un mouvement de stock SORTIE
-- Décrément le stock disponible
-- Lien avec `customer` et `product`
-- Relation bidirectionnelle `@OneToMany` avec `stock_mouvement`
-
-#### `stock_mouvement`
-- Historique complet des mouvements de stock
-- Types : `ENTREE` (achat), `SORTIE` (vente)
-- Sources : `ACHAT`, `VENTE`, `AJUSTEMENT`
-- Relation `@ManyToOne` avec `purchase` (plusieurs mouvements par achat possibles)
-- Relation `@ManyToOne` avec `sale` (plusieurs mouvements par vente possibles)
+- Ventes directes (hors facture)
+- Lié optionnellement à `bill` via FK `bill_id` (V10)
+- Prix en `NUMERIC(19,3)`
+- Audit : `created_at`
 
 #### `bill` & `bill_product`
-- Factures clients avec produits associés
-- Relation N:N entre `bill` et `product` via `bill_product`
+- Factures clients avec lignes produits
+- Statuts paiement : `PAID`, `UNPAID`, `PARTIALLY_PAID`, `GIFT`
+- Tous les montants en `NUMERIC(19,3)`
+- Audit : `created_at`, `updated_at`
+
+#### `delivery_note` & `delivery_note_product`
+- Bons de livraison
+- Statuts : `PENDING`, `DELIVERED`, `CANCELLED`, `INVOICED`
+- Convertibles en facture (`invoiced = true`)
 
 ---
 
 ## 🗄️ Gestion du Schéma de Base de Données
 
-### Configuration JPA/Hibernate
+### Migrations Flyway (V1 → V11)
 
-Le schéma de base de données est **automatiquement créé par JPA/Hibernate** à partir des entités Java :
+Le schéma est entièrement géré par **Flyway** :
 
 ```properties
-# application.properties
-spring.jpa.hibernate.ddl-auto=create
-spring.jpa.defer-datasource-initialization=true
-spring.sql.init.mode=always
+spring.flyway.enabled=true
+spring.flyway.locations=classpath:db/migration
+spring.flyway.validate-on-migrate=true
+
+# Production : Flyway gère tout le DDL
+spring.jpa.hibernate.ddl-auto=none
 ```
 
-- **`ddl-auto=create`** : Hibernate crée automatiquement toutes les tables au démarrage depuis les annotations `@Entity`
-- **data.sql seulement** : Fichier pour insérer les données de test initiales
+| Version | Contenu |
+|---------|---------|
+| V1 | Schéma initial (11 tables) |
+| V2 | Données de test (fournisseurs, produits, factures) |
+| V3 | Colonne `gamme` sur `product` |
+| V4–V5 | Nettoyage et dédoublonnage |
+| **V6** | **16 index manquants** sur FK et colonnes filtrées |
+| **V7** | **Types monétaires** : `DOUBLE PRECISION` → `NUMERIC(19,3)` |
+| **V8** | **Audit** : `created_at`/`updated_at` sur 7 tables |
+| **V9** | **Contraintes** : stock ≥ 0, quantités > 0, remises 0–100% |
+| **V10** | **FK** `sale.bill_id → bill.id_bill` |
+| **V11** | **Vue matérialisée** `mv_product_dashboard` |
 
-### Données de Test
-
-Le fichier `data.sql` contient :
-- **3 fournisseurs** (Fournitures Générales, Technologie & Co, Aldecco)
-- **30 clients** répartis dans toute la Tunisie
-- **118 produits** (peintures, enduits, finitions, etc.)
-- **68 achats** (Janvier 2025 - Janvier 2026)
-- **92 ventes** (Janvier 2025 - Janvier 2026)
-- **160 mouvements de stock** (68 ENTREE + 92 SORTIE)
-
-### Structure des Tables Générées
-
-Les tables sont créées automatiquement avec les bonnes relations :
-
-```
-supplier → product → purchase → stock_mouvement
-                  ↓          ↘
-customer → sale ─────────────→ stock_mouvement
-         ↓
-       bill → bill_product
-```
+Voir [DATABASE_GUIDE.md](DATABASE_GUIDE.md) pour le détail complet de chaque migration.
 
 ---
 
@@ -575,10 +562,10 @@ Vérifier que `spring.jpa.hibernate.ddl-auto=update` est configuré
 ## 📚 Documentation Complète
 
 Voir les fichiers :
+- [DATABASE_GUIDE.md](DATABASE_GUIDE.md) - Schéma, migrations, index, types monétaires
 - [IMPLEMENTATION_GUIDE.md](IMPLEMENTATION_GUIDE.md) - Guide détaillé de l'implémentation avec code réel
 - [API_DOCUMENTATION.md](API_DOCUMENTATION.md) - Guide complet des endpoints
 - [API_EXAMPLES.md](API_EXAMPLES.md) - Exemples détaillés de requêtes
-- [backend/src/main/resources/data.sql](backend/src/main/resources/data.sql) - Données d'initialisation
 - [backend/README.md](backend/README.md) - Documentation backend
 
 ---
@@ -589,11 +576,13 @@ Voir les fichiers :
 |------------|---------|-------|
 | Spring Boot | 3.3.3 | Framework principal |
 | Java | 21 | Langage |
-| PostgreSQL | 14+ | Base de données |
+| PostgreSQL | 15 | Base de données |
+| Flyway | - | Migrations versionnées (V1–V11) |
 | JPA/Hibernate | - | ORM |
+| HikariCP | - | Pool de connexions |
 | Lombok | - | Annotations |
 | Swagger/OpenAPI | - | Documentation API |
-| Maven | 4.x | Build tool |
+| Maven | 3.9 | Build tool |
 
 ---
 

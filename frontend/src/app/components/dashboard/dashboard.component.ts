@@ -19,6 +19,9 @@ Chart.register(...registerables);
       <h1 class="page-title">Tableau de Bord</h1>
       <p class="page-sub">Bhouri Stock — Vue d'ensemble en temps réel</p>
     </div>
+    <div class="head-actions">
+      <a routerLink="/documents/create" class="btn-new">+ Nouveau Document</a>
+    </div>
   </div>
 
   <!-- ══ SKELETON ══════════════════════════════════════════════════════════════ -->
@@ -214,9 +217,9 @@ Chart.register(...registerables);
     :host { display: block; }
 
     .page {
-      background: #f0f2f8;
+      background: #f8fafc;
       min-height: 100vh;
-      padding: 1.75rem 2rem;
+      padding: 1.5rem;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       box-sizing: border-box;
     }
@@ -226,16 +229,16 @@ Chart.register(...registerables);
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      margin-bottom: 2rem;
+      margin-bottom: 1.5rem;
     }
     .page-title {
-      font-size: 1.625rem;
+      font-size: 1.5rem;
       font-weight: 700;
       color: #0f172a;
-      margin: 0 0 .25rem;
+      margin: 0 0 .2rem;
     }
     .page-sub {
-      font-size: .85rem;
+      font-size: .82rem;
       color: #64748b;
       margin: 0;
     }
@@ -254,6 +257,7 @@ Chart.register(...registerables);
       white-space: nowrap;
     }
     .btn-new:hover { opacity: .88; }
+    .head-actions { display: flex; gap: .625rem; align-items: center; flex-wrap: wrap; }
 
     /* ── Section label ───────────────────────────────── */
     .section-label {
@@ -262,7 +266,7 @@ Chart.register(...registerables);
       text-transform: uppercase;
       letter-spacing: .7px;
       color: #94a3b8;
-      margin-bottom: .875rem;
+      margin-bottom: .75rem;
     }
 
     /* ── KPI Row ─────────────────────────────────────── */
@@ -270,14 +274,14 @@ Chart.register(...registerables);
       display: grid;
       grid-template-columns: repeat(5, 1fr);
       gap: .875rem;
-      margin-bottom: 2rem;
+      margin-bottom: 1.5rem;
     }
     .kpi-card {
       background: #fff;
       border-radius: 12px;
       border: 1px solid #e2e8f0;
       border-top-width: 3px;
-      padding: 1.1rem 1.25rem;
+      padding: 1rem 1.25rem;
       display: flex;
       align-items: center;
       gap: .875rem;
@@ -319,8 +323,8 @@ Chart.register(...registerables);
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       grid-template-rows: auto auto;
-      gap: 1.25rem;
-      margin-bottom: 2rem;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
     }
     .chart-card {
       background: #fff;
@@ -331,28 +335,25 @@ Chart.register(...registerables);
       display: flex;
       flex-direction: column;
     }
-    .chart-wide {
-      grid-column: span 2;
-    }
+    .chart-wide { grid-column: span 2; }
     .chart-head {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 1rem 1.25rem;
-      border-bottom: 1px solid #f1f5f9;
+      padding: .75rem 1.25rem;
+      background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
     }
     .chart-title {
       font-size: .82rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: .5px;
-      color: #475569;
+      font-weight: 600;
+      color: #fff;
+      letter-spacing: .3px;
     }
     .chart-legend {
       display: flex;
       align-items: center;
       font-size: .75rem;
-      color: #64748b;
+      color: rgba(255,255,255,.85);
       gap: .25rem;
     }
     .legend-dot {
@@ -397,30 +398,31 @@ Chart.register(...registerables);
       background: #fff;
       border-radius: 12px;
       border: 1px solid #e2e8f0;
-      border-left: 4px solid #f59e0b;
       box-shadow: 0 1px 4px rgba(0,0,0,.04);
       overflow: hidden;
+      margin-bottom: 1.5rem;
     }
     .alerts-head {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: .875rem 1.25rem;
+      padding: .75rem 1.25rem;
       border-bottom: 1px solid #f1f5f9;
       font-size: .82rem;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: .5px;
-      color: #92400e;
-      background: #fffbeb;
+      color: #fff;
+      background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
     }
     .alerts-badge {
-      background: #f59e0b;
+      background: rgba(255,255,255,.25);
       color: #fff;
       font-size: .72rem;
       font-weight: 700;
-      padding: .2rem .5rem;
+      padding: .2rem .6rem;
       border-radius: 20px;
+      border: 1px solid rgba(255,255,255,.4);
     }
     .alerts-body {
       max-height: 240px;
@@ -451,7 +453,7 @@ Chart.register(...registerables);
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: .875rem;
-      margin-bottom: 2rem;
+      margin-bottom: 1.5rem;
     }
     .sk-card {
       height: 80px;

@@ -1,6 +1,7 @@
 package com.example.stock_management.model;
 
 import com.example.stock_management.dto.PaymentStatus;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.ToString;
@@ -11,12 +12,12 @@ import java.util.List;
 
 @Data
 @Entity
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Bill {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_bill")
     private Long idBill;
-
 
     private LocalDateTime dateBill;
 
@@ -24,22 +25,22 @@ public class Bill {
     @JoinColumn(name = "customerId")
     private Customer customer;
 
-    @ToString.Exclude // Exclusion de la relation pour éviter la récursion infinie
+    @ToString.Exclude
     @OneToMany(mappedBy = "bill", fetch = FetchType.EAGER,
-            cascade = CascadeType.ALL, orphanRemoval = true)     // JPA cascade le save sur les BillProduct
+            cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BillProduct> billProducts;
 
     @Column(precision = 19, scale = 3)
     private BigDecimal total;
 
     @Column(nullable = true, precision = 19, scale = 3)
-    private BigDecimal deposit;// "Acompte"
+    private BigDecimal deposit;
 
     @Column(name = "amount_due", precision = 19, scale = 3)
-    private BigDecimal amountDue;// "Net à payer"
+    private BigDecimal amountDue;
 
     @Column(nullable = true, precision = 19, scale = 3)
-    private BigDecimal discount; // Discount percentage (0-100)
+    private BigDecimal discount;
 
     @Column(name = "delivery_address", length = 500)
     private String deliveryAddress;
@@ -54,6 +55,21 @@ public class Bill {
     private PaymentStatus paymentStatus;
 
     @Column(name = "apply_tva", nullable = false)
-    private Boolean applyTva = false; // Par défaut, la TVA n'est pas appliquée
-}
+    private Boolean applyTva = false;
 
+    @Column(updatable = false)
+    private LocalDateTime createdAt;
+
+    private LocalDateTime updatedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
+}

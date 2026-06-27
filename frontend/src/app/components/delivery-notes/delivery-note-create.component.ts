@@ -168,7 +168,7 @@ interface DeliveryLineItem {
                       style="padding: 1rem; background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); color: white; border: none; border-radius: 0.5rem; font-weight: 600; cursor: pointer; font-size: 1rem; transition: all 0.3s;">
                 ✅ Créer le Bon de Livraison
               </button>
-              <a routerLink="/delivery-notes/list" 
+              <a routerLink="/invoices/list" 
                  style="padding: 1rem; background: #f3f4f6; color: #374151; border: none; border-radius: 0.5rem; font-weight: 600; text-align: center; text-decoration: none; transition: all 0.3s;">
                 ← Annuler
               </a>
@@ -488,7 +488,7 @@ export class DeliveryNoteCreateComponent implements OnInit {
       next: (response: any) => {
         this.successMessage = 'Bon de livraison créé avec succès!';
         setTimeout(() => {
-          this.router.navigate(['/delivery-notes/list']);
+          this.router.navigate(['/invoices/list']);
         }, 1500);
       },
       error: (error: any) => {
