@@ -1,9 +1,11 @@
 import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { ApiService } from '../../services/api.service';
+import { UrlFiltersService } from '../../shared/url-filters.service';
 import { Chart, ChartConfiguration, registerables } from 'chart.js';
 
 Chart.register(...registerables);
@@ -365,14 +367,26 @@ export class ProductsComponent implements OnInit, AfterViewInit {
   private searchSubject = new Subject<string>();
   private searchSub?: Subscription;
 
-  constructor(private apiService: ApiService) {}
+  constructor(
+    private apiService:  ApiService,
+    private route:       ActivatedRoute,
+    private router:      Router,
+    private urlFilters:  UrlFiltersService
+  ) {}
 
   ngOnInit(): void {
+    const params = this.urlFilters.read(this.route);
+    if (params['q']) this.searchText = params['q'];
+
     this.loadProducts();
+
     this.searchSub = this.searchSubject.pipe(
       debounceTime(300),
       distinctUntilChanged()
-    ).subscribe(value => { this.searchText = value; });
+    ).subscribe(value => {
+      this.searchText = value;
+      this.urlFilters.write(this.router, this.route, { q: value || null });
+    });
   }
 
   ngOnDestroy(): void {

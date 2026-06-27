@@ -1,11 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { ToastService } from '../../services/toast.service';
 import { ConfirmDialogService } from '../../services/confirm-dialog.service';
 import { StatusBadgeComponent } from '../../shared/status-badge.component';
+import { UrlFiltersService } from '../../shared/url-filters.service';
 
 interface CustomerWithStats {
   customer: {
@@ -372,9 +373,20 @@ export class CustomerListComponent implements OnInit {
     totalOutstanding: 0
   };
 
-  constructor(private apiService: ApiService, private router: Router, private toast: ToastService, private confirmDialog: ConfirmDialogService) {}
+  constructor(
+    private apiService:    ApiService,
+    private router:        Router,
+    private route:         ActivatedRoute,
+    private toast:         ToastService,
+    private confirmDialog: ConfirmDialogService,
+    private urlFilters:    UrlFiltersService
+  ) {}
 
   ngOnInit(): void {
+    const p = this.urlFilters.read(this.route);
+    if (p['q'])      this.searchQuery   = p['q'];
+    if (p['status']) this.statusFilter  = p['status'];
+    if (p['addr'])   this.addressFilter = p['addr'];
     this.loadCustomers();
     this.loadKPIs();
   }
@@ -393,6 +405,11 @@ export class CustomerListComponent implements OnInit {
       if (this.statusFilter && c.status !== this.statusFilter) return false;
       if (this.addressFilter && !c.address?.toLowerCase().includes(this.addressFilter.toLowerCase())) return false;
       return true;
+    });
+    this.urlFilters.write(this.router, this.route, {
+      q:      this.searchQuery   || null,
+      status: this.statusFilter  || null,
+      addr:   this.addressFilter || null
     });
   }
 
