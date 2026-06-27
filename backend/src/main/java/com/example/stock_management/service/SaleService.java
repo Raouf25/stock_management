@@ -44,14 +44,8 @@ public class SaleService {
 
         com.example.stock_management.model.Customer customer = null;
         if (saleDTO.getCustomerName() != null && !saleDTO.getCustomerName().isEmpty()) {
-            List<com.example.stock_management.model.Customer> customers = customerRepository.findAll();
-            customer = customers.stream()
-                .filter(c -> c.getName() != null && c.getName().equalsIgnoreCase(saleDTO.getCustomerName()))
-                .findFirst()
-                .orElse(null);
-            if (customer == null) {
-                throw new Exception("Client non trouvé : " + saleDTO.getCustomerName());
-            }
+            customer = customerRepository.findByNameIgnoreCase(saleDTO.getCustomerName())
+                .orElseThrow(() -> new Exception("Client non trouvé : " + saleDTO.getCustomerName()));
         }
 
         if (product.getCurrentStockQuantity() == null || product.getCurrentStockQuantity() < saleDTO.getQuantitySold()) {

@@ -18,7 +18,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -59,7 +58,7 @@ class SaleServiceTest {
     void createSale_withInsufficientStock_throwsException() {
         product.setCurrentStockQuantity(3);
         when(productRepository.findById(1L)).thenReturn(Optional.of(product));
-        when(customerRepository.findAll()).thenReturn(List.of(customer));
+        when(customerRepository.findByNameIgnoreCase("Devis Travaux Express")).thenReturn(Optional.of(customer));
 
         SaleDTO dto = buildDto(5, "18.260");
 
@@ -73,7 +72,7 @@ class SaleServiceTest {
     void createSale_withNullStock_throwsException() {
         product.setCurrentStockQuantity(null);
         when(productRepository.findById(1L)).thenReturn(Optional.of(product));
-        when(customerRepository.findAll()).thenReturn(List.of(customer));
+        when(customerRepository.findByNameIgnoreCase("Devis Travaux Express")).thenReturn(Optional.of(customer));
 
         assertThatThrownBy(() -> saleService.createSale(buildDto(1, "10.000")))
                 .isInstanceOf(Exception.class)
@@ -83,7 +82,7 @@ class SaleServiceTest {
     @Test
     void createSale_decrementsStockQuantity() throws Exception {
         when(productRepository.findById(1L)).thenReturn(Optional.of(product));
-        when(customerRepository.findAll()).thenReturn(List.of(customer));
+        when(customerRepository.findByNameIgnoreCase("Devis Travaux Express")).thenReturn(Optional.of(customer));
         when(saleRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
         saleService.createSale(buildDto(6, "18.260"));
@@ -98,7 +97,7 @@ class SaleServiceTest {
         // stock: 50 units @ CMP 10.000 = value 500.000
         // sell 10 units → deducted = 10 * 10.000 = 100.000 → remaining = 400.000
         when(productRepository.findById(1L)).thenReturn(Optional.of(product));
-        when(customerRepository.findAll()).thenReturn(List.of(customer));
+        when(customerRepository.findByNameIgnoreCase("Devis Travaux Express")).thenReturn(Optional.of(customer));
         when(saleRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
         saleService.createSale(buildDto(10, "15.000"));
@@ -112,7 +111,7 @@ class SaleServiceTest {
     void createSale_cmpRemainsStableAfterSale() throws Exception {
         // CMP should stay at 10.000 after a sale (sale price doesn't affect CMP)
         when(productRepository.findById(1L)).thenReturn(Optional.of(product));
-        when(customerRepository.findAll()).thenReturn(List.of(customer));
+        when(customerRepository.findByNameIgnoreCase("Devis Travaux Express")).thenReturn(Optional.of(customer));
         when(saleRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
         saleService.createSale(buildDto(10, "25.000")); // high sale price should not change CMP
@@ -125,7 +124,7 @@ class SaleServiceTest {
     @Test
     void createSale_computesTotalSaleAmount() throws Exception {
         when(productRepository.findById(1L)).thenReturn(Optional.of(product));
-        when(customerRepository.findAll()).thenReturn(List.of(customer));
+        when(customerRepository.findByNameIgnoreCase("Devis Travaux Express")).thenReturn(Optional.of(customer));
         when(saleRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
         saleService.createSale(buildDto(6, "18.260"));
@@ -150,7 +149,7 @@ class SaleServiceTest {
     @Test
     void createSale_withUnknownCustomerName_throwsException() {
         when(productRepository.findById(1L)).thenReturn(Optional.of(product));
-        when(customerRepository.findAll()).thenReturn(List.of(customer));
+        when(customerRepository.findByNameIgnoreCase("Client Inexistant")).thenReturn(Optional.empty());
 
         SaleDTO dto = buildDto(1, "10.000");
         dto.setCustomerName("Client Inexistant");
@@ -163,7 +162,7 @@ class SaleServiceTest {
     @Test
     void createSale_sellsEntireStock_setsQuantityToZero() throws Exception {
         when(productRepository.findById(1L)).thenReturn(Optional.of(product));
-        when(customerRepository.findAll()).thenReturn(List.of(customer));
+        when(customerRepository.findByNameIgnoreCase("Devis Travaux Express")).thenReturn(Optional.of(customer));
         when(saleRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
         saleService.createSale(buildDto(50, "10.000")); // sell everything
@@ -177,7 +176,7 @@ class SaleServiceTest {
     @Test
     void createSale_notifiesDashboardCache() throws Exception {
         when(productRepository.findById(1L)).thenReturn(Optional.of(product));
-        when(customerRepository.findAll()).thenReturn(List.of(customer));
+        when(customerRepository.findByNameIgnoreCase("Devis Travaux Express")).thenReturn(Optional.of(customer));
         when(saleRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
         saleService.createSale(buildDto(1, "10.000"));

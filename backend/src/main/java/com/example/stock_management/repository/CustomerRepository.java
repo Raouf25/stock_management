@@ -8,11 +8,14 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 public interface CustomerRepository extends JpaRepository<Customer, Long> {
-    
+
     long countByStatus(CustomerStatus status);
-    
+
     @Query("SELECT COUNT(c) FROM Customer c WHERE c.createdAt >= :startOfMonth")
     long countNewCustomersThisMonth(@Param("startOfMonth") LocalDateTime startOfMonth);
+
+    Optional<Customer> findByNameIgnoreCase(String name);
 }
