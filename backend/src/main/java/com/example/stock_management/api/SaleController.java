@@ -2,15 +2,18 @@ package com.example.stock_management.api;
 
 import com.example.stock_management.dto.SaleDTO;
 import com.example.stock_management.model.Sale;
+import com.example.stock_management.service.CsvExportService;
 import com.example.stock_management.service.SaleService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -23,6 +26,9 @@ public class SaleController {
 
     @Autowired
     private SaleService saleService;
+
+    @Autowired
+    private CsvExportService csvExportService;
 
     /**
      * Créer une nouvelle vente
@@ -37,6 +43,15 @@ public class SaleController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body("Erreur lors de la création de la vente : " + e.getMessage());
         }
+    }
+
+    @GetMapping("/export.csv")
+    @Operation(summary = "Exporter les ventes en CSV")
+    public void exportCsv(HttpServletResponse response) throws IOException {
+        response.setContentType("text/csv; charset=UTF-8");
+        response.setHeader("Content-Disposition", "attachment; filename=\"sales.csv\"");
+        List<SaleDTO> sales = saleService.convertToDTO(saleService.getAllSales());
+        response.getWriter().write(csvExportService.exportSalesToCsv(sales));
     }
 
     /**

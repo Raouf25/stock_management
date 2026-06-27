@@ -13,6 +13,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import com.example.stock_management.service.CsvExportService;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -21,7 +23,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.*;
+import java.util.List;
 
 /**
  * Contrôleur REST pour la gestion des factures.
@@ -39,6 +43,7 @@ public class BillController {
     private final BillService billService;
     private final BillMapper billMapper;
     private final InvoicePdfDataService invoicePdfDataService;
+    private final CsvExportService csvExportService;
 
     @GetMapping
     @Operation(summary = "Obtenir la liste des factures (paginée)")
@@ -50,6 +55,16 @@ public class BillController {
         Sort sort = sortDir.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
         return billService.findAllPaged(PageRequest.of(page, size, sort))
                 .map(billMapper::sourceToDestination);
+    }
+
+    @GetMapping("/export.csv")
+    @Operation(summary = "Exporter les factures en CSV")
+    public void exportCsv(HttpServletResponse response) throws java.io.IOException {
+        response.setContentType("text/csv; charset=UTF-8");
+        response.setHeader("Content-Disposition", "attachment; filename=\"bills.csv\"");
+        List<CreatedBillDTO> bills = billService.findAll().stream()
+                .map(billMapper::sourceToDestination).toList();
+        response.getWriter().write(csvExportService.exportBillsToCsv(bills));
     }
 
     @GetMapping("/{id}")

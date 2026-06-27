@@ -2,10 +2,12 @@ package com.example.stock_management.api;
 
 import com.example.stock_management.dto.PurchaseDTO;
 import com.example.stock_management.model.Purchase;
+import com.example.stock_management.service.CsvExportService;
 import com.example.stock_management.service.PurchaseService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -16,6 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -28,6 +31,9 @@ public class PurchaseController {
     @Autowired
     private PurchaseService purchaseService;
 
+    @Autowired
+    private CsvExportService csvExportService;
+
     /**
      * Créer un nouvel achat
      */
@@ -36,6 +42,15 @@ public class PurchaseController {
     public ResponseEntity<List<PurchaseDTO>> createPurchase(@Valid @RequestBody PurchaseDTO purchaseDTO) {
         var purchase = purchaseService.createPurchase(purchaseDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(purchaseService.convertToDTO(purchase));
+    }
+
+    @GetMapping("/export.csv")
+    @Operation(summary = "Exporter les achats en CSV")
+    public void exportCsv(HttpServletResponse response) throws IOException {
+        response.setContentType("text/csv; charset=UTF-8");
+        response.setHeader("Content-Disposition", "attachment; filename=\"purchases.csv\"");
+        List<PurchaseDTO> purchases = purchaseService.convertToDTO(purchaseService.getAllPurchases());
+        response.getWriter().write(csvExportService.exportPurchasesToCsv(purchases));
     }
 
     /**
