@@ -7,6 +7,7 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { environment } from '../../../environments/environment';
 import { ToastService } from '../../services/toast.service';
 import { ConfirmDialogService } from '../../services/confirm-dialog.service';
+import { PaginatorComponent } from '../../shared/paginator.component';
 
 type ActiveTab = 'factures' | 'bl';
 
@@ -35,7 +36,7 @@ interface DeliveryNoteKPIs {
 @Component({
   selector: 'app-invoice-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, PaginatorComponent],
   template: `
 <div class="page">
 
@@ -248,6 +249,16 @@ interface DeliveryNoteKPIs {
         <div class="empty-icon">📭</div><p>Aucune facture trouvée</p>
       </div>
     </div>
+
+    <!-- Pagination factures -->
+    <app-paginator
+      *ngIf="activeTab==='factures'"
+      [page]="invoicePage"
+      [pageSize]="invoicePageSize"
+      [totalItems]="invoiceTotalItems"
+      (pageChange)="onInvoicePageChange($event)"
+      (pageSizeChange)="onInvoicePageSizeChange($event)">
+    </app-paginator>
 
     <!-- ════════ TABLE BL (desktop) ════════ -->
     <div *ngIf="activeTab==='bl'" class="desktop-table">
@@ -821,12 +832,15 @@ export class InvoiceListComponent implements OnInit {
   activeTab: ActiveTab = 'factures';
 
   // ── Factures ──────────────────────────────────────────────────────────────
-  invoices:         any[] = [];
-  filteredInvoices: any[] = [];
-  filterStatus   = '';
-  filterClient   = '';
-  filterDateFrom = '';
-  filterDateTo   = '';
+  invoices:          any[] = [];
+  filteredInvoices:  any[] = [];
+  filterStatus    = '';
+  filterClient    = '';
+  filterDateFrom  = '';
+  filterDateTo    = '';
+  invoicePage         = 0;
+  invoicePageSize     = 20;
+  invoiceTotalItems   = 0;
   selectedInvoice: any       = null;
   drawerOpen                 = false;
   iframeSrc: SafeResourceUrl | null = null;
@@ -867,10 +881,25 @@ export class InvoiceListComponent implements OnInit {
   // ══════════════════════════════════════════════════════════════════════════
 
   loadInvoices(): void {
-    this.apiService.getAllBills().subscribe({
-      next: (res) => { this.invoices = res.content; this.applyInvoiceFilters(); },
+    this.apiService.getAllBills(this.invoicePage, this.invoicePageSize).subscribe({
+      next: (res) => {
+        this.invoices         = res.content;
+        this.invoiceTotalItems = res.totalElements;
+        this.applyInvoiceFilters();
+      },
       error: () => this.showError('Erreur lors du chargement des factures.')
     });
+  }
+
+  onInvoicePageChange(page: number): void {
+    this.invoicePage = page;
+    this.loadInvoices();
+  }
+
+  onInvoicePageSizeChange(size: number): void {
+    this.invoicePageSize = size;
+    this.invoicePage     = 0;
+    this.loadInvoices();
   }
 
   applyInvoiceFilters(): void {
