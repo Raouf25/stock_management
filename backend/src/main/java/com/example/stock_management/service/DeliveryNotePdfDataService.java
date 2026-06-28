@@ -85,6 +85,8 @@ public class DeliveryNotePdfDataService extends AbstractPdfDataService {
         deliveryNoteService.findById(deliveryNoteId).ifPresent(dn -> {
             populateDeliveryNoteData(dn, data);
             populateCustomerData(dn.getCustomer(), data);  // Méthode héritée
+            String lp = dn.getCustomer() != null ? dn.getCustomer().getLicensePlate() : null;
+            data.put("hasLicensePlate", lp != null && !lp.isBlank());
         });
 
         // Ajout des informations d'entreprise (méthode héritée)
@@ -118,6 +120,10 @@ public class DeliveryNotePdfDataService extends AbstractPdfDataService {
         data.put("statusLabel", getStatusLabel(dn.getStatus().name()));
         data.put("notes", dn.getNotes());
         data.put("deliveryAddress", defaultIfNull(dn.getDeliveryAddress(), DEFAULT_EMPTY_STRING));
+        data.put("paymentTerms", "À réception");
+        data.put("paymentMethod", "—");
+        data.put("paymentRef", "");
+        data.put("supplierRib", "");
 
         // 2. Configuration TVA
         boolean applyTva = Boolean.TRUE.equals(dn.getApplyTva());
@@ -170,6 +176,7 @@ public class DeliveryNotePdfDataService extends AbstractPdfDataService {
         data.put("totalDiscountFormatted", formatAmount(totalDiscount));
         data.put("tvaFormatted", applyTva ? formatAmount(tva) : DEFAULT_ZERO_FORMATTED);
         data.put("totalFormatted", formatAmount(totalTTC));
+        data.put("hasDiscount", totalDiscount > 0.0);
     }
     
     /**

@@ -1,302 +1,718 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<html xmlns:th="http://www.thymeleaf.org" xmlns="http://www.w3.org/1999/html" lang="fr">
 <head>
     <meta charset="UTF-8"/>
-    <title th:text="'Bon de Livraison - ' + ${deliveryNoteNumber}">Bon de Livraison</title>
-    <style type="text/css">
-        /*<![CDATA[*/
-        /*
-            BON DE LIVRAISON v4.0 — Flying Saucer PDF
-            CRITICAL: border-radius does NOT work on <table> in Flying Saucer.
-            All rounded containers use <div class="card|card-meta|card-accent">.
-        */
-        @page { size: A4; margin: 15mm; }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: Arial, sans-serif; font-size: 10pt; line-height: 1.5;
-               color: #1e1b4b; background-color: #f5f4ff; }
-        strong { font-weight: 600; }
-        address { font-style: normal; }
+    <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+    <title th:text="'Facture - ' + ${billNumber}">Facture</title>
+    <style>
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 0;
+            }
+            body {
+                background: #ffffff !important;
+            }
+            .page {
+                margin: 0 !important;
+                box-shadow: none !important;
+            }
+        }
+        *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
 
-        /* ── HERO ── */
-        .hero-header {
-            width: 100%; margin-bottom: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 36px 28px; border-radius: 16px;
-            text-align: center; color: white;
-        }
-        .hero-icon {
-            display: inline-block; width: 60px; height: 60px; margin: 0 auto 14px;
-            background-color: rgba(255,255,255,0.18); border: 2px solid rgba(255,255,255,0.32);
-            border-radius: 50%; text-align: center; line-height: 60px; font-size: 28pt;
-        }
-        .hero-brand { margin: 0 0 6px; font-size: 9pt; font-weight: 600;
-            letter-spacing: 0.14em; text-transform: uppercase; color: rgba(255,255,255,0.65); }
-        .hero-title { margin: 0 0 6px; font-size: 22pt; font-weight: 700; color: white; }
-        .hero-number { margin: 0 0 6px; font-size: 16pt; font-weight: 600; color: rgba(255,255,255,0.90); }
-        .hero-tagline { margin: 0; font-size: 10pt; color: rgba(255,255,255,0.68); }
-
-        /* ── CARD WRAPPERS ── */
-        .card {
-            background: white; border: 1px solid #e0dcff;
-            border-radius: 14px; overflow: hidden; margin-bottom: 18px;
-            page-break-inside: avoid;
-        }
-        .card-inner { padding: 18px; }
-        .card-meta {
-            background: #f3f0ff; border: 1px solid #e0dcff;
-            border-radius: 12px; overflow: hidden;
-            page-break-inside: avoid;
-        }
-        .card-accent {
-            background: white; border: 2px solid #667eea;
-            border-radius: 14px; overflow: hidden;
-            max-width: 300px; margin-left: auto;
-            page-break-inside: avoid;
+        :root {
+            --ink:      #052e16;
+            --ink2:     #064e3b;
+            --muted:    #4b7a5f;
+            --rule:     #d1fae5;
+            --soft:     #f0fdf4;
+            --violet:   #065f46;
+            --mid:      #059669;
+            --lilac:    #6ee7b7;
+            --pale:     #ecfdf5;
+            --white:    #ffffff;
+            --stripe:   #f0fdf4;
+            --sidebar-w: 14mm;
         }
 
-        /* ── INFO TABLE ── */
-        .info-table { width: 100%; border-collapse: collapse; }
-        .info-table td { vertical-align: top; padding: 6px; }
-        .info-table td.company-col { width: 50%; padding-right: 16px; border-right: 1px solid #ede9fe; }
-        .info-table td.meta-col { width: 50%; padding-left: 16px; }
-        .company-col h2 { margin: 0 0 8px; font-size: 14pt; font-weight: 700; color: #667eea; }
-        .company-col p { margin: 3px 0; font-size: 9pt; color: #6b7280; }
-        .meta-table { width: 100%; border-collapse: collapse; background: #f3f0ff; }
-        .meta-table td { padding: 9px 12px; font-size: 9pt; border-bottom: 1px solid #ede9fe; }
-        .meta-table td:first-child { font-weight: 600; color: #a78bfa;
-            text-transform: uppercase; letter-spacing: 0.06em; width: 48%; }
-        .meta-table td:last-child { font-weight: 600; color: #374151; text-align: right; }
-        .meta-table tr:last-child td { border-bottom: none; }
-
-        /* ── BILLING / DELIVERY ── */
-        .billing-delivery {
-            width: 100%; margin-bottom: 18px;
-            border-collapse: separate; border-spacing: 10px 0;
-        }
-        .billing-delivery td {
-            width: 50%; vertical-align: top; padding: 16px;
-            background: white; border: 1px solid #e0dcff; border-radius: 14px;
-            page-break-inside: avoid;
-        }
-        .billing-delivery h3 {
-            margin: 0 0 10px; font-size: 10pt; font-weight: 600; color: #667eea;
-            text-transform: uppercase; letter-spacing: 0.08em;
-            border-bottom: 2px solid #667eea; padding-bottom: 6px;
-        }
-        .billing-delivery p { margin: 4px 0; font-size: 9pt; color: #6b7280; }
-
-        /* ── PRODUCTS (inside .card) ── */
-        .products { width: 100%; border-collapse: collapse; background: white; }
-        .products thead { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-        .products th { padding: 12px 10px; text-align: left; font-weight: 600;
-            font-size: 8pt; text-transform: uppercase; letter-spacing: 0.08em; color: white; }
-        .products tbody tr { border-bottom: 1px solid #ede9fe; page-break-inside: avoid; }
-        .products tbody tr:last-child { border-bottom: none; }
-        .products td { padding: 10px; font-size: 9pt; vertical-align: middle; }
-        .products th.align-right, .products td.align-right { text-align: right; }
-        .products td.monospace { font-weight: 500; }
-        .products td.ref-column {
-            font-size: 8pt; color: #a78bfa; background: #f3f0ff;
-            padding: 3px 8px; border-radius: 6px;
+        html, body {
+            background: #dcfce7;
+            display: flex; justify-content: center; align-items: flex-start;
+            min-height: 100vh;
+            font-family: 'Segoe UI', Inter, Arial, sans-serif;
+            color: var(--ink);
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
         }
 
-        /* ── TOTALS (inside .card-accent) ── */
-        .totals-section { width: 100%; margin-bottom: 18px; page-break-inside: avoid; }
-        .totals { width: 100%; border-collapse: collapse; background: white; }
-        .totals td { padding: 10px 14px; font-size: 9pt; border-bottom: 1px solid #ede9fe; }
-        .totals tr:last-child td { border-bottom: none; }
-        .totals td.label { font-weight: 500; color: #a78bfa;
-            text-transform: uppercase; letter-spacing: 0.06em; font-size: 8pt; width: 50%; }
-        .totals td.value { text-align: right; font-weight: 700;
-            font-size: 11pt; color: #1e1b4b; width: 50%; }
-        .totals tr.total-row { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-        .totals tr.total-row td { color: white; font-weight: 700; font-size: 12pt; padding: 12px 14px; }
-
-        /* ── STATUS BADGES ── */
-        .status-badge { display: inline-block; padding: 4px 12px;
-            border-radius: 12px; font-size: 9pt; font-weight: 600; color: white; }
-        .status-pending  { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
-        .status-delivered{ background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
-        .status-cancelled{ background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); }
-
-        /* ── NOTES ── */
-        .notes-section {
-            margin-bottom: 18px; padding: 14px 16px;
-            background: #eff1ff; border-left: 4px solid #667eea;
-            border-radius: 12px; font-size: 9pt; color: #374151;
-            page-break-inside: avoid;
+        /* ── PAGE ── */
+        .page {
+            width: 210mm;
+            min-height: 297mm;
+            background: var(--white);
+            display: flex;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 40px rgba(6,95,70,.18);
         }
 
-        /* ── SIGNATURES (inside .card) ── */
-        .signatures { width: 100%; border-collapse: collapse; background: white; }
-        .signatures td { padding: 18px 16px; font-size: 9pt; color: #6b7280;
-            text-align: center; border-right: 1px solid #ede9fe; width: 33.33%; }
-        .signatures td:last-child { border-right: none; }
-        .signatures td.align-left  { text-align: left; }
-        .signatures td.align-right { text-align: right; }
-
-        /* ── FOOTER ── */
-        .footer-branding {
-            margin-top: 22px; padding: 18px; text-align: center;
-            background: #f3f0ff; border-radius: 14px; border: 1px solid #ede9fe;
-            page-break-inside: avoid;
+        /* ── SIDEBAR ── */
+        .sidebar {
+            width: var(--sidebar-w);
+            background: var(--violet);
+            flex: 0 0 var(--sidebar-w);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10mm 0 8mm;
+            position: relative;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
         }
-        .footer-branding p { margin: 0; font-size: 9pt; color: #a78bfa; }
-        .footer-branding .brand-name { font-weight: 700; color: #667eea; font-size: 11pt; }
-        /*]]>*/
+
+        .sidebar::after {
+            content: '';
+            position: absolute;
+            top: 0; right: 0;
+            width: 1px; height: 100%;
+            background: linear-gradient(180deg, transparent, var(--mid) 30%, var(--mid) 70%, transparent);
+        }
+
+        .sidebar-logo {
+            width: 9mm; height: 9mm;
+            border-radius: 2mm;
+            background: rgba(255,255,255,.15);
+            border: .4mm solid rgba(255,255,255,.25);
+            display: flex; align-items: center; justify-content: center;
+            color: var(--lilac);
+            font-size: 4.5mm; font-weight: 700;
+            margin-bottom: 8mm;
+        }
+
+        .sidebar-num {
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            transform: rotate(180deg);
+            color: var(--lilac);
+            font-size: 2.7mm;
+            letter-spacing: .4mm;
+            text-transform: uppercase;
+            font-weight: 600;
+            opacity: .8;
+        }
+
+        .sidebar-dot {
+            margin-top: auto;
+            width: 3mm; height: 3mm;
+            border-radius: 50%;
+            background: rgba(255,255,255,.2);
+            margin-bottom: 4mm;
+        }
+
+        /* ── MAIN CONTENT ── */
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 10mm 11mm 0;
+            min-height: 297mm;
+        }
+
+        /* ── HEADER ── */
+        .header {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 6mm;
+            align-items: start;
+            margin-bottom: 7mm;
+        }
+
+        .brand-name {
+            font-size: 6.5mm;
+            font-weight: 700;
+            color: var(--violet);
+            letter-spacing: -.15mm;
+            line-height: 1;
+        }
+
+        .brand-tag {
+            font-size: 3mm;
+            color: var(--muted);
+            margin-top: 1.5mm;
+            letter-spacing: .05mm;
+        }
+
+        .company-block {
+            margin-top: 4.5mm;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1mm 6mm;
+        }
+
+        .ci {
+            font-size: 2.95mm;
+            color: var(--muted);
+            line-height: 1.5;
+        }
+
+        .ci b { color: var(--ink2); font-weight: 600; }
+
+        /* right: FACTURE + meta */
+        .hdr-right { text-align: right; }
+
+        .bl-word {
+            font-size: 13mm;
+            font-weight: 700;
+            color: var(--violet);
+            letter-spacing: -1mm;
+            line-height: 1;
+            opacity: .15;
+            display: block;
+        }
+
+        .bill-number {
+            font-size: 5.5mm;
+            font-weight: 700;
+            color: var(--violet);
+            letter-spacing: .1mm;
+            margin-top: -2mm;
+            display: block;
+        }
+
+        .meta-list {
+            margin-top: 3.5mm;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5mm;
+            align-items: flex-end;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 3mm;
+            font-size: 3mm;
+        }
+
+        .meta-k {
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: .25mm;
+            font-size: 2.5mm;
+            min-width: 22mm;
+            text-align: right;
+        }
+
+        .meta-v {
+            color: var(--ink);
+            font-weight: 600;
+            min-width: 28mm;
+            text-align: left;
+        }
+
+        /* status badge */
+        .badge {
+            margin-top: 2mm;
+            display: inline-flex;
+            align-items: center;
+            gap: 1.5mm;
+            padding: 1.5mm 3.5mm;
+            border-radius: 99mm;
+            font-size: 2.5mm;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .25mm;
+            background: #FEF3C7;
+            color: #92400E;
+            border: .25mm solid #fde68a;
+        }
+
+        .badge::before {
+            content: '';
+            width: 1.5mm; height: 1.5mm;
+            border-radius: 50%;
+            background: #d97706;
+        }
+
+        /* ── RULE ── */
+        .rule {
+            border: none;
+            border-top: .5mm solid var(--violet);
+            opacity: .2;
+            margin: 0 0 5.5mm;
+        }
+
+        .rule-light {
+            border: none;
+            border-top: .25mm solid var(--rule);
+            margin: 4mm 0;
+        }
+
+        /* ── ADDRESSES ── */
+        .addr-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+            border: .25mm solid var(--rule);
+            border-radius: 2mm;
+            overflow: hidden;
+            margin-bottom: 5.5mm;
+        }
+
+        .addr-col {
+            padding: 4mm 5mm;
+        }
+
+        .addr-col + .addr-col {
+            border-left: .25mm solid var(--rule);
+            background: var(--stripe);
+        }
+
+        .addr-eyebrow {
+            font-size: 2.4mm;
+            text-transform: uppercase;
+            letter-spacing: .3mm;
+            color: var(--mid);
+            font-weight: 700;
+            margin-bottom: 2.5mm;
+            display: flex;
+            align-items: center;
+            gap: 1.5mm;
+        }
+
+        .addr-eyebrow::before {
+            content: '';
+            width: 2mm; height: .4mm;
+            background: var(--mid);
+            display: inline-block;
+        }
+
+        .addr-name {
+            font-size: 3.8mm;
+            font-weight: 700;
+            color: var(--ink);
+            margin-bottom: 2mm;
+        }
+
+        .addr-detail {
+            font-size: 3mm;
+            color: var(--muted);
+            line-height: 1.55;
+            margin: .5mm 0;
+        }
+
+        .addr-detail b { color: var(--ink2); font-weight: 600; }
+
+        /* ── TABLE ── */
+        .tbl-wrap {
+            border: .25mm solid var(--rule);
+            border-radius: 2mm;
+            overflow: hidden;
+            margin-bottom: 4mm;
+        }
+
+        table { width: 100%; border-collapse: collapse; }
+
+        thead tr {
+            background: var(--violet);
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        thead th {
+            padding: 3.5mm 4mm;
+            font-size: 2.5mm;
+            text-transform: uppercase;
+            letter-spacing: .3mm;
+            color: rgba(255,255,255,.85);
+            font-weight: 600;
+            text-align: left;
+        }
+
+        thead th.r { text-align: right; }
+
+        tbody tr {
+            border-bottom: .25mm solid var(--rule);
+        }
+
+        tbody tr:last-child { border-bottom: none; }
+
+        tbody tr:nth-child(even) {
+            background: var(--stripe);
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        tbody td {
+            padding: 3.5mm 4mm;
+            font-size: 3.1mm;
+            vertical-align: middle;
+            color: var(--ink);
+        }
+
+        .td-num {
+            color: var(--muted);
+            font-size: 2.7mm;
+            font-weight: 600;
+            width: 8mm;
+            text-align: center;
+        }
+
+        .td-prod-name { font-weight: 600; font-size: 3.2mm; }
+        .td-prod-sub { font-size: 2.7mm; color: var(--muted); margin-top: .5mm; }
+
+        .td-ref { color: var(--mid); font-weight: 600; font-size: 2.9mm; }
+
+        .td-r {
+            text-align: right;
+            white-space: nowrap;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .td-disc { color: var(--muted); }
+
+        .td-total {
+            text-align: right;
+            font-weight: 700;
+            font-size: 3.5mm;
+            color: var(--ink);
+            white-space: nowrap;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* ── TOTALS AREA ── */
+        .totals-area {
+            display: grid;
+            grid-template-columns: 1fr 72mm;
+            gap: 5mm;
+            margin-bottom: 5mm;
+            align-items: start;
+        }
+
+        /* payment box */
+        .pay-box {
+            border: .25mm solid var(--rule);
+            border-radius: 2mm;
+            overflow: hidden;
+        }
+
+        .pay-box-head {
+            background: var(--pale);
+            padding: 2.5mm 4mm;
+            font-size: 2.5mm;
+            text-transform: uppercase;
+            letter-spacing: .3mm;
+            font-weight: 700;
+            color: var(--violet);
+            border-bottom: .25mm solid var(--rule);
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        .pay-box-body {
+            padding: 3mm 4mm;
+        }
+
+        .pay-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 3mm;
+            color: var(--muted);
+            padding: 1mm 0;
+        }
+
+        .pay-row b { color: var(--ink2); }
+
+        /* totals box */
+        .sum-box {
+            border: .25mm solid var(--rule);
+            border-radius: 2mm;
+            overflow: hidden;
+        }
+
+        .sum-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 2.5mm 4mm;
+            border-bottom: .25mm solid var(--rule);
+            font-size: 3mm;
+        }
+
+        .sum-row:last-child { border-bottom: none; }
+        .sum-key { color: var(--muted); }
+        .sum-val { font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
+
+        /* NET row */
+        .net-row {
+            background: var(--violet);
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+            padding: 3.5mm 4mm;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .net-label {
+            font-size: 2.7mm;
+            text-transform: uppercase;
+            letter-spacing: .3mm;
+            color: var(--lilac);
+            font-weight: 700;
+            line-height: 1.35;
+        }
+
+        .net-label span {
+            display: block;
+            font-size: 2.4mm;
+            opacity: .7;
+            text-transform: none;
+            letter-spacing: 0;
+            font-weight: 400;
+        }
+
+        .net-amount {
+            font-size: 7mm;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: -.15mm;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* ── FOOTER BOTTOM ── */
+        .page-footer {
+            margin-top: auto;
+            margin-left: -11mm;
+            margin-right: -11mm;
+            border-top: .25mm solid var(--rule);
+            background: var(--soft);
+            padding: 5mm 11mm 7mm;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 5mm;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        .fc {
+            padding-right: 4mm;
+            border-right: .25mm solid var(--rule);
+        }
+
+        .fc:last-child { border-right: none; padding-right: 0; }
+
+        .fc-title {
+            font-size: 2.4mm;
+            text-transform: uppercase;
+            letter-spacing: .3mm;
+            color: var(--mid);
+            font-weight: 700;
+            margin-bottom: 2.5mm;
+        }
+
+        .fc p {
+            font-size: 2.9mm;
+            color: var(--muted);
+            line-height: 1.5;
+            margin: .6mm 0;
+        }
+
+        .fc p b { color: var(--ink2); }
+
+        .fc .sig-area {
+            margin-top: 6mm;
+            height: 8mm;
+            border-bottom: .3mm solid var(--rule);
+            position: relative;
+        }
+
+        .fc .sig-label {
+            position: absolute;
+            bottom: 1.5mm;
+            font-size: 2.4mm;
+            color: var(--muted);
+        }
+
+        @media print {
+            html, body { background: #fff; }
+            .page { box-shadow: none; }
+        }
     </style>
 </head>
 <body>
+<div class="page">
 
-<!-- HERO -->
-<div class="hero-header">
-    <div class="hero-icon">&#x1F69A;</div>
-    <p class="hero-brand">Bhouri Stock &#xB7; Livraison</p>
-    <h1 class="hero-title">Bon de Livraison</h1>
-    <p class="hero-number" th:text="${deliveryNoteNumber}">BL-00000000-0000</p>
-    <p class="hero-tagline">Gestion intelligente de stock</p>
-</div>
+    <!-- ── SIDEBAR ── -->
+    <div class="sidebar">
+        <div class="sidebar-logo">B</div>
+        <div class="sidebar-num" th:text="${deliveryNoteNumber}">BL-0001</div>
+        <div class="sidebar-dot"></div>
+    </div>
 
-<!-- COMPANY + META (.card gives the rounded white container) -->
-<div class="card">
-    <div class="card-inner">
-        <table class="info-table">
-            <tr>
-                <td class="company-col">
-                    <h2 th:text="${companyName}">Nom de l&#x2019;entreprise</h2>
-                    <address>
-                        <p th:text="${companyAddress}">Adresse</p>
-                        <p><strong>T&#xE9;l:</strong> <span th:text="${companyPhone}">Phone</span></p>
-                        <p><strong>Matricule Fiscale:</strong> <span th:text="${companyTaxId}">Tax ID</span></p>
-                    </address>
-                </td>
-                <td class="meta-col">
-                    <!-- .card-meta provides rounded corners -->
-                    <div class="card-meta">
-                        <table class="meta-table">
-                            <tr>
-                                <td>BL N&#xB0;</td>
-                                <td th:text="${deliveryNoteNumber}">BL-00000000-0000</td>
-                            </tr>
-                            <tr>
-                                <td>Date</td>
-                                <td th:text="${deliveryDate}">01/01/2026</td>
-                            </tr>
-                            <tr>
-                                <td>Statut</td>
-                                <td th:text="${statusLabel}">En attente</td>
-                            </tr>
-                        </table>
+    <!-- ── MAIN ── -->
+    <div class="main">
+
+        <!-- HEADER -->
+        <div class="header">
+            <div>
+                <div class="brand-name">Bhouri Stock</div>
+                <div class="brand-tag">Gestion intelligente de stock &amp; facturation</div>
+
+                <div class="company-block">
+                    <div class="ci" th:if="${companyAddress}" th:text="${companyAddress}">Adresse de l'entreprise</div>
+                    <div class="ci" th:if="${companyPhone}"><b>Tél :</b> <span th:text="${companyPhone}">(+216) XX XXX XXX</span></div>
+                    <div class="ci" th:if="${companyTaxId}"><b>MF :</b> <span th:text="${companyTaxId}">123456789</span></div>
+                    <div class="ci" th:if="${supplierRib}"><b>RIB :</b> <span th:text="${supplierRib}">—</span></div>
+                </div>
+            </div>
+
+            <div class="hdr-right">
+                <span class="bl-word">BON DE </br>LIVRAISON</span>
+                <span class="bill-number" th:text="${deliveryNoteNumber}">BL-0001</span>
+
+                <div class="meta-list">
+                    <div class="meta-item">
+                        <span class="meta-k">Date</span>
+                        <span class="meta-v" th:text="${deliveryDate}">11/06/2026</span>
                     </div>
-                </td>
-            </tr>
-        </table>
-    </div>
-</div>
+                    <div class="meta-item">
+                        <span class="meta-k">Conditions</span>
+                        <span class="meta-v" th:text="${paymentTerms}">À réception</span>
+                    </div>
+                    <div class="badge" th:text="${statusLabel}">En attente</div>
+                </div>
+            </div>
+        </div>
 
-<!-- CLIENT + DELIVERY INFO (td border-radius works) -->
-<table class="billing-delivery">
-    <tr>
-        <td>
-            <h3>Client</h3>
-            <address>
-                <p><strong th:text="${customerName}">Client Name</strong></p>
-                <p th:text="${customerAddress}">Client Address</p>
-                <p><strong>T&#xE9;l:</strong> <span th:text="${customerPhone}">Phone</span></p>
-                <p><strong>Matricule Fiscale:</strong> <span th:text="${customerTva}">TVA</span></p>
-            </address>
-        </td>
-        <td>
-            <h3>Livr&#xE9; &#xE0;</h3>
-            <address>
-                <p><strong>Nom et Pr&#xE9;nom:</strong> <span th:text="${deliveryFullName}">Nom</span></p>
-                <p><strong>CIN:</strong> <span th:text="${deliveryCin}">00000000</span></p>
-                <p><strong>Immatriculation:</strong>
-                    <span th:text="${licensePlateX}">000</span> TN
-                    <span th:text="${licensePlateY}">0000</span></p>
-                <p th:if="${deliveryAddress != null and deliveryAddress != ''}">
-                    <strong>Adresse:</strong> <span th:text="${deliveryAddress}">Adresse</span>
-                </p>
-            </address>
-        </td>
-    </tr>
-</table>
+        <hr class="rule"/>
 
-<!-- PRODUCTS (.card div gives the rounded border) -->
-<div class="card" style="margin-bottom:18px;">
-    <table class="products">
-        <thead>
-        <tr>
-            <th>Produit</th>
-            <th>R&#xE9;f&#xE9;rence</th>
-            <th class="align-right">Prix Unitaire</th>
-            <th class="align-right">Quantit&#xE9;</th>
-            <th class="align-right">Remise (%)</th>
-            <th class="align-right">Montant</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:each="product : ${products}">
-            <td th:text="${product.productName}">Nom</td>
-            <td class="ref-column" th:text="${product.productRef}">REF</td>
-            <td class="align-right monospace" th:text="${product.unitPriceFormatted}">0.000</td>
-            <td class="align-right monospace" th:text="${product.quantity}">0</td>
-            <td class="align-right monospace" th:text="${product.discountPercentage}">0</td>
-            <td class="align-right monospace" th:text="${product.totalPriceFormatted}">0.000</td>
-        </tr>
-        </tbody>
-    </table>
-</div>
+        <!-- ADDRESSES -->
+        <div class="addr-grid">
+            <div class="addr-col">
+                <div class="addr-eyebrow">Facturé à</div>
+                <div class="addr-name" th:text="${customerName}">Distrimat Services</div>
+                <div class="addr-detail" th:if="${customerAddress}" th:text="${customerAddress}">456 Boulevard du Commerce, Sfax</div>
+                <div class="addr-detail" th:if="${customerPhone}"><b>Tél :</b> <span th:text="${customerPhone}">+216 74 222 222</span></div>
+                <div class="addr-detail" th:if="${customerTva}"><b>MF :</b> <span th:text="${customerTva}">987654321/B/M/000</span></div>
+            </div>
+            <div class="addr-col">
+<!--                <div class="addr-eyebrow">Livré à</div>-->
+                <div class="addr-eyebrow">Livré par</div>
+                <div class="addr-name" th:text="${deliveryFullName}">Ahmed Trabelsi</div>
+                <div class="addr-detail" th:if="${deliveryCin}"><b>CIN :</b> <span th:text="${deliveryCin}">02345678</span></div>
+                <div class="addr-detail" th:if="${hasLicensePlate}">
+                    <b>Immat. :</b>
+                    <span style="display: inline-flex; gap: 0.25em; direction: ltr;">
+                        <span th:text="${licensePlateY}">7890</span>
+                        <span>تونس</span>
+                        <span th:text="${licensePlateX}">789</span>
+                    </span>
+                </div>
+                <div class="addr-detail" th:if="${deliveryAddress}" th:text="${deliveryAddress}"></div>
+            </div>
+        </div>
 
-<!-- TOTALS (.card-accent gives the purple rounded border) -->
-<div class="totals-section">
-    <div class="card-accent">
-        <table class="totals">
-            <tr th:if="${showTva}">
-                <td class="label">Total HT</td>
-                <td class="value" th:text="${totalHTFormatted}">0.000</td>
-            </tr>
-            <tr>
-                <td class="label">Remise globale</td>
-                <td class="value" th:text="${totalDiscountFormatted}">0.000</td>
-            </tr>
-            <tr th:if="${showTva}">
-                <td class="label">TVA (19%)</td>
-                <td class="value" th:text="${tvaFormatted}">0.000</td>
-            </tr>
-            <tr class="total-row">
-                <td class="label" th:text="${showTva} ? 'Total TTC' : 'Total'">Total</td>
-                <td class="value" th:text="${totalFormatted}">0.000</td>
-            </tr>
-        </table>
-    </div>
-</div>
+        <!-- TABLE -->
+        <div class="tbl-wrap">
+            <table>
+                <thead>
+                <tr>
+                    <th style="width:7mm; text-align:center;">#</th>
+                    <th>Produit</th>
+                    <th class="r" style="width:22mm;">Référence</th>
+                    <th class="r" style="width:20mm;">Prix unit.</th>
+                    <th class="r" style="width:13mm;">Qté</th>
+                    <th class="r" style="width:16mm;">Remise</th>
+                    <th class="r" style="width:22mm;">Montant HT</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="product, s : ${products}">
+                    <td class="td-num" th:text="${#numbers.formatInteger(s.index + 1, 2)}">01</td>
+                    <td>
+                        <div class="td-prod-name" th:text="${product.productName}">FISSATIVO 30G</div>
+<!--                        <div class="td-prod-sub" th:if="${product.productDescription}" th:text="${product.productDescription}"></div>-->
+                    </td>
+                    <td class="td-ref td-r" th:text="${product.productRef != null ? product.productRef : '—'}">—</td>
+                    <td class="td-r" th:text="${product.unitPriceFormatted}">78.692</td>
+                    <td class="td-r" th:text="${product.quantity}">1</td>
+                    <td class="td-r td-disc"
+                        th:text="${product.discountValue != null and product.discountValue > 0} ? ${product.discountPercentage + ' %'} : '—'">—</td>
+                    <td class="td-total" th:text="${product.totalPriceFormatted}">78.692</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
 
-<!-- NOTES -->
-<div th:if="${notes != null and notes != ''}" class="notes-section">
-    <strong>Notes :</strong> <span th:text="${notes}">Notes</span>
-</div>
+        <!-- TOTALS AREA -->
+        <div class="totals-area">
 
-<!-- SIGNATURES (.card div gives the rounded border) -->
-<div class="card" style="margin-bottom:0;">
-    <table class="signatures">
-        <tr>
-            <td class="align-left"><strong>Date de livraison :</strong>
-                <span th:text="${deliveryDate}">01/01/2026</span></td>
-            <td><strong>Signature client</strong></td>
-            <td class="align-right"><strong>Signature et cachet</strong></td>
-        </tr>
-    </table>
-</div>
+            <!-- Payment -->
+            <div class="pay-box">
+                <div class="pay-box-head">Mode de règlement</div>
+                <div class="pay-box-body">
+                    <div class="pay-row">
+                        <span>Méthode</span>
+                        <b th:text="${paymentMethod}">Espèces / Virement / Chèque</b>
+                    </div>
+                    <div class="pay-row" th:if="${paymentRef != null and paymentRef != ''}">
+                        <span>Référence</span>
+                        <b th:text="${paymentRef}">—</b>
+                    </div>
+                </div>
+            </div>
 
-<!-- FOOTER -->
-<div class="footer-branding">
-    <p class="brand-name">&#x1F4E6; Bhouri Stock</p>
-    <p>Gestion intelligente de stock &amp; facturation</p>
-    <p style="font-size: 8pt; color: #c4b5fd; margin-top: 6px;">
-        &#xA9; 2026 Bhouri Stock &#x2014; Tous droits r&#xE9;serv&#xE9;s
-    </p>
-</div>
+            <!-- Summary -->
+            <div class="sum-box">
+                <div class="sum-row" th:if="${showTva}">
+                    <span class="sum-key">Total HT</span>
+                    <span class="sum-val" th:text="${totalHTFormatted}">215,052</span>
+                </div>
+                <div class="sum-row" th:if="${hasDiscount}">
+                    <span class="sum-key">Remise totale</span>
+                    <span class="sum-val" th:text="${totalDiscountFormatted}">0,000</span>
+                </div>
+                <div class="sum-row" th:if="${showTva and applyTva}">
+                    <span class="sum-key">TVA (19%)</span>
+                    <span class="sum-val" th:text="${tvaFormatted}">40,860</span>
+                </div>
 
+                <div class="net-row">
+                    <div class="net-label">
+                        Net à payer
+                        <span th:text="${applyTva ? 'TTC' : 'HT'}">HT</span>
+                    </div>
+                    <div class="net-amount" th:text="${totalFormatted}">200,000</div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- FOOTER -->
+        <div class="page-footer">
+            <div class="fc">
+                <div class="fc-title">Conditions de paiement</div>
+                <p><b th:text="${paymentTerms}">À réception</b></p>
+<!--                <p>Cette facture est établie conformément aux dispositions de l'article 18 du code de la TVA. Toute contestation doit être signalée dans un délai de 7 jours.</p>-->
+            </div>
+
+            <div class="fc">
+                <div class="fc-title">Signature client</div>
+                <div class="sig-area">
+                    <span class="sig-label">Signature &amp; date</span>
+                </div>
+            </div>
+
+            <div class="fc">
+                <div class="fc-title">Signature &amp; cachet</div>
+                <div class="sig-area">
+                    <span class="sig-label">Bhouri Stock</span>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- /main -->
+</div><!-- /page -->
 </body>
 </html>

@@ -278,8 +278,8 @@ interface DeliveryNoteKPIs {
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let dn of filteredDeliveryNotes" class="data-row">
-            <td class="ta-c">
+          <tr *ngFor="let dn of filteredDeliveryNotes" class="data-row" (click)="openBLDrawer(dn)">
+            <td class="ta-c" (click)="$event.stopPropagation()">
               <input type="checkbox" class="cb" [checked]="isSelected(dn.idDeliveryNote)"
                      (change)="toggleSelect(dn)" [disabled]="dn.invoiced">
             </td>
@@ -297,7 +297,7 @@ interface DeliveryNoteKPIs {
               </div>
               <app-status-badge *ngIf="!dn.invoiced" value="PENDING"></app-status-badge>
             </td>
-            <td class="ta-c">
+            <td class="ta-c" (click)="$event.stopPropagation()">
               <div class="action-group">
                 <button (click)="downloadBLPDF(dn.idDeliveryNote, dn.deliveryNoteNumber)"
                         class="act-btn act-dl" title="Télécharger PDF">📥</button>
@@ -323,9 +323,9 @@ interface DeliveryNoteKPIs {
 
     <!-- ════════ TABLE BL (mobile) ════════ -->
     <div *ngIf="activeTab==='bl'" class="mobile-cards">
-      <div *ngFor="let dn of filteredDeliveryNotes" class="mobile-row">
+      <div *ngFor="let dn of filteredDeliveryNotes" class="mobile-row" (click)="openBLDrawer(dn)">
         <div class="mobile-row-top">
-          <div class="mobile-row-left">
+          <div class="mobile-row-left" (click)="$event.stopPropagation()">
             <input type="checkbox" class="cb" [checked]="isSelected(dn.idDeliveryNote)"
                    (change)="toggleSelect(dn)" [disabled]="dn.invoiced">
             <span class="id-badge">{{ dn.deliveryNoteNumber }}</span>
@@ -344,7 +344,8 @@ interface DeliveryNoteKPIs {
             <strong *ngIf="!dn.invoiced" class="c-amber">⏳ Non facturé</strong>
           </div>
         </div>
-        <div class="action-group" style="justify-content:flex-end;border-top:1px solid #f1f5f9;padding-top:.75rem;">
+        <div class="action-group" (click)="$event.stopPropagation()"
+             style="justify-content:flex-end;border-top:1px solid #f1f5f9;padding-top:.75rem;">
           <button (click)="downloadBLPDF(dn.idDeliveryNote,dn.deliveryNoteNumber)"
                   class="act-btn act-dl" title="PDF">📥</button>
           <button *ngIf="!dn.invoiced && dn.status==='PENDING'"
@@ -389,6 +390,36 @@ interface DeliveryNoteKPIs {
         <button *ngIf="selectedInvoice.paymentStatus !== 'PAID'"
                 (click)="openPaymentModal(selectedInvoice)"
                 class="drawer-btn btn-encaisse">💰 Encaisser</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ DRAWER BON DE LIVRAISON ══════════════════════════════════════════ -->
+  <div *ngIf="blDrawerOpen" class="drawer-backdrop" (click)="closeBLDrawer()"></div>
+
+  <div class="invoice-drawer" [class.drawer-open]="blDrawerOpen">
+    <div class="drawer-iframe-container" *ngIf="selectedBL">
+      <div class="drawer-head">
+        <div>
+          <h3 class="drawer-title">Bon de livraison #{{ selectedBL.deliveryNoteNumber }}</h3>
+          <span class="drawer-sub">{{ selectedBL.customer?.name }}</span>
+        </div>
+        <button class="btn-close-drawer" (click)="closeBLDrawer()">✕</button>
+      </div>
+      <div class="drawer-body">
+        <div *ngIf="!blIframeSrc" class="empty-state" style="color:#c4b5fd;">
+          <div style="font-size:2rem;">⏳</div>
+          <p>Chargement…</p>
+        </div>
+        <iframe *ngIf="blIframeSrc" [src]="blIframeSrc"
+                class="invoice-iframe" title="Bon de livraison"></iframe>
+      </div>
+      <div class="drawer-foot">
+        <button (click)="downloadBLPDF(selectedBL.idDeliveryNote, selectedBL.deliveryNoteNumber)"
+                class="drawer-btn btn-dl-inv">⬇️ PDF</button>
+        <button *ngIf="!selectedBL.invoiced && selectedBL.status==='PENDING'"
+                (click)="updateBLStatus(selectedBL.idDeliveryNote,'DELIVERED'); closeBLDrawer()"
+                class="drawer-btn btn-encaisse">📦 Marquer livré</button>
       </div>
     </div>
   </div>
@@ -843,6 +874,10 @@ export class InvoiceListComponent implements OnInit {
   deliveryNotes:         DeliveryNote[] = [];
   filteredDeliveryNotes: DeliveryNote[] = [];
   selectedDeliveryNotes: number[]       = [];
+  selectedBL:    DeliveryNote | null    = null;
+  blDrawerOpen                          = false;
+  blIframeSrc:   SafeResourceUrl | null = null;
+  private blBlobUrl: string | null      = null;
 
   kpis: DeliveryNoteKPIs = {
     totalDeliveryNotes: 0, notInvoiced: 0, pendingDelivery: 0,
@@ -953,6 +988,27 @@ export class InvoiceListComponent implements OnInit {
   closeDrawer(): void {
     this.drawerOpen = false;
     setTimeout(() => { this.selectedInvoice = null; }, 300);
+  }
+
+  openBLDrawer(dn: DeliveryNote): void {
+    this.selectedBL   = dn;
+    this.blIframeSrc  = null;
+    this.blDrawerOpen = true;
+    this.apiService.downloadDeliveryNotePDF(dn.idDeliveryNote).subscribe({
+      next: (blob: Blob) => {
+        if (this.blBlobUrl) window.URL.revokeObjectURL(this.blBlobUrl);
+        this.blBlobUrl  = window.URL.createObjectURL(blob);
+        this.blIframeSrc = this.sanitizer.bypassSecurityTrustResourceUrl(this.blBlobUrl);
+      }
+    });
+  }
+  closeBLDrawer(): void {
+    this.blDrawerOpen = false;
+    setTimeout(() => {
+      this.selectedBL  = null;
+      this.blIframeSrc = null;
+      if (this.blBlobUrl) { window.URL.revokeObjectURL(this.blBlobUrl); this.blBlobUrl = null; }
+    }, 300);
   }
 
   downloadInvoicePDF(id: number): void {
