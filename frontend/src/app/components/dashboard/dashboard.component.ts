@@ -645,11 +645,12 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     const others = sorted.slice(4);
     const othersSum = others.reduce((sum, [, n]) => sum + n, 0);
     const entries: [string, number][] = othersSum > 0 ? [...top4, ['Autres', othersSum]] : top4;
+    const truncate = (s: string) => s.length > 15 ? s.slice(0, 13) + '…' : s;
 
     this.categoryChart = new Chart(ctx, {
       type: 'doughnut',
       data: {
-        labels: entries.map(([k]) => k),
+        labels: entries.map(([k]) => truncate(k)),
         datasets: [{ data: entries.map(([, v]) => v), backgroundColor: ['#4f46e5','#10b981','#f59e0b','#ef4444','#8b5cf6'], borderWidth: 3, borderColor: '#fff' }]
       },
       options: {
@@ -657,16 +658,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         plugins: {
           legend: {
             position: 'right' as const,
-            labels: {
-              font: { size: 9 }, boxWidth: 8, padding: 8, color: '#334155',
-              generateLabels: (chart: Chart) => {
-                const base = (Chart as any).defaults.plugins.legend.labels.generateLabels(chart);
-                return base.map((item: any) => ({
-                  ...item,
-                  text: item.text.length > 16 ? item.text.slice(0, 14) + '…' : item.text
-                }));
-              }
-            }
+            labels: { font: { size: 9 }, boxWidth: 8, padding: 8, color: '#334155' }
           }
         }
       }
