@@ -32,6 +32,9 @@ export const routes: Routes = [
   { path: 'invoices/create', redirectTo: 'documents/create', pathMatch: 'full' },
   { path: 'invoices/list', loadComponent: () => import('./components/invoices/invoice-list.component').then(m => m.InvoiceListComponent), canActivate: [authGuard] },
 
+  // Rapport TVA (protected)
+  { path: 'tax-report', loadComponent: () => import('./components/tax-report/tax-report.component').then(m => m.TaxReportComponent), canActivate: [authGuard] },
+
   // Profil utilisateur (protected)
   { path: 'profile', loadComponent: () => import('./components/profile/profile.component').then(m => m.ProfileComponent), canActivate: [authGuard] },
 

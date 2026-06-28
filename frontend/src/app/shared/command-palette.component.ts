@@ -245,6 +245,7 @@ export class CommandPaletteComponent implements OnInit, OnDestroy {
     { label: 'Transactions',        sub: 'Ventes & Achats',          icon: 'bi-arrow-left-right',route: '/transactions',    group: 'Navigation', keywords: 'ventes achats transactions' },
     { label: 'Factures & BL',       sub: 'Gestion documentaire',    icon: 'bi-receipt',         route: '/invoices/list',   group: 'Navigation', keywords: 'factures bons livraison documents' },
     { label: 'Bons de Livraison',   sub: 'Liste des BL',            icon: 'bi-truck',           route: '/delivery-notes',  group: 'Navigation', keywords: 'bl bons livraison' },
+    { label: 'Rapport TVA',         sub: 'Déclaration TVA 19%',     icon: 'bi-percent',         route: '/tax-report',      group: 'Navigation', keywords: 'tva taxe rapport fiscal declaration' },
     { label: 'Mon Profil',          sub: 'Paramètres compte',       icon: 'bi-person-circle',   route: '/profile',         group: 'Navigation', keywords: 'profil compte utilisateur' },
 
     // Actions

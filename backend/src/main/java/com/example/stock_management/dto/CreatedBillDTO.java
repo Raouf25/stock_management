@@ -20,4 +20,5 @@ public class CreatedBillDTO {
     private BigDecimal amountDue;
     private List<CreatedBillProduct> products;
     private PaymentStatus paymentStatus;
+    private Boolean applyTva;
 }

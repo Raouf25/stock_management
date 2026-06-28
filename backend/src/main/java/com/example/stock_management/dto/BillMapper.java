@@ -21,7 +21,8 @@ public interface BillMapper {
             @Mapping(source = "billProducts", target = "products"),
             @Mapping(source = "paymentStatus", target = "paymentStatus"),
             @Mapping(source = "deposit", target = "deposit"),
-            @Mapping(source = "amountDue", target = "amountDue")
+            @Mapping(source = "amountDue", target = "amountDue"),
+            @Mapping(source = "applyTva", target = "applyTva")
     })
     CreatedBillDTO sourceToDestination(Bill source);
 
