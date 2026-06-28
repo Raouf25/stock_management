@@ -206,29 +206,12 @@ body {
   padding: 1.25rem 1.5rem;
   box-shadow: var(--shadow-xs);
   transition: box-shadow var(--transition-md), transform var(--transition-md);
-  position: relative;
-  overflow: hidden;
 }
 
 .kpi-card:hover {
   box-shadow: var(--shadow-md);
   transform: translateY(-2px);
 }
-
-.kpi-card::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 3px;
-  background: var(--kpi-accent, var(--color-primary));
-  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-}
-
-.kpi-card.kpi-blue   { --kpi-accent: var(--color-info); }
-.kpi-card.kpi-green  { --kpi-accent: var(--color-success); }
-.kpi-card.kpi-orange { --kpi-accent: var(--color-warning); }
-.kpi-card.kpi-red    { --kpi-accent: var(--color-danger); }
-.kpi-card.kpi-purple { --kpi-accent: var(--color-primary); }
 
 .kpi-header {
   display: flex;
