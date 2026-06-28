@@ -22,7 +22,7 @@ Chart.register(...registerables);
       <p class="page-sub">Bhouri Stock — Vue d'ensemble en temps réel</p>
     </div>
     <div class="head-actions">
-      <a routerLink="/documents/create" class="btn-new">+ Nouveau Document</a>
+      <a routerLink="/documents/create" class="btn-new">+ Créer Facture / BL</a>
     </div>
   </div>
 

@@ -390,7 +390,7 @@ interface LineItem {
       <div class="aside-top">
         <div class="aside-title">
           <span class="aside-icon">📋</span>
-          <h3>Nouveau Document</h3>
+          <h3>Créer Facture / BL</h3>
         </div>
 
         <div class="aside-meta-rows">
