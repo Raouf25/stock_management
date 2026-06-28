@@ -462,20 +462,20 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         }),
         datasets: [
           {
-            label: 'Ventes',
-            data: months.map(m => salesByMonth[m] || 0),
-            borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,.08)',
-            tension: 0.4, fill: true, borderWidth: 2.5,
-            pointRadius: 4, pointHoverRadius: 6,
-            pointBackgroundColor: '#10b981', pointBorderColor: '#fff', pointBorderWidth: 2
-          },
-          {
             label: 'Achats',
             data: months.map(m => purchasesByMonth[m] || 0),
             borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,.08)',
             tension: 0.4, fill: true, borderWidth: 2.5,
             pointRadius: 4, pointHoverRadius: 6,
             pointBackgroundColor: '#ef4444', pointBorderColor: '#fff', pointBorderWidth: 2
+          },
+          {
+            label: 'Ventes',
+            data: months.map(m => salesByMonth[m] || 0),
+            borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,.08)',
+            tension: 0.4, fill: true, borderWidth: 2.5,
+            pointRadius: 4, pointHoverRadius: 6,
+            pointBackgroundColor: '#10b981', pointBorderColor: '#fff', pointBorderWidth: 2
           }
         ]
       },
@@ -657,7 +657,16 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         plugins: {
           legend: {
             position: 'right' as const,
-            labels: { font: { size: 10 }, boxWidth: 10, padding: 10, color: '#334155' }
+            labels: {
+              font: { size: 9 }, boxWidth: 8, padding: 8, color: '#334155',
+              generateLabels: (chart: Chart) => {
+                const base = (Chart as any).defaults.plugins.legend.labels.generateLabels(chart);
+                return base.map((item: any) => ({
+                  ...item,
+                  text: item.text.length > 16 ? item.text.slice(0, 14) + '…' : item.text
+                }));
+              }
+            }
           }
         }
       }
