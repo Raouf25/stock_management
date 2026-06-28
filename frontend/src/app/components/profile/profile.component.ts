@@ -170,14 +170,18 @@ import { AuthService } from '../../services/auth.service';
       gap: .625rem;
       padding: .75rem 1.25rem;
       font-size: .82rem;
-      font-weight: 600;
-      color: #fff;
-      background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+      font-weight: 700;
+      color: #0f172a;
+      background: #fff;
+      border-bottom: 1px solid #e2e8f0;
     }
-    .card-head i { font-size: 1rem; color: #fff; opacity: .9; }
+    .card-head i { font-size: 1rem; color: #4f46e5; }
     .card-danger .card-head {
-      background: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
+      background: #fef2f2;
+      border-bottom: 1px solid #fecdd3;
+      color: #991b1b;
     }
+    .card-danger .card-head i { color: #ef4444; }
 
     .card-body { padding: 1.25rem; }
 

@@ -490,16 +490,10 @@ interface DeliveryNoteKPIs {
       display: flex;
       flex-direction: column;
       gap: .3rem;
-      box-shadow: 0 1px 4px rgba(0,0,0,.04);
-      border-top-width: 3px;
+      box-shadow: 0 1px 3px rgba(0,0,0,.04);
       transition: transform .15s, box-shadow .15s;
     }
-    .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.08); }
-    .kpi-blue   { border-top-color: #3b82f6; }
-    .kpi-green  { border-top-color: #10b981; }
-    .kpi-orange { border-top-color: #f59e0b; }
-    .kpi-indigo { border-top-color: #4f46e5; }
-    .kpi-red    { border-top-color: #ef4444; }
+    .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.07); }
     .kpi-val {
       font-size: 1.25rem;
       font-weight: 700;
@@ -622,15 +616,17 @@ interface DeliveryNoteKPIs {
       font-size: .875rem;
     }
     .data-table thead tr {
-      background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+      background: #f8fafc;
+      border-bottom: 2px solid #e2e8f0;
     }
     .data-table th {
-      color: #fff;
-      font-weight: 500;
+      color: #475569;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      font-size: .72rem;
       padding: .8rem 1rem;
       text-align: left;
-      font-size: .78rem;
-      letter-spacing: .4px;
       white-space: nowrap;
     }
     .data-table td { padding: .8rem 1rem; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
