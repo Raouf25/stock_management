@@ -242,7 +242,6 @@ export class CommandPaletteComponent implements OnInit, OnDestroy {
     { label: 'Produits',            sub: 'Gestion du stock',         icon: 'bi-box-seam',        route: '/products',        group: 'Navigation', keywords: 'produits stock' },
     { label: 'Clients',             sub: 'Annuaire clients',         icon: 'bi-people',          route: '/customers',       group: 'Navigation', keywords: 'clients customers' },
     { label: 'Fournisseurs',        sub: 'Annuaire fournisseurs',    icon: 'bi-building',        route: '/suppliers',       group: 'Navigation', keywords: 'fournisseurs suppliers' },
-    { label: 'Transactions',        sub: 'Ventes & Achats',          icon: 'bi-arrow-left-right',route: '/transactions',    group: 'Navigation', keywords: 'ventes achats transactions' },
     { label: 'Factures & BL',       sub: 'Gestion documentaire',    icon: 'bi-receipt',         route: '/invoices/list',   group: 'Navigation', keywords: 'factures bons livraison documents' },
     { label: 'Bons de Livraison',   sub: 'Liste des BL',            icon: 'bi-truck',           route: '/delivery-notes',  group: 'Navigation', keywords: 'bl bons livraison' },
     { label: 'Rapport TVA',         sub: 'Déclaration TVA 19%',     icon: 'bi-percent',         route: '/tax-report',      group: 'Navigation', keywords: 'tva taxe rapport fiscal declaration' },

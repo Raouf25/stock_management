@@ -11,8 +11,6 @@ export const routes: Routes = [
   { path: '', loadComponent: () => import('./components/dashboard/dashboard.component').then(m => m.DashboardComponent), canActivate: [authGuard] },
   { path: 'dashboard', loadComponent: () => import('./components/dashboard/dashboard.component').then(m => m.DashboardComponent), canActivate: [authGuard] },
   { path: 'products', loadComponent: () => import('./components/products/products.component').then(m => m.ProductsComponent), canActivate: [authGuard] },
-  { path: 'transactions', loadComponent: () => import('./components/transactions/transactions.component').then(m => m.TransactionsComponent), canActivate: [authGuard] },
-
   // Clients (protected)
   { path: 'customers', loadComponent: () => import('./components/customers/customer-list.component').then(m => m.CustomerListComponent), canActivate: [authGuard] },
   { path: 'customers/create', loadComponent: () => import('./components/customers/customer-create.component').then(m => m.CustomerCreateComponent), canActivate: [authGuard] },

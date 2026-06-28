@@ -1,276 +1,437 @@
-<div class="dashboard-page">
-  <!-- Page Header -->
-  <h1 class="mb-4">📊 Tableau de Bord</h1>
+<div class="page">
 
-
-  <!-- Loading State -->
-  <div *ngIf="loading" class="loading-skeleton">
-    <div class="row mb-4">
-      <div class="col-md-3" *ngFor="let i of [1,2,3,4]">
-        <div class="skeleton-card">
-          <div class="skeleton-icon"></div>
-          <div class="skeleton-number"></div>
-          <div class="skeleton-label"></div>
-        </div>
-      </div>
+  <!-- ══ EN-TÊTE ══════════════════════════════════════════════════════════════ -->
+  <div class="page-head">
+    <div>
+      <h1 class="page-title">Tableau de Bord</h1>
+      <p class="page-sub">Bhouri Stock — Vue d'ensemble en temps réel</p>
     </div>
-    <div class="row">
-      <div class="col-lg-8">
-        <div class="skeleton-chart"></div>
-      </div>
-      <div class="col-lg-4">
-        <div class="skeleton-chart"></div>
-      </div>
+    <div class="head-actions">
+      <button class="btn-purchase" (click)="togglePurchaseForm()">
+        <i class="bi bi-cart-plus"></i>
+        {{ showPurchaseForm ? 'Fermer' : 'Nouvel Achat' }}
+      </button>
+      <a routerLink="/documents/create" class="btn-new">
+        <i class="bi bi-plus-lg"></i> Créer Facture / BL
+      </a>
     </div>
   </div>
 
-  <!-- Content -->
-  <div *ngIf="!loading">
-    <!-- KPIs Row - Enhanced Design -->
-    <div class="row mb-4">
-      <div class="col-md-3">
-        <div class="stat-card stat-card-blue">
-          <div class="stat-icon">
-            <i class="bi bi-boxes"></i>
-          </div>
-          <div class="stat-number">{{ products.length }}</div>
-          <div class="stat-label">Produits Total</div>
-          <div class="stat-trend">
-            <i class="bi bi-arrow-up-circle-fill text-success me-1"></i>
-            <small class="text-success">+12%</small>
+  <!-- ══ SKELETON ══════════════════════════════════════════════════════════════ -->
+  <app-skeleton-cards *ngIf="loading" [count]="10" [cols]="5" style="margin-bottom:1.5rem;display:block;"></app-skeleton-cards>
+
+  <ng-container *ngIf="!loading">
+
+    <!-- ══ BANNIÈRE ALERTES STOCK ═══════════════════════════════════════════ -->
+    <app-stock-alert-banner [alerts]="alerts"></app-stock-alert-banner>
+
+    <!-- ══ KPIs FACTURATION ══════════════════════════════════════════════════ -->
+    <div class="section-label">Facturation</div>
+    <div class="kpi-row">
+
+      <div class="kpi-card kpi-blue">
+        <div class="kpi-top">
+          <div class="kpi-ic-wrap kpi-ic-blue"><i class="bi bi-receipt"></i></div>
+          <span *ngIf="trends['invoices']" class="kpi-trend"
+                [class.up]="trends['invoices'].dir==='up'"
+                [class.down]="trends['invoices'].dir==='down'"
+                [class.neutral]="trends['invoices'].dir==='neutral'">
+            <i class="bi" [class.bi-arrow-up-short]="trends['invoices'].dir==='up'"
+                          [class.bi-arrow-down-short]="trends['invoices'].dir==='down'"
+                          [class.bi-dash]="trends['invoices'].dir==='neutral'"></i>
+            {{ trends['invoices'].pct }}%
+          </span>
+        </div>
+        <span class="kpi-val">{{ invoiceKPIs.totalInvoices || 0 }}</span>
+        <span class="kpi-lbl">Total Factures</span>
+        <span *ngIf="trends['invoices']" class="kpi-sub">{{ trends['invoices'].label }}</span>
+      </div>
+
+      <div class="kpi-card kpi-green">
+        <div class="kpi-top">
+          <div class="kpi-ic-wrap kpi-ic-green"><i class="bi bi-currency-dollar"></i></div>
+          <span *ngIf="trends['revenue']" class="kpi-trend"
+                [class.up]="trends['revenue'].dir==='up'"
+                [class.down]="trends['revenue'].dir==='down'"
+                [class.neutral]="trends['revenue'].dir==='neutral'">
+            <i class="bi" [class.bi-arrow-up-short]="trends['revenue'].dir==='up'"
+                          [class.bi-arrow-down-short]="trends['revenue'].dir==='down'"
+                          [class.bi-dash]="trends['revenue'].dir==='neutral'"></i>
+            {{ trends['revenue'].pct }}%
+          </span>
+        </div>
+        <span class="kpi-val">{{ invoiceKPIs.totalInvoicedAmount || 0 | number:'1.3-3' }}</span>
+        <span class="kpi-lbl">CA Total (DNT)</span>
+        <span *ngIf="trends['revenue']" class="kpi-sub">{{ trends['revenue'].label }}</span>
+      </div>
+
+      <div class="kpi-card kpi-orange">
+        <div class="kpi-top">
+          <div class="kpi-ic-wrap kpi-ic-orange"><i class="bi bi-calendar-check"></i></div>
+        </div>
+        <span class="kpi-val">{{ invoiceKPIs.revenueThisMonth || 0 | number:'1.3-3' }}</span>
+        <span class="kpi-lbl">CA ce Mois (DNT)</span>
+        <span class="kpi-sub">Mois courant</span>
+      </div>
+
+      <div class="kpi-card kpi-red">
+        <div class="kpi-top">
+          <div class="kpi-ic-wrap kpi-ic-red"><i class="bi bi-hourglass-split"></i></div>
+        </div>
+        <span class="kpi-val">{{ invoiceKPIs.totalAmountDue || 0 | number:'1.3-3' }}</span>
+        <span class="kpi-lbl">Montant Dû (DNT)</span>
+        <span class="kpi-sub">{{ invoiceKPIs.unpaidInvoices || 0 }} facture(s) en attente</span>
+      </div>
+
+      <div class="kpi-card kpi-amber">
+        <div class="kpi-top">
+          <div class="kpi-ic-wrap kpi-ic-amber"><i class="bi bi-exclamation-triangle"></i></div>
+        </div>
+        <span class="kpi-val">{{ invoiceKPIs.unpaidInvoices || 0 }}</span>
+        <span class="kpi-lbl">Impayées</span>
+        <span class="kpi-sub">À recouvrer</span>
+      </div>
+
+    </div>
+
+    <!-- ══ KPIs STOCK & BL ════════════════════════════════════════════════════ -->
+    <div class="section-label">Stock & Livraisons</div>
+    <div class="kpi-row">
+
+      <div class="kpi-card kpi-indigo">
+        <div class="kpi-top">
+          <div class="kpi-ic-wrap kpi-ic-indigo"><i class="bi bi-box-seam"></i></div>
+        </div>
+        <span class="kpi-val">{{ products.length }}</span>
+        <span class="kpi-lbl">Produits Actifs</span>
+        <span class="kpi-sub">{{ alerts.length }} en alerte</span>
+      </div>
+
+      <div class="kpi-card kpi-teal">
+        <div class="kpi-top">
+          <div class="kpi-ic-wrap kpi-ic-teal"><i class="bi bi-tags"></i></div>
+        </div>
+        <span class="kpi-val">{{ totalValue | number:'1.3-3' }}</span>
+        <span class="kpi-lbl">Valeur Stock (DNT)</span>
+        <span class="kpi-sub">Coût total inventaire</span>
+      </div>
+
+      <div class="kpi-card kpi-purple">
+        <div class="kpi-top">
+          <div class="kpi-ic-wrap kpi-ic-purple"><i class="bi bi-truck"></i></div>
+        </div>
+        <span class="kpi-val">{{ deliveryNoteKPIs.totalDeliveryNotes || 0 }}</span>
+        <span class="kpi-lbl">Total BL</span>
+        <span class="kpi-sub">{{ deliveryNoteKPIs.notInvoiced || 0 }} non facturés</span>
+      </div>
+
+      <div class="kpi-card kpi-orange">
+        <div class="kpi-top">
+          <div class="kpi-ic-wrap kpi-ic-orange"><i class="bi bi-file-earmark-text"></i></div>
+          <span *ngIf="trends['purchases']" class="kpi-trend"
+                [class.up]="trends['purchases'].dir==='up'"
+                [class.down]="trends['purchases'].dir==='down'"
+                [class.neutral]="trends['purchases'].dir==='neutral'">
+            <i class="bi" [class.bi-arrow-up-short]="trends['purchases'].dir==='up'"
+                          [class.bi-arrow-down-short]="trends['purchases'].dir==='down'"
+                          [class.bi-dash]="trends['purchases'].dir==='neutral'"></i>
+            {{ trends['purchases'].pct }}%
+          </span>
+        </div>
+        <span class="kpi-val">{{ deliveryNoteKPIs.notInvoiced || 0 }}</span>
+        <span class="kpi-lbl">BL Non Facturés</span>
+        <span *ngIf="trends['purchases']" class="kpi-sub">{{ trends['purchases'].label }}</span>
+      </div>
+
+      <div class="kpi-card kpi-green">
+        <div class="kpi-top">
+          <div class="kpi-ic-wrap kpi-ic-green"><i class="bi bi-bar-chart"></i></div>
+        </div>
+        <span class="kpi-val">{{ getAverageBasket() | number:'1.3-3' }}</span>
+        <span class="kpi-lbl">Panier Moyen (DNT)</span>
+        <span class="kpi-sub">Par facture</span>
+      </div>
+
+    </div>
+
+    <!-- ══ GRAPHIQUES ════════════════════════════════════════════════════════ -->
+    <div class="charts-layout">
+      <div class="chart-card chart-wide">
+        <div class="chart-head">
+          <span class="chart-title">Évolution Ventes vs Achats</span>
+          <div class="chart-legend">
+            <span class="legend-dot" style="background:#10b981;"></span> Ventes
+            <span class="legend-dot" style="background:#ef4444;margin-left:.75rem;"></span> Achats
           </div>
         </div>
+        <div class="chart-body"><canvas #salesChartCanvas></canvas></div>
       </div>
-      <div class="col-md-3">
-        <div class="stat-card stat-card-green">
-          <div class="stat-icon">
-            <i class="bi bi-cash-stack"></i>
-          </div>
-          <div class="stat-number">{{ totalValue | number: '1.3-3' }}</div>
-          <div class="stat-label">Valeur Total Stock (DNT)</div>
-          <div class="stat-trend">
-            <i class="bi bi-arrow-up-circle-fill text-success me-1"></i>
-            <small class="text-success">+8.5%</small>
-          </div>
+
+      <div class="chart-card">
+        <div class="chart-head"><span class="chart-title">Statuts de Paiement</span></div>
+        <div class="chart-body chart-body-sm"><canvas #paymentChartCanvas></canvas></div>
+        <div class="payment-legend">
+          <div class="pl-row"><span class="pl-dot paid"></span><span class="pl-lbl">Payé</span><strong>{{ invoiceKPIs.paymentStatusDistribution?.PAID || 0 }}</strong></div>
+          <div class="pl-row"><span class="pl-dot partial"></span><span class="pl-lbl">Partiel</span><strong>{{ invoiceKPIs.paymentStatusDistribution?.PARTIALLY_PAID || 0 }}</strong></div>
+          <div class="pl-row"><span class="pl-dot unpaid"></span><span class="pl-lbl">Impayé</span><strong>{{ invoiceKPIs.paymentStatusDistribution?.UNPAID || 0 }}</strong></div>
         </div>
       </div>
-      <div class="col-md-3">
-        <div class="stat-card stat-card-purple">
-          <div class="stat-icon">
-            <i class="bi bi-graph-up-arrow"></i>
+
+      <div class="chart-card">
+        <div class="chart-head"><span class="chart-title">Top 5 Produits Vendus</span></div>
+        <div class="chart-body chart-body-sm"><canvas #topProductsChartCanvas></canvas></div>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-head"><span class="chart-title">Produits par Catégorie</span></div>
+        <div class="chart-body chart-body-sm"><canvas #categoryChartCanvas></canvas></div>
+      </div>
+    </div>
+
+    <!-- ══ FORMULAIRE NOUVEL ACHAT ═══════════════════════════════════════════ -->
+    <div *ngIf="showPurchaseForm" class="main-card purchase-form-card">
+      <div class="form-header">
+        <i class="bi bi-cart-plus"></i>
+        <span>Nouvel Achat</span>
+      </div>
+      <div class="form-body">
+        <div class="form-row">
+          <div class="form-group fg-wide">
+            <label class="form-lbl">Fournisseur</label>
+            <select class="form-ctrl" [(ngModel)]="newPurchase.supplierId" name="supplierId">
+              <option value="">Sélectionnez un fournisseur…</option>
+              <option *ngFor="let s of suppliers" [value]="s.id">{{ s.name }}</option>
+            </select>
           </div>
-          <div class="stat-number">{{ getTotalSales() | number: '1.3-3' }}</div>
-          <div class="stat-label">Total Ventes (DNT)</div>
-          <div class="stat-trend">
-            <i class="bi bi-arrow-up-circle-fill text-success me-1"></i>
-            <small class="text-success">+15.2%</small>
+          <div class="form-group">
+            <label class="form-lbl">N° Facture</label>
+            <input type="text" class="form-ctrl" [(ngModel)]="newPurchase.invoiceNumber" name="invoiceNumber" placeholder="Ex : FAC-2026-001">
+          </div>
+          <div class="form-group">
+            <label class="form-lbl">Date d'Achat</label>
+            <input type="date" class="form-ctrl" [(ngModel)]="newPurchase.datePurchase" name="datePurchase">
           </div>
         </div>
-      </div>
-      <div class="col-md-3">
-        <div class="stat-card stat-card-warning">
-          <div class="stat-icon">
-            <i class="bi bi-exclamation-triangle-fill"></i>
+
+        <div class="lines-toolbar">
+          <span class="lines-label">Produits ({{ purchaseLines.length }})</span>
+          <button type="button" class="btn-add-line" (click)="addPurchaseLine()">＋ Ajouter</button>
+        </div>
+        <div class="lines-table-wrap">
+          <div class="lines-table-head">
+            <span class="lth-product">Produit</span>
+            <span class="lth-qty">Quantité</span>
+            <span class="lth-price">Prix U. TTC (DT)</span>
+            <span class="lth-del"></span>
           </div>
-          <div class="stat-number">{{ getLowStockPercentage() }}%</div>
-          <div class="stat-label">Stock Faible</div>
-          <div class="stat-trend" [class]="getLowStockPercentage() > 20 ? 'text-danger' : 'text-warning'">
-            <i class="bi bi-dash-circle-fill me-1"></i>
-            <small>{{ getLowStockPercentage() > 20 ? 'Critique' : 'Attention' }}</small>
+          <div *ngFor="let line of purchaseLines; let i = index" class="lines-table-row" [class.row-alt]="i % 2 !== 0">
+            <div class="line-cell cell-product" style="position:relative;">
+              <input type="text" class="form-ctrl"
+                     [placeholder]="line.productLabel || 'Rechercher…'"
+                     [(ngModel)]="line.productSearch" [name]="'productSearch_' + i"
+                     (focus)="openLineDropdown(i, $event)"
+                     (input)="onLineSearchChange(i, $event)"
+                     (blur)="closeLineDropdown(i)" autocomplete="off">
+              <div *ngIf="line.dropdownOpen" class="product-dropdown"
+                   [style.top]="dropdownStyle.top" [style.left]="dropdownStyle.left" [style.width]="dropdownStyle.width">
+                <div *ngIf="getFilteredProductsForLine(line).length === 0" class="dropdown-empty">Aucun produit trouvé</div>
+                <div *ngFor="let p of getFilteredProductsForLine(line)"
+                     (mousedown)="$event.preventDefault(); selectProductForLine(i, p)" class="dropdown-item">
+                  {{ p.name }} <span class="dropdown-unit">— {{ p.unit }}</span>
+                </div>
+              </div>
+            </div>
+            <div class="line-cell cell-qty">
+              <input type="number" class="form-ctrl" [(ngModel)]="line.quantity" [name]="'qty_' + i" min="1">
+            </div>
+            <div class="line-cell cell-price">
+              <input type="number" step="0.001" min="0.001" class="form-ctrl"
+                     [(ngModel)]="line.unitPriceTTC" [name]="'price_' + i"
+                     [class.input-error]="!!line.productId && line.unitPriceTTC <= 0">
+            </div>
+            <div class="line-cell cell-del">
+              <button type="button" *ngIf="purchaseLines.length > 1" class="btn-del-line" (click)="removePurchaseLine(i)">✕</button>
+            </div>
           </div>
+        </div>
+
+        <p *ngIf="formError" class="form-error-msg">⚠ {{ formError }}</p>
+        <div class="form-footer">
+          <span class="form-total">Total TTC : <strong>{{ getPurchaseLinesTotal() | number:'1.3-3' }} DT</strong></span>
+          <button type="button" class="btn-submit" (click)="createPurchase()">✓ Créer l'Achat</button>
         </div>
       </div>
     </div>
 
-    <!-- Invoice KPIs Row -->
-    <div class="row mb-4">
-      <div class="col-md-3">
-        <div class="stat-card stat-card-info">
-          <div class="stat-icon">
-            <i class="bi bi-receipt"></i>
-          </div>
-          <div class="stat-number">{{ invoiceKPIs.totalInvoices || 0 }}</div>
-          <div class="stat-label">Total Factures</div>
-          <div class="stat-trend">
-            <i class="bi bi-calendar-event me-1"></i>
-            <small class="text-info">Ce mois</small>
-          </div>
+    <!-- ══ TABLEAU TRANSACTIONS ═══════════════════════════════════════════════ -->
+    <div class="section-label">Transactions Produits</div>
+    <div class="main-card">
+
+      <div class="filter-bar">
+        <div class="filter-group">
+          <label class="filter-lbl">Recherche produit</label>
+          <input type="text" class="filter-ctrl" [(ngModel)]="txSearch" placeholder="Nom ou catégorie…">
         </div>
+        <button *ngIf="txSearch" class="btn-reset" (click)="txSearch=''">✕ Réinitialiser</button>
       </div>
-      <div class="col-md-3">
-        <div class="stat-card stat-card-success">
-          <div class="stat-icon">
-            <i class="bi bi-currency-dollar"></i>
-          </div>
-          <div class="stat-number">{{ invoiceKPIs.totalInvoicedAmount | number: '1.3-3' }}</div>
-          <div class="stat-label">Montant Total Facturé (DNT)</div>
-          <div class="stat-trend">
-            <i class="bi bi-arrow-up-circle-fill text-success me-1"></i>
-            <small class="text-success">+22%</small>
-          </div>
-        </div>
+
+      <div *ngIf="txLoading" class="empty-state"><div class="empty-icon">⏳</div><p>Chargement…</p></div>
+
+      <!-- Desktop -->
+      <div class="desktop-table" *ngIf="!txLoading">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>PRODUIT</th>
+              <th class="ta-r">STOCK VENDU</th>
+              <th class="ta-r">STOCK ENTREPÔT</th>
+              <th class="ta-r">ACHATS</th>
+              <th class="ta-r">PRIX MOY. ACHAT</th>
+              <th class="ta-r">VENTES</th>
+              <th class="ta-r">PRIX MOY. VENTE</th>
+              <th class="ta-r sort-col" (click)="toggleBilanSort()">
+                BILAN
+                <span class="sort-icon">
+                  <ng-container *ngIf="txBilanSort === 'none'">↕</ng-container>
+                  <ng-container *ngIf="txBilanSort === 'desc'">▼</ng-container>
+                  <ng-container *ngIf="txBilanSort === 'asc'">▲</ng-container>
+                </span>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let prod of filteredTxProducts"
+                class="data-row"
+                [class.bilan-pos]="getBilan(prod) > 0"
+                [class.bilan-neg]="getBilan(prod) < 0"
+                (click)="openProductDrawer(prod)">
+              <td>
+                <span class="client-name">{{ prod.product.name }}</span>
+                <span class="td-muted" style="margin-left:.25rem;font-size:.8rem;">— {{ prod.product.unit }}</span>
+              </td>
+              <td class="ta-r">{{ getStockVendu(prod) }}</td>
+              <td class="ta-r">{{ getStockEntrepot(prod) }}</td>
+              <td class="ta-r"><span class="id-badge">{{ prod.purchases.length }}</span></td>
+              <td class="ta-r td-muted">{{ getAveragePurchasePrice(prod) | number:'1.3-3' }}</td>
+              <td class="ta-r"><span class="id-badge">{{ prod.sales.length }}</span></td>
+              <td class="ta-r td-muted">{{ getAverageSalePrice(prod) | number:'1.3-3' }}</td>
+              <td class="ta-r fw-700" [class.c-green]="getBilan(prod) > 0" [class.c-red]="getBilan(prod) < 0">
+                {{ getBilan(prod) | number:'1.3-3' }}
+              </td>
+            </tr>
+            <tr *ngIf="filteredTxProducts.length === 0">
+              <td colspan="8" class="empty-state"><div class="empty-icon">📭</div><p>Aucun produit trouvé</p></td>
+            </tr>
+          </tbody>
+        </table>
       </div>
-      <div class="col-md-3">
-        <div class="stat-card stat-card-danger">
-          <div class="stat-icon">
-            <i class="bi bi-clock-history"></i>
-          </div>
-          <div class="stat-number">{{ invoiceKPIs.unpaidInvoices || 0 }}</div>
-          <div class="stat-label">Factures Non Payées</div>
-          <div class="stat-trend" [class]="(invoiceKPIs.unpaidInvoices || 0) > 5 ? 'text-danger' : 'text-warning'">
-            <i class="bi bi-exclamation-circle-fill me-1"></i>
-            <small>{{ (invoiceKPIs.unpaidInvoices || 0) > 5 ? 'Suivi requis' : 'Normal' }}</small>
-          </div>
-        </div>
+
+      <!-- Mobile -->
+      <div class="mobile-scroll" *ngIf="!txLoading">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>PRODUIT</th>
+              <th class="ta-r">VENDU</th>
+              <th class="ta-r">STOCK</th>
+              <th class="ta-r sort-col" (click)="toggleBilanSort()">
+                BILAN <span class="sort-icon">{{ txBilanSort === 'desc' ? '▼' : txBilanSort === 'asc' ? '▲' : '↕' }}</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let prod of filteredTxProducts"
+                class="data-row"
+                [class.bilan-pos]="getBilan(prod) > 0"
+                [class.bilan-neg]="getBilan(prod) < 0"
+                (click)="openProductDrawer(prod)">
+              <td>
+                <div class="client-name" style="font-size:.82rem;">{{ prod.product.name }}</div>
+                <div class="td-muted" style="font-size:.75rem;">{{ prod.product.unit }}</div>
+              </td>
+              <td class="ta-r">{{ getStockVendu(prod) }}</td>
+              <td class="ta-r">{{ getStockEntrepot(prod) }}</td>
+              <td class="ta-r fw-700" [class.c-green]="getBilan(prod) > 0" [class.c-red]="getBilan(prod) < 0">
+                {{ getBilan(prod) | number:'1.0-0' }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
-      <div class="col-md-3">
-        <div class="stat-card stat-card-warning">
-          <div class="stat-icon">
-            <i class="bi bi-cash"></i>
-          </div>
-          <div class="stat-number">{{ invoiceKPIs.totalAmountDue | number: '1.3-3' }}</div>
-          <div class="stat-label">Montant Restant (DNT)</div>
-          <div class="stat-trend">
-            <i class="bi bi-info-circle-fill text-info me-1"></i>
-            <small class="text-info">Encours</small>
-          </div>
-        </div>
-      </div>
+
     </div>
 
-  <!-- Charts Row 1 -->
-  <div class="row mb-4">
-    <div class="col-lg-8">
-      <div class="card chart-card">
-        <div class="card-header bg-gradient-primary">
-          <i class="fas fa-chart-line"></i> Évolution des Ventes vs Achats
-        </div>
-        <div class="card-body">
-          <div class="chart-container">
-            <canvas #salesChartCanvas></canvas>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="col-lg-4">
-      <div class="card chart-card">
-        <div class="card-header bg-gradient-success">
-          <i class="fas fa-chart-pie"></i> Produits par Catégorie
-        </div>
-        <div class="card-body">
-          <div class="chart-container-small">
-            <canvas #categoryChartCanvas></canvas>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+  </ng-container>
+</div>
 
-  <!-- Charts Row 2 -->
-  <div class="row mb-4">
-    <div class="col-lg-8">
-      <div class="card chart-card">
-        <div class="card-header bg-gradient-info">
-          <i class="fas fa-chart-bar"></i> Top 10 - Valeur du Stock
-        </div>
-        <div class="card-body">
-          <div class="chart-container">
-            <canvas #stockChartCanvas></canvas>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="col-lg-4">
-      <div class="card chart-card">
-        <div class="card-header bg-gradient-warning">
-          <i class="fas fa-chart-pie"></i> Top 5 - Plus Vendus (Revenus)
-        </div>
-        <div class="card-body">
-          <div class="chart-container-small">
-            <canvas #topProductsChartCanvas></canvas>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+<!-- ══ DRAWER BACKDROP ════════════════════════════════════════════════════════ -->
+<div class="drawer-backdrop" *ngIf="isDrawerOpen" (click)="closeDrawer()"></div>
 
-  <!-- Alerts -->
-  <div class="row mb-4" *ngIf="alerts.length > 0">
-    <div class="col-md-12">
-      <div class="card alert-card">
-        <div class="card-header bg-danger text-white">
-          ⚠️ Alertes Stock Faible ({{ alerts.length }})
-        </div>
-        <div class="card-body">
-          <div class="table-responsive">
-            <table class="table table-striped table-hover">
-              <thead>
-                <tr>
-                  <th>Produit</th>
-                  <th>Quantité Actuelle</th>
-                  <th>Seuil</th>
-                  <th>Niveau d'Alerte</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let alert of alerts" [ngClass]="{'table-danger': alert.alertLevel === 'CRITICAL'}">
-                  <td><strong>{{ alert.productDesignation }}</strong></td>
-                  <td><span class="badge bg-danger">{{ alert.currentQuantity }}</span></td>
-                  <td>{{ alert.threshold }}</td>
-                  <td>
-                    <span [ngClass]="alert.alertLevel === 'CRITICAL' ? 'badge bg-danger' : 'badge bg-warning'">
-                      {{ alert.alertLevel }}
-                    </span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+<!-- ══ SIDE DRAWER ═══════════════════════════════════════════════════════════ -->
+<div class="side-drawer" [class.open]="isDrawerOpen">
+  <div *ngIf="selectedProduct" style="display:flex;flex-direction:column;height:100%;">
+
+    <div class="drawer-header">
+      <div>
+        <h3 class="drawer-title">{{ selectedProduct.product.name }} — {{ selectedProduct.product.unit }}</h3>
+        <span *ngIf="selectedProduct.product.category" class="drawer-sub">{{ selectedProduct.product.category }}</span>
+      </div>
+      <button class="btn-close-drawer" (click)="closeDrawer()">✕</button>
+    </div>
+
+    <div class="drawer-body">
+      <div class="drawer-stats-grid">
+        <div class="drawer-stat-box"><span class="dstat-lbl">Article vendu</span><span class="dstat-val">{{ getStockVendu(selectedProduct) }}</span></div>
+        <div class="drawer-stat-box"><span class="dstat-lbl">Article en entrepôt</span><span class="dstat-val">{{ getStockEntrepot(selectedProduct) }}</span></div>
+        <div class="drawer-stat-box"><span class="dstat-lbl">Nombre d'achats</span><span class="dstat-val">{{ selectedProduct.purchases.length }}</span></div>
+        <div class="drawer-stat-box"><span class="dstat-lbl">Prix d'achat moyen</span><span class="dstat-val">{{ getAveragePurchasePrice(selectedProduct) | number:'1.3-3' }} DT</span></div>
+        <div class="drawer-stat-box"><span class="dstat-lbl">Nombre de ventes</span><span class="dstat-val">{{ selectedProduct.sales.length }}</span></div>
+        <div class="drawer-stat-box"><span class="dstat-lbl">Prix de vente moyen</span><span class="dstat-val">{{ getAverageSalePrice(selectedProduct) | number:'1.3-3' }} DT</span></div>
+        <div class="drawer-stat-box full-width"
+             [class.bilan-pos-box]="getBilan(selectedProduct) >= 0"
+             [class.bilan-neg-box]="getBilan(selectedProduct) < 0">
+          <span class="dstat-lbl fw-700">Bilan financier global</span>
+          <span class="dstat-val" style="font-size:1.35rem;">{{ getBilan(selectedProduct) | number:'1.3-3' }} DT</span>
         </div>
       </div>
-    </div>
-  </div>
 
-  <!-- Stock Summary Table - Collapsible -->
-  <div class="row">
-    <div class="col-md-12">
-      <div class="card">
-        <div class="card-header bg-primary text-white" style="cursor: pointer;" (click)="toggleTable()">
-          📦 Résumé du Stock par Produit
-          <span class="float-end">{{ showTable ? '▼' : '▶' }}</span>
-        </div>
-        <div class="card-body" *ngIf="showTable">
-          <div class="table-responsive">
-            <table class="table table-hover table-striped">
-              <thead class="table-dark">
-                <tr>
-                  <th>Produit</th>
-                  <th>Qté Initiale</th>
-                  <th>Qté Actuelle</th>
-                  <th>Achats (DNT)</th>
-                  <th>Ventes (DNT)</th>
-                  <th>Valeur Stock Final (DNT)</th>
-                  <th>CMP (DNT)</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let item of stockSummary">
-                  <td><strong>{{ item.productDesignation }}</strong></td>
-                  <td>{{ item.initialQuantity }}</td>
-                  <td>
-                    <span [ngClass]="item.finalQuantity < 50 ? 'badge bg-warning' : 'badge bg-success'">
-                      {{ item.finalQuantity }}
-                    </span>
-                  </td>
-                  <td>{{ item.totalPurchasesAmount | number: '1.3-3' }}</td>
-                  <td>{{ item.totalSalesAmount | number: '1.3-3' }}</td>
-                  <td><strong>{{ item.finalStockValue | number: '1.3-3' }}</strong></td>
-                  <td>{{ item.cmp | number: '1.3-3' }}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
+      <div class="drawer-section-title" style="color:#ea580c;">🛒 Historique des Achats</div>
+      <div class="drawer-table-wrap">
+        <table class="drawer-table">
+          <thead><tr class="thead-orange"><th>Date</th><th>Fournisseur</th><th class="ta-r">Qté</th><th class="ta-r">P.U TTC</th><th class="ta-r">Total TTC</th><th>Facture</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let p of selectedProduct.purchases" class="drawer-row">
+              <td>{{ p.date | date:'dd/MM/yyyy' }}</td>
+              <td class="fw-500">{{ p.supplierName || '—' }}</td>
+              <td class="ta-r">{{ p.quantity }}</td>
+              <td class="ta-r td-muted">{{ p.unitPrice | number:'1.3-3' }}</td>
+              <td class="ta-r fw-600">{{ p.total | number:'1.3-3' }}</td>
+              <td class="td-muted">{{ p.invoiceNumber || '—' }}</td>
+            </tr>
+            <tr *ngIf="selectedProduct.purchases?.length === 0"><td colspan="6" class="drawer-empty">Aucun achat enregistré</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="drawer-section-title" style="color:#4f46e5;margin-top:2rem;">📈 Historique des Ventes</div>
+      <div class="drawer-table-wrap">
+        <table class="drawer-table">
+          <thead><tr class="thead-indigo"><th>Date</th><th>Client</th><th class="ta-r">Qté</th><th class="ta-r">P.U Vente</th><th class="ta-r">Total</th><th>Référence</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let s of selectedProduct.sales" class="drawer-row">
+              <td>{{ s.date | date:'dd/MM/yyyy' }}</td>
+              <td class="fw-500">{{ s.customerName || '—' }}</td>
+              <td class="ta-r">{{ s.quantity }}</td>
+              <td class="ta-r td-muted">{{ s.unitPrice | number:'1.3-3' }}</td>
+              <td class="ta-r" style="white-space:nowrap;">
+                <span [ngClass]="getPaymentBadgeClass(s.paymentStatus)">{{ s.paymentStatus }}</span>
+                <span class="fw-600" style="margin-left:.35rem;">{{ s.total | number:'1.3-3' }}</span>
+              </td>
+              <td class="td-muted">{{ s.invoiceNumber || s.deliveryNoteNumber || '—' }}</td>
+            </tr>
+            <tr *ngIf="selectedProduct.sales?.length === 0"><td colspan="6" class="drawer-empty">Aucune vente enregistrée</td></tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </div>
