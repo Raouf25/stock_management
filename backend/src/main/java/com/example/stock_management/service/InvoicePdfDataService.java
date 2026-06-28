@@ -312,11 +312,15 @@ public class InvoicePdfDataService extends AbstractPdfDataService {
     }
 
     /**
-     * Calcule le prix unitaire d'un produit
+     * Calcule le prix unitaire ORIGINAL (avant remise).
+     * totalProductPrice est stocké après remise, on remonte au brut via discountPercentage.
      */
     private double calculateUnitPrice(BillProduct bp, double totalPrice, int qty) {
+        double discountPct = bp.getDiscountPercentage() != null ? bp.getDiscountPercentage().doubleValue() : 0.0;
         if (totalPrice > 0.0 && qty > 0) {
-            return totalPrice / qty;
+            double factor = 1.0 - discountPct / 100.0;
+            double originalTotal = factor > 0.0 ? totalPrice / factor : totalPrice;
+            return originalTotal / qty;
         } else if (bp.getProduct() != null && bp.getProduct().getUnitPriceSold() != null) {
             return bp.getProduct().getUnitPriceSold().doubleValue();
         }
@@ -324,14 +328,15 @@ public class InvoicePdfDataService extends AbstractPdfDataService {
     }
 
     /**
-     * Calcule la remise d'un produit
+     * Calcule la remise d'un produit.
+     * unitPrice est maintenant le prix original, donc expectedGross - totalPrice = montant de remise réel.
      */
     private ProductDiscount calculateDiscount(BillProduct bp, double unitPrice, int qty, double totalPrice) {
         double expectedGross = unitPrice * qty;
         double discountAmount = Math.max(expectedGross - totalPrice, 0.0);
 
         double discountPercentage = bp.getDiscountPercentage() != null ? bp.getDiscountPercentage().doubleValue() : 0.0;
-        if (discountPercentage == 0.0 && expectedGross > 0) {
+        if (discountPercentage == 0.0 && expectedGross > 0 && discountAmount > 0) {
             discountPercentage = (discountAmount / expectedGross) * 100;
         }
 

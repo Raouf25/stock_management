@@ -637,7 +637,11 @@
                     <td class="td-ref td-r" th:text="${product.productRef != null ? product.productRef : '—'}">—</td>
                     <td class="td-r" th:text="${product.unitPriceFormatted}">78.692</td>
                     <td class="td-r" th:text="${product.quantity}">1</td>
-                    <td class="td-r td-disc" th:text="${product.discountFormatted}">0.000</td>
+                    <td class="td-r td-disc">
+                        <span th:if="${product.discountPercentage != null and #strings.toFloat(product.discountPercentage) > 0}"
+                              th:text="${product.discountPercentage + ' %'}">5.00 %</span>
+                        <span th:if="${product.discountPercentage == null or #strings.toFloat(product.discountPercentage) == 0}">—</span>
+                    </td>
                     <td class="td-total" th:text="${product.totalPriceFormatted}">78.692</td>
                 </tr>
                 </tbody>
