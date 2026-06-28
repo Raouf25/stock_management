@@ -20,6 +20,85 @@ Chart.register(...registerables);
   <!-- ══ EN-TÊTE ═══════════════════════════════════════════════════════════ -->
   <div class="page-header">
     <h1 class="page-title">Produits</h1>
+    <button class="btn-purchase" (click)="togglePurchaseForm()">
+      <i class="bi bi-cart-plus"></i>
+      {{ showPurchaseForm ? 'Fermer' : 'Nouvel Achat' }}
+    </button>
+  </div>
+
+  <!-- ══ FORMULAIRE NOUVEL ACHAT ════════════════════════════════════════════ -->
+  <div *ngIf="showPurchaseForm" class="main-card purchase-form-card">
+    <div class="form-header">
+      <i class="bi bi-cart-plus"></i>
+      <span>Nouvel Achat</span>
+    </div>
+    <div class="form-body">
+      <div class="form-row">
+        <div class="form-group fg-wide">
+          <label class="form-lbl">Fournisseur</label>
+          <select class="form-ctrl" [(ngModel)]="newPurchase.supplierId" name="supplierId">
+            <option value="">Sélectionnez un fournisseur…</option>
+            <option *ngFor="let s of suppliers" [value]="s.id">{{ s.name }}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-lbl">N° Facture</label>
+          <input type="text" class="form-ctrl" [(ngModel)]="newPurchase.invoiceNumber" name="invoiceNumber" placeholder="Ex : FAC-2026-001">
+        </div>
+        <div class="form-group">
+          <label class="form-lbl">Date d'Achat</label>
+          <input type="date" class="form-ctrl" [(ngModel)]="newPurchase.datePurchase" name="datePurchase">
+        </div>
+      </div>
+
+      <div class="lines-toolbar">
+        <span class="lines-label">Produits ({{ purchaseLines.length }})</span>
+        <button type="button" class="btn-add-line" (click)="addPurchaseLine()">＋ Ajouter</button>
+      </div>
+      <div class="lines-table-wrap">
+        <div class="lines-table-head">
+          <span class="lth-product">Produit</span>
+          <span class="lth-qty">Quantité</span>
+          <span class="lth-price">Prix U. TTC (DT)</span>
+          <span class="lth-del"></span>
+        </div>
+        <div *ngFor="let line of purchaseLines; let i = index" class="lines-table-row" [class.row-alt]="i % 2 !== 0">
+          <div class="line-cell cell-product" style="position:relative;">
+            <input type="text" class="form-ctrl"
+                   [placeholder]="line.productLabel || 'Rechercher…'"
+                   [(ngModel)]="line.productSearch" [name]="'productSearch_' + i"
+                   (focus)="openLineDropdown(i, $event)"
+                   (input)="onLineSearchChange(i, $event)"
+                   (blur)="closeLineDropdown(i)" autocomplete="off">
+            <div *ngIf="line.dropdownOpen" class="product-dropdown"
+                 [style.top]="dropdownStyle.top" [style.left]="dropdownStyle.left" [style.width]="dropdownStyle.width">
+              <div *ngIf="getFilteredProductsForLine(line).length === 0" class="dropdown-empty">Aucun produit trouvé</div>
+              <div *ngFor="let p of getFilteredProductsForLine(line)"
+                   (mousedown)="$event.preventDefault(); selectProductForLine(i, p)" class="dropdown-item">
+                {{ p.name }} <span class="dropdown-unit">— {{ p.unit }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="line-cell cell-qty">
+            <input type="number" class="form-ctrl" [(ngModel)]="line.quantity" [name]="'qty_' + i" min="1">
+          </div>
+          <div class="line-cell cell-price">
+            <input type="number" step="0.001" min="0.001" class="form-ctrl"
+                   [(ngModel)]="line.unitPriceTTC" [name]="'price_' + i"
+                   [class.input-error]="!!line.productId && line.unitPriceTTC <= 0">
+          </div>
+          <div class="line-cell cell-del">
+            <button type="button" *ngIf="purchaseLines.length > 1" class="btn-del-line" (click)="removePurchaseLine(i)">✕</button>
+          </div>
+        </div>
+      </div>
+
+      <p *ngIf="formError" class="form-error-msg">⚠ {{ formError }}</p>
+      <div class="form-footer">
+        <span class="form-total">Total TTC : <strong>{{ getPurchaseLinesTotal() | number:'1.3-3' }} DT</strong></span>
+        <button type="button" class="btn-submit" (click)="createPurchase()">✓ Créer l'Achat</button>
+      </div>
+    </div>
   </div>
 
   <!-- ══ KPIs ══════════════════════════════════════════════════════════════ -->
@@ -189,8 +268,19 @@ Chart.register(...registerables);
 
     .page { padding: 1.5rem; background: #f8fafc; min-height: 100vh; }
 
-    .page-header { margin-bottom: 1.5rem; }
+    .page-header { margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; }
     .page-title  { font-size: 1.5rem; font-weight: 700; color: #0f172a; margin: 0; }
+
+    .btn-purchase {
+      display: inline-flex; align-items: center; gap: .35rem;
+      padding: .6rem 1.25rem;
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #fff; border: none; border-radius: 10px;
+      font-size: .875rem; font-weight: 600; cursor: pointer;
+      box-shadow: 0 2px 8px rgba(16,185,129,.25);
+      transition: opacity .18s; white-space: nowrap;
+    }
+    .btn-purchase:hover { opacity: .88; }
 
     /* ─── KPI ROW ─────────────────────────────────────── */
     .kpi-row {
@@ -342,15 +432,112 @@ Chart.register(...registerables);
       .desktop-table { display: block; }
       .mobile-cards  { display: none; }
     }
+    /* ─── PURCHASE FORM ─────────────────────────────────────── */
+    .purchase-form-card { margin-bottom: 1rem; overflow: visible; }
+
+    .form-header {
+      display: flex; align-items: center; gap: .5rem;
+      padding: .75rem 1.25rem;
+      background: linear-gradient(135deg, #10b981, #059669);
+      border-radius: 12px 12px 0 0;
+      color: #fff; font-weight: 600; font-size: .95rem;
+    }
+    .form-body { padding: 1.25rem 1.5rem; }
+    .form-row  { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.25rem; }
+    .form-group { display: flex; flex-direction: column; gap: .35rem; flex: 1; min-width: 140px; }
+    .form-group.fg-wide { flex: 2; min-width: 200px; }
+    .form-lbl {
+      font-size: .72rem; font-weight: 700; color: #64748b;
+      text-transform: uppercase; letter-spacing: .5px;
+    }
+    .form-ctrl {
+      height: 38px; border: 1px solid #e2e8f0; border-radius: 8px;
+      padding: 0 .75rem; font-size: .85rem;
+      background: #fff; color: #0f172a; outline: none;
+      transition: border-color .18s; width: 100%;
+    }
+    .form-ctrl:focus { border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79,70,229,.08); }
+    .input-error { border-color: #ef4444 !important; }
+
+    .lines-toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: .625rem; }
+    .lines-label   { font-size: .72rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: .5px; }
+    .btn-add-line  {
+      padding: .3rem .75rem; border: 1px solid #c7d2fe; border-radius: 6px;
+      background: #eef2ff; color: #4f46e5; font-size: .8rem; font-weight: 600;
+      cursor: pointer; transition: all .15s;
+    }
+    .btn-add-line:hover { background: #e0e7ff; }
+
+    .lines-table-wrap  { border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; margin-bottom: 1rem; }
+    .lines-table-head  {
+      display: grid; grid-template-columns: 2fr 1fr 1.2fr 36px;
+      gap: .75rem; padding: .6rem 1rem;
+      background: #f8fafc; border-bottom: 1px solid #e2e8f0;
+    }
+    .lth-product, .lth-qty, .lth-price, .lth-del {
+      font-size: .72rem; font-weight: 700; color: #64748b;
+      text-transform: uppercase; letter-spacing: .4px;
+    }
+    .lines-table-row {
+      display: grid; grid-template-columns: 2fr 1fr 1.2fr 36px;
+      gap: .75rem; align-items: center;
+      padding: .5rem 1rem; border-bottom: 1px solid #f1f5f9; background: #fff;
+    }
+    .lines-table-row:last-child { border-bottom: none; }
+    .lines-table-row.row-alt    { background: #fafafa; }
+    .line-cell { display: flex; align-items: center; }
+
+    .product-dropdown {
+      position: fixed; z-index: 9999;
+      background: #fff; border: 1px solid #e2e8f0; border-radius: 8px;
+      max-height: 280px; overflow-y: auto;
+      box-shadow: 0 8px 24px rgba(0,0,0,.12);
+    }
+    .dropdown-empty { padding: .75rem 1rem; color: #9ca3af; font-style: italic; font-size: .85rem; }
+    .dropdown-item  { padding: .55rem 1rem; cursor: pointer; border-bottom: 1px solid #f3f4f6; font-size: .88rem; transition: background .12s; }
+    .dropdown-item:hover { background: #ede9fe; }
+    .dropdown-unit  { color: #6b7280; }
+
+    .btn-del-line {
+      width: 34px; height: 34px; border-radius: 6px;
+      border: 1px solid #fca5a5; background: #fff;
+      color: #dc2626; font-size: .9rem; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; transition: background .12s;
+    }
+    .btn-del-line:hover { background: #fee2e2; }
+
+    .form-footer {
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 1rem;
+      padding-top: .75rem; border-top: 1px solid #f1f5f9;
+    }
+    .form-total { font-size: .9rem; color: #64748b; }
+    .form-total strong { color: #0f172a; font-size: 1.1rem; margin-left: .25rem; }
+    .btn-submit {
+      padding: .6rem 1.5rem;
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #fff; border: none; border-radius: 8px;
+      font-size: .875rem; font-weight: 600; cursor: pointer; transition: opacity .18s;
+    }
+    .btn-submit:hover { opacity: .88; }
+    .form-error-msg {
+      color: #dc2626; font-size: .8125rem; font-weight: 600;
+      background: #fef2f2; border: 1px solid #fecaca;
+      border-radius: 6px; padding: .5rem .75rem; margin: 0 0 .5rem;
+    }
+
     @media (max-width: 768px) {
       .page       { padding: 1rem; }
       .charts-row { grid-template-columns: 1fr; }
       .chart-body { height: 240px; }
       .filter-bar { gap: .625rem; }
+      .form-row { flex-direction: column; }
+      .lines-table-head { display: none; }
+      .lines-table-row { grid-template-columns: 1fr; }
     }
   `]
 })
-export class ProductsComponent implements OnInit, AfterViewInit {
+export class ProductsComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('stockDistributionChart') stockDistributionChart!: ElementRef<HTMLCanvasElement>;
   @ViewChild('categoryChart') categoryChart!: ElementRef<HTMLCanvasElement>;
 
@@ -358,6 +545,17 @@ export class ProductsComponent implements OnInit, AfterViewInit {
   loading = true;
   searchText = '';
   showAllProducts = false;
+
+  showPurchaseForm = false;
+  newPurchase = { supplierId: '', invoiceNumber: '', datePurchase: '' };
+  purchaseLines: { productId: string; productSearch: string; productLabel: string; quantity: number; unitPriceTTC: number; dropdownOpen: boolean }[] = [];
+  formError = '';
+  suppliers: any[] = [];
+  productsForForm: any[] = [];
+  dropdownStyle: { top: string; left: string; width: string } = { top: '0px', left: '0px', width: '0px' };
+  private activeDropdownIndex = -1;
+  private activeDropdownInput: HTMLElement | null = null;
+  private readonly scrollHandler = () => this.repositionDropdown();
 
   private distributionChart: Chart | null = null;
   private catChart: Chart | null = null;
@@ -376,6 +574,7 @@ export class ProductsComponent implements OnInit, AfterViewInit {
     if (params['q']) this.searchText = params['q'];
 
     this.loadProducts();
+    this.loadSuppliers();
 
     this.searchSub = this.searchSubject.pipe(
       debounceTime(300),
@@ -389,6 +588,7 @@ export class ProductsComponent implements OnInit, AfterViewInit {
   ngOnDestroy(): void {
     this.searchSub?.unsubscribe();
     this.searchSubject.complete();
+    window.removeEventListener('scroll', this.scrollHandler, true);
   }
 
   onSearchInput(value: string): void {
@@ -403,6 +603,7 @@ export class ProductsComponent implements OnInit, AfterViewInit {
       next: (data) => {
         this.products = data || [];
         this.loading = false;
+        this.buildProductsForForm(data || []);
         this.createCharts();
       },
       error: () => {
@@ -488,6 +689,136 @@ export class ProductsComponent implements OnInit, AfterViewInit {
       }
     };
     this.distributionChart = new Chart(ctx, config);
+  }
+
+  loadSuppliers(): void {
+    this.apiService.getSuppliers().subscribe({
+      next: (data) => { this.suppliers = data.map((item: any) => item.supplier); }
+    });
+  }
+
+  private buildProductsForForm(data: any[]): void {
+    const seen = new Set<number>();
+    this.productsForForm = data.filter((p: any) => {
+      if (seen.has(p.idProduct)) return false;
+      seen.add(p.idProduct);
+      return true;
+    });
+  }
+
+  togglePurchaseForm(): void {
+    this.showPurchaseForm = !this.showPurchaseForm;
+    if (this.showPurchaseForm) this.initPurchaseForm();
+  }
+
+  initPurchaseForm(): void {
+    this.newPurchase   = { supplierId: '', invoiceNumber: '', datePurchase: '' };
+    this.purchaseLines = [this.emptyLine()];
+    this.formError     = '';
+  }
+
+  private emptyLine() {
+    return { productId: '', productSearch: '', productLabel: '', quantity: 1, unitPriceTTC: 0, dropdownOpen: false };
+  }
+
+  addPurchaseLine():             void { this.purchaseLines.push(this.emptyLine()); }
+  removePurchaseLine(i: number): void { if (this.purchaseLines.length > 1) this.purchaseLines.splice(i, 1); }
+
+  getPurchaseLinesTotal(): number {
+    return this.purchaseLines.reduce((acc, l) => acc + (l.quantity * l.unitPriceTTC), 0);
+  }
+
+  private repositionDropdown(): void {
+    if (this.activeDropdownInput && this.activeDropdownIndex >= 0) {
+      const rect = this.activeDropdownInput.getBoundingClientRect();
+      this.dropdownStyle = { top: `${rect.bottom}px`, left: `${rect.left}px`, width: `${rect.width}px` };
+    }
+  }
+
+  openLineDropdown(i: number, event?: Event): void {
+    if (event) {
+      const input = event.target as HTMLElement;
+      this.activeDropdownInput = input;
+      this.activeDropdownIndex = i;
+      const rect = input.getBoundingClientRect();
+      this.dropdownStyle = { top: `${rect.bottom}px`, left: `${rect.left}px`, width: `${rect.width}px` };
+      window.addEventListener('scroll', this.scrollHandler, true);
+    }
+    this.purchaseLines[i].dropdownOpen = true;
+  }
+
+  closeLineDropdown(i: number): void {
+    setTimeout(() => {
+      this.purchaseLines[i].dropdownOpen = false;
+      this.activeDropdownIndex = -1;
+      this.activeDropdownInput = null;
+      window.removeEventListener('scroll', this.scrollHandler, true);
+    }, 220);
+  }
+
+  onLineSearchChange(i: number, event?: Event): void {
+    if (event && !this.purchaseLines[i].dropdownOpen) {
+      const input = event.target as HTMLElement;
+      const rect = input.getBoundingClientRect();
+      this.dropdownStyle = { top: `${rect.bottom}px`, left: `${rect.left}px`, width: `${rect.width}px` };
+    }
+    this.purchaseLines[i].dropdownOpen = true;
+  }
+
+  getFilteredProductsForLine(line: any): any[] {
+    const term = line.productSearch.trim().toLowerCase();
+    const list = term
+      ? this.productsForForm.filter((p: any) =>
+          (p.name || '').toLowerCase().includes(term) ||
+          (p.designation || '').toLowerCase().includes(term))
+      : [...this.productsForForm];
+    return list.sort((a: any, b: any) => (a.name || '').toLowerCase().localeCompare((b.name || '').toLowerCase(), 'fr'));
+  }
+
+  selectProductForLine(i: number, p: any): void {
+    const line = this.purchaseLines[i];
+    line.productId     = p.idProduct != null ? String(p.idProduct) : '';
+    line.productLabel  = `${p.name} - ${p.unit}`;
+    line.productSearch = p.name;
+    line.dropdownOpen  = false;
+  }
+
+  createPurchase(): void {
+    this.formError = '';
+    const { supplierId, datePurchase } = this.newPurchase;
+    if (!supplierId || !datePurchase) {
+      this.formError = 'Veuillez sélectionner un fournisseur et une date.';
+      return;
+    }
+    const invalidPrice = this.purchaseLines.some(l => !!l.productId && Number(l.unitPriceTTC) <= 0);
+    if (invalidPrice) {
+      this.formError = 'Le prix unitaire doit être supérieur à 0 pour chaque produit.';
+      return;
+    }
+    const validLines = this.purchaseLines.filter(l => {
+      const id = Number(l.productId);
+      return !!l.productId && !isNaN(id) && id > 0 && Number(l.quantity) > 0 && Number(l.unitPriceTTC) > 0;
+    });
+    if (!validLines.length) {
+      this.formError = 'Ajoutez au moins une ligne produit valide.';
+      return;
+    }
+    const payload = {
+      ...this.newPurchase,
+      lines: validLines.map(l => ({
+        productId:    Number(l.productId),
+        quantity:     Number(l.quantity),
+        unitPriceTTC: Number(l.unitPriceTTC)
+      }))
+    };
+    this.apiService.createPurchase(payload).subscribe({
+      next: () => {
+        this.showPurchaseForm = false;
+        this.initPurchaseForm();
+        this.loadProducts();
+      },
+      error: () => { this.formError = 'Erreur lors de la création de l\'achat. Veuillez réessayer.'; }
+    });
   }
 
   createCategoryDistributionChart(): void {

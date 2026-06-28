@@ -11,28 +11,6 @@ Chart.register(...registerables);
 
 // ── Transaction types ──────────────────────────────────────────────────────────
 
-interface PurchaseLine {
-  productId:     string;
-  productSearch: string;
-  productLabel:  string;
-  quantity:      number;
-  unitPriceTTC:  number;
-  dropdownOpen:  boolean;
-}
-
-interface TxProduct {
-  idProduct:             number;
-  reference?:            number;
-  designation:           string;
-  name:                  string;
-  unit:                  string;
-  unitPriceSold?:        number;
-  unitPriceBought?:      number;
-  currentStockQuantity?: number;
-  currentStockValue?:    number;
-  cmp?:                  number;
-}
-
 interface ProductSummary {
   id:         number;
   reference?: number;
@@ -78,8 +56,6 @@ interface DashboardProduct {
   sales:      SaleItem[];
 }
 
-const EMPTY_PURCHASE = { supplierId: '', invoiceNumber: '', datePurchase: '' };
-
 @Component({
   selector: 'app-dashboard',
   standalone: true,
@@ -114,28 +90,16 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   // ── Transactions table state ───────────────────────────────────────────────
   txLoading                              = true;
   txProducts:         DashboardProduct[] = [];
-  productsForForm:    TxProduct[]        = [];
-  suppliers:          any[]              = [];
   txSearch                               = '';
   txBilanSort: 'none' | 'desc' | 'asc'  = 'none';
   isDrawerOpen                           = false;
   selectedProduct:    DashboardProduct | null = null;
 
-  showPurchaseForm = false;
-  newPurchase      = { ...EMPTY_PURCHASE };
-  purchaseLines:   PurchaseLine[] = [];
-  formError        = '';
-
-  dropdownStyle: { top: string; left: string; width: string } = { top: '0px', left: '0px', width: '0px' };
-  private activeDropdownIndex = -1;
-  private activeDropdownInput: HTMLElement | null = null;
-  private scrollHandler = () => this.repositionDropdown();
-
   constructor(private apiService: ApiService) {}
 
-  ngOnInit():        void { this.loadDashboard(); this.loadTransactions(); this.loadSuppliers(); }
+  ngOnInit():        void { this.loadDashboard(); this.loadTransactions(); }
   ngAfterViewInit(): void {}
-  ngOnDestroy():     void { window.removeEventListener('scroll', this.scrollHandler, true); }
+  ngOnDestroy():     void {}
 
   // ── Dashboard loading ──────────────────────────────────────────────────────
 
@@ -154,7 +118,6 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       next: (d) => {
         this.products = d;
         this.ready.products = true;
-        this.buildProductsForForm(d);
         this.tryCharts();
       }
     });
@@ -206,21 +169,6 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  loadSuppliers(): void {
-    this.apiService.getSuppliers().subscribe({
-      next: (data) => { this.suppliers = data.map((item: any) => item.supplier); }
-    });
-  }
-
-  private buildProductsForForm(data: any[]): void {
-    const seen = new Set<number>();
-    this.productsForForm = data.filter((p: any) => {
-      if (seen.has(p.idProduct)) return false;
-      seen.add(p.idProduct);
-      return true;
-    });
-  }
-
   // ── Transactions: drawer ───────────────────────────────────────────────────
 
   openProductDrawer(product: DashboardProduct): void {
@@ -231,123 +179,6 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   closeDrawer(): void {
     this.isDrawerOpen = false;
     this.selectedProduct = null;
-  }
-
-  // ── Transactions: purchase form ────────────────────────────────────────────
-
-  togglePurchaseForm(): void {
-    this.showPurchaseForm = !this.showPurchaseForm;
-    if (this.showPurchaseForm) this.initPurchaseForm();
-  }
-
-  initPurchaseForm(): void {
-    this.newPurchase   = { ...EMPTY_PURCHASE };
-    this.purchaseLines = [this.emptyLine()];
-    this.formError     = '';
-  }
-
-  private emptyLine(): PurchaseLine {
-    return { productId: '', productSearch: '', productLabel: '', quantity: 1, unitPriceTTC: 0, dropdownOpen: false };
-  }
-
-  addPurchaseLine():             void { this.purchaseLines.push(this.emptyLine()); }
-  removePurchaseLine(i: number): void { if (this.purchaseLines.length > 1) this.purchaseLines.splice(i, 1); }
-
-  getPurchaseLinesTotal(): number {
-    return this.purchaseLines.reduce((acc, l) => acc + (l.quantity * l.unitPriceTTC), 0);
-  }
-
-  private repositionDropdown(): void {
-    if (this.activeDropdownInput && this.activeDropdownIndex >= 0) {
-      const rect = this.activeDropdownInput.getBoundingClientRect();
-      this.dropdownStyle = { top: `${rect.bottom}px`, left: `${rect.left}px`, width: `${rect.width}px` };
-    }
-  }
-
-  openLineDropdown(i: number, event?: Event): void {
-    if (event) {
-      const input = event.target as HTMLElement;
-      this.activeDropdownInput = input;
-      this.activeDropdownIndex = i;
-      const rect = input.getBoundingClientRect();
-      this.dropdownStyle = { top: `${rect.bottom}px`, left: `${rect.left}px`, width: `${rect.width}px` };
-      window.addEventListener('scroll', this.scrollHandler, true);
-    }
-    this.purchaseLines[i].dropdownOpen = true;
-  }
-
-  closeLineDropdown(i: number): void {
-    setTimeout(() => {
-      this.purchaseLines[i].dropdownOpen = false;
-      this.activeDropdownIndex = -1;
-      this.activeDropdownInput = null;
-      window.removeEventListener('scroll', this.scrollHandler, true);
-    }, 220);
-  }
-
-  onLineSearchChange(i: number, event?: Event): void {
-    if (event && !this.purchaseLines[i].dropdownOpen) {
-      const input = event.target as HTMLElement;
-      const rect = input.getBoundingClientRect();
-      this.dropdownStyle = { top: `${rect.bottom}px`, left: `${rect.left}px`, width: `${rect.width}px` };
-    }
-    this.purchaseLines[i].dropdownOpen = true;
-  }
-
-  getFilteredProductsForLine(line: PurchaseLine): TxProduct[] {
-    const term = line.productSearch.trim().toLowerCase();
-    const list = term
-      ? this.productsForForm.filter(p =>
-          (p.name || '').toLowerCase().includes(term) ||
-          (p.designation || '').toLowerCase().includes(term))
-      : [...this.productsForForm];
-    return list.sort((a, b) => (a.name || '').toLowerCase().localeCompare((b.name || '').toLowerCase(), 'fr'));
-  }
-
-  selectProductForLine(i: number, p: TxProduct): void {
-    const line = this.purchaseLines[i];
-    line.productId     = p.idProduct != null ? String(p.idProduct) : '';
-    line.productLabel  = `${p.name} - ${p.unit}`;
-    line.productSearch = p.name;
-    line.dropdownOpen  = false;
-  }
-
-  createPurchase(): void {
-    this.formError = '';
-    const { supplierId, datePurchase } = this.newPurchase;
-    if (!supplierId || !datePurchase) {
-      this.formError = 'Veuillez sélectionner un fournisseur et une date.';
-      return;
-    }
-    const invalidPrice = this.purchaseLines.some(l => !!l.productId && Number(l.unitPriceTTC) <= 0);
-    if (invalidPrice) {
-      this.formError = 'Le prix unitaire doit être supérieur à 0 pour chaque produit.';
-      return;
-    }
-    const validLines = this.purchaseLines.filter(l => {
-      const id = Number(l.productId);
-      return !!l.productId && !isNaN(id) && id > 0 && Number(l.quantity) > 0 && Number(l.unitPriceTTC) > 0;
-    });
-    if (!validLines.length) {
-      this.formError = 'Ajoutez au moins une ligne produit valide.';
-      return;
-    }
-    const payload = {
-      ...this.newPurchase,
-      lines: validLines.map(l => ({
-        productId:    Number(l.productId),
-        quantity:     Number(l.quantity),
-        unitPriceTTC: Number(l.unitPriceTTC)
-      }))
-    };
-    this.apiService.createPurchase(payload).subscribe({
-      next: () => {
-        this.showPurchaseForm = false;
-        this.initPurchaseForm();
-        this.loadTransactions();
-      },
-      error: () => { this.formError = 'Erreur lors de la création de l\'achat. Veuillez réessayer.'; }
-    });
   }
 
   // ── Transactions: table helpers ────────────────────────────────────────────

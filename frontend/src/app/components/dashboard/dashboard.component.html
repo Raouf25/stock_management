@@ -7,10 +7,6 @@
       <p class="page-sub">Bhouri Stock — Vue d'ensemble en temps réel</p>
     </div>
     <div class="head-actions">
-      <button class="btn-purchase" (click)="togglePurchaseForm()">
-        <i class="bi bi-cart-plus"></i>
-        {{ showPurchaseForm ? 'Fermer' : 'Nouvel Achat' }}
-      </button>
       <a routerLink="/documents/create" class="btn-new">
         <i class="bi bi-plus-lg"></i> Créer Facture / BL
       </a>
@@ -206,81 +202,6 @@
       <div class="chart-card chart-half">
         <div class="chart-head"><span class="chart-title">Produits par Catégorie</span></div>
         <div class="chart-body chart-body-sm"><canvas #categoryChartCanvas></canvas></div>
-      </div>
-    </div>
-
-    <!-- ══ FORMULAIRE NOUVEL ACHAT ═══════════════════════════════════════════ -->
-    <div *ngIf="showPurchaseForm" class="main-card purchase-form-card">
-      <div class="form-header">
-        <i class="bi bi-cart-plus"></i>
-        <span>Nouvel Achat</span>
-      </div>
-      <div class="form-body">
-        <div class="form-row">
-          <div class="form-group fg-wide">
-            <label class="form-lbl">Fournisseur</label>
-            <select class="form-ctrl" [(ngModel)]="newPurchase.supplierId" name="supplierId">
-              <option value="">Sélectionnez un fournisseur…</option>
-              <option *ngFor="let s of suppliers" [value]="s.id">{{ s.name }}</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-lbl">N° Facture</label>
-            <input type="text" class="form-ctrl" [(ngModel)]="newPurchase.invoiceNumber" name="invoiceNumber" placeholder="Ex : FAC-2026-001">
-          </div>
-          <div class="form-group">
-            <label class="form-lbl">Date d'Achat</label>
-            <input type="date" class="form-ctrl" [(ngModel)]="newPurchase.datePurchase" name="datePurchase">
-          </div>
-        </div>
-
-        <div class="lines-toolbar">
-          <span class="lines-label">Produits ({{ purchaseLines.length }})</span>
-          <button type="button" class="btn-add-line" (click)="addPurchaseLine()">＋ Ajouter</button>
-        </div>
-        <div class="lines-table-wrap">
-          <div class="lines-table-head">
-            <span class="lth-product">Produit</span>
-            <span class="lth-qty">Quantité</span>
-            <span class="lth-price">Prix U. TTC (DT)</span>
-            <span class="lth-del"></span>
-          </div>
-          <div *ngFor="let line of purchaseLines; let i = index" class="lines-table-row" [class.row-alt]="i % 2 !== 0">
-            <div class="line-cell cell-product" style="position:relative;">
-              <input type="text" class="form-ctrl"
-                     [placeholder]="line.productLabel || 'Rechercher…'"
-                     [(ngModel)]="line.productSearch" [name]="'productSearch_' + i"
-                     (focus)="openLineDropdown(i, $event)"
-                     (input)="onLineSearchChange(i, $event)"
-                     (blur)="closeLineDropdown(i)" autocomplete="off">
-              <div *ngIf="line.dropdownOpen" class="product-dropdown"
-                   [style.top]="dropdownStyle.top" [style.left]="dropdownStyle.left" [style.width]="dropdownStyle.width">
-                <div *ngIf="getFilteredProductsForLine(line).length === 0" class="dropdown-empty">Aucun produit trouvé</div>
-                <div *ngFor="let p of getFilteredProductsForLine(line)"
-                     (mousedown)="$event.preventDefault(); selectProductForLine(i, p)" class="dropdown-item">
-                  {{ p.name }} <span class="dropdown-unit">— {{ p.unit }}</span>
-                </div>
-              </div>
-            </div>
-            <div class="line-cell cell-qty">
-              <input type="number" class="form-ctrl" [(ngModel)]="line.quantity" [name]="'qty_' + i" min="1">
-            </div>
-            <div class="line-cell cell-price">
-              <input type="number" step="0.001" min="0.001" class="form-ctrl"
-                     [(ngModel)]="line.unitPriceTTC" [name]="'price_' + i"
-                     [class.input-error]="!!line.productId && line.unitPriceTTC <= 0">
-            </div>
-            <div class="line-cell cell-del">
-              <button type="button" *ngIf="purchaseLines.length > 1" class="btn-del-line" (click)="removePurchaseLine(i)">✕</button>
-            </div>
-          </div>
-        </div>
-
-        <p *ngIf="formError" class="form-error-msg">⚠ {{ formError }}</p>
-        <div class="form-footer">
-          <span class="form-total">Total TTC : <strong>{{ getPurchaseLinesTotal() | number:'1.3-3' }} DT</strong></span>
-          <button type="button" class="btn-submit" (click)="createPurchase()">✓ Créer l'Achat</button>
-        </div>
       </div>
     </div>
 
