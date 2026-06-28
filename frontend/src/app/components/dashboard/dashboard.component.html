@@ -167,22 +167,43 @@
         <div class="chart-body"><canvas #salesChartCanvas></canvas></div>
       </div>
 
-      <div class="chart-card">
+      <div class="chart-card chart-pay">
         <div class="chart-head"><span class="chart-title">Statuts de Paiement</span></div>
         <div class="chart-body chart-body-sm"><canvas #paymentChartCanvas></canvas></div>
         <div class="payment-legend">
-          <div class="pl-row"><span class="pl-dot paid"></span><span class="pl-lbl">Payé</span><strong>{{ invoiceKPIs.paymentStatusDistribution?.PAID || 0 }}</strong></div>
-          <div class="pl-row"><span class="pl-dot partial"></span><span class="pl-lbl">Partiel</span><strong>{{ invoiceKPIs.paymentStatusDistribution?.PARTIALLY_PAID || 0 }}</strong></div>
-          <div class="pl-row"><span class="pl-dot unpaid"></span><span class="pl-lbl">Impayé</span><strong>{{ invoiceKPIs.paymentStatusDistribution?.UNPAID || 0 }}</strong></div>
+          <div class="pl-row">
+            <span class="pl-dot paid"></span>
+            <span class="pl-lbl">Payé</span>
+            <strong>{{ invoiceKPIs.paymentStatusDistribution?.PAID || 0 }}</strong>
+            <span class="pl-pct" *ngIf="getPaymentTotal() > 0">
+              {{ ((invoiceKPIs.paymentStatusDistribution?.PAID || 0) / getPaymentTotal() * 100) | number:'1.0-0' }}%
+            </span>
+          </div>
+          <div class="pl-row">
+            <span class="pl-dot partial"></span>
+            <span class="pl-lbl">Partiel</span>
+            <strong>{{ invoiceKPIs.paymentStatusDistribution?.PARTIALLY_PAID || 0 }}</strong>
+            <span class="pl-pct" *ngIf="getPaymentTotal() > 0">
+              {{ ((invoiceKPIs.paymentStatusDistribution?.PARTIALLY_PAID || 0) / getPaymentTotal() * 100) | number:'1.0-0' }}%
+            </span>
+          </div>
+          <div class="pl-row">
+            <span class="pl-dot unpaid"></span>
+            <span class="pl-lbl">Impayé</span>
+            <strong>{{ invoiceKPIs.paymentStatusDistribution?.UNPAID || 0 }}</strong>
+            <span class="pl-pct" *ngIf="getPaymentTotal() > 0">
+              {{ ((invoiceKPIs.paymentStatusDistribution?.UNPAID || 0) / getPaymentTotal() * 100) | number:'1.0-0' }}%
+            </span>
+          </div>
         </div>
       </div>
 
-      <div class="chart-card">
+      <div class="chart-card chart-half">
         <div class="chart-head"><span class="chart-title">Top 5 Produits Vendus</span></div>
         <div class="chart-body chart-body-sm"><canvas #topProductsChartCanvas></canvas></div>
       </div>
 
-      <div class="chart-card">
+      <div class="chart-card chart-half">
         <div class="chart-head"><span class="chart-title">Produits par Catégorie</span></div>
         <div class="chart-body chart-body-sm"><canvas #categoryChartCanvas></canvas></div>
       </div>

@@ -464,25 +464,46 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
           {
             label: 'Ventes',
             data: months.map(m => salesByMonth[m] || 0),
-            borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,.1)',
-            tension: 0.4, fill: true, pointRadius: 4, pointBackgroundColor: '#10b981'
+            borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,.08)',
+            tension: 0.4, fill: true, borderWidth: 2.5,
+            pointRadius: 4, pointHoverRadius: 6,
+            pointBackgroundColor: '#10b981', pointBorderColor: '#fff', pointBorderWidth: 2
           },
           {
             label: 'Achats',
             data: months.map(m => purchasesByMonth[m] || 0),
-            borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,.1)',
-            tension: 0.4, fill: true, pointRadius: 4, pointBackgroundColor: '#ef4444'
+            borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,.08)',
+            tension: 0.4, fill: true, borderWidth: 2.5,
+            pointRadius: 4, pointHoverRadius: 6,
+            pointBackgroundColor: '#ef4444', pointBorderColor: '#fff', pointBorderWidth: 2
           }
         ]
       },
       options: {
         responsive: true, maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
+        interaction: { mode: 'index' as const, intersect: false },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#1e293b',
+            titleColor: '#94a3b8',
+            bodyColor: '#f1f5f9',
+            borderColor: '#334155',
+            borderWidth: 1,
+            padding: 12,
+            callbacks: {
+              label: (ctx) => {
+                const v = Number(ctx.parsed.y).toLocaleString('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+                return ` ${ctx.dataset.label}: ${v} DNT`;
+              }
+            }
+          }
+        },
         scales: {
           x: { grid: { display: false }, ticks: { font: { size: 11 }, color: '#64748b' } },
           y: {
             beginAtZero: true, grid: { color: 'rgba(0,0,0,.04)' },
-            ticks: { font: { size: 11 }, color: '#64748b', callback: (v) => `${Number(v).toLocaleString()} DNT` }
+            ticks: { font: { size: 11 }, color: '#64748b', callback: (v) => `${Number(v).toLocaleString('fr-FR')} DNT` }
           }
         }
       }
@@ -500,7 +521,8 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     const paid    = dist.PAID           || 0;
     const partial = dist.PARTIALLY_PAID || 0;
     const unpaid  = dist.UNPAID         || 0;
-    if (paid + partial + unpaid === 0) return;
+    const total   = paid + partial + unpaid;
+    if (total === 0) return;
 
     this.paymentChart = new Chart(ctx, {
       type: 'doughnut',
@@ -512,7 +534,14 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         responsive: true, maintainAspectRatio: false, cutout: '68%',
         plugins: {
           legend: { display: false },
-          tooltip: { callbacks: { label: (ctx) => ` ${ctx.label}: ${ctx.parsed} facture(s)` } }
+          tooltip: {
+            callbacks: {
+              label: (item) => {
+                const pct = total > 0 ? Math.round((item.parsed / total) * 100) : 0;
+                return ` ${item.label}: ${item.parsed} facture(s) — ${pct}%`;
+              }
+            }
+          }
         }
       }
     } as ChartConfiguration);
@@ -534,6 +563,36 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     const top5 = Object.entries(byProduct).sort((a, b) => b[1] - a[1]).slice(0, 5);
     if (!top5.length) return;
 
+    const barLabelPlugin = {
+      id: 'barValueLabels',
+      afterDatasetsDraw(chart: any) {
+        const { ctx: c } = chart;
+        const meta = chart.getDatasetMeta(0);
+        if (meta.hidden) return;
+        meta.data.forEach((bar: any, idx: number) => {
+          const val = (chart.data.datasets[0].data[idx] as number) || 0;
+          const formatted = val >= 1000
+            ? `${(val / 1000).toFixed(1)} K DNT`
+            : `${Math.round(val)} DNT`;
+          const barWidth = bar.x - chart.scales.x.left;
+          c.save();
+          c.font = 'bold 10px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+          if (barWidth > 90) {
+            c.fillStyle = '#fff';
+            c.textAlign = 'right';
+            c.textBaseline = 'middle';
+            c.fillText(formatted, bar.x - 8, bar.y);
+          } else {
+            c.fillStyle = '#4338ca';
+            c.textAlign = 'left';
+            c.textBaseline = 'middle';
+            c.fillText(formatted, bar.x + 6, bar.y);
+          }
+          c.restore();
+        });
+      }
+    };
+
     this.topProductsChart = new Chart(ctx, {
       type: 'bar',
       data: {
@@ -541,19 +600,30 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         datasets: [{
           label: 'Ventes (DNT)',
           data: top5.map(([, v]) => v),
-          backgroundColor: ['#4f46e5','#10b981','#f59e0b','#ef4444','#8b5cf6'],
+          backgroundColor: '#6366f1',
           borderRadius: 6, borderWidth: 0
         }]
       },
       options: {
-        responsive: true, maintainAspectRatio: false, indexAxis: 'y',
-        plugins: { legend: { display: false } },
+        responsive: true, maintainAspectRatio: false, indexAxis: 'y' as const,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (item: any) => {
+                const v = Number(item.parsed.x).toLocaleString('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+                return ` Ventes: ${v} DNT`;
+              }
+            }
+          }
+        },
         scales: {
-          x: { beginAtZero: true, grid: { color: 'rgba(0,0,0,.04)' }, ticks: { font: { size: 10 }, color: '#64748b', callback: (v) => `${Number(v).toLocaleString()}` } },
+          x: { display: false, beginAtZero: true, grid: { display: false } },
           y: { grid: { display: false }, ticks: { font: { size: 10 }, color: '#334155' } }
         }
-      }
-    } as ChartConfiguration);
+      },
+      plugins: [barLabelPlugin]
+    } as any);
   }
 
   private createCategoryChart(): void {
@@ -570,15 +640,26 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     });
     if (!Object.keys(cats).length) return;
 
+    const sorted = Object.entries(cats).sort((a, b) => b[1] - a[1]);
+    const top4   = sorted.slice(0, 4);
+    const others = sorted.slice(4);
+    const othersSum = others.reduce((sum, [, n]) => sum + n, 0);
+    const entries: [string, number][] = othersSum > 0 ? [...top4, ['Autres', othersSum]] : top4;
+
     this.categoryChart = new Chart(ctx, {
       type: 'doughnut',
       data: {
-        labels: Object.keys(cats),
-        datasets: [{ data: Object.values(cats), backgroundColor: ['#4f46e5','#10b981','#f59e0b','#ef4444','#8b5cf6','#06b6d4','#f97316'], borderWidth: 3, borderColor: '#fff' }]
+        labels: entries.map(([k]) => k),
+        datasets: [{ data: entries.map(([, v]) => v), backgroundColor: ['#4f46e5','#10b981','#f59e0b','#ef4444','#8b5cf6'], borderWidth: 3, borderColor: '#fff' }]
       },
       options: {
         responsive: true, maintainAspectRatio: false, cutout: '55%',
-        plugins: { legend: { position: 'right', labels: { font: { size: 10 }, boxWidth: 10, padding: 8 } } }
+        plugins: {
+          legend: {
+            position: 'right' as const,
+            labels: { font: { size: 10 }, boxWidth: 10, padding: 10, color: '#334155' }
+          }
+        }
       }
     } as ChartConfiguration);
   }
@@ -600,5 +681,10 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     const total = this.invoiceKPIs.totalInvoicedAmount || 0;
     const count = this.invoiceKPIs.totalInvoices       || 1;
     return total / count;
+  }
+
+  getPaymentTotal(): number {
+    const dist = this.invoiceKPIs.paymentStatusDistribution || {};
+    return (dist.PAID || 0) + (dist.PARTIALLY_PAID || 0) + (dist.UNPAID || 0);
   }
 }

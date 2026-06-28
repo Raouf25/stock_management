@@ -103,7 +103,7 @@
 /* ══ CHARTS ══════════════════════════════════════════════════════════════════ */
 .charts-layout {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(6, 1fr);
   gap: 1rem;
   margin-bottom: 1.5rem;
 }
@@ -113,7 +113,10 @@
   box-shadow: 0 1px 4px rgba(0,0,0,.04);
   overflow: hidden; display: flex; flex-direction: column;
 }
-.chart-wide { grid-column: span 2; }
+/* Row 1: Sales (4/6) + Payment (2/6) — Row 2: Top5 (3/6) + Category (3/6) */
+.chart-wide { grid-column: span 4; }
+.chart-pay  { grid-column: span 2; }
+.chart-half { grid-column: span 3; }
 .chart-head {
   display: flex; justify-content: space-between; align-items: center;
   padding: .875rem 1.25rem;
@@ -134,6 +137,7 @@
 .pl-dot.unpaid  { background: #ef4444; }
 .pl-lbl  { flex: 1; color: #64748b; }
 .pl-row strong { color: #0f172a; font-weight: 700; }
+.pl-pct  { font-size: .7rem; color: #94a3b8; min-width: 2.5rem; text-align: right; }
 
 /* ══ MAIN CARD (transactions section) ═══════════════════════════════════════ */
 .main-card {
@@ -372,7 +376,7 @@
   .page { padding: 1rem; }
   .kpi-row { grid-template-columns: repeat(2, 1fr); }
   .charts-layout { grid-template-columns: 1fr; }
-  .chart-wide { grid-column: span 1; }
+  .chart-wide, .chart-pay, .chart-half { grid-column: span 1; }
 }
 @media (max-width: 768px) {
   .side-drawer { width: 100vw; right: -100vw; }
