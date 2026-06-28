@@ -241,14 +241,10 @@ interface PeriodRow {
       background: var(--color-surface);
       border-radius: var(--radius-lg);
       padding: 1.25rem;
-      border-top: 3px solid transparent;
+      border: 1px solid var(--color-border);
       box-shadow: var(--shadow-sm);
       display: flex; flex-direction: column;
     }
-    .kpi-card.kpi-blue   { border-top-color: #3b82f6; }
-    .kpi-card.kpi-orange { border-top-color: #f59e0b; }
-    .kpi-card.kpi-red    { border-top-color: #ef4444; }
-    .kpi-card.kpi-green  { border-top-color: #10b981; }
 
     .kpi-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: .75rem; }
     .kpi-ic-wrap {
