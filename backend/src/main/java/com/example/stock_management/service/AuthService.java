@@ -156,6 +156,7 @@ public class AuthService {
                 .id(user.getId())
                 .name(user.getName())
                 .email(user.getEmail())
+                .role(user.getRole() != null ? user.getRole().name() : "USER")
                 .build();
 
         return AuthResponse.success(message, token, userInfo);

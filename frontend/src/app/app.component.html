@@ -74,6 +74,17 @@
         <span>Rapport TVA</span>
       </a>
 
+      <!-- ── ADMINISTRATION (ADMIN uniquement) ── -->
+      <ng-container *ngIf="isAdmin">
+        <p class="nav-section">Administration</p>
+
+        <a class="nav-link" routerLink="/admin/users" routerLinkActive="active"
+           (click)="closeSidebarOnMobile()">
+          <i class="bi bi-people-fill"></i>
+          <span>Utilisateurs</span>
+        </a>
+      </ng-container>
+
     </nav>
 
     <!-- ⌘K hint -->

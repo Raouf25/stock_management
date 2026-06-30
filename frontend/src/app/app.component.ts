@@ -104,4 +104,8 @@ export class AppComponent implements OnInit {
     }
     return email;
   }
+
+  get isAdmin(): boolean {
+    return this.authService.isAdmin;
+  }
 }
