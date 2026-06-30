@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -37,6 +38,9 @@ public class AuthController {
         if (response.isSuccess()) {
             issueRefreshCookie(response, httpResponse);
             return ResponseEntity.ok(response);
+        }
+        if ("INVALID_CREDENTIALS".equals(response.getErrorCode())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
         }
         return ResponseEntity.badRequest().body(response);
     }
