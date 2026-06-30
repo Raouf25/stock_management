@@ -402,7 +402,7 @@ interface DeliveryNoteKPIs {
       <div class="drawer-head">
         <div>
           <h3 class="drawer-title">Bon de livraison #{{ selectedBL.deliveryNoteNumber }}</h3>
-          <span class="drawer-sub">{{ selectedBL.customer?.name }}</span>
+          <span class="drawer-sub">{{ selectedBL.customer.name }}</span>
         </div>
         <button class="btn-close-drawer" (click)="closeBLDrawer()">✕</button>
       </div>
