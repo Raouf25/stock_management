@@ -226,15 +226,15 @@ interface PeriodRow {
       box-sizing: border-box;
     }
 
-    .page { padding: 1.5rem; background: #f8fafc; min-height: 100vh; }
+    .page { padding: 1.5rem; background: var(--color-bg); min-height: 100vh; }
 
     /* ── Header ── */
     .page-head {
       display: flex; justify-content: space-between; align-items: flex-start;
       margin-bottom: 1.5rem;
     }
-    .page-title { font-size: 1.5rem; font-weight: 700; color: #0f172a; margin: 0 0 .2rem; }
-    .page-sub   { font-size: .82rem; color: #64748b; margin: 0; }
+    .page-title { font-size: 1.5rem; font-weight: 700; color: var(--color-text); margin: 0 0 .2rem; }
+    .page-sub   { font-size: .82rem; color: var(--color-text-muted); margin: 0; }
     .head-actions { display: flex; gap: .625rem; align-items: center; }
 
     /* ── KPI row ── */
@@ -245,8 +245,8 @@ interface PeriodRow {
       margin-bottom: 1.5rem;
     }
     .kpi-card {
-      background: #fff; border-radius: 12px;
-      border: 1px solid #e2e8f0;
+      background: var(--color-surface); border-radius: 12px;
+      border: 1px solid var(--color-border);
       padding: 1rem 1.25rem;
       display: flex; flex-direction: column; gap: .1rem;
       box-shadow: 0 1px 3px rgba(0,0,0,.04);
@@ -259,26 +259,26 @@ interface PeriodRow {
       width: 2rem; height: 2rem; border-radius: 8px;
       display: flex; align-items: center; justify-content: center; font-size: 1rem;
     }
-    .kpi-ic-blue   { background: #dbeafe; color: #1d4ed8; }
-    .kpi-ic-orange { background: #fef3c7; color: #d97706; }
-    .kpi-ic-red    { background: #fee2e2; color: #dc2626; }
-    .kpi-ic-green  { background: #d1fae5; color: #059669; }
+    .kpi-ic-blue   { background: var(--color-info-bg); color: var(--color-info-text); }
+    .kpi-ic-orange { background: var(--color-warning-bg); color: var(--color-warning); }
+    .kpi-ic-red    { background: var(--color-danger-bg); color: var(--color-danger); }
+    .kpi-ic-green  { background: var(--color-success-bg); color: var(--color-success); }
 
     .kpi-val {
-      display: block; font-size: 1.375rem; font-weight: 700; color: #0f172a;
+      display: block; font-size: 1.375rem; font-weight: 700; color: var(--color-text);
       line-height: 1.15; letter-spacing: -.02em;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
     .kpi-lbl {
       display: block; font-size: .6875rem; font-weight: 600;
-      text-transform: uppercase; letter-spacing: .05em; color: #64748b; margin-top: .125rem;
+      text-transform: uppercase; letter-spacing: .05em; color: var(--color-text-muted); margin-top: .125rem;
     }
-    .kpi-sub { display: block; font-size: .6875rem; color: #94a3b8; margin-top: .125rem; }
+    .kpi-sub { display: block; font-size: .6875rem; color: var(--color-text-faint); margin-top: .125rem; }
 
     /* ── Skeleton ── */
     .skeleton-row { pointer-events: none; }
     .sk {
-      background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+      background: linear-gradient(90deg, var(--color-surface-2) 25%, var(--color-border) 50%, var(--color-surface-2) 75%);
       background-size: 200% 100%;
       animation: shimmer 1.5s infinite;
       border-radius: 12px;
@@ -292,32 +292,32 @@ interface PeriodRow {
     }
     .section-title {
       font-size: .7rem; font-weight: 700; text-transform: uppercase;
-      letter-spacing: .7px; color: #94a3b8;
+      letter-spacing: .7px; color: var(--color-text-faint);
     }
     .badge-count {
-      font-size: .75rem; background: #f1f5f9;
-      color: #64748b; padding: .2rem .6rem; border-radius: 999px;
+      font-size: .75rem; background: var(--color-surface-2);
+      color: var(--color-text-muted); padding: .2rem .6rem; border-radius: 999px;
     }
 
     /* ── Toggle ── */
     .toggle-group {
-      display: flex; background: #f1f5f9;
+      display: flex; background: var(--color-surface-2);
       border-radius: 999px; padding: 2px; gap: 2px;
     }
     .toggle-group button {
       padding: .3rem .875rem; border: none; background: transparent;
       border-radius: 999px; font-size: .8125rem; font-weight: 500;
-      color: #64748b; cursor: pointer; transition: all .18s;
+      color: var(--color-text-muted); cursor: pointer; transition: all .18s;
     }
     .toggle-group button.active {
-      background: #4f46e5; color: #fff;
+      background: var(--color-primary-hover); color: var(--color-surface);
       box-shadow: 0 1px 4px rgba(79,70,229,.35);
     }
 
     /* ── Chart card ── */
     .chart-card {
-      background: #fff; border-radius: 12px;
-      border: 1px solid #e2e8f0;
+      background: var(--color-surface); border-radius: 12px;
+      border: 1px solid var(--color-border);
       box-shadow: 0 1px 4px rgba(0,0,0,.04);
       overflow: hidden; display: flex; flex-direction: column;
       margin-bottom: 0;
@@ -325,54 +325,54 @@ interface PeriodRow {
     .chart-head {
       display: flex; justify-content: space-between; align-items: center;
       padding: .875rem 1.25rem;
-      border-bottom: 1px solid #f1f5f9;
+      border-bottom: 1px solid var(--color-surface-2);
     }
-    .chart-title { font-size: .82rem; font-weight: 700; color: #0f172a; letter-spacing: .2px; }
+    .chart-title { font-size: .82rem; font-weight: 700; color: var(--color-text); letter-spacing: .2px; }
     .chart-body { padding: 1.25rem; height: 260px; position: relative; }
     .chart-body canvas { width: 100% !important; height: 100% !important; }
 
     /* ── Table card ── */
     .table-card {
-      background: #fff; border-radius: 12px;
-      border: 1px solid #e2e8f0;
+      background: var(--color-surface); border-radius: 12px;
+      border: 1px solid var(--color-border);
       box-shadow: 0 1px 4px rgba(0,0,0,.04);
       overflow-x: auto;
     }
     .table { width: 100%; border-collapse: collapse; font-size: .875rem; }
-    .table thead tr { background: #f8fafc; border-bottom: 2px solid #e2e8f0; }
+    .table thead tr { background: var(--color-bg); border-bottom: 2px solid var(--color-border); }
     .table th {
       padding: .8rem 1rem; text-align: left; font-size: .72rem;
       font-weight: 700; text-transform: uppercase; letter-spacing: .5px;
-      color: #475569; white-space: nowrap;
+      color: var(--color-text-muted); white-space: nowrap;
     }
     .table td {
-      padding: .8rem 1rem; border-bottom: 1px solid #f1f5f9;
-      color: #1f2937;
+      padding: .8rem 1rem; border-bottom: 1px solid var(--color-surface-2);
+      color: var(--color-text);
     }
     .table tbody tr:last-child td { border-bottom: none; }
-    .table tbody tr:hover { background: #f5f7ff; }
+    .table tbody tr:hover { background: var(--color-primary-muted); }
     .table tfoot td {
-      padding: .8rem 1rem; font-weight: 700; color: #0f172a;
-      background: #f8fafc; border-top: 2px solid #e2e8f0;
+      padding: .8rem 1rem; font-weight: 700; color: var(--color-text);
+      background: var(--color-bg); border-top: 2px solid var(--color-border);
     }
     .num { text-align: right; font-variant-numeric: tabular-nums; }
-    .vat-col { color: #ef4444; font-weight: 600; }
-    .period-cell { font-weight: 600; color: #0f172a; }
-    .id-cell { color: #4f46e5; font-weight: 600; font-size: .8125rem; }
+    .vat-col { color: var(--color-danger); font-weight: 600; }
+    .period-cell { font-weight: 600; color: var(--color-text); }
+    .id-cell { color: var(--color-primary-hover); font-weight: 600; font-size: .8125rem; }
 
     /* ── Collection rate ── */
     .collection-rate {
       display: inline-block; padding: .2rem .5rem;
       border-radius: 999px; font-size: .75rem; font-weight: 700;
     }
-    .rate-good { background: #d1fae5; color: #065f46; }
-    .rate-mid  { background: #fef3c7; color: #92400e; }
-    .rate-low  { background: #fee2e2; color: #991b1b; }
+    .rate-good { background: var(--color-success-bg); color: var(--color-success-text); }
+    .rate-mid  { background: var(--color-warning-bg); color: var(--color-warning-text); }
+    .rate-low  { background: var(--color-danger-bg); color: var(--color-danger-text); }
 
     /* ── Badge ── */
     .badge { display: inline-block; padding: .2rem .65rem; border-radius: 6px; font-size: .78rem; font-weight: 600; }
-    .badge-success { background: #d1fae5; color: #065f46; }
-    .badge-neutral { background: #f3f4f6; color: #6b7280; }
+    .badge-success { background: var(--color-success-bg); color: var(--color-success-text); }
+    .badge-neutral { background: var(--color-surface-2); color: var(--color-text-muted); }
 
     /* ── Status badge ── */
     .status-badge {
@@ -380,16 +380,16 @@ interface PeriodRow {
       border-radius: 4px; font-size: .7rem; font-weight: 700;
       text-transform: uppercase; white-space: nowrap;
     }
-    .status-paid    { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
-    .status-unpaid  { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
-    .status-partial { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+    .status-paid    { background: var(--color-success-bg); color: var(--color-success-text); border: 1px solid var(--color-success); }
+    .status-unpaid  { background: var(--color-danger-bg); color: var(--color-danger-text); border: 1px solid var(--color-danger); }
+    .status-partial { background: var(--color-warning-bg); color: var(--color-warning-text); border: 1px solid var(--color-warning); }
 
     /* ── Export button ── */
     .btn-export {
       display: inline-flex; align-items: center; gap: .35rem;
       padding: .6rem 1.25rem;
-      background: linear-gradient(135deg, #4f46e5, #6366f1);
-      color: #fff; border: none; border-radius: 10px;
+      background: linear-gradient(135deg, var(--color-primary-hover), var(--color-primary));
+      color: var(--color-surface); border: none; border-radius: 10px;
       font-size: .875rem; font-weight: 600; cursor: pointer;
       box-shadow: 0 2px 8px rgba(79,70,229,.25);
       transition: opacity .18s; white-space: nowrap;

@@ -25,13 +25,13 @@ import { UserRole } from '../../../services/user-management.service';
     }
 
     .role-badge--admin {
-      background: #ede9fe;
+      background: var(--color-primary-light);
       color: #6d28d9;
     }
 
     .role-badge--user {
-      background: var(--color-info-bg, #dbeafe);
-      color: var(--color-info-text, #1e40af);
+      background: var(--color-info-bg, var(--color-info-bg));
+      color: var(--color-info-text, var(--color-info-text));
     }
   `]
 })

@@ -26,7 +26,7 @@ interface Product {
         <span class="invoice-card-header-title">Catalogue Produits</span>
       </div>
       <div style="padding: 0;">
-        <div style="padding: 0.75rem 1rem; border-bottom: 1px solid #e5e7eb; display: flex; align-items: center; gap: 0.75rem;">
+        <div style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--color-border); display: flex; align-items: center; gap: 0.75rem;">
           <!-- Search input -->
           <div style="position: relative; flex: 1;">
             <span style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); font-size: 1rem;">🔍</span>
@@ -34,7 +34,7 @@ interface Product {
                    [(ngModel)]="searchTerm"
                    (keyup)="onSearchChange()"
                    placeholder="Rechercher un produit..."
-                   style="width: 100%; padding: 0.625rem 0.75rem 0.625rem 2.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem; font-size: 0.875rem; box-sizing: border-box;">
+                   style="width: 100%; padding: 0.625rem 0.75rem 0.625rem 2.5rem; border: 1px solid var(--color-border-strong); border-radius: 0.375rem; font-size: 0.875rem; box-sizing: border-box;">
           </div>
 
           <!-- En stock toggle -->
@@ -43,38 +43,38 @@ interface Product {
               <input type="checkbox" [(ngModel)]="showInStockOnly" (change)="onStockFilterChange()">
               <span class="toggle-slider"></span>
             </label>
-            <span style="font-size: 0.8rem; color: #374151; white-space: nowrap; font-weight: 500;">En stock</span>
+            <span style="font-size: 0.8rem; color: var(--color-text-2); white-space: nowrap; font-weight: 500;">En stock</span>
           </div>
         </div>
 
         <div style="max-height: 450px; overflow-y: auto; padding: 0.5rem;">
           <div *ngFor="let product of filteredProducts"
                (click)="selectProduct(product)"
-               style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem; margin-bottom: 0.5rem; background: #f9fafb; border-radius: 0.375rem; cursor: pointer; transition: all 0.2s; border: 1px solid transparent;"
+               style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem; margin-bottom: 0.5rem; background: var(--color-bg); border-radius: 0.375rem; cursor: pointer; transition: all 0.2s; border: 1px solid transparent;"
                [style.opacity]="getAvailableStock(product) <= 0 ? '0.6' : '1'"
                [style.cursor]="getAvailableStock(product) <= 0 ? 'not-allowed' : 'pointer'"
                onmouseover="if(this.style.opacity !== '0.6') { this.style.background='#e5e7eb'; this.style.borderColor='#d1d5db' }"
                onmouseout="if(this.style.opacity !== '0.6') { this.style.background='#f9fafb'; this.style.borderColor='transparent' }">
-            <div style="width: 3rem; height: 3rem; background: white; border-radius: 0.375rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 1px solid #e5e7eb;">
+            <div style="width: 3rem; height: 3rem; background: white; border-radius: 0.375rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 1px solid var(--color-border);">
               <img [src]="product.imageUrl || '/placeholder.svg'" [alt]="product.name"
                    style="max-width: 100%; max-height: 100%; object-fit: contain;">
             </div>
             <div style="flex: 1; min-width: 0;">
-              <div style="font-weight: 600; color: #111827; font-size: 0.875rem; margin-bottom: 0.125rem;">{{ product.name }}</div>
-              <div style="font-size: 0.75rem; color: #6b7280; margin-bottom: 0.125rem;">
+              <div style="font-weight: 600; color: var(--color-text); font-size: 0.875rem; margin-bottom: 0.125rem;">{{ product.name }}</div>
+              <div style="font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 0.125rem;">
                 Réf: {{ product.reference }} | <span [style.color]="getAvailableStock(product) > 0 ? '#10b981' : '#ef4444'">Stock: {{ getAvailableStock(product) }}</span>
               </div>
-              <div style="font-weight: 600; color: #f59e0b; font-size: 0.875rem;">{{ getProductPrice(product) | number:'1.3-3' }} DNT</div>
+              <div style="font-weight: 600; color: var(--color-warning); font-size: 0.875rem;">{{ getProductPrice(product) | number:'1.3-3' }} DNT</div>
             </div>
             <button type="button"
-                    style="width: 2rem; height: 2rem; background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%); color: white; border: none; border-radius: 0.375rem; cursor: pointer; font-weight: 600; flex-shrink: 0; display: flex; align-items: center; justify-content: center;"
+                    style="width: 2rem; height: 2rem; background: linear-gradient(135deg, var(--color-warning) 0%, var(--color-warning) 100%); color: white; border: none; border-radius: 0.375rem; cursor: pointer; font-weight: 600; flex-shrink: 0; display: flex; align-items: center; justify-content: center;"
                     [disabled]="getAvailableStock(product) <= 0"
                     [style.opacity]="getAvailableStock(product) <= 0 ? '0.5' : '1'"
                     [style.cursor]="getAvailableStock(product) <= 0 ? 'not-allowed' : 'pointer'">
               ➕
             </button>
           </div>
-          <div *ngIf="filteredProducts.length === 0" style="text-align: center; padding: 3rem; color: #9ca3af;">
+          <div *ngIf="filteredProducts.length === 0" style="text-align: center; padding: 3rem; color: var(--color-text-faint);">
             <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">📭</div>
             <p style="margin: 0; font-size: 0.875rem;">Aucun produit trouvé</p>
           </div>
@@ -105,7 +105,7 @@ interface Product {
       left: 0;
       right: 0;
       bottom: 0;
-      background-color: #d1d5db;
+      background-color: var(--color-border-strong);
       border-radius: 999px;
       transition: background-color 0.25s ease;
     }
@@ -124,7 +124,7 @@ interface Product {
     }
 
     .toggle-switch input:checked + .toggle-slider {
-      background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
+      background: linear-gradient(135deg, var(--color-warning) 0%, var(--color-warning) 100%);
     }
 
     .toggle-switch input:checked + .toggle-slider::before {

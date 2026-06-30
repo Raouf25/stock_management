@@ -96,7 +96,7 @@ import { AuthService } from '../../services/auth.service';
   `,
   styles: [`
     .page {
-      background: #f8fafc;
+      background: var(--color-bg);
       min-height: 100vh;
       padding: 1.5rem;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -104,17 +104,17 @@ import { AuthService } from '../../services/auth.service';
     }
 
     .page-head { margin-bottom: 1.5rem; }
-    .page-title { font-size: 1.5rem; font-weight: 700; color: #0f172a; margin: 0 0 .2rem; }
-    .page-sub   { font-size: .82rem; color: #64748b; margin: 0; }
+    .page-title { font-size: 1.5rem; font-weight: 700; color: var(--color-text); margin: 0 0 .2rem; }
+    .page-sub   { font-size: .82rem; color: var(--color-text-muted); margin: 0; }
 
     /* Hero */
     .profile-hero {
       display: flex;
       align-items: center;
       gap: 1.5rem;
-      background: #fff;
+      background: var(--color-surface);
       border-radius: 12px;
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--color-border);
       padding: 1.25rem 1.5rem;
       margin-bottom: 1.25rem;
       box-shadow: 0 1px 4px rgba(0,0,0,.04);
@@ -123,23 +123,23 @@ import { AuthService } from '../../services/auth.service';
     .avatar-lg {
       width: 4.5rem;
       height: 4.5rem;
-      background: linear-gradient(135deg, #4f46e5, #7c3aed);
+      background: linear-gradient(135deg, var(--color-primary-hover), #7c3aed);
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 1.5rem;
       font-weight: 700;
-      color: #fff;
+      color: var(--color-surface);
       flex-shrink: 0;
       box-shadow: 0 4px 12px rgba(79,70,229,.3);
     }
 
-    .hero-name  { font-size: 1.25rem; font-weight: 700; color: #0f172a; }
-    .hero-email { font-size: .875rem; color: #64748b; margin: .2rem 0 .5rem; }
+    .hero-name  { font-size: 1.25rem; font-weight: 700; color: var(--color-text); }
+    .hero-email { font-size: .875rem; color: var(--color-text-muted); margin: .2rem 0 .5rem; }
     .badge-role {
       display: inline-block;
-      background: #ede9fe;
+      background: var(--color-primary-light);
       color: #5b21b6;
       font-size: .72rem;
       font-weight: 700;
@@ -157,9 +157,9 @@ import { AuthService } from '../../services/auth.service';
     }
 
     .card {
-      background: #fff;
+      background: var(--color-surface);
       border-radius: 12px;
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--color-border);
       box-shadow: 0 1px 4px rgba(0,0,0,.04);
       overflow: hidden;
     }
@@ -171,17 +171,17 @@ import { AuthService } from '../../services/auth.service';
       padding: .75rem 1.25rem;
       font-size: .82rem;
       font-weight: 700;
-      color: #0f172a;
-      background: #fff;
-      border-bottom: 1px solid #e2e8f0;
+      color: var(--color-text);
+      background: var(--color-surface);
+      border-bottom: 1px solid var(--color-border);
     }
-    .card-head i { font-size: 1rem; color: #4f46e5; }
+    .card-head i { font-size: 1rem; color: var(--color-primary-hover); }
     .card-danger .card-head {
-      background: #fef2f2;
+      background: var(--color-danger-bg);
       border-bottom: 1px solid #fecdd3;
-      color: #991b1b;
+      color: var(--color-danger-text);
     }
-    .card-danger .card-head i { color: #ef4444; }
+    .card-danger .card-head i { color: var(--color-danger); }
 
     .card-body { padding: 1.25rem; }
 
@@ -190,15 +190,15 @@ import { AuthService } from '../../services/auth.service';
       justify-content: space-between;
       align-items: center;
       padding: .625rem 0;
-      border-bottom: 1px solid #f8fafc;
+      border-bottom: 1px solid var(--color-bg);
     }
     .field-row:last-of-type { border-bottom: none; margin-bottom: .75rem; }
 
-    label { font-size: .8125rem; color: #64748b; font-weight: 500; }
-    .field-value { font-size: .875rem; font-weight: 600; color: #0f172a; }
-    .field-value.muted { color: #94a3b8; font-weight: 400; }
+    label { font-size: .8125rem; color: var(--color-text-muted); font-weight: 500; }
+    .field-value { font-size: .875rem; font-weight: 600; color: var(--color-text); }
+    .field-value.muted { color: var(--color-text-faint); font-weight: 400; }
 
-    .hint { font-size: .8125rem; color: #64748b; margin: 0 0 1rem; line-height: 1.5; }
+    .hint { font-size: .8125rem; color: var(--color-text-muted); margin: 0 0 1rem; line-height: 1.5; }
 
     /* Buttons */
     .btn-outline {
@@ -207,15 +207,15 @@ import { AuthService } from '../../services/auth.service';
       gap: .5rem;
       padding: .6rem 1.125rem;
       background: transparent;
-      border: 1.5px solid #4f46e5;
-      color: #4f46e5;
+      border: 1.5px solid var(--color-primary-hover);
+      color: var(--color-primary-hover);
       border-radius: 8px;
       font-size: .875rem;
       font-weight: 600;
       cursor: pointer;
       transition: background .18s, color .18s;
     }
-    .btn-outline:hover:not(:disabled) { background: #4f46e5; color: #fff; }
+    .btn-outline:hover:not(:disabled) { background: var(--color-primary-hover); color: var(--color-surface); }
     .btn-outline:disabled { opacity: .55; cursor: default; }
 
     .btn-danger {
@@ -223,20 +223,20 @@ import { AuthService } from '../../services/auth.service';
       align-items: center;
       gap: .5rem;
       padding: .6rem 1.125rem;
-      background: #fef2f2;
+      background: var(--color-danger-bg);
       border: 1.5px solid #fecaca;
-      color: #dc2626;
+      color: var(--color-danger);
       border-radius: 8px;
       font-size: .875rem;
       font-weight: 600;
       cursor: pointer;
       transition: background .18s, border-color .18s;
     }
-    .btn-danger:hover { background: #ef4444; border-color: #ef4444; color: #fff; }
+    .btn-danger:hover { background: var(--color-danger); border-color: var(--color-danger); color: var(--color-surface); }
 
     .reset-hint {
       font-size: .8125rem;
-      color: #10b981;
+      color: var(--color-success);
       margin: .75rem 0 0;
     }
 

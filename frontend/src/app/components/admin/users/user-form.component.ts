@@ -152,7 +152,7 @@ import { ToastService } from '../../../services/toast.service';
       top: 0; right: 0; bottom: 0;
       width: 420px;
       max-width: 100vw;
-      background: var(--color-surface, #fff);
+      background: var(--color-surface, var(--color-surface));
       box-shadow: var(--shadow-xl);
       z-index: 901;
       display: flex;
@@ -169,14 +169,14 @@ import { ToastService } from '../../../services/toast.service';
       align-items: center;
       justify-content: space-between;
       padding: 1.25rem 1.5rem;
-      border-bottom: 1px solid var(--color-border, #e2e8f0);
+      border-bottom: 1px solid var(--color-border, var(--color-border));
       flex-shrink: 0;
     }
 
     .drawer-title {
       font-size: 1rem;
       font-weight: 700;
-      color: var(--color-text, #0f172a);
+      color: var(--color-text, var(--color-text));
       display: flex;
       align-items: center;
       gap: 0.5rem;
@@ -187,14 +187,14 @@ import { ToastService } from '../../../services/toast.service';
       width: 2rem; height: 2rem;
       display: flex; align-items: center; justify-content: center;
       background: none;
-      border: 1px solid var(--color-border, #e2e8f0);
+      border: 1px solid var(--color-border, var(--color-border));
       border-radius: 6px;
-      color: var(--color-text-muted, #64748b);
+      color: var(--color-text-muted, var(--color-text-muted));
       cursor: pointer;
       font-size: 0.875rem;
       transition: background var(--transition, 150ms ease);
     }
-    .drawer-close:hover { background: var(--color-surface-2, #f1f5f9); }
+    .drawer-close:hover { background: var(--color-surface-2, var(--color-surface-2)); }
 
     .drawer-body {
       flex: 1;
@@ -209,24 +209,24 @@ import { ToastService } from '../../../services/toast.service';
     .field-label {
       font-size: 0.8125rem;
       font-weight: 600;
-      color: var(--color-text-2, #334155);
+      color: var(--color-text-2, var(--color-text-2));
     }
 
-    .required { color: var(--color-danger, #ef4444); margin-left: 2px; }
+    .required { color: var(--color-danger, var(--color-danger)); margin-left: 2px; }
 
     .field-input {
       width: 100%;
       padding: 0.5625rem 0.875rem;
-      border: 1.5px solid var(--color-border, #e2e8f0);
+      border: 1.5px solid var(--color-border, var(--color-border));
       border-radius: var(--radius-sm, 6px);
       font-size: 0.875rem;
-      color: var(--color-text, #0f172a);
-      background: var(--color-surface, #fff);
+      color: var(--color-text, var(--color-text));
+      background: var(--color-surface, var(--color-surface));
       transition: border-color var(--transition, 150ms ease);
       outline: none;
     }
-    .field-input:focus { border-color: var(--color-primary, #6366f1); box-shadow: 0 0 0 3px var(--color-primary-muted, rgba(99,102,241,0.12)); }
-    .field-input--error { border-color: var(--color-danger, #ef4444); }
+    .field-input:focus { border-color: var(--color-primary, var(--color-primary)); box-shadow: 0 0 0 3px var(--color-primary-muted, rgba(99,102,241,0.12)); }
+    .field-input--error { border-color: var(--color-danger, var(--color-danger)); }
     .field-input--error:focus { box-shadow: 0 0 0 3px rgba(239,68,68,0.12); }
 
     .field-password-wrap { position: relative; }
@@ -237,7 +237,7 @@ import { ToastService } from '../../../services/toast.service';
       right: 0.625rem; top: 50%;
       transform: translateY(-50%);
       background: none; border: none;
-      color: var(--color-text-muted, #64748b);
+      color: var(--color-text-muted, var(--color-text-muted));
       cursor: pointer;
       padding: 0.25rem;
       font-size: 0.875rem;
@@ -245,13 +245,13 @@ import { ToastService } from '../../../services/toast.service';
 
     .field-error {
       font-size: 0.75rem;
-      color: var(--color-danger, #ef4444);
+      color: var(--color-danger, var(--color-danger));
       font-weight: 500;
     }
 
     .reset-section {
       padding: 1rem;
-      background: var(--color-surface-2, #f1f5f9);
+      background: var(--color-surface-2, var(--color-surface-2));
       border-radius: var(--radius-md, 10px);
       display: flex;
       flex-direction: column;
@@ -261,16 +261,16 @@ import { ToastService } from '../../../services/toast.service';
     .reset-label {
       font-size: 0.8125rem;
       font-weight: 600;
-      color: var(--color-text-2, #334155);
+      color: var(--color-text-2, var(--color-text-2));
       margin: 0;
     }
 
     .btn-reset-pw {
       align-self: flex-start;
       padding: 0.4375rem 0.875rem;
-      background: var(--color-warning-bg, #fef3c7);
-      color: var(--color-warning-text, #92400e);
-      border: 1px solid var(--color-warning, #f59e0b);
+      background: var(--color-warning-bg, var(--color-warning-bg));
+      color: var(--color-warning-text, var(--color-warning-text));
+      border: 1px solid var(--color-warning, var(--color-warning));
       border-radius: var(--radius-sm, 6px);
       font-size: 0.8125rem;
       font-weight: 600;
@@ -280,7 +280,7 @@ import { ToastService } from '../../../services/toast.service';
       gap: 0.375rem;
       transition: background var(--transition, 150ms ease);
     }
-    .btn-reset-pw:hover:not(:disabled) { background: #fde68a; }
+    .btn-reset-pw:hover:not(:disabled) { background: var(--color-warning); }
     .btn-reset-pw:disabled { opacity: 0.5; cursor: not-allowed; }
 
     .drawer-actions {
@@ -289,7 +289,7 @@ import { ToastService } from '../../../services/toast.service';
       justify-content: flex-end;
       margin-top: auto;
       padding-top: 1rem;
-      border-top: 1px solid var(--color-border, #e2e8f0);
+      border-top: 1px solid var(--color-border, var(--color-border));
     }
 
     .btn {
@@ -308,24 +308,24 @@ import { ToastService } from '../../../services/toast.service';
     .btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
     .btn-cancel {
-      background: var(--color-surface-2, #f1f5f9);
-      color: var(--color-text-2, #334155);
-      border-color: var(--color-border, #e2e8f0);
+      background: var(--color-surface-2, var(--color-surface-2));
+      color: var(--color-text-2, var(--color-text-2));
+      border-color: var(--color-border, var(--color-border));
     }
-    .btn-cancel:hover:not(:disabled) { background: var(--color-border, #e2e8f0); }
+    .btn-cancel:hover:not(:disabled) { background: var(--color-border, var(--color-border)); }
 
     .btn-primary {
-      background: var(--color-primary, #6366f1);
-      color: #fff;
+      background: var(--color-primary, var(--color-primary));
+      color: var(--color-surface);
       box-shadow: 0 1px 4px rgba(99,102,241,0.25);
     }
-    .btn-primary:hover:not(:disabled) { background: var(--color-primary-hover, #4f46e5); }
+    .btn-primary:hover:not(:disabled) { background: var(--color-primary-hover, var(--color-primary-hover)); }
 
     .spinner {
       display: inline-block;
       width: 0.875rem; height: 0.875rem;
       border: 2px solid rgba(255,255,255,0.4);
-      border-top-color: #fff;
+      border-top-color: var(--color-surface);
       border-radius: 50%;
       animation: spin 0.6s linear infinite;
     }

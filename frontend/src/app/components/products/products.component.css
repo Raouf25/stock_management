@@ -1,6 +1,6 @@
 .products-page {
   padding: 20px;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  background: var(--color-bg);
   min-height: 100vh;
 }
 
@@ -15,8 +15,8 @@
 }
 
 .search-input:focus {
-  border-color: #667eea;
-  box-shadow: 0 5px 20px rgba(102, 126, 234, 0.2);
+  border-color: var(--color-primary);
+  box-shadow: 0 5px 20px var(--color-primary-muted);
   outline: none;
 }
 
@@ -97,7 +97,7 @@
 }
 
 .table-hover tbody tr:hover {
-  background-color: #f8f9fa;
+  background-color: var(--color-surface-2);
   cursor: pointer;
   transition: all 0.2s ease;
 }

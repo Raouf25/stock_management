@@ -1,6 +1,6 @@
 .stock-movement-page {
   padding: 20px;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  background: var(--color-bg);
   min-height: 100vh;
 }
 
@@ -8,14 +8,15 @@
 
 /* Filter Card */
 .filter-card {
-  border: none;
+  border: 1px solid var(--color-border);
   border-radius: 15px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md);
   margin-bottom: 20px;
+  background: var(--color-surface);
 }
 
 .filter-card .card-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--color-primary-hover) 0%, var(--color-primary) 100%);
   color: white;
   font-weight: 600;
   font-size: 1.1rem;
@@ -25,14 +26,16 @@
 
 .form-control-modern {
   border-radius: 10px;
-  border: 2px solid #e0e0e0;
+  border: 2px solid var(--color-border);
   padding: 10px 15px;
+  background: var(--color-surface);
+  color: var(--color-text);
   transition: all 0.3s ease;
 }
 
 .form-control-modern:focus {
-  border-color: #667eea;
-  box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 0.2rem var(--color-primary-muted);
 }
 
 /* Button Styling */
@@ -50,14 +53,15 @@
 
 /* Table Card */
 .table-card {
-  border: none;
+  border: 1px solid var(--color-border);
   border-radius: 15px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md);
   overflow: hidden;
+  background: var(--color-surface);
 }
 
 .table-card .card-header {
-  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+  background: linear-gradient(135deg, var(--color-info) 0%, #2980b9 100%);
   color: white;
   font-weight: 600;
   font-size: 1.1rem;
@@ -70,18 +74,19 @@
 }
 
 .table thead {
-  background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+  background: var(--color-surface-2);
 }
 
 .table thead th {
-  color: white;
+  color: var(--color-text-muted);
   border: none;
   font-weight: 600;
   padding: 1rem;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .table-hover tbody tr:hover {
-  background-color: #f8f9fa;
+  background-color: var(--color-surface-2);
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -101,9 +106,10 @@
 
 /* Card */
 .card {
-  border: none;
+  border: 1px solid var(--color-border);
   border-radius: 15px;
   overflow: hidden;
+  background: var(--color-surface);
 }
 
 /* Responsive */
@@ -111,11 +117,11 @@
   .stock-movement-page {
     padding: 10px;
   }
-  
+
   .stat-number {
     font-size: 1.8rem;
   }
-  
+
   .stat-icon {
     font-size: 2rem;
   }

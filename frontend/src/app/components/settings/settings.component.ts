@@ -200,24 +200,24 @@ import { AuthService } from '../../services/auth.service';
   `,
   styles: [`
     .page {
-      background: #f8fafc;
+      background: var(--color-bg);
       min-height: 100vh;
       padding: 1.5rem;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-family: var(--font-sans);
       box-sizing: border-box;
       max-width: 860px;
     }
 
     .page-head { margin-bottom: 1.5rem; }
-    .page-title { font-size: 1.5rem; font-weight: 700; color: #0f172a; margin: 0 0 .2rem; }
-    .page-sub   { font-size: .82rem; color: #64748b; margin: 0; }
+    .page-title { font-size: 1.5rem; font-weight: 700; color: var(--color-text); margin: 0 0 .2rem; }
+    .page-sub   { font-size: .82rem; color: var(--color-text-muted); margin: 0; }
 
     /* Card */
     .settings-card {
-      background: #fff;
+      background: var(--color-surface);
       border-radius: 12px;
-      border: 1px solid #e2e8f0;
-      box-shadow: 0 1px 4px rgba(0,0,0,.04);
+      border: 1px solid var(--color-border);
+      box-shadow: var(--shadow-xs);
       overflow: hidden;
       margin-bottom: 1rem;
     }
@@ -229,11 +229,11 @@ import { AuthService } from '../../services/auth.service';
       padding: .75rem 1.25rem;
       font-size: .82rem;
       font-weight: 700;
-      color: #0f172a;
-      background: #fff;
-      border-bottom: 1px solid #e2e8f0;
+      color: var(--color-text);
+      background: var(--color-surface);
+      border-bottom: 1px solid var(--color-border);
     }
-    .card-head i { font-size: 1rem; color: #4f46e5; }
+    .card-head i { font-size: 1rem; color: var(--color-primary); }
 
     .card-body { padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem; }
 
@@ -253,43 +253,43 @@ import { AuthService } from '../../services/auth.service';
     label {
       font-size: .8125rem;
       font-weight: 600;
-      color: #374151;
+      color: var(--color-text-2);
     }
 
     input, textarea {
       width: 100%;
       padding: .6rem .875rem;
-      border: 1.5px solid #e2e8f0;
+      border: 1.5px solid var(--color-border);
       border-radius: 8px;
       font-size: .875rem;
-      color: #0f172a;
-      background: #fff;
+      color: var(--color-text);
+      background: var(--color-surface);
       transition: border-color .15s, box-shadow .15s;
       box-sizing: border-box;
       font-family: inherit;
     }
     input:focus, textarea:focus {
       outline: none;
-      border-color: #6366f1;
-      box-shadow: 0 0 0 3px rgba(99,102,241,.12);
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 3px var(--color-primary-muted);
     }
     input:disabled, textarea:disabled {
-      background: #f8fafc;
-      color: #94a3b8;
+      background: var(--color-surface-2);
+      color: var(--color-text-faint);
       cursor: not-allowed;
     }
     input[readonly], textarea[readonly] {
-      background: #f8fafc;
-      color: #64748b;
+      background: var(--color-surface-2);
+      color: var(--color-text-muted);
     }
     textarea { resize: vertical; min-height: 80px; }
 
     .input-error {
-      border-color: #ef4444 !important;
+      border-color: var(--color-danger) !important;
     }
     .error-msg {
       font-size: .75rem;
-      color: #ef4444;
+      color: var(--color-danger);
     }
 
     /* Toggle */
@@ -300,22 +300,22 @@ import { AuthService } from '../../services/auth.service';
       gap: 1rem;
     }
     .toggle-info { display: flex; flex-direction: column; gap: .2rem; }
-    .toggle-label { font-size: .875rem; font-weight: 600; color: #0f172a; }
-    .toggle-hint  { font-size: .8125rem; color: #64748b; }
+    .toggle-label { font-size: .875rem; font-weight: 600; color: var(--color-text); }
+    .toggle-hint  { font-size: .8125rem; color: var(--color-text-muted); }
 
     .toggle-btn {
       position: relative;
       width: 48px;
       height: 26px;
       border-radius: 999px;
-      background: #e2e8f0;
+      background: var(--color-border);
       border: none;
       cursor: pointer;
       transition: background .2s;
       flex-shrink: 0;
       padding: 0;
     }
-    .toggle-btn.active { background: #6366f1; }
+    .toggle-btn.active { background: var(--color-primary); }
     .toggle-btn:disabled { opacity: .55; cursor: not-allowed; }
 
     .toggle-knob {
@@ -325,7 +325,7 @@ import { AuthService } from '../../services/auth.service';
       width: 20px;
       height: 20px;
       border-radius: 50%;
-      background: #fff;
+      background: var(--color-surface);
       box-shadow: 0 1px 3px rgba(0,0,0,.2);
       transition: transform .2s;
     }
@@ -343,7 +343,7 @@ import { AuthService } from '../../services/auth.service';
       align-items: center;
       gap: .5rem;
       padding: .65rem 1.5rem;
-      background: #6366f1;
+      background: var(--color-primary);
       color: #fff;
       border: none;
       border-radius: 8px;
@@ -352,7 +352,7 @@ import { AuthService } from '../../services/auth.service';
       cursor: pointer;
       transition: background .18s;
     }
-    .btn-primary:hover:not(:disabled) { background: #4f46e5; }
+    .btn-primary:hover:not(:disabled) { background: var(--color-primary-hover); }
     .btn-primary:disabled { opacity: .55; cursor: not-allowed; }
 
     /* Readonly notice */
@@ -361,20 +361,20 @@ import { AuthService } from '../../services/auth.service';
       align-items: center;
       gap: .5rem;
       padding: .875rem 1.125rem;
-      background: #f0f9ff;
-      border: 1px solid #bae6fd;
+      background: var(--color-info-bg);
+      border: 1px solid var(--color-info);
       border-radius: 8px;
       font-size: .875rem;
-      color: #0369a1;
+      color: var(--color-info-text);
       margin-top: .5rem;
     }
     .readonly-notice i { font-size: 1rem; flex-shrink: 0; }
 
     /* Skeleton */
     .skel-section {
-      background: #fff;
+      background: var(--color-surface);
       border-radius: 12px;
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--color-border);
       overflow: hidden;
     }
     .skel-card-head {

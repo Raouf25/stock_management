@@ -46,7 +46,7 @@ interface DeliveryNoteKPIs {
           <h1 class="invoice-page-title">Bons de Livraison</h1>
         </div>
         <a routerLink="/delivery-notes/create" 
-           style="padding: 0.75rem 1.5rem; background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); color: white; border-radius: 0.5rem; text-decoration: none; font-weight: 600; transition: all 0.3s;">
+           style="padding: 0.75rem 1.5rem; background: linear-gradient(135deg, var(--color-success) 0%, var(--color-success) 100%); color: white; border-radius: 0.5rem; text-decoration: none; font-weight: 600; transition: all 0.3s;">
           + Nouveau BL
         </a>
       </div>
@@ -87,9 +87,9 @@ interface DeliveryNoteKPIs {
         <div style="padding: 1.5rem;">
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
             <div>
-              <label style="display: block; font-weight: 600; color: #374151; margin-bottom: 0.5rem;">Statut</label>
+              <label style="display: block; font-weight: 600; color: var(--color-text-2); margin-bottom: 0.5rem;">Statut</label>
               <select [(ngModel)]="filterStatus" (change)="applyFilters()"
-                      style="width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 0.5rem;">
+                      style="width: 100%; padding: 0.75rem; border: 1px solid var(--color-border-strong); border-radius: 0.5rem;">
                 <option value="">Tous les statuts</option>
                 <option value="PENDING">En attente</option>
                 <option value="DELIVERED">Livré</option>
@@ -98,43 +98,43 @@ interface DeliveryNoteKPIs {
               </select>
             </div>
             <div>
-              <label style="display: block; font-weight: 600; color: #374151; margin-bottom: 0.5rem;">État Facturation</label>
+              <label style="display: block; font-weight: 600; color: var(--color-text-2); margin-bottom: 0.5rem;">État Facturation</label>
               <select [(ngModel)]="filterInvoiced" (change)="applyFilters()"
-                      style="width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 0.5rem;">
+                      style="width: 100%; padding: 0.75rem; border: 1px solid var(--color-border-strong); border-radius: 0.5rem;">
                 <option value="">Tous</option>
                 <option value="true">Facturés</option>
                 <option value="false">Non facturés</option>
               </select>
             </div>
             <div>
-              <label style="display: block; font-weight: 600; color: #374151; margin-bottom: 0.5rem;">Rechercher</label>
+              <label style="display: block; font-weight: 600; color: var(--color-text-2); margin-bottom: 0.5rem;">Rechercher</label>
               <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="applyFilters()" 
                      placeholder="Numéro BL, client..."
-                     style="width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 0.5rem;">
+                     style="width: 100%; padding: 0.75rem; border: 1px solid var(--color-border-strong); border-radius: 0.5rem;">
             </div>
           </div>
         </div>
       </div>
 
       <!-- Conversion to Invoice -->
-      <div *ngIf="selectedDeliveryNotes.length > 0" class="invoice-card" style="margin-bottom: 1.5rem; border: 2px solid #22c55e;">
+      <div *ngIf="selectedDeliveryNotes.length > 0" class="invoice-card" style="margin-bottom: 1.5rem; border: 2px solid var(--color-success);">
         <div style="padding: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
           <div>
-            <div style="font-weight: 700; font-size: 1.125rem; color: #111827;">
+            <div style="font-weight: 700; font-size: 1.125rem; color: var(--color-text);">
               {{ selectedDeliveryNotes.length }} BL sélectionné(s)
             </div>
-            <div style="color: #6b7280; font-size: 0.875rem;">
+            <div style="color: var(--color-text-muted); font-size: 0.875rem;">
               Total: {{ getSelectedTotal() | number:'1.3-3' }} DNT
             </div>
           </div>
           <div style="display: flex; gap: 1rem;">
             <button (click)="clearSelection()"
-                    style="padding: 0.75rem 1.5rem; background: #f3f4f6; color: #374151; border: none; border-radius: 0.5rem; font-weight: 600; cursor: pointer;">
+                    style="padding: 0.75rem 1.5rem; background: var(--color-surface-2); color: var(--color-text-2); border: none; border-radius: 0.5rem; font-weight: 600; cursor: pointer;">
               Annuler
             </button>
             <button (click)="convertToInvoice()" [disabled]="!canConvertToInvoice()"
                     [class.disabled]="!canConvertToInvoice()"
-                    style="padding: 0.75rem 1.5rem; background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); color: white; border: none; border-radius: 0.5rem; font-weight: 600; cursor: pointer;">
+                    style="padding: 0.75rem 1.5rem; background: linear-gradient(135deg, var(--color-success) 0%, var(--color-success) 100%); color: white; border: none; border-radius: 0.5rem; font-weight: 600; cursor: pointer;">
               Convertir en Facture
             </button>
           </div>
@@ -152,7 +152,7 @@ interface DeliveryNoteKPIs {
         <div class="desktop-table" style="overflow-x: auto;">
           <table style="width: 100%; border-collapse: collapse;">
             <thead>
-              <tr style="background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);">
+              <tr style="background: linear-gradient(135deg, var(--color-primary-hover) 0%, var(--color-primary) 100%);">
                 <th style="color: white; font-weight: 500; padding: 0.75rem 1rem; text-align: left;">
                   <input type="checkbox" (change)="toggleSelectAll($event)" 
                          [checked]="areAllSelected()"
@@ -169,7 +169,7 @@ interface DeliveryNoteKPIs {
             </thead>
             <tbody>
               <tr *ngFor="let dn of filteredDeliveryNotes" 
-                  style="border-bottom: 1px solid #e5e7eb; transition: background 0.2s;"
+                  style="border-bottom: 1px solid var(--color-border); transition: background 0.2s;"
                   onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">
                 <td style="padding: 0.75rem 1rem;">
                   <input type="checkbox" [checked]="isSelected(dn.idDeliveryNote)" 
@@ -178,13 +178,13 @@ interface DeliveryNoteKPIs {
                          style="width: 1.25rem; height: 1.25rem; cursor: pointer;">
                 </td>
                 <td style="padding: 0.75rem 1rem;">
-                  <span style="display: inline-block; padding: 0.25rem 0.75rem; background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; border-radius: 0.375rem; font-weight: 600; font-size: 0.875rem;">
+                  <span style="display: inline-block; padding: 0.25rem 0.75rem; background: var(--color-info-bg); color: var(--color-info-text); border: 1px solid var(--color-primary-light); border-radius: 0.375rem; font-weight: 600; font-size: 0.875rem;">
                     {{ dn.deliveryNoteNumber }}
                   </span>
                 </td>
-                <td style="padding: 0.75rem 1rem; color: #6b7280;">{{ dn.dateDelivery | date:'dd/MM/yyyy' }}</td>
-                <td style="padding: 0.75rem 1rem; color: #111827; font-weight: 500;">{{ dn.customer.name }}</td>
-                <td style="padding: 0.75rem 1rem; text-align: right; font-weight: 600; color: #111827;">
+                <td style="padding: 0.75rem 1rem; color: var(--color-text-muted);">{{ dn.dateDelivery | date:'dd/MM/yyyy' }}</td>
+                <td style="padding: 0.75rem 1rem; color: var(--color-text); font-weight: 500;">{{ dn.customer.name }}</td>
+                <td style="padding: 0.75rem 1rem; text-align: right; font-weight: 600; color: var(--color-text);">
                   {{ dn.totalAmount | number:'1.3-3' }} DNT
                 </td>
                 <td style="padding: 0.75rem 1rem; text-align: center;">
@@ -195,36 +195,36 @@ interface DeliveryNoteKPIs {
                 </td>
                 <td style="padding: 0.75rem 1rem; text-align: center;">
                   <div *ngIf="dn.invoiced" style="display: flex; flex-direction: column; align-items: center; gap: 0.25rem;">
-                    <span style="color: #22c55e; font-weight: 600;">✅ Facturé</span>
-                    <span *ngIf="dn.bill?.idBill" style="font-size: 0.75rem; color: #6b7280;">Facture #{{ dn.bill?.idBill }}</span>
+                    <span style="color: var(--color-success); font-weight: 600;">✅ Facturé</span>
+                    <span *ngIf="dn.bill?.idBill" style="font-size: 0.75rem; color: var(--color-text-muted);">Facture #{{ dn.bill?.idBill }}</span>
                   </div>
-                  <span *ngIf="!dn.invoiced" style="color: #f59e0b; font-weight: 600;">⏳ Non facturé</span>
+                  <span *ngIf="!dn.invoiced" style="color: var(--color-warning); font-weight: 600;">⏳ Non facturé</span>
                 </td>
                 <td style="padding: 0.75rem 1rem;">
                   <div style="display: flex; gap: 0.25rem; justify-content: center;">
                     <button (click)="downloadPDF(dn.idDeliveryNote, dn.deliveryNoteNumber)"
                             title="Télécharger PDF"
-                            style="width: 2rem; height: 2rem; border-radius: 0.375rem; border: 1px solid #c7d2fe; background: #e0e7ff; color: #4338ca; cursor: pointer; font-size: 0.875rem; display: flex; align-items: center; justify-content: center;"
+                            style="width: 2rem; height: 2rem; border-radius: 0.375rem; border: 1px solid var(--color-primary-light); background: var(--color-primary-light); color: var(--color-primary-hover); cursor: pointer; font-size: 0.875rem; display: flex; align-items: center; justify-content: center;"
                             onmouseover="this.style.background='#c7d2fe'" onmouseout="this.style.background='#e0e7ff'">
                       📥
                     </button>
                     <button *ngIf="!dn.invoiced && dn.status === 'PENDING'" 
                             (click)="updateStatus(dn.idDeliveryNote, 'DELIVERED')"
                             title="Marquer comme livré"
-                            style="width: 2rem; height: 2rem; border-radius: 0.375rem; border: 1px solid #bfdbfe; background: #dbeafe; color: #1e40af; cursor: pointer; font-size: 0.875rem; display: flex; align-items: center; justify-content: center;"
+                            style="width: 2rem; height: 2rem; border-radius: 0.375rem; border: 1px solid var(--color-primary-light); background: var(--color-info-bg); color: var(--color-info-text); cursor: pointer; font-size: 0.875rem; display: flex; align-items: center; justify-content: center;"
                             onmouseover="this.style.background='#bfdbfe'" onmouseout="this.style.background='#dbeafe'">
                       📦
                     </button>
                     <button *ngIf="!dn.invoiced" 
                             (click)="deleteDeliveryNote(dn.idDeliveryNote)"
                             title="Supprimer"
-                            style="width: 2rem; height: 2rem; border-radius: 0.375rem; border: 1px solid #fecaca; background: #fee2e2; color: #dc2626; cursor: pointer; font-size: 0.875rem; display: flex; align-items: center; justify-content: center;"
+                            style="width: 2rem; height: 2rem; border-radius: 0.375rem; border: 1px solid #fecaca; background: var(--color-danger-bg); color: var(--color-danger); cursor: pointer; font-size: 0.875rem; display: flex; align-items: center; justify-content: center;"
                             onmouseover="this.style.background='#fecaca'" onmouseout="this.style.background='#fee2e2'">
                       🗑️
                     </button>
                     <button *ngIf="dn.invoiced && dn.bill" 
                             title="Voir facture"
-                            style="width: 2rem; height: 2rem; border-radius: 0.375rem; border: 1px solid #a7f3d0; background: #d1fae5; color: #065f46; cursor: pointer; font-size: 0.875rem; display: flex; align-items: center; justify-content: center;"
+                            style="width: 2rem; height: 2rem; border-radius: 0.375rem; border: 1px solid var(--color-success); background: var(--color-success-bg); color: var(--color-success-text); cursor: pointer; font-size: 0.875rem; display: flex; align-items: center; justify-content: center;"
                             onmouseover="this.style.background='#a7f3d0'" onmouseout="this.style.background='#d1fae5'">
                       📄
                     </button>
@@ -232,7 +232,7 @@ interface DeliveryNoteKPIs {
                 </td>
               </tr>
               <tr *ngIf="filteredDeliveryNotes.length === 0">
-                <td colspan="8" style="padding: 3rem; text-align: center; color: #9ca3af;">
+                <td colspan="8" style="padding: 3rem; text-align: center; color: var(--color-text-faint);">
                   <div style="font-size: 3rem; margin-bottom: 1rem;">📭</div>
                   <p>Aucun bon de livraison trouvé</p>
                 </td>
@@ -244,7 +244,7 @@ interface DeliveryNoteKPIs {
         <!-- Mobile Cards -->
         <div class="mobile-cards">
           <div *ngFor="let dn of filteredDeliveryNotes"
-               style="border-bottom: 1px solid #e5e7eb; padding: 1rem; background: white;">
+               style="border-bottom: 1px solid var(--color-border); padding: 1rem; background: white;">
             <!-- Header: Checkbox + BL Number + Date + Status -->
             <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 0.75rem;">
               <div style="display: flex; align-items: center; gap: 0.5rem;">
@@ -252,10 +252,10 @@ interface DeliveryNoteKPIs {
                        (change)="toggleSelect(dn)"
                        [disabled]="dn.invoiced"
                        style="width: 1.125rem; height: 1.125rem; cursor: pointer;">
-                <span style="display: inline-block; padding: 0.25rem 0.75rem; background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; border-radius: 0.375rem; font-weight: 600; font-size: 0.75rem;">
+                <span style="display: inline-block; padding: 0.25rem 0.75rem; background: var(--color-info-bg); color: var(--color-info-text); border: 1px solid var(--color-primary-light); border-radius: 0.375rem; font-weight: 600; font-size: 0.75rem;">
                   {{ dn.deliveryNoteNumber }}
                 </span>
-                <span style="color: #6b7280; font-size: 0.875rem;">{{ dn.dateDelivery | date:'dd/MM/yyyy' }}</span>
+                <span style="color: var(--color-text-muted); font-size: 0.875rem;">{{ dn.dateDelivery | date:'dd/MM/yyyy' }}</span>
               </div>
               <span [style.background]="getStatusColor(dn.status)" 
                     style="padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; color: white;">
@@ -265,51 +265,51 @@ interface DeliveryNoteKPIs {
             
             <!-- Client Info -->
             <div style="margin-bottom: 0.75rem;">
-              <div style="font-weight: 600; color: #1f2937; font-size: 0.875rem;">{{ dn.customer.name }}</div>
+              <div style="font-weight: 600; color: var(--color-text); font-size: 0.875rem;">{{ dn.customer.name }}</div>
             </div>
             
             <!-- Amount + Facturation Grid -->
             <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; margin-bottom: 1rem; font-size: 0.875rem;">
-              <div style="background: #f8fafc; padding: 0.5rem; border-radius: 0.5rem; text-align: center;">
-                <div style="font-size: 0.75rem; color: #6b7280; margin-bottom: 0.125rem;">Montant</div>
-                <div style="font-weight: 600; color: #1f2937; font-size: 0.875rem;">{{ dn.totalAmount | number:'1.3-3' }} DNT</div>
+              <div style="background: var(--color-bg); padding: 0.5rem; border-radius: 0.5rem; text-align: center;">
+                <div style="font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 0.125rem;">Montant</div>
+                <div style="font-weight: 600; color: var(--color-text); font-size: 0.875rem;">{{ dn.totalAmount | number:'1.3-3' }} DNT</div>
               </div>
-              <div style="background: #f8fafc; padding: 0.5rem; border-radius: 0.5rem; text-align: center;">
-                <div style="font-size: 0.75rem; color: #6b7280; margin-bottom: 0.125rem;">Facturation</div>
-                <div *ngIf="dn.invoiced" style="font-weight: 600; color: #22c55e; font-size: 0.875rem;">✅ Facturé</div>
-                <div *ngIf="!dn.invoiced" style="font-weight: 600; color: #f59e0b; font-size: 0.875rem;">⏳ Non facturé</div>
+              <div style="background: var(--color-bg); padding: 0.5rem; border-radius: 0.5rem; text-align: center;">
+                <div style="font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 0.125rem;">Facturation</div>
+                <div *ngIf="dn.invoiced" style="font-weight: 600; color: var(--color-success); font-size: 0.875rem;">✅ Facturé</div>
+                <div *ngIf="!dn.invoiced" style="font-weight: 600; color: var(--color-warning); font-size: 0.875rem;">⏳ Non facturé</div>
               </div>
             </div>
             
             <!-- Actions -->
-            <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 0.25rem; border-top: 1px solid #e5e7eb; padding-top: 0.75rem;">
+            <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 0.25rem; border-top: 1px solid var(--color-border); padding-top: 0.75rem;">
               <button (click)="downloadPDF(dn.idDeliveryNote, dn.deliveryNoteNumber)"
                       title="Télécharger PDF"
-                      style="width: 2rem; height: 2rem; border-radius: 0.375rem; border: 1px solid #c7d2fe; background: #e0e7ff; color: #4338ca; cursor: pointer; font-size: 0.875rem; display: flex; align-items: center; justify-content: center;">
+                      style="width: 2rem; height: 2rem; border-radius: 0.375rem; border: 1px solid var(--color-primary-light); background: var(--color-primary-light); color: var(--color-primary-hover); cursor: pointer; font-size: 0.875rem; display: flex; align-items: center; justify-content: center;">
                 📥
               </button>
               <button *ngIf="!dn.invoiced && dn.status === 'PENDING'" 
                       (click)="updateStatus(dn.idDeliveryNote, 'DELIVERED')"
                       title="Marquer comme livré"
-                      style="width: 2rem; height: 2rem; border-radius: 0.375rem; border: 1px solid #bfdbfe; background: #dbeafe; color: #1e40af; cursor: pointer; font-size: 0.875rem; display: flex; align-items: center; justify-content: center;">
+                      style="width: 2rem; height: 2rem; border-radius: 0.375rem; border: 1px solid var(--color-primary-light); background: var(--color-info-bg); color: var(--color-info-text); cursor: pointer; font-size: 0.875rem; display: flex; align-items: center; justify-content: center;">
                 📦
               </button>
               <button *ngIf="!dn.invoiced" 
                       (click)="deleteDeliveryNote(dn.idDeliveryNote)"
                       title="Supprimer"
-                      style="width: 2rem; height: 2rem; border-radius: 0.375rem; border: 1px solid #fecaca; background: #fee2e2; color: #dc2626; cursor: pointer; font-size: 0.875rem; display: flex; align-items: center; justify-content: center;">
+                      style="width: 2rem; height: 2rem; border-radius: 0.375rem; border: 1px solid #fecaca; background: var(--color-danger-bg); color: var(--color-danger); cursor: pointer; font-size: 0.875rem; display: flex; align-items: center; justify-content: center;">
                 🗑️
               </button>
               <button *ngIf="dn.invoiced && dn.bill" 
                       title="Voir facture"
-                      style="width: 2rem; height: 2rem; border-radius: 0.375rem; border: 1px solid #a7f3d0; background: #d1fae5; color: #065f46; cursor: pointer; font-size: 0.875rem; display: flex; align-items: center; justify-content: center;">
+                      style="width: 2rem; height: 2rem; border-radius: 0.375rem; border: 1px solid var(--color-success); background: var(--color-success-bg); color: var(--color-success-text); cursor: pointer; font-size: 0.875rem; display: flex; align-items: center; justify-content: center;">
                 📄
               </button>
             </div>
           </div>
           
           <!-- Empty State -->
-          <div *ngIf="filteredDeliveryNotes.length === 0" style="text-align: center; padding: 3rem 1rem; color: #9ca3af;">
+          <div *ngIf="filteredDeliveryNotes.length === 0" style="text-align: center; padding: 3rem 1rem; color: var(--color-text-faint);">
             <div style="font-size: 4rem; margin-bottom: 1rem; opacity: 0.5;">📭</div>
             <p style="font-size: 1.1rem; margin: 0;">Aucun bon de livraison trouvé</p>
           </div>

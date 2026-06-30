@@ -172,7 +172,7 @@ import { UserFormComponent } from './user-form.component';
     .page-title {
       font-size: 1.375rem;
       font-weight: 700;
-      color: var(--color-text, #0f172a);
+      color: var(--color-text, var(--color-text));
       margin: 0;
       display: flex;
       align-items: center;
@@ -181,13 +181,13 @@ import { UserFormComponent } from './user-form.component';
 
     .page-subtitle {
       font-size: 0.8125rem;
-      color: var(--color-text-muted, #64748b);
+      color: var(--color-text-muted, var(--color-text-muted));
     }
 
     .btn-create {
       padding: 0.5625rem 1.125rem;
-      background: var(--color-primary, #6366f1);
-      color: #fff;
+      background: var(--color-primary, var(--color-primary));
+      color: var(--color-surface);
       border: none;
       border-radius: var(--radius-sm, 6px);
       font-size: 0.875rem;
@@ -199,7 +199,7 @@ import { UserFormComponent } from './user-form.component';
       box-shadow: 0 1px 4px rgba(99,102,241,0.3);
       transition: background var(--transition, 150ms ease);
     }
-    .btn-create:hover { background: var(--color-primary-hover, #4f46e5); }
+    .btn-create:hover { background: var(--color-primary-hover, var(--color-primary-hover)); }
 
     /* ── Toolbar ── */
     .toolbar { display: flex; align-items: center; gap: 0.75rem; }
@@ -214,7 +214,7 @@ import { UserFormComponent } from './user-form.component';
       position: absolute;
       left: 0.75rem; top: 50%;
       transform: translateY(-50%);
-      color: var(--color-text-muted, #64748b);
+      color: var(--color-text-muted, var(--color-text-muted));
       font-size: 0.875rem;
       pointer-events: none;
     }
@@ -222,31 +222,31 @@ import { UserFormComponent } from './user-form.component';
     .search-input {
       width: 100%;
       padding: 0.5625rem 2.25rem 0.5625rem 2.25rem;
-      border: 1.5px solid var(--color-border, #e2e8f0);
+      border: 1.5px solid var(--color-border, var(--color-border));
       border-radius: var(--radius-sm, 6px);
       font-size: 0.875rem;
-      color: var(--color-text, #0f172a);
-      background: var(--color-surface, #fff);
+      color: var(--color-text, var(--color-text));
+      background: var(--color-surface, var(--color-surface));
       outline: none;
       transition: border-color var(--transition, 150ms ease);
     }
-    .search-input:focus { border-color: var(--color-primary, #6366f1); box-shadow: 0 0 0 3px var(--color-primary-muted, rgba(99,102,241,0.12)); }
+    .search-input:focus { border-color: var(--color-primary, var(--color-primary)); box-shadow: 0 0 0 3px var(--color-primary-muted, rgba(99,102,241,0.12)); }
 
     .search-clear {
       position: absolute;
       right: 0.625rem; top: 50%;
       transform: translateY(-50%);
       background: none; border: none;
-      color: var(--color-text-muted, #64748b);
+      color: var(--color-text-muted, var(--color-text-muted));
       cursor: pointer; font-size: 0.875rem;
       display: flex; align-items: center;
     }
-    .search-clear:hover { color: var(--color-text, #0f172a); }
+    .search-clear:hover { color: var(--color-text, var(--color-text)); }
 
     /* ── Table ── */
     .table-card {
-      background: var(--color-surface, #fff);
-      border: 1px solid var(--color-border, #e2e8f0);
+      background: var(--color-surface, var(--color-surface));
+      border: 1px solid var(--color-border, var(--color-border));
       border-radius: var(--radius-lg, 14px);
       overflow: hidden;
       box-shadow: var(--shadow-sm);
@@ -259,8 +259,8 @@ import { UserFormComponent } from './user-form.component';
     }
 
     .table thead tr {
-      background: var(--color-surface-2, #f1f5f9);
-      border-bottom: 1px solid var(--color-border, #e2e8f0);
+      background: var(--color-surface-2, var(--color-surface-2));
+      border-bottom: 1px solid var(--color-border, var(--color-border));
     }
 
     .table th {
@@ -270,22 +270,22 @@ import { UserFormComponent } from './user-form.component';
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.04em;
-      color: var(--color-text-muted, #64748b);
+      color: var(--color-text-muted, var(--color-text-muted));
       white-space: nowrap;
     }
 
     .table td {
       padding: 0.875rem 1rem;
-      border-bottom: 1px solid var(--color-border, #e2e8f0);
-      color: var(--color-text-2, #334155);
+      border-bottom: 1px solid var(--color-border, var(--color-border));
+      color: var(--color-text-2, var(--color-text-2));
       vertical-align: middle;
     }
 
     .table tbody tr:last-child td { border-bottom: none; }
-    .table tbody tr:hover { background: var(--color-surface-2, #f1f5f9); }
+    .table tbody tr:hover { background: var(--color-surface-2, var(--color-surface-2)); }
 
     /* Colonnes spécifiques */
-    .td-name { font-weight: 600; color: var(--color-text, #0f172a); }
+    .td-name { font-weight: 600; color: var(--color-text, var(--color-text)); }
 
     .user-avatar-cell {
       display: flex; align-items: center; gap: 0.625rem;
@@ -293,8 +293,8 @@ import { UserFormComponent } from './user-form.component';
 
     .user-avatar {
       width: 2rem; height: 2rem;
-      background: var(--color-primary-light, #eef2ff);
-      color: var(--color-primary, #6366f1);
+      background: var(--color-primary-light, var(--color-primary-light));
+      color: var(--color-primary, var(--color-primary));
       border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
       font-size: 0.6875rem;
@@ -305,13 +305,13 @@ import { UserFormComponent } from './user-form.component';
     .user-name { font-weight: 600; }
 
     .td-email {
-      color: var(--color-text-muted, #64748b);
+      color: var(--color-text-muted, var(--color-text-muted));
       font-size: 0.8125rem;
     }
 
     .td-date {
       font-size: 0.8125rem;
-      color: var(--color-text-muted, #64748b);
+      color: var(--color-text-muted, var(--color-text-muted));
       white-space: nowrap;
     }
 
@@ -331,40 +331,40 @@ import { UserFormComponent } from './user-form.component';
     }
 
     .status-badge--active {
-      background: var(--color-success-bg, #d1fae5);
-      color: var(--color-success-text, #065f46);
+      background: var(--color-success-bg, var(--color-success-bg));
+      color: var(--color-success-text, var(--color-success-text));
     }
 
     .status-badge--inactive {
-      background: var(--color-danger-bg, #fee2e2);
-      color: var(--color-danger-text, #991b1b);
+      background: var(--color-danger-bg, var(--color-danger-bg));
+      color: var(--color-danger-text, var(--color-danger-text));
     }
 
     /* Boutons d'action */
     .action-btn {
       width: 1.875rem; height: 1.875rem;
       display: inline-flex; align-items: center; justify-content: center;
-      border: 1px solid var(--color-border, #e2e8f0);
+      border: 1px solid var(--color-border, var(--color-border));
       border-radius: var(--radius-sm, 6px);
-      background: var(--color-surface, #fff);
+      background: var(--color-surface, var(--color-surface));
       cursor: pointer;
       font-size: 0.8125rem;
-      color: var(--color-text-muted, #64748b);
+      color: var(--color-text-muted, var(--color-text-muted));
       transition: background var(--transition, 150ms ease), color var(--transition, 150ms ease);
       margin-left: 0.25rem;
     }
 
-    .action-btn--edit:hover { background: var(--color-primary-light, #eef2ff); color: var(--color-primary, #6366f1); border-color: var(--color-primary, #6366f1); }
-    .action-btn--deactivate:hover { background: var(--color-warning-bg, #fef3c7); color: var(--color-warning-text, #92400e); border-color: var(--color-warning, #f59e0b); }
-    .action-btn--activate:hover { background: var(--color-success-bg, #d1fae5); color: var(--color-success-text, #065f46); border-color: var(--color-success, #10b981); }
-    .action-btn--danger:hover { background: var(--color-danger-bg, #fee2e2); color: var(--color-danger-text, #991b1b); border-color: var(--color-danger, #ef4444); }
+    .action-btn--edit:hover { background: var(--color-primary-light, var(--color-primary-light)); color: var(--color-primary, var(--color-primary)); border-color: var(--color-primary, var(--color-primary)); }
+    .action-btn--deactivate:hover { background: var(--color-warning-bg, var(--color-warning-bg)); color: var(--color-warning-text, var(--color-warning-text)); border-color: var(--color-warning, var(--color-warning)); }
+    .action-btn--activate:hover { background: var(--color-success-bg, var(--color-success-bg)); color: var(--color-success-text, var(--color-success-text)); border-color: var(--color-success, var(--color-success)); }
+    .action-btn--danger:hover { background: var(--color-danger-bg, var(--color-danger-bg)); color: var(--color-danger-text, var(--color-danger-text)); border-color: var(--color-danger, var(--color-danger)); }
 
     /* État vide */
     .empty-cell { text-align: center; padding: 3rem 1rem !important; }
 
     .empty-state {
       display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
-      color: var(--color-text-muted, #64748b);
+      color: var(--color-text-muted, var(--color-text-muted));
     }
     .empty-state i { font-size: 2rem; }
     .empty-state p { font-size: 0.9375rem; font-weight: 600; margin: 0; }

@@ -59,11 +59,11 @@ interface DeliveryLineItem {
         <div style="padding: 1.5rem;">
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
             <div>
-              <label style="display: block; font-weight: 600; color: #374151; margin-bottom: 0.5rem;">
-                Client <span style="color: #ef4444;">*</span>
+              <label style="display: block; font-weight: 600; color: var(--color-text-2); margin-bottom: 0.5rem;">
+                Client <span style="color: var(--color-danger);">*</span>
               </label>
               <select [(ngModel)]="selectedCustomerId" (change)="onCustomerChange()" 
-                      style="width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 0.5rem; font-size: 1rem;">
+                      style="width: 100%; padding: 0.75rem; border: 1px solid var(--color-border-strong); border-radius: 0.5rem; font-size: 1rem;">
                 <option value="">Sélectionner un client...</option>
                 <option *ngFor="let customer of customers" [value]="customer.customerId">
                   {{ customer.name }}
@@ -71,26 +71,26 @@ interface DeliveryLineItem {
               </select>
             </div>
             <div>
-              <label style="display: block; font-weight: 600; color: #374151; margin-bottom: 0.5rem;">
-                Date de Livraison <span style="color: #ef4444;">*</span>
+              <label style="display: block; font-weight: 600; color: var(--color-text-2); margin-bottom: 0.5rem;">
+                Date de Livraison <span style="color: var(--color-danger);">*</span>
               </label>
               <input type="date" [(ngModel)]="deliveryDate" 
-                     style="width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 0.5rem; font-size: 1rem;">
+                     style="width: 100%; padding: 0.75rem; border: 1px solid var(--color-border-strong); border-radius: 0.5rem; font-size: 1rem;">
             </div>
             <div>
-              <label style="display: block; font-weight: 600; color: #374151; margin-bottom: 0.5rem;">
+              <label style="display: block; font-weight: 600; color: var(--color-text-2); margin-bottom: 0.5rem;">
                 Adresse de Livraison
               </label>
               <input type="text" [(ngModel)]="deliveryAddress" placeholder="Adresse..."
-                     style="width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 0.5rem; font-size: 1rem;">
+                     style="width: 100%; padding: 0.75rem; border: 1px solid var(--color-border-strong); border-radius: 0.5rem; font-size: 1rem;">
             </div>
           </div>
           <div style="margin-top: 1rem;">
-            <label style="display: block; font-weight: 600; color: #374151; margin-bottom: 0.5rem;">
+            <label style="display: block; font-weight: 600; color: var(--color-text-2); margin-bottom: 0.5rem;">
               Notes
             </label>
             <textarea [(ngModel)]="notes" rows="3" placeholder="Notes supplémentaires..."
-                      style="width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 0.5rem; font-size: 1rem; resize: vertical;"></textarea>
+                      style="width: 100%; padding: 0.75rem; border: 1px solid var(--color-border-strong); border-radius: 0.5rem; font-size: 1rem; resize: vertical;"></textarea>
           </div>
           <div style="margin-top: 1rem;">
             <label class="tva-toggle-label">
@@ -140,45 +140,45 @@ interface DeliveryLineItem {
         <div style="padding: 1.5rem;">
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
             <div>
-              <div style="display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid #e5e7eb;">
-                <span style="color: #6b7280;">Sous-total:</span>
-                <span style="font-weight: 600; color: #111827;">{{ getSubtotal() | number:'1.3-3' }} DNT</span>
+              <div style="display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid var(--color-border);">
+                <span style="color: var(--color-text-muted);">Sous-total:</span>
+                <span style="font-weight: 600; color: var(--color-text);">{{ getSubtotal() | number:'1.3-3' }} DNT</span>
               </div>
-              <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid #e5e7eb;">
-                <span style="color: #6b7280;">Remise globale (%):</span>
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid var(--color-border);">
+                <span style="color: var(--color-text-muted);">Remise globale (%):</span>
                 <input type="number" [(ngModel)]="globalDiscount" (ngModelChange)="calculateTotal()" min="0" max="100" step="0.1"
-                       style="width: 100px; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem;">
+                       style="width: 100px; padding: 0.5rem; border: 1px solid var(--color-border-strong); border-radius: 0.375rem;">
               </div>
-              <div *ngIf="applyTva" style="display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid #e5e7eb;">
-                <span style="color: #6b7280;">Total HT:</span>
-                <span style="font-weight: 600; color: #111827;">{{ getTotalHT() | number:'1.3-3' }} DNT</span>
+              <div *ngIf="applyTva" style="display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid var(--color-border);">
+                <span style="color: var(--color-text-muted);">Total HT:</span>
+                <span style="font-weight: 600; color: var(--color-text);">{{ getTotalHT() | number:'1.3-3' }} DNT</span>
               </div>
-              <div *ngIf="applyTva" style="display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid #e5e7eb;">
-                <span style="color: #6b7280;">TVA (19%):</span>
-                <span style="font-weight: 600; color: #3b82f6;">{{ getTVA() | number:'1.3-3' }} DNT</span>
+              <div *ngIf="applyTva" style="display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid var(--color-border);">
+                <span style="color: var(--color-text-muted);">TVA (19%):</span>
+                <span style="font-weight: 600; color: var(--color-info);">{{ getTVA() | number:'1.3-3' }} DNT</span>
               </div>
-              <div style="display: flex; justify-content: space-between; padding: 1rem 0; font-size: 1.25rem; font-weight: 700; color: #111827;">
+              <div style="display: flex; justify-content: space-between; padding: 1rem 0; font-size: 1.25rem; font-weight: 700; color: var(--color-text);">
                 <span>{{ applyTva ? 'TOTAL TTC:' : 'TOTAL:' }}</span>
-                <span style="color: #22c55e;">{{ getTotalAmount() | number:'1.3-3' }} DNT</span>
+                <span style="color: var(--color-success);">{{ getTotalAmount() | number:'1.3-3' }} DNT</span>
               </div>
             </div>
             <div style="display: flex; flex-direction: column; gap: 1rem; justify-content: center;">
               <button (click)="createDeliveryNote()" [disabled]="!canCreate()" 
                       [class.disabled]="!canCreate()"
-                      style="padding: 1rem; background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); color: white; border: none; border-radius: 0.5rem; font-weight: 600; cursor: pointer; font-size: 1rem; transition: all 0.3s;">
+                      style="padding: 1rem; background: linear-gradient(135deg, var(--color-success) 0%, var(--color-success) 100%); color: white; border: none; border-radius: 0.5rem; font-weight: 600; cursor: pointer; font-size: 1rem; transition: all 0.3s;">
                 ✅ Créer le Bon de Livraison
               </button>
               <a routerLink="/invoices/list" 
-                 style="padding: 1rem; background: #f3f4f6; color: #374151; border: none; border-radius: 0.5rem; font-weight: 600; text-align: center; text-decoration: none; transition: all 0.3s;">
+                 style="padding: 1rem; background: var(--color-surface-2); color: var(--color-text-2); border: none; border-radius: 0.5rem; font-weight: 600; text-align: center; text-decoration: none; transition: all 0.3s;">
                 ← Annuler
               </a>
             </div>
           </div>
           
-          <div *ngIf="errorMessage" style="margin-top: 1rem; padding: 1rem; background: #fee2e2; color: #dc2626; border-radius: 0.5rem; border-left: 4px solid #dc2626;">
+          <div *ngIf="errorMessage" style="margin-top: 1rem; padding: 1rem; background: var(--color-danger-bg); color: var(--color-danger); border-radius: 0.5rem; border-left: 4px solid var(--color-danger);">
             {{ errorMessage }}
           </div>
-          <div *ngIf="successMessage" style="margin-top: 1rem; padding: 1rem; background: #d1fae5; color: #065f46; border-radius: 0.5rem; border-left: 4px solid #10b981;">
+          <div *ngIf="successMessage" style="margin-top: 1rem; padding: 1rem; background: var(--color-success-bg); color: var(--color-success-text); border-radius: 0.5rem; border-left: 4px solid var(--color-success);">
             {{ successMessage }}
           </div>
         </div>
@@ -192,8 +192,8 @@ interface DeliveryLineItem {
     }
     
     .stock-error {
-      border-color: #dc2626 !important;
-      background: #fee2e2 !important;
+      border-color: var(--color-danger) !important;
+      background: var(--color-danger-bg) !important;
     }
 
     .tva-toggle-label {

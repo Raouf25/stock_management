@@ -82,6 +82,22 @@
 
 /* ── Dark Theme ─────────────────────────────────────────── */
 [data-theme="dark"] {
+  /* Override Bootstrap 5 CSS variables so its components respect dark mode */
+  --bs-body-bg: #0f172a;
+  --bs-body-color: #f1f5f9;
+  --bs-body-color-rgb: 241, 245, 249;
+  --bs-secondary-bg: #1e293b;
+  --bs-tertiary-bg: #334155;
+  --bs-border-color: #334155;
+  --bs-border-color-translucent: rgba(255, 255, 255, 0.15);
+  --bs-emphasis-color: #f1f5f9;
+  --bs-link-color: #818cf8;
+  --bs-link-hover-color: #a5b4fc;
+  --bs-table-bg: transparent;
+  --bs-table-color: #f1f5f9;
+  --bs-table-border-color: #334155;
+  --bs-table-striped-bg: rgba(255,255,255,.05);
+  --bs-table-hover-bg: rgba(99,102,241,.12);
   /* Neutrals (Slate scale — inverted) */
   --color-bg:            #0f172a;
   --color-surface:       #1e293b;
@@ -113,6 +129,36 @@
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.30), 0 2px 4px -2px rgb(0 0 0 / 0.25);
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.35), 0 4px 6px -4px rgb(0 0 0 / 0.25);
   --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.40), 0 8px 10px -6px rgb(0 0 0 / 0.30);
+}
+
+/* ── Dark mode overrides for inline-styled components ──────
+   Some components use inline style="" attributes which cannot
+   inherit CSS variables. These rules force-override them in
+   dark mode using high-specificity selectors.
+   ─────────────────────────────────────────────────────────── */
+[data-theme="dark"] input,
+[data-theme="dark"] textarea,
+[data-theme="dark"] select {
+  background-color: var(--color-surface) !important;
+  color: var(--color-text) !important;
+  border-color: var(--color-border) !important;
+}
+
+[data-theme="dark"] .form-control,
+[data-theme="dark"] .form-select,
+[data-theme="dark"] .filter-ctrl {
+  background-color: var(--color-surface) !important;
+  color: var(--color-text) !important;
+  border-color: var(--color-border) !important;
+}
+
+/* Transition toutes les propriétés de couleur pour un switch fluide */
+body, .card, .kpi-card, .surface, .table-container,
+input, textarea, select, .form-control, .form-select,
+.btn-secondary, .sidebar-footer, .filter-bar {
+  transition: background-color var(--transition-md),
+              border-color var(--transition-md),
+              color var(--transition-md);
 }
 
 /* ── Reset & Base ───────────────────────────────────────── */

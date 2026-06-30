@@ -17,7 +17,7 @@ import { ApiService } from '../../services/api.service';
           <h1 class="invoice-page-title">Créer un Nouveau Client</h1>
         </div>
         <button (click)="goBack()" 
-                style="padding: 0.75rem 1.5rem; background: #6b7280; color: white; border: none; border-radius: 0.5rem; cursor: pointer; font-weight: 600;">
+                style="padding: 0.75rem 1.5rem; background: var(--color-text-muted); color: white; border: none; border-radius: 0.5rem; cursor: pointer; font-weight: 600;">
           ← Retour
         </button>
       </div>
@@ -33,17 +33,17 @@ import { ApiService } from '../../services/api.service';
           <form [formGroup]="customerForm" (ngSubmit)="onSubmit()">
             <!-- Section: Informations de Base -->
             <div style="margin-bottom: 2rem;">
-              <h3 style="color: #374151; font-size: 1.125rem; font-weight: 600; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid #e5e7eb;">
+              <h3 style="color: var(--color-text-2); font-size: 1.125rem; font-weight: 600; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--color-border);">
                 Informations de Base
               </h3>
               <div class="form-grid">
                 <div class="form-field">
                   <label class="field-label">
-                    Nom de l'Entreprise <span style="color: #ef4444;">*</span>
+                    Nom de l'Entreprise <span style="color: var(--color-danger);">*</span>
                   </label>
                   <input type="text" formControlName="name" class="form-input" placeholder="Ex: Société ABC">
                   <div *ngIf="customerForm.get('name')?.invalid && customerForm.get('name')?.touched" 
-                       style="color: #ef4444; font-size: 0.75rem; margin-top: 0.25rem;">
+                       style="color: var(--color-danger); font-size: 0.75rem; margin-top: 0.25rem;">
                     Le nom est requis
                   </div>
                 </div>
@@ -57,22 +57,22 @@ import { ApiService } from '../../services/api.service';
 
                 <div class="form-field">
                   <label class="field-label">
-                    Email <span style="color: #ef4444;">*</span>
+                    Email <span style="color: var(--color-danger);">*</span>
                   </label>
                   <input type="email" formControlName="email" class="form-input" placeholder="contact@exemple.tn">
                   <div *ngIf="customerForm.get('email')?.invalid && customerForm.get('email')?.touched" 
-                       style="color: #ef4444; font-size: 0.75rem; margin-top: 0.25rem;">
+                       style="color: var(--color-danger); font-size: 0.75rem; margin-top: 0.25rem;">
                     Email invalide
                   </div>
                 </div>
 
                 <div class="form-field">
                   <label class="field-label">
-                    Téléphone <span style="color: #ef4444;">*</span>
+                    Téléphone <span style="color: var(--color-danger);">*</span>
                   </label>
                   <input type="tel" formControlName="phone" class="form-input" placeholder="+216 XX XXX XXX">
                   <div *ngIf="customerForm.get('phone')?.invalid && customerForm.get('phone')?.touched" 
-                       style="color: #ef4444; font-size: 0.75rem; margin-top: 0.25rem;">
+                       style="color: var(--color-danger); font-size: 0.75rem; margin-top: 0.25rem;">
                     Le téléphone est requis
                   </div>
                 </div>
@@ -84,7 +84,7 @@ import { ApiService } from '../../services/api.service';
 
                 <div class="form-field">
                   <label class="field-label">
-                    Statut <span style="color: #ef4444;">*</span>
+                    Statut <span style="color: var(--color-danger);">*</span>
                   </label>
                   <select formControlName="status" class="form-input">
                     <option value="ACTIVE">Actif</option>
@@ -98,7 +98,7 @@ import { ApiService } from '../../services/api.service';
 
             <!-- Section: Adresse -->
             <div style="margin-bottom: 2rem;">
-              <h3 style="color: #374151; font-size: 1.125rem; font-weight: 600; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid #e5e7eb;">
+              <h3 style="color: var(--color-text-2); font-size: 1.125rem; font-weight: 600; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--color-border);">
                 Adresse
               </h3>
               <div class="form-grid">
@@ -117,7 +117,7 @@ import { ApiService } from '../../services/api.service';
 
             <!-- Section: Informations Fiscales -->
             <div style="margin-bottom: 2rem;">
-              <h3 style="color: #374151; font-size: 1.125rem; font-weight: 600; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid #e5e7eb;">
+              <h3 style="color: var(--color-text-2); font-size: 1.125rem; font-weight: 600; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--color-border);">
                 Informations Fiscales
               </h3>
               <div class="form-grid">
@@ -134,7 +134,7 @@ import { ApiService } from '../../services/api.service';
                          placeholder="Ex: 01234567" maxlength="8"
                          pattern="[0-9]{8}">
                   <div *ngIf="customerForm.get('cin')?.invalid && customerForm.get('cin')?.touched" 
-                       style="color: #ef4444; font-size: 0.75rem; margin-top: 0.25rem;">
+                       style="color: var(--color-danger); font-size: 0.75rem; margin-top: 0.25rem;">
                     Le CIN doit contenir 8 chiffres
                   </div>
                 </div>
@@ -151,23 +151,23 @@ import { ApiService } from '../../services/api.service';
 
             <!-- Messages d'erreur et succès -->
             <div *ngIf="errorMessage" 
-                 style="padding: 1rem; background: #fee2e2; border: 1px solid #ef4444; border-radius: 0.5rem; color: #991b1b; margin-bottom: 1rem;">
+                 style="padding: 1rem; background: var(--color-danger-bg); border: 1px solid var(--color-danger); border-radius: 0.5rem; color: var(--color-danger-text); margin-bottom: 1rem;">
               {{ errorMessage }}
             </div>
 
             <div *ngIf="successMessage" 
-                 style="padding: 1rem; background: #d1fae5; border: 1px solid #10b981; border-radius: 0.5rem; color: #065f46; margin-bottom: 1rem;">
+                 style="padding: 1rem; background: var(--color-success-bg); border: 1px solid var(--color-success); border-radius: 0.5rem; color: var(--color-success-text); margin-bottom: 1rem;">
               {{ successMessage }}
             </div>
 
             <!-- Boutons d'action -->
             <div style="display: flex; gap: 1rem; justify-content: flex-end;">
               <button type="button" (click)="resetForm()" 
-                      style="padding: 0.75rem 1.5rem; background: #f3f4f6; color: #374151; border: 1px solid #d1d5db; border-radius: 0.5rem; cursor: pointer; font-weight: 600;">
+                      style="padding: 0.75rem 1.5rem; background: var(--color-surface-2); color: var(--color-text-2); border: 1px solid var(--color-border-strong); border-radius: 0.5rem; cursor: pointer; font-weight: 600;">
                 Réinitialiser
               </button>
               <button type="submit" [disabled]="customerForm.invalid || isSubmitting"
-                      style="padding: 0.75rem 2rem; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; border: none; border-radius: 0.5rem; cursor: pointer; font-weight: 600;"
+                      style="padding: 0.75rem 2rem; background: linear-gradient(135deg, var(--color-info) 0%, var(--color-info) 100%); color: white; border: none; border-radius: 0.5rem; cursor: pointer; font-weight: 600;"
                       [style.opacity]="customerForm.invalid || isSubmitting ? '0.5' : '1'"
                       [style.cursor]="customerForm.invalid || isSubmitting ? 'not-allowed' : 'pointer'">
                 {{ isSubmitting ? 'Création...' : 'Créer le Client' }}
@@ -181,7 +181,7 @@ import { ApiService } from '../../services/api.service';
   styles: [`
     .invoice-page-container {
       padding: 2rem;
-      background: #f3f4f6;
+      background: var(--color-surface-2);
       min-height: 100vh;
     }
 
@@ -195,7 +195,7 @@ import { ApiService } from '../../services/api.service';
     .invoice-page-title {
       font-size: 1.875rem;
       font-weight: 700;
-      color: #111827;
+      color: var(--color-text);
       margin: 0;
     }
 
@@ -217,13 +217,13 @@ import { ApiService } from '../../services/api.service';
     .field-label {
       font-size: 0.875rem;
       font-weight: 600;
-      color: #374151;
+      color: var(--color-text-2);
       margin-bottom: 0.5rem;
     }
 
     .form-input {
       padding: 0.75rem;
-      border: 1px solid #d1d5db;
+      border: 1px solid var(--color-border-strong);
       border-radius: 0.5rem;
       font-size: 0.875rem;
       transition: all 0.2s;
@@ -231,12 +231,12 @@ import { ApiService } from '../../services/api.service';
 
     .form-input:focus {
       outline: none;
-      border-color: #3b82f6;
+      border-color: var(--color-info);
       box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
     }
 
     .form-input:disabled {
-      background: #f3f4f6;
+      background: var(--color-surface-2);
       cursor: not-allowed;
     }
 

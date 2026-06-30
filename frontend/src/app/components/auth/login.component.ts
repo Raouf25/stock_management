@@ -264,7 +264,7 @@ type TabType = 'login' | 'register';
     ══════════════════════════════════════════ */
     .brand-panel {
       flex: 1;
-      background: linear-gradient(150deg, #4338ca 0%, #6d28d9 50%, #7c3aed 100%);
+      background: linear-gradient(150deg, var(--color-primary-hover) 0%, #6d28d9 50%, #7c3aed 100%);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -392,7 +392,7 @@ type TabType = 'login' | 'register';
     .form-logo-sm {
       width: 48px;
       height: 48px;
-      background: linear-gradient(135deg, #4338ca, #7c3aed);
+      background: linear-gradient(135deg, var(--color-primary-hover), #7c3aed);
       border-radius: 0.875rem;
       display: flex;
       align-items: center;
@@ -405,13 +405,13 @@ type TabType = 'login' | 'register';
     .form-header h2 {
       font-size: 1.375rem;
       font-weight: 700;
-      color: #111827;
+      color: var(--color-text);
       margin: 0 0 0.25rem;
     }
 
     .form-header p {
       font-size: 0.875rem;
-      color: #6b7280;
+      color: var(--color-text-muted);
       margin: 0;
     }
 
@@ -420,7 +420,7 @@ type TabType = 'login' | 'register';
       display: flex;
       gap: 0.5rem;
       margin-bottom: 1.5rem;
-      background: #f3f4f6;
+      background: var(--color-surface-2);
       padding: 0.25rem;
       border-radius: 0.75rem;
     }
@@ -433,7 +433,7 @@ type TabType = 'login' | 'register';
       border-radius: 0.5625rem;
       font-size: 0.875rem;
       font-weight: 500;
-      color: #6b7280;
+      color: var(--color-text-muted);
       cursor: pointer;
       transition: all 0.2s ease;
       display: flex;
@@ -441,10 +441,10 @@ type TabType = 'login' | 'register';
       justify-content: center;
       gap: 0.375rem;
     }
-    .tabs button:hover:not(.active) { color: #374151; }
+    .tabs button:hover:not(.active) { color: var(--color-text-2); }
     .tabs button.active {
       background: white;
-      color: #4338ca;
+      color: var(--color-primary-hover);
       font-weight: 600;
       box-shadow: 0 1px 4px rgba(0,0,0,0.1);
     }
@@ -461,8 +461,8 @@ type TabType = 'login' | 'register';
       line-height: 1.5;
     }
     .alert i { flex-shrink: 0; font-size: 1rem; margin-top: 0.0625rem; }
-    .alert-error   { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
-    .alert-success { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+    .alert-error   { background: var(--color-danger-bg); color: var(--color-danger-text); border: 1px solid #fecaca; }
+    .alert-success { background: #f0fdf4; color: var(--color-success); border: 1px solid #bbf7d0; }
 
     /* Form */
     .auth-form { display: flex; flex-direction: column; gap: 1rem; }
@@ -472,7 +472,7 @@ type TabType = 'login' | 'register';
     .form-field label {
       font-size: 0.8125rem;
       font-weight: 600;
-      color: #374151;
+      color: var(--color-text-2);
       display: flex;
       align-items: center;
       gap: 0.375rem;
@@ -482,15 +482,15 @@ type TabType = 'login' | 'register';
     .form-field input {
       width: 100%;
       padding: 0.6875rem 0.875rem;
-      border: 1.5px solid #e5e7eb;
+      border: 1.5px solid var(--color-border);
       border-radius: 0.625rem;
       font-size: 0.9375rem;
-      color: #111827;
+      color: var(--color-text);
       background: white;
       transition: all 0.18s ease;
       box-sizing: border-box;
     }
-    .form-field input::placeholder { color: #9ca3af; }
+    .form-field input::placeholder { color: var(--color-text-faint); }
     .form-field input:focus {
       outline: none;
       border-color: #6d28d9;
@@ -507,7 +507,7 @@ type TabType = 'login' | 'register';
       transform: translateY(-50%);
       background: none;
       border: none;
-      color: #9ca3af;
+      color: var(--color-text-faint);
       cursor: pointer;
       padding: 0.25rem;
       font-size: 1rem;
@@ -525,7 +525,7 @@ type TabType = 'login' | 'register';
     .strength-bar {
       flex: 1;
       height: 4px;
-      background: #e5e7eb;
+      background: var(--color-border);
       border-radius: 2px;
       overflow: hidden;
     }
@@ -534,13 +534,13 @@ type TabType = 'login' | 'register';
       border-radius: 2px;
       transition: width 0.3s ease, background 0.3s ease;
     }
-    .strength-fill.weak   { background: #ef4444; }
-    .strength-fill.medium { background: #f59e0b; }
-    .strength-fill.strong { background: #22c55e; }
+    .strength-fill.weak   { background: var(--color-danger); }
+    .strength-fill.medium { background: var(--color-warning); }
+    .strength-fill.strong { background: var(--color-success); }
     .strength-label { font-size: 0.75rem; font-weight: 600; white-space: nowrap; }
-    .strength-label.weak   { color: #ef4444; }
-    .strength-label.medium { color: #f59e0b; }
-    .strength-label.strong { color: #22c55e; }
+    .strength-label.weak   { color: var(--color-danger); }
+    .strength-label.medium { color: var(--color-warning); }
+    .strength-label.strong { color: var(--color-success); }
 
     /* Match indicator */
     .match-indicator {
@@ -550,8 +550,8 @@ type TabType = 'login' | 'register';
       gap: 0.3rem;
       margin-top: 0.25rem;
     }
-    .text-success { color: #16a34a; }
-    .text-danger  { color: #dc2626; }
+    .text-success { color: var(--color-success); }
+    .text-danger  { color: var(--color-danger); }
 
     /* Forgot link */
     .forgot-row { text-align: right; margin-top: -0.25rem; }
@@ -562,13 +562,13 @@ type TabType = 'login' | 'register';
       font-weight: 500;
       transition: color 0.15s ease;
     }
-    .forgot-link:hover { color: #4338ca; text-decoration: underline; }
+    .forgot-link:hover { color: var(--color-primary-hover); text-decoration: underline; }
 
     /* Submit button */
     .btn-submit {
       width: 100%;
       padding: 0.8125rem 1rem;
-      background: linear-gradient(135deg, #4338ca, #7c3aed);
+      background: linear-gradient(135deg, var(--color-primary-hover), #7c3aed);
       color: white;
       border: none;
       border-radius: 0.75rem;
@@ -596,7 +596,7 @@ type TabType = 'login' | 'register';
       margin-top: 1.25rem;
       margin-bottom: 0;
       font-size: 0.875rem;
-      color: #6b7280;
+      color: var(--color-text-muted);
     }
     .switch-link {
       color: #6d28d9;
@@ -616,7 +616,7 @@ type TabType = 'login' | 'register';
     ══════════════════════════════════════════ */
     @media (max-width: 900px) {
       .brand-panel { display: none; }
-      .form-panel  { width: 100%; background: linear-gradient(150deg, #4338ca 0%, #7c3aed 100%); }
+      .form-panel  { width: 100%; background: linear-gradient(150deg, var(--color-primary-hover) 0%, #7c3aed 100%); }
       .form-card   { box-shadow: 0 8px 40px rgba(0,0,0,0.2); }
     }
     @media (max-width: 480px) {

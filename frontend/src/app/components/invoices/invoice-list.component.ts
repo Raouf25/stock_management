@@ -345,7 +345,7 @@ interface DeliveryNoteKPIs {
           </div>
         </div>
         <div class="action-group" (click)="$event.stopPropagation()"
-             style="justify-content:flex-end;border-top:1px solid #f1f5f9;padding-top:.75rem;">
+             style="justify-content:flex-end;border-top:1px solid var(--color-surface-2);padding-top:.75rem;">
           <button (click)="downloadBLPDF(dn.idDeliveryNote,dn.deliveryNoteNumber)"
                   class="act-btn act-dl" title="PDF">📥</button>
           <button *ngIf="!dn.invoiced && dn.status==='PENDING'"
@@ -432,7 +432,7 @@ interface DeliveryNoteKPIs {
     :host { display: block; }
 
     .page {
-      background: #f0f2f8;
+      background: var(--color-bg);
       min-height: 100vh;
       padding: 1.75rem 2rem;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -449,7 +449,7 @@ interface DeliveryNoteKPIs {
     .page-title {
       font-size: 1.5rem;
       font-weight: 700;
-      color: #0f172a;
+      color: var(--color-text);
       margin: 0;
     }
     .btn-create {
@@ -457,8 +457,8 @@ interface DeliveryNoteKPIs {
       align-items: center;
       gap: .4rem;
       padding: .6rem 1.25rem;
-      background: linear-gradient(135deg, #4f46e5, #6366f1);
-      color: #fff;
+      background: linear-gradient(135deg, var(--color-primary-hover), var(--color-primary));
+      color: var(--color-surface);
       border-radius: 10px;
       text-decoration: none;
       font-size: .875rem;
@@ -471,9 +471,9 @@ interface DeliveryNoteKPIs {
     /* ═══════════════ TOGGLE TAB ═══════════════ */
     .tab-bar {
       display: flex;
-      background: #fff;
+      background: var(--color-surface);
       border-radius: 12px;
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--color-border);
       padding: .35rem;
       gap: .35rem;
       width: fit-content;
@@ -490,13 +490,13 @@ interface DeliveryNoteKPIs {
       border-radius: 8px;
       font-size: .875rem;
       font-weight: 600;
-      color: #64748b;
+      color: var(--color-text-muted);
       cursor: pointer;
       transition: all .18s;
       white-space: nowrap;
     }
-    .tab:hover { background: #f8fafc; color: #374151; }
-    .tab-on { background: #4f46e5 !important; color: #fff !important; }
+    .tab:hover { background: var(--color-bg); color: var(--color-text-2); }
+    .tab-on { background: var(--color-primary-hover) !important; color: var(--color-surface) !important; }
     .tab-pill {
       background: rgba(255,255,255,.2);
       padding: .1rem .45rem;
@@ -504,7 +504,7 @@ interface DeliveryNoteKPIs {
       font-size: .72rem;
       font-weight: 700;
     }
-    .tab:not(.tab-on) .tab-pill { background: #f1f5f9; color: #475569; }
+    .tab:not(.tab-on) .tab-pill { background: var(--color-surface-2); color: var(--color-text-muted); }
 
     /* ═══════════════ KPI ROW ═══════════════ */
     .kpi-row {
@@ -514,9 +514,9 @@ interface DeliveryNoteKPIs {
       margin-bottom: 1.5rem;
     }
     .kpi-card {
-      background: #fff;
+      background: var(--color-surface);
       border-radius: 12px;
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--color-border);
       padding: 1rem 1.25rem;
       display: flex;
       flex-direction: column;
@@ -528,22 +528,22 @@ interface DeliveryNoteKPIs {
     .kpi-val {
       font-size: 1.25rem;
       font-weight: 700;
-      color: #0f172a;
+      color: var(--color-text);
       line-height: 1.2;
     }
     .kpi-lbl {
       font-size: .7rem;
       font-weight: 600;
-      color: #64748b;
+      color: var(--color-text-muted);
       text-transform: uppercase;
       letter-spacing: .4px;
     }
 
     /* ═══════════════ MAIN CARD ═══════════════ */
     .main-card {
-      background: #fff;
+      background: var(--color-surface);
       border-radius: 12px;
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--color-border);
       box-shadow: 0 1px 4px rgba(0,0,0,.04);
       overflow: hidden;
     }
@@ -554,8 +554,8 @@ interface DeliveryNoteKPIs {
       align-items: flex-end;
       gap: .875rem;
       padding: 1rem 1.25rem;
-      background: #f8fafc;
-      border-bottom: 1px solid #f1f5f9;
+      background: var(--color-bg);
+      border-bottom: 1px solid var(--color-surface-2);
       flex-wrap: wrap;
     }
     .filter-group {
@@ -569,31 +569,31 @@ interface DeliveryNoteKPIs {
     .filter-lbl {
       font-size: .7rem;
       font-weight: 700;
-      color: #64748b;
+      color: var(--color-text-muted);
       text-transform: uppercase;
       letter-spacing: .5px;
     }
     .filter-ctrl {
       height: 38px;
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--color-border);
       border-radius: 8px;
       padding: 0 .75rem;
       font-size: .85rem;
-      background: #fff;
-      color: #0f172a;
+      background: var(--color-surface);
+      color: var(--color-text);
       outline: none;
       transition: border-color .18s;
       width: 100%;
       box-sizing: border-box;
     }
-    .filter-ctrl:focus { border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79,70,229,.08); }
+    .filter-ctrl:focus { border-color: var(--color-primary-hover); box-shadow: 0 0 0 3px rgba(79,70,229,.08); }
     .btn-reset {
       height: 38px;
       padding: 0 .875rem;
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--color-border);
       border-radius: 8px;
-      background: #fff;
-      color: #64748b;
+      background: var(--color-surface);
+      color: var(--color-text-muted);
       font-size: .8rem;
       font-weight: 500;
       cursor: pointer;
@@ -601,7 +601,7 @@ interface DeliveryNoteKPIs {
       align-self: flex-end;
       transition: all .15s;
     }
-    .btn-reset:hover { border-color: #ef4444; color: #ef4444; background: #fef2f2; }
+    .btn-reset:hover { border-color: var(--color-danger); color: var(--color-danger); background: var(--color-danger-bg); }
 
     /* ═══════════════ SELECTION BAR ═══════════════ */
     .selection-bar {
@@ -609,19 +609,19 @@ interface DeliveryNoteKPIs {
       justify-content: space-between;
       align-items: center;
       padding: .75rem 1.25rem;
-      background: #f0fdf4;
-      border-bottom: 1px solid #bbf7d0;
+      background: var(--color-success-bg);
+      border-bottom: 1px solid var(--color-success);
     }
     .selection-info { display: flex; align-items: center; gap: .5rem; }
-    .selection-count { font-weight: 700; color: #166534; }
-    .selection-total { font-size: .875rem; color: #16a34a; }
+    .selection-count { font-weight: 700; color: var(--color-success-text); }
+    .selection-total { font-size: .875rem; color: var(--color-success); }
     .selection-actions { display: flex; gap: .75rem; }
     .btn-sel-cancel {
       padding: .45rem 1rem;
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--color-border);
       border-radius: 8px;
-      background: #fff;
-      color: #475569;
+      background: var(--color-surface);
+      color: var(--color-text-muted);
       font-size: .85rem;
       font-weight: 600;
       cursor: pointer;
@@ -630,8 +630,8 @@ interface DeliveryNoteKPIs {
       padding: .45rem 1rem;
       border: none;
       border-radius: 8px;
-      background: linear-gradient(135deg,#10b981,#059669);
-      color: #fff;
+      background: linear-gradient(135deg,var(--color-success),var(--color-success));
+      color: var(--color-surface);
       font-size: .85rem;
       font-weight: 600;
       cursor: pointer;
@@ -647,11 +647,11 @@ interface DeliveryNoteKPIs {
       font-size: .875rem;
     }
     .data-table thead tr {
-      background: #f8fafc;
-      border-bottom: 2px solid #e2e8f0;
+      background: var(--color-bg);
+      border-bottom: 2px solid var(--color-border);
     }
     .data-table th {
-      color: #475569;
+      color: var(--color-text-muted);
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: .5px;
@@ -660,28 +660,28 @@ interface DeliveryNoteKPIs {
       text-align: left;
       white-space: nowrap;
     }
-    .data-table td { padding: .8rem 1rem; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+    .data-table td { padding: .8rem 1rem; border-bottom: 1px solid var(--color-surface-2); vertical-align: middle; }
     .data-row { cursor: pointer; transition: background .12s; }
-    .data-row:hover { background: #f5f7ff !important; }
+    .data-row:hover { background: var(--color-primary-muted) !important; }
     .data-row:last-child td { border-bottom: none; }
 
     .ta-r { text-align: right !important; }
     .ta-c { text-align: center !important; }
     .fw-600 { font-weight: 600; }
-    .td-muted { color: #64748b; font-size: .875rem; }
-    .c-cyan  { color: #0891b2 !important; }
-    .c-green { color: #16a34a !important; }
-    .c-amber { color: #d97706 !important; }
+    .td-muted { color: var(--color-text-muted); font-size: .875rem; }
+    .c-cyan  { color: var(--color-info) !important; }
+    .c-green { color: var(--color-success) !important; }
+    .c-amber { color: var(--color-warning) !important; }
 
-    .client-name  { font-weight: 500; color: #1f2937; }
-    .client-phone { font-size: .8rem; color: #6b7280; }
+    .client-name  { font-weight: 500; color: var(--color-text); }
+    .client-phone { font-size: .8rem; color: var(--color-text-muted); }
 
     .id-badge {
       display: inline-block;
       padding: .2rem .6rem;
-      background: #eff6ff;
-      color: #1e40af;
-      border: 1px solid #bfdbfe;
+      background: var(--color-info-bg);
+      color: var(--color-info-text);
+      border: 1px solid var(--color-primary-light);
       border-radius: 6px;
       font-weight: 600;
       font-size: .8rem;
@@ -696,10 +696,10 @@ interface DeliveryNoteKPIs {
       font-size: .78rem;
       white-space: nowrap;
     }
-    .badge-paid   { background: #d1fae5; color: #065f46; }
-    .badge-unpaid { background: #fee2e2; color: #991b1b; }
-    .badge-partial{ background: #fef3c7; color: #92400e; }
-    .badge-other  { background: #f1f5f9; color: #475569; }
+    .badge-paid   { background: var(--color-success-bg); color: var(--color-success-text); }
+    .badge-unpaid { background: var(--color-danger-bg); color: var(--color-danger-text); }
+    .badge-partial{ background: var(--color-warning-bg); color: var(--color-warning-text); }
+    .badge-other  { background: var(--color-surface-2); color: var(--color-text-muted); }
 
     .status-pill {
       display: inline-block;
@@ -707,14 +707,14 @@ interface DeliveryNoteKPIs {
       border-radius: 9999px;
       font-size: .78rem;
       font-weight: 600;
-      color: #fff;
+      color: var(--color-surface);
       white-space: nowrap;
     }
 
     .invoiced-cell { display: flex; flex-direction: column; align-items: center; gap: .15rem; }
 
     /* Checkboxes */
-    .cb { width: 1.1rem; height: 1.1rem; cursor: pointer; accent-color: #4f46e5; }
+    .cb { width: 1.1rem; height: 1.1rem; cursor: pointer; accent-color: var(--color-primary-hover); }
 
     /* Action buttons */
     .action-group { display: flex; gap: .35rem; justify-content: center; }
@@ -726,27 +726,27 @@ interface DeliveryNoteKPIs {
       transition: opacity .15s;
     }
     .act-btn:hover { opacity: .75; }
-    .act-dl      { background: #e0e7ff; border-color: #c7d2fe; }
-    .act-deliver { background: #dbeafe; border-color: #bfdbfe; }
-    .act-del     { background: #fee2e2; border-color: #fecaca; }
-    .act-view    { background: #d1fae5; border-color: #a7f3d0; }
+    .act-dl      { background: var(--color-primary-light); border-color: var(--color-primary-light); }
+    .act-deliver { background: var(--color-info-bg); border-color: var(--color-primary-light); }
+    .act-del     { background: var(--color-danger-bg); border-color: var(--color-danger); }
+    .act-view    { background: var(--color-success-bg); border-color: var(--color-success); }
 
     /* Empty state */
     .empty-state {
       padding: 3.5rem 1rem;
       text-align: center;
-      color: #94a3b8;
+      color: var(--color-text-faint);
     }
     .empty-icon { font-size: 3.5rem; margin-bottom: .75rem; opacity: .6; }
 
     /* ═══════════════ MOBILE CARDS ═══════════════ */
     .mobile-row {
       padding: 1rem 1.25rem;
-      border-bottom: 1px solid #f1f5f9;
+      border-bottom: 1px solid var(--color-surface-2);
       cursor: pointer;
       transition: background .12s;
     }
-    .mobile-row:hover { background: #f8fafc; }
+    .mobile-row:hover { background: var(--color-bg); }
     .mobile-row:last-child { border-bottom: none; }
     .mobile-row-top {
       display: flex;
@@ -762,13 +762,13 @@ interface DeliveryNoteKPIs {
       display: grid; grid-template-columns: repeat(2,1fr); gap: .5rem;
     }
     .mg-cell {
-      background: #f8fafc;
+      background: var(--color-bg);
       padding: .5rem;
       border-radius: 8px;
       text-align: center;
       display: flex; flex-direction: column; gap: .1rem;
     }
-    .mg-lbl { font-size: .7rem; color: #6b7280; }
+    .mg-lbl { font-size: .7rem; color: var(--color-text-muted); }
 
     /* ═══════════════ DRAWER ═══════════════ */
     .drawer-backdrop {
@@ -799,37 +799,37 @@ interface DeliveryNoteKPIs {
       align-items: center;
       border-bottom: 1px solid rgba(255,255,255,.1);
     }
-    .drawer-title { margin: 0; color: #fff; font-size: 1.05rem; font-weight: 600; }
+    .drawer-title { margin: 0; color: var(--color-surface); font-size: 1.05rem; font-weight: 600; }
     .drawer-sub   { color: #c4b5fd; font-size: .825rem; }
     .btn-close-drawer {
       background: rgba(255,255,255,.12);
       border: 1px solid rgba(255,255,255,.2);
-      color: #fff; width: 2rem; height: 2rem;
+      color: var(--color-surface); width: 2rem; height: 2rem;
       border-radius: 50%; cursor: pointer;
       display: flex; align-items: center; justify-content: center;
       font-size: .9rem; transition: background .15s;
     }
     .btn-close-drawer:hover { background: rgba(255,255,255,.28); }
 
-    .drawer-body { flex: 1; overflow-y: auto; background: #e9e6f0; }
+    .drawer-body { flex: 1; overflow-y: auto; background: var(--color-surface); }
     .invoice-iframe { width: 100%; height: 100%; border: none; display: block; }
 
     .drawer-foot {
       display: flex; gap: .5rem;
       padding: .75rem 1rem;
-      background: #fff;
-      border-top: 1px solid #e5e7eb;
+      background: var(--color-surface);
+      border-top: 1px solid var(--color-border);
     }
     .drawer-btn {
       flex: 1; padding: .6rem; border-radius: 8px; border: none;
-      color: #fff; font-weight: 600; font-size: .85rem;
+      color: var(--color-surface); font-weight: 600; font-size: .85rem;
       cursor: pointer; transition: opacity .15s;
     }
     .drawer-btn:hover { opacity: .88; }
     .drawer-btn:disabled { opacity: .5; cursor: not-allowed; }
-    .btn-dl-inv   { background: linear-gradient(135deg,#16a34a,#22c55e); }
+    .btn-dl-inv   { background: linear-gradient(135deg,var(--color-success),var(--color-success)); }
     .btn-email    { background: linear-gradient(135deg,#0891b2,#06b6d4); }
-    .btn-encaisse { background: linear-gradient(135deg,#d97706,#f59e0b); }
+    .btn-encaisse { background: linear-gradient(135deg,var(--color-warning),var(--color-warning)); }
 
     /* ═══════════════ RESPONSIVE ═══════════════ */
     .desktop-table { display: none; overflow-x: auto; }

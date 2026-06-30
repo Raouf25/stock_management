@@ -141,7 +141,7 @@ import { AuthService } from '../../services/auth.service';
     /* ── Brand panel ── */
     .brand-panel {
       flex: 1;
-      background: linear-gradient(150deg, #4338ca 0%, #6d28d9 50%, #7c3aed 100%);
+      background: linear-gradient(150deg, var(--color-primary-hover) 0%, #6d28d9 50%, #7c3aed 100%);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -214,14 +214,14 @@ import { AuthService } from '../../services/auth.service';
     .form-header { text-align: center; margin-bottom: 1.75rem; }
     .form-icon {
       width: 52px; height: 52px;
-      background: linear-gradient(135deg, #4338ca, #7c3aed);
+      background: linear-gradient(135deg, var(--color-primary-hover), #7c3aed);
       border-radius: 1rem;
       display: flex; align-items: center; justify-content: center;
       font-size: 1.5rem; color: white;
       margin: 0 auto 1rem;
     }
-    .form-header h2 { font-size: 1.375rem; font-weight: 700; color: #111827; margin: 0 0 0.375rem; }
-    .form-header p  { font-size: 0.875rem; color: #6b7280; margin: 0; line-height: 1.5; }
+    .form-header h2 { font-size: 1.375rem; font-weight: 700; color: var(--color-text); margin: 0 0 0.375rem; }
+    .form-header p  { font-size: 0.875rem; color: var(--color-text-muted); margin: 0; line-height: 1.5; }
 
     /* Alert */
     .alert {
@@ -229,19 +229,19 @@ import { AuthService } from '../../services/auth.service';
       padding: 0.75rem 1rem; border-radius: 0.625rem;
       margin-bottom: 1.25rem; font-size: 0.875rem;
     }
-    .alert-error { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+    .alert-error { background: var(--color-danger-bg); color: var(--color-danger-text); border: 1px solid #fecaca; }
 
     /* Form field */
     .form-field { display: flex; flex-direction: column; gap: 0.375rem; margin-bottom: 1rem; }
     .form-field label {
-      font-size: 0.8125rem; font-weight: 600; color: #374151;
+      font-size: 0.8125rem; font-weight: 600; color: var(--color-text-2);
       display: flex; align-items: center; gap: 0.375rem;
     }
     .form-field label i { color: #6d28d9; }
     .form-field input {
       width: 100%; padding: 0.6875rem 0.875rem;
-      border: 1.5px solid #e5e7eb; border-radius: 0.625rem;
-      font-size: 0.9375rem; color: #111827;
+      border: 1.5px solid var(--color-border); border-radius: 0.625rem;
+      font-size: 0.9375rem; color: var(--color-text);
       transition: all 0.18s ease; box-sizing: border-box;
     }
     .form-field input:focus {
@@ -252,7 +252,7 @@ import { AuthService } from '../../services/auth.service';
     /* Buttons */
     .btn-submit {
       width: 100%; padding: 0.8125rem 1rem;
-      background: linear-gradient(135deg, #4338ca, #7c3aed);
+      background: linear-gradient(135deg, var(--color-primary-hover), #7c3aed);
       color: white; border: none; border-radius: 0.75rem;
       font-size: 0.9375rem; font-weight: 600; cursor: pointer;
       display: flex; align-items: center; justify-content: center; gap: 0.5rem;
@@ -263,19 +263,19 @@ import { AuthService } from '../../services/auth.service';
     .btn-submit:disabled { opacity: 0.7; cursor: not-allowed; }
     .btn-secondary {
       width: 100%; padding: 0.75rem 1rem;
-      background: #f3f4f6; color: #374151;
+      background: var(--color-surface-2); color: var(--color-text-2);
       border: none; border-radius: 0.75rem;
       font-size: 0.875rem; font-weight: 600; cursor: pointer;
       display: flex; align-items: center; justify-content: center; gap: 0.5rem;
       transition: background 0.15s ease;
     }
-    .btn-secondary:hover { background: #e5e7eb; }
+    .btn-secondary:hover { background: var(--color-border); }
 
     /* Success state */
     .success-view { text-align: center; }
     .success-icon-wrap {
       width: 64px; height: 64px;
-      background: linear-gradient(135deg, #22c55e, #16a34a);
+      background: linear-gradient(135deg, var(--color-success), var(--color-success));
       border-radius: 50%; margin: 0 auto 1.25rem;
       display: flex; align-items: center; justify-content: center;
       font-size: 1.75rem; color: white;
@@ -286,27 +286,27 @@ import { AuthService } from '../../services/auth.service';
       from { transform: scale(0.5); opacity: 0; }
       to   { transform: scale(1);   opacity: 1; }
     }
-    .success-view h2 { font-size: 1.375rem; font-weight: 700; color: #111827; margin: 0 0 0.75rem; }
-    .success-desc { font-size: 0.875rem; color: #6b7280; line-height: 1.65; margin: 0 0 1.5rem; }
+    .success-view h2 { font-size: 1.375rem; font-weight: 700; color: var(--color-text); margin: 0 0 0.75rem; }
+    .success-desc { font-size: 0.875rem; color: var(--color-text-muted); line-height: 1.65; margin: 0 0 1.5rem; }
     .info-cards { display: flex; flex-direction: column; gap: 0.625rem; margin-bottom: 1.5rem; }
     .info-card {
       display: flex; align-items: center; gap: 0.75rem;
-      padding: 0.75rem 1rem; background: #f9fafb;
-      border: 1px solid #e5e7eb; border-radius: 0.625rem;
-      font-size: 0.8125rem; color: #374151; text-align: left;
+      padding: 0.75rem 1rem; background: var(--color-bg);
+      border: 1px solid var(--color-border); border-radius: 0.625rem;
+      font-size: 0.8125rem; color: var(--color-text-2); text-align: left;
     }
     .info-card i { color: #6d28d9; font-size: 1rem; flex-shrink: 0; }
     .info-card.resend-badge { background: #f0fdf4; border-color: #bbf7d0; }
-    .info-card.resend-badge i { color: #16a34a; }
+    .info-card.resend-badge i { color: var(--color-success); }
 
     /* Back link */
-    .back-link { text-align: center; margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid #e5e7eb; }
+    .back-link { text-align: center; margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid var(--color-border); }
     .back-link a {
       color: #6d28d9; text-decoration: none; font-size: 0.875rem; font-weight: 500;
       display: inline-flex; align-items: center; gap: 0.375rem;
       transition: color 0.15s ease;
     }
-    .back-link a:hover { color: #4338ca; text-decoration: underline; }
+    .back-link a:hover { color: var(--color-primary-hover); text-decoration: underline; }
 
     /* Spinner */
     .spin { animation: spin 0.8s linear infinite; display: inline-block; }
@@ -315,7 +315,7 @@ import { AuthService } from '../../services/auth.service';
     /* Responsive */
     @media (max-width: 900px) {
       .brand-panel { display: none; }
-      .form-panel  { width: 100%; background: linear-gradient(150deg, #4338ca, #7c3aed); }
+      .form-panel  { width: 100%; background: linear-gradient(150deg, var(--color-primary-hover), #7c3aed); }
     }
     @media (max-width: 480px) {
       .form-panel { padding: 1.25rem 1rem; padding-top: 3rem; align-items: flex-start; }
