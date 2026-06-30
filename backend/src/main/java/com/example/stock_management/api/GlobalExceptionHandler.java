@@ -8,7 +8,9 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -44,6 +46,19 @@ public class GlobalExceptionHandler {
     ) {
         ApiErrorResponse response = ApiErrorResponse.notFound(exception.getMessage(), request.getRequestURI());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    }
+
+    @ExceptionHandler(AccountLockedException.class)
+    public ResponseEntity<Map<String, Object>> handleAccountLockedException(
+        AccountLockedException exception
+    ) {
+        long minutes = exception.getMinutesRemaining();
+        String plural = minutes > 1 ? "s" : "";
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("error", "ACCOUNT_LOCKED");
+        body.put("message", "Compte verrouillé. Réessayez dans " + minutes + " minute" + plural + ".");
+        body.put("lockedUntil", exception.getLockedUntil().toString());
+        return ResponseEntity.status(HttpStatus.LOCKED).body(body);
     }
 
     private ApiErrorResponse.FieldValidationError toFieldValidationError(FieldError fieldError) {
