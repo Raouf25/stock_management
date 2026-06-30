@@ -72,7 +72,6 @@ export class AppComponent implements OnInit {
       '/products': 'Gestion des Produits',
       '/purchases': 'Gestion des Achats',
       '/sales': 'Gestion des Ventes',
-      '/stock-movements': 'Mouvements de Stock',
       '/customers': 'Gestion des Clients',
       '/invoices': 'Gestion des Factures',
       '/documents/create': 'Créer Facture / BL',
