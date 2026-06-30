@@ -83,6 +83,14 @@
       <kbd>⌘K</kbd>
     </div>
 
+    <!-- Theme toggle -->
+    <button class="sidebar-theme-toggle"
+            (click)="layoutService.toggleTheme()"
+            [title]="layoutService.isDarkMode() ? 'Passer en mode clair' : 'Passer en mode sombre'">
+      <i class="bi" [class.bi-sun]="layoutService.isDarkMode()" [class.bi-moon-stars]="!layoutService.isDarkMode()"></i>
+      <span>{{ layoutService.isDarkMode() ? 'Mode clair' : 'Mode sombre' }}</span>
+    </button>
+
     <!-- Footer / User -->
     <div class="sidebar-footer">
       <a class="user-card" routerLink="/profile" routerLinkActive="user-card--active"
