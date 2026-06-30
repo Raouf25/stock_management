@@ -80,7 +80,7 @@ import { ToastService } from '../../../services/toast.service';
               required
               minlength="6"
               placeholder="Minimum 6 caractères"
-              [class.field-input--error]="f.submitted && (!form.password || (form.password?.length ?? 0) < 6)"
+              [class.field-input--error]="f.submitted && (!form.password || form.password.length < 6)"
             />
             <button type="button" class="field-eye" (click)="showPassword = !showPassword" tabindex="-1">
               <i class="bi" [class.bi-eye]="!showPassword" [class.bi-eye-slash]="showPassword"></i>
@@ -123,7 +123,7 @@ import { ToastService } from '../../../services/toast.service';
               </button>
             </div>
           </div>
-          <button type="button" class="btn-reset-pw" (click)="onResetPassword()" [disabled]="!newPassword || (newPassword?.length ?? 0) < 6 || saving">
+          <button type="button" class="btn-reset-pw" (click)="onResetPassword()" [disabled]="!newPassword || newPassword.length < 6 || saving">
             <i class="bi bi-key-fill"></i> Réinitialiser
           </button>
         </div>
