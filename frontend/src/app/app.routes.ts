@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './services/auth.guard';
+import { adminGuard } from './services/admin.guard';
 
 export const routes: Routes = [
   // Auth routes (public)
@@ -48,6 +49,9 @@ export const routes: Routes = [
   { path: 'delivery-notes', redirectTo: 'invoices/list', pathMatch: 'full' },
   { path: 'delivery-notes/list', redirectTo: 'invoices/list', pathMatch: 'full' },
   { path: 'delivery-notes/create', redirectTo: 'documents/create', pathMatch: 'full' },
+
+  // Administration (ADMIN uniquement)
+  { path: 'admin/users', loadComponent: () => import('./components/admin/users/users-list.component').then(m => m.UsersListComponent), canActivate: [authGuard, adminGuard] },
 
   { path: '**', loadComponent: () => import('./components/errors/not-found.component').then(m => m.NotFoundComponent) }
 ];
