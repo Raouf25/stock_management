@@ -7,6 +7,11 @@ export const routes: Routes = [
   { path: 'forgot-password', loadComponent: () => import('./components/auth/forgot-password.component').then(m => m.ForgotPasswordComponent) },
   { path: 'reset-password', loadComponent: () => import('./components/auth/reset-password.component').then(m => m.ResetPasswordComponent) },
 
+  // Error pages (public — no auth required)
+  { path: 'error/403', loadComponent: () => import('./components/errors/forbidden.component').then(m => m.ForbiddenComponent) },
+  { path: 'error/404', loadComponent: () => import('./components/errors/not-found.component').then(m => m.NotFoundComponent) },
+  { path: 'error/500', loadComponent: () => import('./components/errors/server-error.component').then(m => m.ServerErrorComponent) },
+
   // Protected routes
   { path: '', loadComponent: () => import('./components/dashboard/dashboard.component').then(m => m.DashboardComponent), canActivate: [authGuard] },
   { path: 'dashboard', loadComponent: () => import('./components/dashboard/dashboard.component').then(m => m.DashboardComponent), canActivate: [authGuard] },
@@ -41,5 +46,5 @@ export const routes: Routes = [
   { path: 'delivery-notes/list', redirectTo: 'invoices/list', pathMatch: 'full' },
   { path: 'delivery-notes/create', redirectTo: 'documents/create', pathMatch: 'full' },
 
-  { path: '**', redirectTo: 'login' }
+  { path: '**', loadComponent: () => import('./components/errors/not-found.component').then(m => m.NotFoundComponent) }
 ];
