@@ -36,6 +36,9 @@ export const routes: Routes = [
   // Profil utilisateur (protected)
   { path: 'profile', loadComponent: () => import('./components/profile/profile.component').then(m => m.ProfileComponent), canActivate: [authGuard] },
 
+  // Paramètres de l'entreprise (protected)
+  { path: 'settings', loadComponent: () => import('./components/settings/settings.component').then(m => m.SettingsComponent), canActivate: [authGuard] },
+
   // Bons de Livraison — liste intégrée dans /invoices/list (onglet BL)
   { path: 'delivery-notes', redirectTo: 'invoices/list', pathMatch: 'full' },
   { path: 'delivery-notes/list', redirectTo: 'invoices/list', pathMatch: 'full' },

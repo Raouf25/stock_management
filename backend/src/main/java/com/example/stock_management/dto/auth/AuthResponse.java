@@ -21,6 +21,7 @@ public class AuthResponse {
         private Long id;
         private String name;
         private String email;
+        private String role;
     }
     
     public static AuthResponse success(String message, String token, UserInfo user) {
