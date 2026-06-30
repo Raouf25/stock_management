@@ -33,6 +33,13 @@ public class User {
     @Builder.Default
     private UserRole role = UserRole.USER;
 
+    @Builder.Default
+    @Column(name = "failed_login_attempts", nullable = false)
+    private int failedLoginAttempts = 0;
+
+    @Column(name = "locked_until")
+    private LocalDateTime lockedUntil;
+
     private LocalDateTime createdAt;
 
     private LocalDateTime lastLogin;

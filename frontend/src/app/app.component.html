@@ -74,6 +74,26 @@
         <span>Rapport TVA</span>
       </a>
 
+      <!-- ── CONFIGURATION ── -->
+      <p class="nav-section">Configuration</p>
+
+      <a class="nav-link" routerLink="/settings" routerLinkActive="active"
+         (click)="closeSidebarOnMobile()">
+        <i class="bi bi-gear"></i>
+        <span>Paramètres</span>
+      </a>
+
+      <!-- ── ADMINISTRATION (ADMIN uniquement) ── -->
+      <ng-container *ngIf="isAdmin">
+        <p class="nav-section">Administration</p>
+
+        <a class="nav-link" routerLink="/admin/users" routerLinkActive="active"
+           (click)="closeSidebarOnMobile()">
+          <i class="bi bi-people-fill"></i>
+          <span>Utilisateurs</span>
+        </a>
+      </ng-container>
+
     </nav>
 
     <!-- ⌘K hint -->
@@ -82,6 +102,14 @@
       <span>Rechercher…</span>
       <kbd>⌘K</kbd>
     </div>
+
+    <!-- Theme toggle -->
+    <button class="sidebar-theme-toggle"
+            (click)="layoutService.toggleTheme()"
+            [title]="layoutService.isDarkMode() ? 'Passer en mode clair' : 'Passer en mode sombre'">
+      <i class="bi" [class.bi-sun]="layoutService.isDarkMode()" [class.bi-moon-stars]="!layoutService.isDarkMode()"></i>
+      <span>{{ layoutService.isDarkMode() ? 'Mode clair' : 'Mode sombre' }}</span>
+    </button>
 
     <!-- Footer / User -->
     <div class="sidebar-footer">

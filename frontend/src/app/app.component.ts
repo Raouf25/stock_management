@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterOutlet, RouterLink, RouterLinkActive, Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { AuthService } from './services/auth.service';
+import { LayoutService } from './services/layout.service';
 import { ToastOutletComponent } from './shared/toast-outlet.component';
 import { ConfirmDialogComponent } from './shared/confirm-dialog.component';
 import { CommandPaletteComponent } from './shared/command-palette.component';
@@ -22,7 +23,8 @@ export class AppComponent implements OnInit {
 
   constructor(
     private router: Router,
-    public authService: AuthService
+    public authService: AuthService,
+    public layoutService: LayoutService
   ) {}
 
   ngOnInit() {
@@ -103,5 +105,9 @@ export class AppComponent implements OnInit {
       return email.substring(0, 20) + '...';
     }
     return email;
+  }
+
+  get isAdmin(): boolean {
+    return this.authService.isAdmin;
   }
 }

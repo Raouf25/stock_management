@@ -7,11 +7,13 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AuthResponse {
-    
+
     private boolean success;
     private String message;
     private String token;
     private UserInfo user;
+    private String errorCode;
+    private Integer remainingAttempts;
     
     @Data
     @Builder
@@ -21,6 +23,7 @@ public class AuthResponse {
         private Long id;
         private String name;
         private String email;
+        private String role;
     }
     
     public static AuthResponse success(String message, String token, UserInfo user) {
@@ -43,6 +46,15 @@ public class AuthResponse {
         return AuthResponse.builder()
                 .success(false)
                 .message(message)
+                .build();
+    }
+
+    public static AuthResponse invalidCredentials(String message, int remainingAttempts) {
+        return AuthResponse.builder()
+                .success(false)
+                .errorCode("INVALID_CREDENTIALS")
+                .message(message)
+                .remainingAttempts(remainingAttempts)
                 .build();
     }
 }

@@ -1,5 +1,6 @@
 package com.example.stock_management.service;
 
+import com.example.stock_management.api.AccountLockedException;
 import com.example.stock_management.dto.auth.*;
 import com.example.stock_management.model.PasswordResetToken;
 import com.example.stock_management.model.User;
@@ -15,6 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
+import java.time.Clock;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -23,11 +26,15 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class AuthService {
 
+    private static final int MAX_ATTEMPTS = 5;
+    private static final int LOCK_DURATION_MINUTES = 15;
+
     private final UserRepository userRepository;
     private final PasswordResetTokenRepository resetTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final PasswordResetEmailService emailService;
+    private final Clock clock;
 
     @Value("${app.frontend.url:http://localhost:4200}")
     private String frontendUrl;
@@ -53,23 +60,65 @@ public class AuthService {
         return buildAuthResponse("Inscription réussie", user);
     }
 
+    @Transactional
     public AuthResponse login(LoginRequest request) {
-        // Rechercher l'utilisateur
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElse(null);
+        final LocalDateTime now = LocalDateTime.now(clock);
 
-        if (user == null || !passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+        User user = userRepository.findByEmail(request.getEmail()).orElse(null);
+
+        // Return a generic error when the user does not exist to avoid email enumeration
+        if (user == null) {
+            log.debug("Tentative de connexion pour un email inconnu: {}", request.getEmail());
             return AuthResponse.error("Email ou mot de passe incorrect");
+        }
+
+        // Check account lock state
+        if (user.getLockedUntil() != null) {
+            if (user.getLockedUntil().isAfter(now)) {
+                long minutesRemaining = Math.max(1, Duration.between(now, user.getLockedUntil()).toMinutes());
+                log.warn("Tentative de connexion sur un compte verrouillé: {}", user.getEmail());
+                throw new AccountLockedException(user.getLockedUntil(), minutesRemaining);
+            } else {
+                // Lock has expired — auto-unlock
+                log.info("Déverrouillage automatique du compte: {}", user.getEmail());
+                user.setLockedUntil(null);
+                user.setFailedLoginAttempts(0);
+            }
         }
 
         if (!user.isEnabled()) {
             return AuthResponse.error("Ce compte a été désactivé");
         }
 
-        // Mettre à jour la dernière connexion
-        user.setLastLogin(LocalDateTime.now());
+        // Wrong password — increment failure counter
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            int attempts = user.getFailedLoginAttempts() + 1;
+            user.setFailedLoginAttempts(attempts);
+
+            if (attempts >= MAX_ATTEMPTS) {
+                LocalDateTime lockExpiry = now.plusMinutes(LOCK_DURATION_MINUTES);
+                user.setLockedUntil(lockExpiry);
+                userRepository.save(user);
+                log.warn("Compte verrouillé après {} tentatives échouées: {}", attempts, user.getEmail());
+                throw new AccountLockedException(lockExpiry, LOCK_DURATION_MINUTES);
+            }
+
+            userRepository.save(user);
+            int remaining = MAX_ATTEMPTS - attempts;
+            String plural = remaining > 1 ? "s" : "";
+            log.warn("Mot de passe incorrect pour {}: tentative {}/{}", user.getEmail(), attempts, MAX_ATTEMPTS);
+            return AuthResponse.invalidCredentials(
+                    "Mot de passe incorrect. " + remaining + " tentative" + plural + " restante" + plural + ".",
+                    remaining
+            );
+        }
+
+        // Successful login — reset failure counter and update last login
+        user.setFailedLoginAttempts(0);
+        user.setLockedUntil(null);
+        user.setLastLogin(now);
         userRepository.save(user);
-        
+
         log.info("Connexion réussie: {}", user.getEmail());
         return buildAuthResponse("Connexion réussie", user);
     }
@@ -156,6 +205,7 @@ public class AuthService {
                 .id(user.getId())
                 .name(user.getName())
                 .email(user.getEmail())
+                .role(user.getRole() != null ? user.getRole().name() : "USER")
                 .build();
 
         return AuthResponse.success(message, token, userInfo);
