@@ -363,7 +363,7 @@ type TabType = 'login' | 'register';
     .form-panel {
       width: 480px;
       min-width: 320px;
-      background: #f8f9fb;
+      background: var(--color-bg);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -374,7 +374,7 @@ type TabType = 'login' | 'register';
     .form-card {
       width: 100%;
       max-width: 400px;
-      background: white;
+      background: var(--color-surface);
       border-radius: 1.25rem;
       padding: 2.25rem 2rem;
       box-shadow: 0 4px 32px rgba(67,56,202,0.10), 0 1px 4px rgba(0,0,0,0.06);
@@ -443,7 +443,7 @@ type TabType = 'login' | 'register';
     }
     .tabs button:hover:not(.active) { color: var(--color-text-2); }
     .tabs button.active {
-      background: white;
+      background: var(--color-surface);
       color: var(--color-primary-hover);
       font-weight: 600;
       box-shadow: 0 1px 4px rgba(0,0,0,0.1);
@@ -486,7 +486,7 @@ type TabType = 'login' | 'register';
       border-radius: 0.625rem;
       font-size: 0.9375rem;
       color: var(--color-text);
-      background: white;
+      background: var(--color-surface);
       transition: all 0.18s ease;
       box-sizing: border-box;
     }

@@ -41,13 +41,16 @@
   --color-info-bg:       #dbeafe;
   --color-info-text:     #1e40af;
 
-  /* Sidebar */
-  --sidebar-bg:          #1a1e4e;
-  --sidebar-bg-2:        #1e2355;
-  --sidebar-text:        rgba(255,255,255,0.60);
+  /* Sidebar — deep indigo surface; #6366f1 is the ACTIVE accent, not the base */
+  --sidebar-bg:          #262261;
+  --sidebar-bg-2:        #302b78;
+  --sidebar-text:        rgba(255,255,255,0.82);
   --sidebar-text-active: #ffffff;
-  --sidebar-active-bg:   #4f46e5;
-  --sidebar-border:      rgba(255,255,255,0.06);
+  --sidebar-active-bg:   #6366f1;
+  --sidebar-active-glow:  rgba(99,102,241,0.55);
+  --sidebar-border:      rgba(255,255,255,0.10);
+  --sidebar-section:     rgba(255,255,255,0.60);
+  --sidebar-hover:       rgba(255,255,255,0.10);
   --sidebar-width:       248px;
   --sidebar-width-sm:    68px;
 
@@ -129,6 +132,10 @@
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.30), 0 2px 4px -2px rgb(0 0 0 / 0.25);
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.35), 0 4px 6px -4px rgb(0 0 0 / 0.25);
   --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.40), 0 8px 10px -6px rgb(0 0 0 / 0.30);
+
+  /* Sidebar — deeper indigo so the navbar blends into the dark UI */
+  --sidebar-bg:          #1e1b4b;
+  --sidebar-bg-2:        #211d55;
 }
 
 /* ── Dark mode overrides for inline-styled components ──────

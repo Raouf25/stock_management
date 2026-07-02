@@ -780,7 +780,7 @@ interface DeliveryNoteKPIs {
     .invoice-drawer {
       position: fixed; top: 0; right: 0;
       height: 100vh; width: 820px; max-width: 96vw;
-      background: #3D2D6E;
+      background: rgba(99,102,241,0.55);
       z-index: 1001;
       box-shadow: -6px 0 40px rgba(61,45,110,.2);
       transform: translateX(100%);
@@ -792,7 +792,7 @@ interface DeliveryNoteKPIs {
 
     .drawer-iframe-container { display: flex; flex-direction: column; flex: 1; height: 100%; }
     .drawer-head {
-      background: #3D2D6E;
+      background: rgba(99,102,241,0.55);
       padding: 1rem 1.25rem;
       display: flex;
       justify-content: space-between;
