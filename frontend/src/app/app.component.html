@@ -17,56 +17,50 @@
       <div class="logo-icon">
         <i class="bi bi-boxes"></i>
       </div>
-      <span class="logo-text">Bhouri Stock</span>
+      <div class="logo-text-wrap">
+        <div class="logo-text">Bhouri Stock</div>
+        <div class="logo-sub">Gestion &amp; facturation</div>
+      </div>
     </div>
 
     <!-- Navigation -->
     <nav class="sidebar-nav">
 
-      <!-- ── GÉNÉRAL ── -->
-      <p class="nav-section">Général</p>
-
       <a class="nav-link" routerLink="/" routerLinkActive="active"
          [routerLinkActiveOptions]="{ exact: true }" (click)="closeSidebarOnMobile()">
-        <i class="bi bi-speedometer2"></i>
-        <span>Dashboard</span>
+        <i class="bi bi-grid-1x2-fill"></i>
+        <span>Tableau de bord</span>
       </a>
 
       <a class="nav-link" routerLink="/products" routerLinkActive="active"
          (click)="closeSidebarOnMobile()">
-        <i class="bi bi-box-seam"></i>
+        <i class="bi bi-box-seam-fill"></i>
         <span>Produits</span>
-      </a>
-
-      <a class="nav-link" routerLink="/customers" routerLinkActive="active"
-         (click)="closeSidebarOnMobile()">
-        <i class="bi bi-people"></i>
-        <span>Clients</span>
-      </a>
-
-      <a class="nav-link" routerLink="/suppliers" routerLinkActive="active"
-         (click)="closeSidebarOnMobile()">
-        <i class="bi bi-building"></i>
-        <span>Fournisseurs</span>
-      </a>
-
-      <!-- ── DOCUMENTS ── -->
-      <p class="nav-section">Documents</p>
-
-      <a class="nav-link nav-link--cta" routerLink="/documents/create"
-         routerLinkActive="active" (click)="closeSidebarOnMobile()">
-        <i class="bi bi-plus-circle-fill"></i>
-        <span>Créer Facture / BL</span>
       </a>
 
       <a class="nav-link" routerLink="/invoices/list" routerLinkActive="active"
          (click)="closeSidebarOnMobile()">
         <i class="bi bi-receipt"></i>
-        <span>Factures</span>
+        <span>Factures &amp; BL</span>
       </a>
 
-      <!-- ── RAPPORTS ── -->
-      <p class="nav-section">Rapports</p>
+      <a class="nav-link" routerLink="/customers" routerLinkActive="active"
+         (click)="closeSidebarOnMobile()">
+        <i class="bi bi-people-fill"></i>
+        <span>Clients</span>
+      </a>
+
+      <a class="nav-link" routerLink="/suppliers" routerLinkActive="active"
+         (click)="closeSidebarOnMobile()">
+        <i class="bi bi-truck"></i>
+        <span>Fournisseurs</span>
+      </a>
+
+      <a class="nav-link" routerLink="/documents/create" routerLinkActive="active"
+         (click)="closeSidebarOnMobile()">
+        <i class="bi bi-plus-circle-fill"></i>
+        <span>Créer Facture / BL</span>
+      </a>
 
       <a class="nav-link" routerLink="/tax-report" routerLinkActive="active"
          (click)="closeSidebarOnMobile()">
@@ -74,60 +68,43 @@
         <span>Rapport TVA</span>
       </a>
 
-      <!-- ── CONFIGURATION ── -->
-      <p class="nav-section">Configuration</p>
-
       <a class="nav-link" routerLink="/settings" routerLinkActive="active"
          (click)="closeSidebarOnMobile()">
         <i class="bi bi-gear"></i>
         <span>Paramètres</span>
       </a>
 
-      <!-- ── ADMINISTRATION (ADMIN uniquement) ── -->
-      <ng-container *ngIf="isAdmin">
-        <p class="nav-section">Administration</p>
-
-        <a class="nav-link" routerLink="/admin/users" routerLinkActive="active"
-           (click)="closeSidebarOnMobile()">
-          <i class="bi bi-people-fill"></i>
-          <span>Utilisateurs</span>
-        </a>
-      </ng-container>
+      <a class="nav-link" *ngIf="isAdmin" routerLink="/admin/users" routerLinkActive="active"
+         (click)="closeSidebarOnMobile()">
+        <i class="bi bi-person-gear"></i>
+        <span>Utilisateurs</span>
+      </a>
 
     </nav>
 
-    <!-- ⌘K hint -->
-    <div class="sidebar-search-hint" *ngIf="!sidebarCollapsed" (click)="openCommandPalette()">
-      <i class="bi bi-search"></i>
-      <span>Rechercher…</span>
-      <kbd>⌘K</kbd>
-    </div>
+    <div class="sidebar-spacer"></div>
 
-    <!-- Theme toggle -->
-    <button class="sidebar-theme-toggle"
-            (click)="layoutService.toggleTheme()"
-            [title]="layoutService.isDarkMode() ? 'Passer en mode clair' : 'Passer en mode sombre'">
-      <i class="bi" [class.bi-sun]="layoutService.isDarkMode()" [class.bi-moon-stars]="!layoutService.isDarkMode()"></i>
-      <span>{{ layoutService.isDarkMode() ? 'Mode clair' : 'Mode sombre' }}</span>
+    <!-- ⌘K search -->
+    <button class="sidebar-search" (click)="openCommandPalette()">
+      <i class="bi bi-search"></i>
+      <span class="search-label">Rechercher…</span>
+      <span class="search-kbd">⌘K</span>
     </button>
 
-    <!-- Footer / User -->
-    <div class="sidebar-footer">
-      <a class="user-card" routerLink="/profile" routerLinkActive="user-card--active"
-         (click)="closeSidebarOnMobile()">
-        <div class="user-avatar">
-          <span>{{ getUserInitials() }}</span>
-        </div>
-        <div class="user-info">
-          <div class="user-name">{{ authService.currentUser?.name || 'Utilisateur' }}</div>
-          <div class="user-email">{{ getTruncatedEmail() }}</div>
-        </div>
-        <button class="btn-logout" (click)="$event.preventDefault(); $event.stopPropagation(); logout()"
-                title="Déconnexion">
-          <i class="bi bi-box-arrow-right"></i>
-        </button>
-      </a>
-    </div>
+    <!-- User card -->
+    <a class="user-card" routerLink="/profile" routerLinkActive="user-card--active"
+       (click)="closeSidebarOnMobile()">
+      <div class="user-avatar">
+        <span>{{ getUserInitials() }}</span>
+      </div>
+      <div class="user-info">
+        <div class="user-name">{{ authService.currentUser?.name || 'Utilisateur' }}</div>
+        <div class="user-role">{{ isAdmin ? 'Administrateur' : 'Utilisateur' }}</div>
+      </div>
+      <i class="bi bi-box-arrow-right btn-logout"
+         (click)="$event.preventDefault(); $event.stopPropagation(); logout()"
+         title="Déconnexion"></i>
+    </a>
 
   </aside>
 
@@ -136,6 +113,30 @@
     <button class="mobile-hamburger" (click)="toggleSidebarOpen()">
       <i class="bi bi-list"></i>
     </button>
+
+    <!-- Global page header -->
+    <header class="app-header">
+      <div>
+        <h1 class="app-title">{{ pageTitle }}</h1>
+        <p class="app-subtitle">{{ pageSubtitle }}</p>
+      </div>
+      <div class="header-actions">
+        <div class="header-search" (click)="openCommandPalette()">
+          <i class="bi bi-search"></i>
+          <span>Rechercher</span>
+          <span class="header-kbd">⌘K</span>
+        </div>
+        <button class="header-icon-btn" (click)="layoutService.toggleTheme()"
+                [title]="layoutService.isDarkMode() ? 'Passer en mode clair' : 'Passer en mode sombre'">
+          <i class="bi" [class.bi-sun]="layoutService.isDarkMode()" [class.bi-moon-stars]="!layoutService.isDarkMode()"></i>
+        </button>
+        <button class="header-icon-btn" routerLink="/products" title="Alertes stock">
+          <i class="bi bi-bell"></i>
+          <span class="bell-dot"></span>
+        </button>
+      </div>
+    </header>
+
     <div class="page-content">
       <router-outlet></router-outlet>
     </div>

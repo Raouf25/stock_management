@@ -513,8 +513,8 @@ interface LineItem {
     .doc-layout {
       display: flex;
       min-height: 100vh;
-      background: var(--color-bg);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: transparent;
+      font-family: var(--font-sans);
     }
 
     .doc-main {
@@ -530,11 +530,13 @@ interface LineItem {
     .stepper {
       display: flex;
       align-items: center;
-      background: var(--color-surface);
-      border-radius: 12px;
+      background: var(--glass-bg);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border-radius: var(--radius-lg);
       padding: 1rem 1.5rem;
-      border: 1px solid var(--color-border);
-      box-shadow: 0 1px 4px rgba(0,0,0,.04);
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--glass-shadow-sm);
     }
 
     .step {
@@ -558,7 +560,7 @@ interface LineItem {
       background: var(--color-surface-2); color: var(--color-text-muted);
       flex-shrink: 0;
     }
-    .step.active .step-num { background: var(--color-primary-hover); color: var(--color-surface); }
+    .step.active .step-num { background: var(--color-primary); color: #fff; box-shadow: 0 6px 14px -4px var(--color-primary-glow); }
     .step.done   .step-num { background: var(--color-success-bg); color: var(--color-success); }
 
     .step-connector {
@@ -580,10 +582,12 @@ interface LineItem {
 
     /* ═══════════════════════════ STEP PANEL ═══════════════════════════ */
     .step-panel {
-      background: var(--color-surface);
-      border-radius: 12px;
-      border: 1px solid var(--color-border);
-      box-shadow: 0 1px 4px rgba(0,0,0,.04);
+      background: var(--glass-bg);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--glass-shadow);
       overflow: hidden;
       flex: 1;
     }
@@ -595,8 +599,8 @@ interface LineItem {
       text-transform: uppercase;
       letter-spacing: .6px;
       color: var(--color-text-muted);
-      border-bottom: 1px solid var(--color-surface-2);
-      background: var(--color-surface);
+      border-bottom: 1px solid var(--glass-border);
+      background: transparent;
     }
 
     .panel-body { padding: 1.75rem; }
@@ -613,9 +617,10 @@ interface LineItem {
       display: flex;
       gap: .75rem;
       padding: 1rem 1.25rem;
-      background: var(--color-bg);
-      border-bottom: 1px solid var(--color-surface-2);
+      background: rgba(255,255,255,0.3);
+      border-bottom: 1px solid var(--glass-border);
     }
+    :host-context([data-theme="dark"]) .filter-bar { background: rgba(255,255,255,0.03); }
     .search-wrap {
       position: relative;
       flex: 1;
@@ -623,7 +628,8 @@ interface LineItem {
     .search-wrap input {
       width: 100%; height: 38px;
       padding-left: 2.25rem;
-      border: 1px solid var(--color-border-strong); border-radius: 8px;
+      border: 1px solid rgba(15,23,42,0.1); border-radius: 8px;
+      background: rgba(255,255,255,0.7);
       font-size: .85rem; box-sizing: border-box;
       outline: none; color: var(--color-text);
     }
@@ -634,10 +640,10 @@ interface LineItem {
     }
     .filter-bar select {
       height: 38px;
-      border: 1px solid var(--color-border-strong); border-radius: 8px;
+      border: 1px solid rgba(15,23,42,0.1); border-radius: 8px;
       padding: 0 .75rem;
       font-size: .85rem;
-      background: var(--color-surface); color: var(--color-text);
+      background: rgba(255,255,255,0.7); color: var(--color-text);
       outline: none; cursor: pointer;
     }
     .filter-bar select:focus { border-color: var(--color-primary-hover); }
@@ -654,13 +660,15 @@ interface LineItem {
     .product-card {
       display: flex;
       gap: .75rem;
-      border: 1px solid var(--color-border);
-      border-radius: 10px;
+      border: 1px solid var(--glass-border);
+      border-radius: 13px;
       padding: .875rem;
-      background: var(--color-surface);
+      background: var(--glass-bg-soft);
+      backdrop-filter: var(--glass-blur-sm);
+      -webkit-backdrop-filter: var(--glass-blur-sm);
       transition: box-shadow .15s;
     }
-    .product-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,.08); }
+    .product-card:hover { box-shadow: var(--glass-shadow-sm); }
     .product-card.card-rupture { opacity: .65; }
 
     .product-img {
@@ -723,11 +731,11 @@ interface LineItem {
 
     .qty-ctrl {
       display: inline-flex; align-items: center;
-      border: 1px solid var(--color-border); border-radius: 6px;
-      overflow: hidden; background: var(--color-surface);
+      border: 1px solid rgba(15,23,42,0.1); border-radius: 6px;
+      overflow: hidden; background: rgba(255,255,255,0.7);
     }
     .qty-ctrl button {
-      border: none; background: var(--color-bg);
+      border: none; background: rgba(15,23,42,0.04);
       width: 26px; height: 26px;
       cursor: pointer; font-size: .85rem; font-weight: bold;
       color: var(--color-text-muted); display: flex; align-items: center; justify-content: center;
@@ -746,13 +754,13 @@ interface LineItem {
       font-size: .85rem;
     }
     .cart-table th {
-      background: var(--color-bg); padding: .75rem 1rem;
-      color: var(--color-text-muted); border-bottom: 1px solid var(--color-border);
+      background: rgba(255,255,255,0.3); padding: .75rem 1rem;
+      color: var(--color-text-muted); border-bottom: 1px solid var(--glass-border);
       text-align: left; font-size: .75rem; font-weight: 700;
       letter-spacing: .4px;
     }
     .cart-table td { padding: .85rem 1rem; border-bottom: 1px solid var(--color-surface-2); }
-    .cart-table tbody tr:hover { background: var(--color-surface-2); }
+    .cart-table tbody tr:hover { background: var(--color-primary-soft); }
 
     .td-product {
       display: flex; align-items: center; gap: .75rem;
@@ -769,11 +777,11 @@ interface LineItem {
 
     .qty-stepper {
       display: inline-flex; align-items: center;
-      border: 1px solid var(--color-border-strong); border-radius: 6px;
-      overflow: hidden; background: var(--color-surface);
+      border: 1px solid rgba(15,23,42,0.1); border-radius: 6px;
+      overflow: hidden; background: rgba(255,255,255,0.7);
     }
     .qty-stepper button {
-      border: none; background: var(--color-bg);
+      border: none; background: rgba(15,23,42,0.04);
       width: 30px; height: 34px;
       cursor: pointer; font-weight: bold; color: var(--color-text-muted);
     }
@@ -823,7 +831,7 @@ interface LineItem {
       margin-bottom: 1.75rem;
     }
     .mode-toggle button {
-      border: none; background: var(--color-bg);
+      border: none; background: rgba(255,255,255,0.55);
       padding: .65rem 1.5rem;
       font-size: .875rem; font-weight: 600;
       color: var(--color-text-muted); cursor: pointer;
@@ -831,7 +839,8 @@ interface LineItem {
     }
     .mode-toggle button:first-child { border-right: 1px solid var(--color-border); }
     .mode-toggle button.active {
-      background: var(--color-primary-hover); color: var(--color-surface);
+      background: var(--color-primary); color: #fff;
+      box-shadow: 0 8px 20px -6px var(--color-primary-glow);
     }
 
     .doc-form { display: flex; flex-direction: column; gap: 1.25rem; }
@@ -845,9 +854,9 @@ interface LineItem {
     }
     .form-ctrl {
       height: 42px;
-      border: 1px solid var(--color-border-strong); border-radius: 8px;
+      border: 1px solid rgba(15,23,42,0.1); border-radius: 8px;
       padding: 0 .875rem; font-size: .875rem;
-      background: var(--color-surface); color: var(--color-text);
+      background: rgba(255,255,255,0.7); color: var(--color-text);
       outline: none; transition: border-color .18s;
       box-sizing: border-box; width: 100%;
     }
@@ -856,14 +865,14 @@ interface LineItem {
     .addr-hint {
       display: block; margin-top: .35rem;
       font-size: .78rem; color: var(--color-text-muted);
-      background: var(--color-bg); padding: .5rem .75rem;
+      background: rgba(15,23,42,0.04); padding: .5rem .75rem;
       border-radius: 6px; border-left: 3px solid var(--color-border-strong);
     }
 
     .tva-banner {
       display: flex; justify-content: space-between; align-items: center;
-      background: var(--color-bg); padding: 1.1rem 1.25rem;
-      border-radius: 10px; border: 1px solid var(--color-border);
+      background: rgba(255,255,255,0.35); padding: 1.1rem 1.25rem;
+      border-radius: 13px; border: 1px solid var(--glass-border);
       margin-top: .5rem;
     }
     .tva-text { display: flex; flex-direction: column; gap: .2rem; }
@@ -882,11 +891,11 @@ interface LineItem {
       content: ""; position: absolute;
       height: 20px; width: 20px;
       left: 3px; bottom: 3px;
-      background: var(--color-surface); border-radius: 50%;
+      background: #fff; border-radius: 50%;
       transition: .25s;
       box-shadow: 0 1px 3px rgba(0,0,0,.2);
     }
-    .ios-toggle input:checked + .ios-knob { background: var(--color-primary-hover); }
+    .ios-toggle input:checked + .ios-knob { background: var(--color-primary); }
     .ios-toggle input:checked + .ios-knob:before { transform: translateX(22px); }
 
     /* ═══════════════════════════ STEP 4 — SYNTHÈSE ═══════════════════════════ */
@@ -909,8 +918,8 @@ interface LineItem {
       margin-bottom: 1.5rem;
     }
     .synthesis-col {
-      background: var(--color-bg); border: 1px solid var(--color-border);
-      border-radius: 10px; padding: 1.1rem 1.25rem;
+      background: rgba(255,255,255,0.35); border: 1px solid var(--glass-border);
+      border-radius: 13px; padding: 1.1rem 1.25rem;
     }
     .synthesis-col h4, .synthesis-articles h4 {
       margin: 0 0 .875rem; font-size: .7rem;
@@ -927,8 +936,8 @@ interface LineItem {
     .synth-row strong { color: var(--color-text); font-weight: 600; text-align: right; max-width: 55%; }
 
     .synthesis-articles {
-      background: var(--color-bg); border: 1px solid var(--color-border);
-      border-radius: 10px; padding: 1.1rem 1.25rem;
+      background: rgba(255,255,255,0.35); border: 1px solid var(--glass-border);
+      border-radius: 13px; padding: 1.1rem 1.25rem;
     }
     .article-row {
       display: flex; justify-content: space-between; align-items: center;
@@ -947,12 +956,16 @@ interface LineItem {
       border-radius: 8px; font-size: .85rem; font-weight: 500;
       cursor: pointer; transition: all .15s;
     }
-    .btn-back:hover { background: var(--color-bg); border-color: var(--color-border-strong); }
+    .btn-back:hover { background: rgba(255,255,255,0.6); border-color: var(--color-border-strong); }
 
     /* ═══════════════════════════ PANNEAU DROIT ═══════════════════════════ */
     .doc-aside {
       width: 320px; flex: 0 0 320px;
-      background: var(--color-surface); border-left: 1px solid var(--color-border);
+      background: var(--glass-bg-strong);
+      backdrop-filter: blur(26px) saturate(180%);
+      -webkit-backdrop-filter: blur(26px) saturate(180%);
+      border-left: 1px solid var(--glass-border);
+      box-shadow: var(--glass-shadow-lg);
       position: sticky; top: 0; height: 100vh;
       display: flex; flex-direction: column;
       box-sizing: border-box; overflow-y: auto;
@@ -991,13 +1004,13 @@ interface LineItem {
       display: flex; gap: .35rem;
     }
     .doc-type-pills button {
-      border: 1px solid var(--color-border);
-      background: var(--color-bg); color: var(--color-text-muted);
+      border: 1px solid rgba(15,23,42,0.1);
+      background: rgba(255,255,255,0.55); color: var(--color-text-muted);
       padding: .2rem .6rem; border-radius: 20px;
       font-size: .72rem; font-weight: 600; cursor: pointer;
     }
     .doc-type-pills button.pill-active {
-      background: var(--color-primary-hover); color: var(--color-surface); border-color: var(--color-primary-hover);
+      background: var(--color-primary); color: #fff; border-color: var(--color-primary);
     }
 
     .aside-total {
@@ -1020,17 +1033,19 @@ interface LineItem {
     }
 
     .btn-continue {
-      background: var(--color-primary-hover); color: var(--color-surface);
-      border: none; height: 44px; border-radius: 10px;
+      background: var(--color-primary); color: #fff;
+      border: none; height: 44px; border-radius: 11px;
       font-size: .9rem; font-weight: 600; cursor: pointer;
+      box-shadow: 0 8px 20px -6px var(--color-primary-glow);
       transition: background .18s;
     }
     .btn-continue:hover:not(:disabled) { background: var(--color-primary-hover); }
     .btn-continue:disabled { background: var(--color-border-strong); cursor: not-allowed; }
 
     .btn-submit {
-      background: var(--color-success); color: var(--color-surface);
-      border: none; height: 44px; border-radius: 10px;
+      background: var(--color-success); color: #fff;
+      border: none; height: 44px; border-radius: 11px;
+      box-shadow: 0 8px 20px -6px rgba(16,185,129,.45);
       font-size: .9rem; font-weight: 600; cursor: pointer;
       transition: background .18s;
     }
@@ -1038,11 +1053,11 @@ interface LineItem {
     .btn-submit:disabled { background: var(--color-border-strong); cursor: not-allowed; }
 
     .btn-pdf, .btn-secondary {
-      background: var(--color-surface); color: var(--color-text-muted);
-      border: 1px solid var(--color-border); height: 40px; border-radius: 10px;
+      background: rgba(255,255,255,0.6); color: var(--color-text-muted);
+      border: 1px solid rgba(15,23,42,0.12); height: 40px; border-radius: 11px;
       font-size: .85rem; font-weight: 500; cursor: pointer;
     }
-    .btn-pdf:hover:not(:disabled), .btn-secondary:hover:not(:disabled) { background: var(--color-bg); }
+    .btn-pdf:hover:not(:disabled), .btn-secondary:hover:not(:disabled) { background: #fff; }
     .btn-pdf:disabled, .btn-secondary:disabled { opacity: .5; cursor: not-allowed; }
 
     .btn-abort {

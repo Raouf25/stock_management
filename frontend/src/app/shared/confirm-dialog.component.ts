@@ -39,9 +39,12 @@ import { ConfirmDialogService } from '../services/confirm-dialog.service';
     }
 
     .cd-box {
-      background: #fff;
-      border-radius: 16px;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.14);
+      background: var(--glass-bg-strong);
+      backdrop-filter: blur(30px) saturate(180%);
+      -webkit-backdrop-filter: blur(30px) saturate(180%);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-2xl);
+      box-shadow: 0 24px 70px -24px rgba(49,46,129,0.45);
       width: 100%; max-width: 400px;
       padding: 1.75rem;
       text-align: center;

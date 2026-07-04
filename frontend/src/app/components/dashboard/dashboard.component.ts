@@ -65,8 +65,6 @@ interface DashboardProduct {
 })
 export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
-  @ViewChild('salesChartCanvas')       salesChartCanvas!:       ElementRef<HTMLCanvasElement>;
-  @ViewChild('paymentChartCanvas')     paymentChartCanvas!:     ElementRef<HTMLCanvasElement>;
   @ViewChild('topProductsChartCanvas') topProductsChartCanvas!: ElementRef<HTMLCanvasElement>;
   @ViewChild('categoryChartCanvas')    categoryChartCanvas!:    ElementRef<HTMLCanvasElement>;
 
@@ -81,8 +79,6 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   loading                  = true;
   trends: Record<string, { pct: number; dir: 'up' | 'down' | 'neutral'; label: string }> = {};
 
-  private salesChart:       Chart | null = null;
-  private paymentChart:     Chart | null = null;
   private topProductsChart: Chart | null = null;
   private categoryChart:    Chart | null = null;
   private ready = { sales: false, purchases: false, products: false, kpis: false };
@@ -266,116 +262,82 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   private tryCharts(): void {
     if (!this.ready.sales || !this.ready.products) return;
     setTimeout(() => {
-      this.createSalesChart();
+      this.buildSalesBars();
       this.createTopProductsChart();
       this.createCategoryChart();
-      if (this.ready.kpis) this.createPaymentChart();
+      if (this.ready.kpis) this.buildPaymentDonut();
     }, 150);
   }
 
-  private createSalesChart(): void {
-    const canvas = this.salesChartCanvas?.nativeElement;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-    this.salesChart?.destroy();
+  /* Barres CSS « Ventes vs Achats » — reproduit le diagramme de la maquette. */
+  private static readonly SALES_BAR_MONTHS = 6;
+  private static readonly SALES_BAR_MAX_HEIGHT_PX = 160;
 
+  salesBars: Array<{
+    label: string;
+    ventes: number;
+    achats: number;
+    ventesH: number;
+    achatsH: number;
+  }> = [];
+
+  private buildSalesBars(): void {
     const salesByMonth     = this.groupByMonth(this.sales,     'dateSale',     'totalSaleAmount');
     const purchasesByMonth = this.groupByMonth(this.purchases, 'datePurchase', 'totalAmountTTC');
-    const months = [...new Set([...Object.keys(salesByMonth), ...Object.keys(purchasesByMonth)])].sort();
+    const months = [...new Set([...Object.keys(salesByMonth), ...Object.keys(purchasesByMonth)])]
+      .sort()
+      .slice(-DashboardComponent.SALES_BAR_MONTHS);
 
-    this.salesChart = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: months.map(m => {
-          const [y, mo] = m.split('-');
-          return `${['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'][+mo - 1]} ${y}`;
-        }),
-        datasets: [
-          {
-            label: 'Achats',
-            data: months.map(m => purchasesByMonth[m] || 0),
-            borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,.08)',
-            tension: 0.4, fill: true, borderWidth: 2.5,
-            pointRadius: 4, pointHoverRadius: 6,
-            pointBackgroundColor: '#ef4444', pointBorderColor: '#fff', pointBorderWidth: 2
-          },
-          {
-            label: 'Ventes',
-            data: months.map(m => salesByMonth[m] || 0),
-            borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,.08)',
-            tension: 0.4, fill: true, borderWidth: 2.5,
-            pointRadius: 4, pointHoverRadius: 6,
-            pointBackgroundColor: '#10b981', pointBorderColor: '#fff', pointBorderWidth: 2
-          }
-        ]
-      },
-      options: {
-        responsive: true, maintainAspectRatio: false,
-        interaction: { mode: 'index' as const, intersect: false },
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            backgroundColor: '#1e293b',
-            titleColor: '#94a3b8',
-            bodyColor: '#f1f5f9',
-            borderColor: '#334155',
-            borderWidth: 1,
-            padding: 12,
-            callbacks: {
-              label: (ctx) => {
-                const v = Number(ctx.parsed.y).toLocaleString('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-                return ` ${ctx.dataset.label}: ${v} DNT`;
-              }
-            }
-          }
-        },
-        scales: {
-          x: { grid: { display: false }, ticks: { font: { size: 11 }, color: '#64748b' } },
-          y: {
-            beginAtZero: true, grid: { color: 'rgba(0,0,0,.04)' },
-            ticks: { font: { size: 11 }, color: '#64748b', callback: (v) => `${Number(v).toLocaleString('fr-FR')} DNT` }
-          }
-        }
-      }
-    } as ChartConfiguration);
+    const maxValue = Math.max(
+      1,
+      ...months.map(m => Math.max(salesByMonth[m] || 0, purchasesByMonth[m] || 0))
+    );
+
+    const monthNames = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'];
+    this.salesBars = months.map(m => {
+      const [, mo] = m.split('-');
+      const ventes = salesByMonth[m] || 0;
+      const achats = purchasesByMonth[m] || 0;
+      return {
+        label: monthNames[+mo - 1],
+        ventes,
+        achats,
+        ventesH: Math.max(3, Math.round((ventes / maxValue) * DashboardComponent.SALES_BAR_MAX_HEIGHT_PX)),
+        achatsH: Math.max(3, Math.round((achats / maxValue) * DashboardComponent.SALES_BAR_MAX_HEIGHT_PX))
+      };
+    });
   }
 
-  private createPaymentChart(): void {
-    const canvas = this.paymentChartCanvas?.nativeElement;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-    this.paymentChart?.destroy();
+  /* Donut CSS « Statuts de paiement » — reproduit le conic-gradient de la maquette. */
+  paymentDonut: {
+    paidPct: number;
+    partialPct: number;
+    unpaidPct: number;
+    paid: number;
+    partial: number;
+    unpaid: number;
+    gradient: string;
+  } | null = null;
 
+  private buildPaymentDonut(): void {
     const dist    = this.invoiceKPIs.paymentStatusDistribution || {};
     const paid    = dist.PAID           || 0;
     const partial = dist.PARTIALLY_PAID || 0;
     const unpaid  = dist.UNPAID         || 0;
     const total   = paid + partial + unpaid;
-    if (total === 0) return;
+    if (total === 0) { this.paymentDonut = null; return; }
 
-    this.paymentChart = new Chart(ctx, {
-      type: 'doughnut',
-      data: {
-        labels: ['Payé', 'Partiel', 'Impayé'],
-        datasets: [{ data: [paid, partial, unpaid], backgroundColor: ['#10b981','#f59e0b','#ef4444'], borderWidth: 3, borderColor: '#fff' }]
-      },
-      options: {
-        responsive: true, maintainAspectRatio: false, cutout: '68%',
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            callbacks: {
-              label: (item) => {
-                const pct = total > 0 ? Math.round((item.parsed / total) * 100) : 0;
-                return ` ${item.label}: ${item.parsed} facture(s) — ${pct}%`;
-              }
-            }
-          }
-        }
-      }
-    } as ChartConfiguration);
+    const paidPct    = Math.round((paid    / total) * 100);
+    const partialPct = Math.round((partial / total) * 100);
+    const unpaidPct  = Math.max(0, 100 - paidPct - partialPct);
+    const stop1 = paidPct;
+    const stop2 = paidPct + partialPct;
+
+    this.paymentDonut = {
+      paidPct, partialPct, unpaidPct,
+      paid, partial, unpaid,
+      gradient: `conic-gradient(#10b981 0 ${stop1}%, #f59e0b ${stop1}% ${stop2}%, #ef4444 ${stop2}% 100%)`
+    };
   }
 
   private createTopProductsChart(): void {

@@ -11,13 +11,6 @@ import { AuthService } from '../../services/auth.service';
   template: `
 <div class="page">
 
-  <div class="page-head">
-    <div>
-      <h1 class="page-title">Mon Profil</h1>
-      <p class="page-sub">Informations du compte et paramètres</p>
-    </div>
-  </div>
-
   <!-- Avatar + nom -->
   <div class="profile-hero">
     <div class="avatar-lg">
@@ -96,10 +89,10 @@ import { AuthService } from '../../services/auth.service';
   `,
   styles: [`
     .page {
-      background: var(--color-bg);
+      background: transparent;
       min-height: 100vh;
       padding: 1.5rem;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-family: var(--font-sans);
       box-sizing: border-box;
     }
 
@@ -112,12 +105,14 @@ import { AuthService } from '../../services/auth.service';
       display: flex;
       align-items: center;
       gap: 1.5rem;
-      background: var(--color-surface);
-      border-radius: 12px;
-      border: 1px solid var(--color-border);
+      background: var(--glass-bg);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--glass-border);
       padding: 1.25rem 1.5rem;
       margin-bottom: 1.25rem;
-      box-shadow: 0 1px 4px rgba(0,0,0,.04);
+      box-shadow: var(--glass-shadow);
     }
 
     .avatar-lg {
@@ -130,9 +125,9 @@ import { AuthService } from '../../services/auth.service';
       justify-content: center;
       font-size: 1.5rem;
       font-weight: 700;
-      color: var(--color-surface);
+      color: #fff;
       flex-shrink: 0;
-      box-shadow: 0 4px 12px rgba(79,70,229,.3);
+      box-shadow: 0 8px 20px -6px var(--color-primary-glow);
     }
 
     .hero-name  { font-size: 1.25rem; font-weight: 700; color: var(--color-text); }
@@ -157,10 +152,12 @@ import { AuthService } from '../../services/auth.service';
     }
 
     .card {
-      background: var(--color-surface);
-      border-radius: 12px;
-      border: 1px solid var(--color-border);
-      box-shadow: 0 1px 4px rgba(0,0,0,.04);
+      background: var(--glass-bg);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--glass-shadow);
       overflow: hidden;
     }
 
@@ -172,8 +169,8 @@ import { AuthService } from '../../services/auth.service';
       font-size: .82rem;
       font-weight: 700;
       color: var(--color-text);
-      background: var(--color-surface);
-      border-bottom: 1px solid var(--color-border);
+      background: transparent;
+      border-bottom: 1px solid var(--glass-border);
     }
     .card-head i { font-size: 1rem; color: var(--color-primary-hover); }
     .card-danger .card-head {
@@ -215,7 +212,7 @@ import { AuthService } from '../../services/auth.service';
       cursor: pointer;
       transition: background .18s, color .18s;
     }
-    .btn-outline:hover:not(:disabled) { background: var(--color-primary-hover); color: var(--color-surface); }
+    .btn-outline:hover:not(:disabled) { background: var(--color-primary-hover); color: #fff; }
     .btn-outline:disabled { opacity: .55; cursor: default; }
 
     .btn-danger {
@@ -232,7 +229,7 @@ import { AuthService } from '../../services/auth.service';
       cursor: pointer;
       transition: background .18s, border-color .18s;
     }
-    .btn-danger:hover { background: var(--color-danger); border-color: var(--color-danger); color: var(--color-surface); }
+    .btn-danger:hover { background: var(--color-danger); border-color: var(--color-danger); color: #fff; }
 
     .reset-hint {
       font-size: .8125rem;

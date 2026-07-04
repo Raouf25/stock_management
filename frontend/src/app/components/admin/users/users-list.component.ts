@@ -31,23 +31,6 @@ import { UserFormComponent } from './user-form.component';
   template: `
     <div class="page">
 
-      <!-- ── En-tête ── -->
-      <div class="page-header">
-        <div class="page-header-left">
-          <h1 class="page-title">
-            <i class="bi bi-people-fill"></i>
-            Gestion des utilisateurs
-          </h1>
-          <span class="page-subtitle" *ngIf="!loading">
-            {{ total }} utilisateur{{ total !== 1 ? 's' : '' }}
-          </span>
-        </div>
-        <button class="btn-create" (click)="openCreate()">
-          <i class="bi bi-person-plus-fill"></i>
-          Nouvel utilisateur
-        </button>
-      </div>
-
       <!-- ── Barre de recherche ── -->
       <div class="toolbar">
         <div class="search-wrap">
@@ -63,6 +46,10 @@ import { UserFormComponent } from './user-form.component';
             <i class="bi bi-x-circle-fill"></i>
           </button>
         </div>
+        <button class="btn-create" (click)="openCreate()">
+          <i class="bi bi-person-plus-fill"></i>
+          Nouvel utilisateur
+        </button>
       </div>
 
       <!-- ── Squelette chargement ── -->
@@ -187,22 +174,22 @@ import { UserFormComponent } from './user-form.component';
     .btn-create {
       padding: 0.5625rem 1.125rem;
       background: var(--color-primary, var(--color-primary));
-      color: var(--color-surface);
+      color: #fff;
       border: none;
-      border-radius: var(--radius-sm, 6px);
+      border-radius: 11px;
       font-size: 0.875rem;
       font-weight: 600;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
       gap: 0.375rem;
-      box-shadow: 0 1px 4px rgba(99,102,241,0.3);
+      box-shadow: 0 8px 20px -6px var(--color-primary-glow);
       transition: background var(--transition, 150ms ease);
     }
     .btn-create:hover { background: var(--color-primary-hover, var(--color-primary-hover)); }
 
     /* ── Toolbar ── */
-    .toolbar { display: flex; align-items: center; gap: 0.75rem; }
+    .toolbar { display: flex; align-items: center; gap: 0.75rem; justify-content: space-between; }
 
     .search-wrap {
       position: relative;
@@ -222,11 +209,11 @@ import { UserFormComponent } from './user-form.component';
     .search-input {
       width: 100%;
       padding: 0.5625rem 2.25rem 0.5625rem 2.25rem;
-      border: 1.5px solid var(--color-border, var(--color-border));
+      border: 1.5px solid rgba(15,23,42,0.1);
       border-radius: var(--radius-sm, 6px);
       font-size: 0.875rem;
       color: var(--color-text, var(--color-text));
-      background: var(--color-surface, var(--color-surface));
+      background: rgba(255,255,255,0.7);
       outline: none;
       transition: border-color var(--transition, 150ms ease);
     }
@@ -245,11 +232,13 @@ import { UserFormComponent } from './user-form.component';
 
     /* ── Table ── */
     .table-card {
-      background: var(--color-surface, var(--color-surface));
-      border: 1px solid var(--color-border, var(--color-border));
-      border-radius: var(--radius-lg, 14px);
+      background: var(--glass-bg);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-xl);
       overflow: hidden;
-      box-shadow: var(--shadow-sm);
+      box-shadow: var(--glass-shadow);
     }
 
     .table {
@@ -259,9 +248,10 @@ import { UserFormComponent } from './user-form.component';
     }
 
     .table thead tr {
-      background: var(--color-surface-2, var(--color-surface-2));
-      border-bottom: 1px solid var(--color-border, var(--color-border));
+      background: rgba(255,255,255,0.3);
+      border-bottom: 1px solid var(--glass-border);
     }
+    :host-context([data-theme="dark"]) .table thead tr { background: rgba(255,255,255,0.03); }
 
     .table th {
       padding: 0.75rem 1rem;
@@ -282,7 +272,7 @@ import { UserFormComponent } from './user-form.component';
     }
 
     .table tbody tr:last-child td { border-bottom: none; }
-    .table tbody tr:hover { background: var(--color-surface-2, var(--color-surface-2)); }
+    .table tbody tr:hover { background: var(--color-primary-soft); }
 
     /* Colonnes spécifiques */
     .td-name { font-weight: 600; color: var(--color-text, var(--color-text)); }
@@ -344,9 +334,9 @@ import { UserFormComponent } from './user-form.component';
     .action-btn {
       width: 1.875rem; height: 1.875rem;
       display: inline-flex; align-items: center; justify-content: center;
-      border: 1px solid var(--color-border, var(--color-border));
+      border: 1px solid rgba(15,23,42,0.1);
       border-radius: var(--radius-sm, 6px);
-      background: var(--color-surface, var(--color-surface));
+      background: rgba(255,255,255,0.6);
       cursor: pointer;
       font-size: 0.8125rem;
       color: var(--color-text-muted, var(--color-text-muted));

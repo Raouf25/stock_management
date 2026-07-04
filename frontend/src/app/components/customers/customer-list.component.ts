@@ -39,10 +39,25 @@ interface CustomerKPIs {
   template: `
 <div class="page">
 
-  <!-- ══ EN-TÊTE ═══════════════════════════════════════════════════════════ -->
-  <div class="page-header">
-    <h1 class="page-title">Clients</h1>
-    <a routerLink="/customers/create" class="btn-create">+ Nouveau Client</a>
+  <!-- ══ BARRE DE FILTRES (maquette) ════════════════════════════════════════ -->
+  <div class="toolbar-glass">
+    <div class="toolbar-search">
+      <i class="bi bi-search"></i>
+      <input type="text" [(ngModel)]="searchQuery" (input)="applyFilters()"
+             placeholder="Rechercher un client…">
+    </div>
+    <select class="toolbar-select" [(ngModel)]="statusFilter" (change)="applyFilters()">
+      <option value="">Tous les statuts</option>
+      <option value="ACTIVE">Actif</option>
+      <option value="INACTIVE">Inactif</option>
+      <option value="BLOCKED">Bloqué</option>
+      <option value="PROSPECT">Prospect</option>
+    </select>
+    <input type="text" class="toolbar-select" [(ngModel)]="addressFilter"
+           (input)="applyFilters()" placeholder="Ville, région…" style="max-width:160px;">
+    <a routerLink="/customers/create" class="btn-accent">
+      <i class="bi bi-person-plus"></i> Nouveau client
+    </a>
   </div>
 
   <!-- ══ KPIs ══════════════════════════════════════════════════════════════ -->
@@ -68,32 +83,6 @@ interface CustomerKPIs {
   <!-- ══ CARTE PRINCIPALE ═══════════════════════════════════════════════════ -->
   <div class="main-card">
 
-    <!-- ── Filtres ─────────────────────────────────────────────────────────── -->
-    <div class="filter-bar">
-      <div class="filter-group fg-wide">
-        <label class="filter-lbl">Recherche</label>
-        <input type="text" class="filter-ctrl" [(ngModel)]="searchQuery"
-               (input)="applyFilters()" placeholder="Nom, email, téléphone…">
-      </div>
-      <div class="filter-group">
-        <label class="filter-lbl">Statut</label>
-        <select class="filter-ctrl" [(ngModel)]="statusFilter" (change)="applyFilters()">
-          <option value="">Tous</option>
-          <option value="ACTIVE">Actif</option>
-          <option value="INACTIVE">Inactif</option>
-          <option value="BLOCKED">Bloqué</option>
-          <option value="PROSPECT">Prospect</option>
-        </select>
-      </div>
-      <div class="filter-group">
-        <label class="filter-lbl">Adresse</label>
-        <input type="text" class="filter-ctrl" [(ngModel)]="addressFilter"
-               (input)="applyFilters()" placeholder="Ville, région…">
-      </div>
-      <button *ngIf="searchQuery || statusFilter || addressFilter"
-              class="btn-reset" (click)="resetFilters()">✕ Réinitialiser</button>
-    </div>
-
     <!-- ════════ TABLE (desktop) ════════ -->
     <div class="desktop-table">
       <table class="data-table">
@@ -113,7 +102,14 @@ interface CustomerKPIs {
           <tr *ngFor="let item of filteredCustomers; trackBy: trackById"
               class="data-row"
               (click)="viewCustomer(item.customer.customerId)">
-            <td><span class="client-name">{{ item.customer.name }}</span></td>
+            <td>
+              <div class="client-cell">
+                <div class="client-avatar" [style.background]="avatarGradient(item.customer.name)">
+                  {{ getInitials(item.customer.name) }}
+                </div>
+                <span class="client-name">{{ item.customer.name }}</span>
+              </div>
+            </td>
             <td class="td-muted">{{ item.customer.fullName || '—' }}</td>
             <td>
               <div class="td-muted">📧 {{ item.customer.email || '—' }}</div>
@@ -201,27 +197,68 @@ interface CustomerKPIs {
   `,
   styles: [`
     *, *::before, *::after {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-family: var(--font-sans);
       box-sizing: border-box;
     }
 
-    .page { padding: 1.5rem; background: var(--color-bg); min-height: 100vh; }
+    .page { padding: 1.5rem; background: transparent; min-height: 100vh; }
 
-    .page-header {
-      display: flex; justify-content: space-between; align-items: center;
-      margin-bottom: 1.5rem;
+    /* ─── BARRE DE FILTRES (maquette) ─────────────────── */
+    .toolbar-glass {
+      display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+      padding: 14px 16px; margin-bottom: 18px;
+      border-radius: 18px;
+      background: var(--glass-bg-soft);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--glass-shadow-sm);
     }
-    .page-title { font-size: 1.5rem; font-weight: 700; color: var(--color-text); margin: 0; }
-    .btn-create {
-      display: inline-flex; align-items: center; gap: .4rem;
-      padding: .6rem 1.25rem;
-      background: linear-gradient(135deg, var(--color-primary-hover), var(--color-primary));
-      color: var(--color-surface); border-radius: 10px; text-decoration: none;
-      font-size: .875rem; font-weight: 600;
-      transition: opacity .18s;
-      box-shadow: 0 2px 8px rgba(79,70,229,.25);
+    .toolbar-search { position: relative; flex: 1; min-width: 220px; }
+    .toolbar-search i {
+      position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+      color: var(--color-text-faint); font-size: 14px;
     }
-    .btn-create:hover { opacity: .88; }
+    .toolbar-search input {
+      width: 100%; padding: 10px 14px 10px 38px;
+      border-radius: 11px; border: 1px solid rgba(15,23,42,0.1);
+      background: rgba(255,255,255,0.7); font-size: 14px;
+      color: var(--color-text); outline: none; font-family: inherit;
+      transition: border-color .18s, box-shadow .18s;
+    }
+    .toolbar-search input:focus {
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 3px var(--color-primary-soft);
+    }
+    .toolbar-select {
+      padding: 10px 14px; border-radius: 11px;
+      border: 1px solid rgba(15,23,42,0.1);
+      background: rgba(255,255,255,0.7); font-size: 13px;
+      color: var(--color-text); outline: none; font-family: inherit;
+      cursor: pointer;
+    }
+    .toolbar-select:focus {
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 3px var(--color-primary-soft);
+    }
+    .btn-accent {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 10px 16px; border-radius: 11px; border: none;
+      background: var(--color-primary); color: #fff;
+      font-size: 14px; font-weight: 600; cursor: pointer;
+      box-shadow: 0 8px 20px -6px var(--color-primary-glow);
+      font-family: inherit; transition: background .18s;
+      white-space: nowrap; text-decoration: none;
+    }
+    .btn-accent:hover { background: var(--color-primary-hover); }
+
+    /* ─── Avatar client (maquette) ────────────────────── */
+    .client-cell { display: flex; align-items: center; gap: 11px; }
+    .client-avatar {
+      width: 34px; height: 34px; flex-shrink: 0; border-radius: 10px;
+      color: #fff; display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 13px;
+    }
 
     .kpi-row {
       display: grid;
@@ -229,12 +266,14 @@ interface CustomerKPIs {
       gap: .875rem; margin-bottom: 1.5rem;
     }
     .kpi-card {
-      background: var(--color-surface); border-radius: 12px; border: 1px solid var(--color-border);
+      background: var(--glass-bg); border-radius: var(--radius-lg); border: 1px solid var(--glass-border);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
       padding: 1rem 1.25rem; display: flex; flex-direction: column; gap: .3rem;
-      box-shadow: 0 1px 3px rgba(0,0,0,.04);
+      box-shadow: var(--glass-shadow-sm);
       transition: transform .15s, box-shadow .15s;
     }
-    .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.07); }
+    .kpi-card:hover { transform: translateY(-2px); box-shadow: var(--glass-shadow-lg); }
     .kpi-val { font-size: 1.25rem; font-weight: 700; color: var(--color-text); line-height: 1.2; }
     .kpi-lbl {
       font-size: .7rem; font-weight: 600; color: var(--color-text-muted);
@@ -242,16 +281,19 @@ interface CustomerKPIs {
     }
 
     .main-card {
-      background: var(--color-surface); border-radius: 12px; border: 1px solid var(--color-border);
-      box-shadow: 0 1px 4px rgba(0,0,0,.04); overflow: hidden;
+      background: var(--glass-bg); border-radius: var(--radius-xl); border: 1px solid var(--glass-border);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      box-shadow: var(--glass-shadow); overflow: hidden;
     }
 
     .filter-bar {
       display: flex; align-items: flex-end; gap: .875rem;
       padding: 1rem 1.25rem;
-      background: var(--color-bg); border-bottom: 1px solid var(--color-surface-2);
+      background: rgba(255,255,255,0.3); border-bottom: 1px solid var(--glass-border);
       flex-wrap: wrap;
     }
+    :host-context([data-theme="dark"]) .filter-bar { background: rgba(255,255,255,0.03); }
     .filter-group { display: flex; flex-direction: column; gap: .35rem; flex: 1; min-width: 120px; }
     .filter-group.fg-wide { flex: 2; min-width: 180px; }
     .filter-lbl {
@@ -259,30 +301,31 @@ interface CustomerKPIs {
       text-transform: uppercase; letter-spacing: .5px;
     }
     .filter-ctrl {
-      height: 38px; border: 1px solid var(--color-border); border-radius: 8px;
+      height: 38px; border: 1px solid rgba(15,23,42,0.1); border-radius: 8px;
       padding: 0 .75rem; font-size: .85rem;
-      background: var(--color-surface); color: var(--color-text); outline: none;
+      background: rgba(255,255,255,0.7); color: var(--color-text); outline: none;
       transition: border-color .18s; width: 100%;
     }
     .filter-ctrl:focus { border-color: var(--color-primary-hover); box-shadow: 0 0 0 3px rgba(79,70,229,.08); }
     .btn-reset {
       height: 38px; padding: 0 .875rem;
-      border: 1px solid var(--color-border); border-radius: 8px;
-      background: var(--color-surface); color: var(--color-text-muted); font-size: .8rem;
+      border: 1px solid rgba(15,23,42,0.1); border-radius: 8px;
+      background: rgba(255,255,255,0.6); color: var(--color-text-muted); font-size: .8rem;
       font-weight: 500; cursor: pointer; white-space: nowrap;
       align-self: flex-end; transition: all .15s;
     }
     .btn-reset:hover { border-color: var(--color-danger); color: var(--color-danger); background: var(--color-danger-bg); }
 
     .data-table { width: 100%; border-collapse: collapse; font-size: .875rem; }
-    .data-table thead tr { background: var(--color-bg); border-bottom: 2px solid var(--color-border); }
+    .data-table thead tr { background: rgba(255,255,255,0.3); border-bottom: 2px solid var(--glass-border); }
+    :host-context([data-theme="dark"]) .data-table thead tr { background: rgba(255,255,255,0.03); }
     .data-table th {
       color: var(--color-text-muted); font-weight: 700; padding: .8rem 1rem; text-align: left;
       font-size: .72rem; letter-spacing: .5px; white-space: nowrap; text-transform: uppercase;
     }
     .data-table td { padding: .8rem 1rem; border-bottom: 1px solid var(--color-surface-2); vertical-align: middle; }
     .data-row { cursor: pointer; transition: background .12s; }
-    .data-row:hover { background: #f5f7ff !important; }
+    .data-row:hover { background: var(--color-primary-soft) !important; }
     .data-row:last-child td { border-bottom: none; }
 
     .ta-r { text-align: right !important; }
@@ -322,7 +365,7 @@ interface CustomerKPIs {
       padding: 1rem 1.25rem; border-bottom: 1px solid var(--color-surface-2);
       cursor: pointer; transition: background .12s;
     }
-    .mobile-row:hover { background: var(--color-bg); }
+    .mobile-row:hover { background: rgba(255,255,255,0.35); }
     .mobile-row:last-child { border-bottom: none; }
     .mobile-row-top {
       display: flex; justify-content: space-between;
@@ -330,7 +373,7 @@ interface CustomerKPIs {
     }
     .mobile-grid-2 { display: grid; grid-template-columns: repeat(2,1fr); gap: .5rem; }
     .mg-cell {
-      background: var(--color-bg); padding: .5rem; border-radius: 8px;
+      background: rgba(15,23,42,0.04); padding: .5rem; border-radius: 8px;
       text-align: center; display: flex; flex-direction: column; gap: .1rem;
     }
     .mg-lbl { font-size: .7rem; color: var(--color-text-muted); }
@@ -435,6 +478,30 @@ export class CustomerListComponent implements OnInit {
 
   trackById(_: number, item: CustomerWithStats): number {
     return item.customer.customerId;
+  }
+
+  private static readonly AVATAR_GRADIENTS = [
+    'linear-gradient(135deg, #6366f1, #4f46e5)',
+    'linear-gradient(135deg, #f472b6, #a855f7)',
+    'linear-gradient(135deg, #38bdf8, #6366f1)',
+    'linear-gradient(135deg, #34d399, #059669)',
+    'linear-gradient(135deg, #fbbf24, #f97316)'
+  ];
+
+  getInitials(name: string): string {
+    return (name || '?')
+      .split(/\s+/)
+      .map(w => w[0])
+      .join('')
+      .toUpperCase()
+      .substring(0, 2);
+  }
+
+  avatarGradient(name: string): string {
+    let hash = 0;
+    for (const c of name || '') hash = (hash * 31 + c.charCodeAt(0)) | 0;
+    const gradients = CustomerListComponent.AVATAR_GRADIENTS;
+    return gradients[Math.abs(hash) % gradients.length];
   }
 
   viewCustomer(id: number): void { this.router.navigate(['/customers/edit', id]); }

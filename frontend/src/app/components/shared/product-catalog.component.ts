@@ -50,12 +50,12 @@ interface Product {
         <div style="max-height: 450px; overflow-y: auto; padding: 0.5rem;">
           <div *ngFor="let product of filteredProducts"
                (click)="selectProduct(product)"
-               style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem; margin-bottom: 0.5rem; background: var(--color-bg); border-radius: 0.375rem; cursor: pointer; transition: all 0.2s; border: 1px solid transparent;"
+               style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem; margin-bottom: 0.5rem; background: rgba(255,255,255,0.45); border-radius: 0.625rem; cursor: pointer; transition: all 0.2s; border: 1px solid transparent;"
                [style.opacity]="getAvailableStock(product) <= 0 ? '0.6' : '1'"
                [style.cursor]="getAvailableStock(product) <= 0 ? 'not-allowed' : 'pointer'"
-               onmouseover="if(this.style.opacity !== '0.6') { this.style.background='#e5e7eb'; this.style.borderColor='#d1d5db' }"
-               onmouseout="if(this.style.opacity !== '0.6') { this.style.background='#f9fafb'; this.style.borderColor='transparent' }">
-            <div style="width: 3rem; height: 3rem; background: white; border-radius: 0.375rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 1px solid var(--color-border);">
+               onmouseover="if(this.style.opacity !== '0.6') { this.style.background='rgba(99,102,241,0.10)'; this.style.borderColor='rgba(99,102,241,0.35)' }"
+               onmouseout="if(this.style.opacity !== '0.6') { this.style.background='rgba(255,255,255,0.45)'; this.style.borderColor='transparent' }">
+            <div style="width: 3rem; height: 3rem; background: rgba(255,255,255,0.8); border-radius: 0.375rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 1px solid rgba(15,23,42,0.08);">
               <img [src]="product.imageUrl || '/placeholder.svg'" [alt]="product.name"
                    style="max-width: 100%; max-height: 100%; object-fit: contain;">
             </div>

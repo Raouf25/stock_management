@@ -10,35 +10,6 @@ import { AuthService } from '../../services/auth.service';
   imports: [CommonModule, FormsModule, RouterModule],
   template: `
     <div class="auth-page">
-      <div class="brand-panel">
-        <div class="blob blob-1"></div>
-        <div class="blob blob-2"></div>
-        <div class="brand-content">
-          <div class="brand-logo"><i class="bi bi-shield-lock-fill"></i></div>
-          <h1 class="brand-name">Bhouri Stock</h1>
-          <p class="brand-tagline">Sécurisez votre compte avec<br>un mot de passe robuste</p>
-          <div class="tips-section">
-            <h3>Conseils de sécurité</h3>
-            <div class="tip-item">
-              <i class="bi bi-check-circle-fill"></i>
-              <span>Minimum <strong>6 caractères</strong></span>
-            </div>
-            <div class="tip-item">
-              <i class="bi bi-check-circle-fill"></i>
-              <span>Mélangez <strong>majuscules & minuscules</strong></span>
-            </div>
-            <div class="tip-item">
-              <i class="bi bi-check-circle-fill"></i>
-              <span>Ajoutez des <strong>chiffres</strong></span>
-            </div>
-            <div class="tip-item">
-              <i class="bi bi-check-circle-fill"></i>
-              <span>Utilisez des <strong>caractères spéciaux</strong></span>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <div class="form-panel">
         <div class="form-card">
 
@@ -151,12 +122,13 @@ import { AuthService } from '../../services/auth.service';
     </div>
   `,
   styles: [`
-    .auth-page { display: flex; min-height: 100vh; width: 100vw; position: fixed; inset: 0; }
+    :host { display: block; width: 100%; flex: 1; }
+    .auth-page { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 24px; }
 
     /* Brand panel */
     .brand-panel {
       flex: 1;
-      background: linear-gradient(150deg, var(--color-primary-hover) 0%, #6d28d9 50%, #7c3aed 100%);
+      background: linear-gradient(150deg, #1f235e 0%, #262261 45%, #101336 100%);
       display: flex; align-items: center; justify-content: center;
       padding: 3rem 2.5rem; position: relative; overflow: hidden;
     }
@@ -186,15 +158,16 @@ import { AuthService } from '../../services/auth.service';
     .tip-item i { color: rgba(255,255,255,0.5); flex-shrink: 0; font-size: 0.875rem; }
 
     /* Form panel */
-    .form-panel {
-      width: 480px; min-width: 320px; background: #f8f9fb;
-      display: flex; align-items: center; justify-content: center;
-      padding: 2rem 1.5rem; overflow-y: auto;
-    }
+    .form-panel { display: contents; }
     .form-card {
-      width: 100%; max-width: 400px; background: white; border-radius: 1.25rem;
+      width: 100%; max-width: 400px;
+      background: var(--glass-bg-strong);
+      backdrop-filter: blur(30px) saturate(180%);
+      -webkit-backdrop-filter: blur(30px) saturate(180%);
+      border: 1px solid var(--glass-border);
+      border-radius: 1.625rem;
       padding: 2.25rem 2rem;
-      box-shadow: 0 4px 32px rgba(67,56,202,0.10), 0 1px 4px rgba(0,0,0,0.06);
+      box-shadow: 0 24px 70px -24px rgba(49,46,129,0.45);
       animation: slideUp 0.3s ease-out;
     }
     @keyframes slideUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
@@ -202,7 +175,7 @@ import { AuthService } from '../../services/auth.service';
     /* States */
     .state-view { text-align: center; }
     .spinner {
-      width: 48px; height: 48px; border: 4px solid var(--color-border); border-top-color: #6d28d9;
+      width: 48px; height: 48px; border: 4px solid var(--color-border); border-top-color: var(--color-primary);
       border-radius: 50%; margin: 0 auto 1.25rem; animation: spin 0.8s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
@@ -229,7 +202,7 @@ import { AuthService } from '../../services/auth.service';
     .form-header { text-align: center; margin-bottom: 1.75rem; }
     .form-icon {
       width: 52px; height: 52px;
-      background: linear-gradient(135deg, var(--color-primary-hover), #7c3aed); border-radius: 1rem;
+      background: var(--color-primary); border-radius: 1rem;
       display: flex; align-items: center; justify-content: center;
       font-size: 1.5rem; color: white; margin: 0 auto 1rem;
     }
@@ -250,13 +223,13 @@ import { AuthService } from '../../services/auth.service';
       font-size: 0.8125rem; font-weight: 600; color: var(--color-text-2);
       display: flex; align-items: center; gap: 0.375rem;
     }
-    .form-field label i { color: #6d28d9; }
+    .form-field label i { color: var(--color-primary); }
     .form-field input {
       width: 100%; padding: 0.6875rem 0.875rem;
       border: 1.5px solid var(--color-border); border-radius: 0.625rem;
       font-size: 0.9375rem; color: var(--color-text); transition: all 0.18s ease; box-sizing: border-box;
     }
-    .form-field input:focus { outline: none; border-color: #6d28d9; box-shadow: 0 0 0 3px rgba(109,40,217,0.1); }
+    .form-field input:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-primary-soft); }
     .password-wrapper { position: relative; }
     .password-wrapper input { padding-right: 2.75rem; }
     .btn-eye {
@@ -264,7 +237,7 @@ import { AuthService } from '../../services/auth.service';
       background: none; border: none; color: var(--color-text-faint); cursor: pointer;
       padding: 0.25rem; font-size: 1rem; transition: color 0.15s ease;
     }
-    .btn-eye:hover { color: #6d28d9; }
+    .btn-eye:hover { color: var(--color-primary); }
 
     /* Password strength */
     .password-strength { display: flex; align-items: center; gap: 0.625rem; margin-top: 0.375rem; }
@@ -288,14 +261,14 @@ import { AuthService } from '../../services/auth.service';
     /* Buttons */
     .btn-submit {
       width: 100%; padding: 0.8125rem 1rem;
-      background: linear-gradient(135deg, var(--color-primary-hover), #7c3aed);
+      background: var(--color-primary);
       color: white; border: none; border-radius: 0.75rem;
       font-size: 0.9375rem; font-weight: 600; cursor: pointer;
       display: flex; align-items: center; justify-content: center; gap: 0.5rem;
-      transition: all 0.2s ease; box-shadow: 0 2px 12px rgba(109,40,217,0.3);
+      transition: all 0.2s ease; box-shadow: 0 8px 20px -6px var(--color-primary-glow);
       text-decoration: none;
     }
-    .btn-submit:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(109,40,217,0.4); }
+    .btn-submit:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 12px 26px -8px var(--color-primary-glow); }
     .btn-submit:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
     .btn-submit--success { background: linear-gradient(135deg, var(--color-success), var(--color-success)); box-shadow: 0 2px 12px rgba(34,197,94,0.3); }
     .btn-submit--success:hover { box-shadow: 0 6px 20px rgba(34,197,94,0.4); }
@@ -303,7 +276,7 @@ import { AuthService } from '../../services/auth.service';
     /* Responsive */
     @media (max-width: 900px) {
       .brand-panel { display: none; }
-      .form-panel { width: 100%; background: linear-gradient(150deg, var(--color-primary-hover), #7c3aed); }
+      .form-panel { width: 100%; background: transparent; }
     }
     @media (max-width: 480px) {
       .form-panel { padding: 1.25rem 1rem; padding-top: 3rem; align-items: flex-start; }

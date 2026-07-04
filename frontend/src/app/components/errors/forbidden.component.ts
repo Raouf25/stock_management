@@ -35,15 +35,17 @@ import { Router } from '@angular/router';
       display: flex;
       align-items: center;
       justify-content: center;
-      background: var(--color-bg);
+      background: transparent;
       padding: 2rem;
     }
 
     .error-card {
-      background: var(--color-surface);
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius-xl);
-      box-shadow: var(--shadow-lg);
+      background: var(--glass-bg-strong);
+      backdrop-filter: blur(30px) saturate(180%);
+      -webkit-backdrop-filter: blur(30px) saturate(180%);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-2xl);
+      box-shadow: 0 24px 70px -24px rgba(49,46,129,0.45);
       padding: 3rem 2.5rem;
       text-align: center;
       max-width: 440px;

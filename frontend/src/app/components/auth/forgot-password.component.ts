@@ -11,40 +11,6 @@ import { AuthService } from '../../services/auth.service';
   template: `
     <div class="auth-page">
 
-      <!-- Left panel — branding -->
-      <div class="brand-panel">
-        <div class="blob blob-1"></div>
-        <div class="blob blob-2"></div>
-        <div class="brand-content">
-          <div class="brand-logo"><i class="bi bi-box-seam-fill"></i></div>
-          <h1 class="brand-name">Bhouri Stock</h1>
-          <p class="brand-tagline">Récupérez l'accès à votre<br>espace de gestion</p>
-          <div class="steps">
-            <div class="step-item">
-              <div class="step-num">1</div>
-              <div class="step-text">
-                <strong>Entrez votre email</strong>
-                <span>Associé à votre compte Bhouri Stock</span>
-              </div>
-            </div>
-            <div class="step-item">
-              <div class="step-num">2</div>
-              <div class="step-text">
-                <strong>Recevez le lien</strong>
-                <span>Email envoyé via Resend en quelques secondes</span>
-              </div>
-            </div>
-            <div class="step-item">
-              <div class="step-num">3</div>
-              <div class="step-text">
-                <strong>Définissez un nouveau mot de passe</strong>
-                <span>Le lien est valable 1 heure</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <!-- Right panel — form -->
       <div class="form-panel">
         <div class="form-card">
@@ -130,18 +96,20 @@ import { AuthService } from '../../services/auth.service';
     </div>
   `,
   styles: [`
+    :host { display: block; width: 100%; flex: 1; }
+
     .auth-page {
       display: flex;
+      align-items: center;
+      justify-content: center;
       min-height: 100vh;
-      width: 100vw;
-      position: fixed;
-      inset: 0;
+      padding: 24px;
     }
 
     /* ── Brand panel ── */
     .brand-panel {
       flex: 1;
-      background: linear-gradient(150deg, var(--color-primary-hover) 0%, #6d28d9 50%, #7c3aed 100%);
+      background: linear-gradient(150deg, #1f235e 0%, #262261 45%, #101336 100%);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -193,18 +161,16 @@ import { AuthService } from '../../services/auth.service';
     .step-text span   { font-size: 0.8125rem; color: rgba(255,255,255,0.6); }
 
     /* ── Form panel ── */
-    .form-panel {
-      width: 480px; min-width: 320px;
-      background: #f8f9fb;
-      display: flex; align-items: center; justify-content: center;
-      padding: 2rem 1.5rem;
-      overflow-y: auto;
-    }
+    .form-panel { display: contents; }
     .form-card {
       width: 100%; max-width: 400px;
-      background: white; border-radius: 1.25rem;
+      background: var(--glass-bg-strong);
+      backdrop-filter: blur(30px) saturate(180%);
+      -webkit-backdrop-filter: blur(30px) saturate(180%);
+      border: 1px solid var(--glass-border);
+      border-radius: 1.625rem;
       padding: 2.25rem 2rem;
-      box-shadow: 0 4px 32px rgba(67,56,202,0.10), 0 1px 4px rgba(0,0,0,0.06);
+      box-shadow: 0 24px 70px -24px rgba(49,46,129,0.45);
       animation: slideUp 0.3s ease-out;
     }
     @keyframes slideUp {
@@ -214,7 +180,7 @@ import { AuthService } from '../../services/auth.service';
     .form-header { text-align: center; margin-bottom: 1.75rem; }
     .form-icon {
       width: 52px; height: 52px;
-      background: linear-gradient(135deg, var(--color-primary-hover), #7c3aed);
+      background: var(--color-primary);
       border-radius: 1rem;
       display: flex; align-items: center; justify-content: center;
       font-size: 1.5rem; color: white;
@@ -237,7 +203,7 @@ import { AuthService } from '../../services/auth.service';
       font-size: 0.8125rem; font-weight: 600; color: var(--color-text-2);
       display: flex; align-items: center; gap: 0.375rem;
     }
-    .form-field label i { color: #6d28d9; }
+    .form-field label i { color: var(--color-primary); }
     .form-field input {
       width: 100%; padding: 0.6875rem 0.875rem;
       border: 1.5px solid var(--color-border); border-radius: 0.625rem;
@@ -245,21 +211,21 @@ import { AuthService } from '../../services/auth.service';
       transition: all 0.18s ease; box-sizing: border-box;
     }
     .form-field input:focus {
-      outline: none; border-color: #6d28d9;
-      box-shadow: 0 0 0 3px rgba(109,40,217,0.1);
+      outline: none; border-color: var(--color-primary);
+      box-shadow: 0 0 0 3px var(--color-primary-soft);
     }
 
     /* Buttons */
     .btn-submit {
       width: 100%; padding: 0.8125rem 1rem;
-      background: linear-gradient(135deg, var(--color-primary-hover), #7c3aed);
+      background: var(--color-primary);
       color: white; border: none; border-radius: 0.75rem;
       font-size: 0.9375rem; font-weight: 600; cursor: pointer;
       display: flex; align-items: center; justify-content: center; gap: 0.5rem;
       transition: all 0.2s ease; margin-bottom: 0.5rem;
-      box-shadow: 0 2px 12px rgba(109,40,217,0.3);
+      box-shadow: 0 8px 20px -6px var(--color-primary-glow);
     }
-    .btn-submit:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(109,40,217,0.4); }
+    .btn-submit:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 12px 26px -8px var(--color-primary-glow); }
     .btn-submit:disabled { opacity: 0.7; cursor: not-allowed; }
     .btn-secondary {
       width: 100%; padding: 0.75rem 1rem;
@@ -295,14 +261,14 @@ import { AuthService } from '../../services/auth.service';
       border: 1px solid var(--color-border); border-radius: 0.625rem;
       font-size: 0.8125rem; color: var(--color-text-2); text-align: left;
     }
-    .info-card i { color: #6d28d9; font-size: 1rem; flex-shrink: 0; }
+    .info-card i { color: var(--color-primary); font-size: 1rem; flex-shrink: 0; }
     .info-card.resend-badge { background: #f0fdf4; border-color: #bbf7d0; }
     .info-card.resend-badge i { color: var(--color-success); }
 
     /* Back link */
     .back-link { text-align: center; margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid var(--color-border); }
     .back-link a {
-      color: #6d28d9; text-decoration: none; font-size: 0.875rem; font-weight: 500;
+      color: var(--color-primary); text-decoration: none; font-size: 0.875rem; font-weight: 500;
       display: inline-flex; align-items: center; gap: 0.375rem;
       transition: color 0.15s ease;
     }
@@ -315,7 +281,7 @@ import { AuthService } from '../../services/auth.service';
     /* Responsive */
     @media (max-width: 900px) {
       .brand-panel { display: none; }
-      .form-panel  { width: 100%; background: linear-gradient(150deg, var(--color-primary-hover), #7c3aed); }
+      .form-panel  { width: 100%; background: transparent; }
     }
     @media (max-width: 480px) {
       .form-panel { padding: 1.25rem 1rem; padding-top: 3rem; align-items: flex-start; }

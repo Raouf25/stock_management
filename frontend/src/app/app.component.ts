@@ -66,23 +66,29 @@ export class AppComponent implements OnInit {
     return ['/login', '/forgot-password', '/reset-password'].some(r => this.currentRoute.startsWith(r));
   }
 
-  getCurrentPageTitle(): string {
-    const routeTitles: { [key: string]: string } = {
-      '/': 'Tableau de Bord',
-      '/products': 'Gestion des Produits',
-      '/purchases': 'Gestion des Achats',
-      '/sales': 'Gestion des Ventes',
-      '/customers': 'Gestion des Clients',
-      '/invoices': 'Gestion des Factures',
-      '/documents/create': 'Créer Facture / BL',
-      '/invoices/create': 'Créer Facture',
-      '/invoices/list': 'Liste des Factures',
-      '/delivery-notes': 'Bons de Livraison',
-      '/delivery-notes/create': 'Créer BL'
-    };
+  private static readonly PAGE_HEADERS: ReadonlyArray<{ prefix: string; title: string; subtitle: string }> = [
+    { prefix: '/products',         title: 'Produits',                       subtitle: 'Inventaire, coût moyen pondéré et alertes de stock' },
+    { prefix: '/customers/create', title: 'Nouveau client',                 subtitle: 'Créez une fiche client complète' },
+    { prefix: '/customers',        title: 'Clients',                        subtitle: 'Répertoire clients et suivi des impayés' },
+    { prefix: '/suppliers/create', title: 'Nouveau fournisseur',            subtitle: 'Ajoutez un partenaire à votre répertoire' },
+    { prefix: '/suppliers',        title: 'Fournisseurs',                   subtitle: "Vos partenaires et historique d'achats" },
+    { prefix: '/documents/create', title: 'Créer Facture / BL',             subtitle: 'Catalogue, panier, facturation et synthèse' },
+    { prefix: '/invoices',         title: 'Factures & Bons de livraison',   subtitle: 'Facturation conforme à la législation tunisienne' },
+    { prefix: '/delivery-notes',   title: 'Factures & Bons de livraison',   subtitle: 'Facturation conforme à la législation tunisienne' },
+    { prefix: '/tax-report',       title: 'Rapport TVA / Taxes',            subtitle: 'Déclaration TVA — taux 19 %' },
+    { prefix: '/settings',         title: 'Paramètres',                     subtitle: "Configuration de l'entreprise et de l'application" },
+    { prefix: '/profile',          title: 'Mon profil',                     subtitle: 'Informations du compte et paramètres' },
+    { prefix: '/admin/users',      title: 'Utilisateurs',                   subtitle: 'Gestion des comptes et des rôles' }
+  ];
 
-    return routeTitles[this.currentRoute] || 'Stock Management ERP';
+  private matchHeader(): { title: string; subtitle: string } {
+    const route = this.currentRoute.split('?')[0];
+    const match = AppComponent.PAGE_HEADERS.find(h => route.startsWith(h.prefix));
+    return match ?? { title: 'Tableau de bord', subtitle: "Vue d'ensemble de votre activité" };
   }
+
+  get pageTitle(): string { return this.matchHeader().title; }
+  get pageSubtitle(): string { return this.matchHeader().subtitle; }
 
   refreshData() {
     window.location.reload();

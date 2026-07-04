@@ -17,11 +17,28 @@ Chart.register(...registerables);
   template: `
 <div class="page">
 
-  <!-- ══ EN-TÊTE ═══════════════════════════════════════════════════════════ -->
-  <div class="page-header">
-    <h1 class="page-title">Produits</h1>
-    <button class="btn-purchase" (click)="togglePurchaseForm()">
-      <i class="bi bi-cart-plus"></i>
+  <!-- ══ BARRE DE FILTRES (maquette) ════════════════════════════════════════ -->
+  <div class="toolbar-glass">
+    <div class="toolbar-search">
+      <i class="bi bi-search"></i>
+      <input type="text" [ngModel]="searchText"
+             (ngModelChange)="onSearchInput($event)"
+             placeholder="Rechercher un produit…">
+    </div>
+    <div class="gamme-pills" *ngIf="getGammes().length > 0">
+      <span class="gpill" [class.gpill-on]="!selectedGamme" (click)="selectedGamme = ''">Toutes</span>
+      <span class="gpill" *ngFor="let g of getGammes()"
+            [class.gpill-on]="selectedGamme === g" (click)="selectedGamme = g">{{ g }}</span>
+    </div>
+    <label class="toggle-label" title="Inclure les produits en rupture">
+      <div class="toggle-track" (click)="showAllProducts = !showAllProducts"
+           [class.toggle-on]="showAllProducts">
+        <div class="toggle-thumb"></div>
+      </div>
+      <span class="toggle-text">Tous</span>
+    </label>
+    <button class="btn-accent" (click)="togglePurchaseForm()">
+      <i class="bi" [class.bi-plus-lg]="!showPurchaseForm" [class.bi-x-lg]="showPurchaseForm"></i>
       {{ showPurchaseForm ? 'Fermer' : 'Nouvel Achat' }}
     </button>
   </div>
@@ -140,27 +157,6 @@ Chart.register(...registerables);
   <!-- ══ CARTE PRINCIPALE ═══════════════════════════════════════════════════ -->
   <div class="main-card">
 
-    <!-- ── Filtres ─────────────────────────────────────────────────────────── -->
-    <div class="filter-bar">
-      <div class="filter-group fg-wide">
-        <label class="filter-lbl">Recherche</label>
-        <input type="text" class="filter-ctrl" [ngModel]="searchText"
-               (ngModelChange)="onSearchInput($event)"
-               placeholder="Nom, désignation, gamme…">
-      </div>
-      <div class="filter-group" style="justify-content:flex-end;">
-        <label class="filter-lbl">Affichage</label>
-        <label class="toggle-label">
-          <div class="toggle-track" (click)="showAllProducts = !showAllProducts"
-               [class.toggle-on]="showAllProducts">
-            <div class="toggle-thumb"></div>
-          </div>
-          <span class="toggle-text">Tous (y compris stock nul)</span>
-        </label>
-      </div>
-      <button *ngIf="searchText" class="btn-reset" (click)="searchText=''">✕ Réinitialiser</button>
-    </div>
-
     <!-- Chargement / vide -->
     <div *ngIf="loading" class="empty-state">
       <div class="empty-icon">⏳</div>
@@ -184,6 +180,7 @@ Chart.register(...registerables);
             <th class="ta-r">VALEUR INIT. (DNT)</th>
             <th class="ta-r">VALEUR ACT. (DNT)</th>
             <th class="ta-r">CMP (DNT)</th>
+            <th>STATUT</th>
           </tr>
         </thead>
         <tbody>
@@ -203,9 +200,12 @@ Chart.register(...registerables);
             <td class="ta-r td-muted">{{ p.initialStockValue | number:'1.3-3' }}</td>
             <td class="ta-r fw-600 c-green">{{ p.currentStockValue | number:'1.3-3' }}</td>
             <td class="ta-r fw-500">{{ p.cmp | number:'1.3-3' }}</td>
+            <td>
+              <span class="stock-pill" [ngClass]="'sp-' + stockStatus(p).kind">{{ stockStatus(p).label }}</span>
+            </td>
           </tr>
           <tr *ngIf="getFilteredProducts().length === 0">
-            <td colspan="8" class="empty-state">
+            <td colspan="9" class="empty-state">
               <div class="empty-icon">📭</div>
               <p>Aucun produit trouvé</p>
             </td>
@@ -262,25 +262,67 @@ Chart.register(...registerables);
   `,
   styles: [`
     *, *::before, *::after {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-family: var(--font-sans);
       box-sizing: border-box;
     }
 
-    .page { padding: 1.5rem; background: var(--color-bg); min-height: 100vh; }
+    .page { padding: 1.5rem; background: transparent; min-height: 100vh; }
 
-    .page-header { margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; }
-    .page-title  { font-size: 1.5rem; font-weight: 700; color: var(--color-text); margin: 0; }
-
-    .btn-purchase {
-      display: inline-flex; align-items: center; gap: .35rem;
-      padding: .6rem 1.25rem;
-      background: linear-gradient(135deg, var(--color-success), var(--color-success));
-      color: var(--color-surface); border: none; border-radius: 10px;
-      font-size: .875rem; font-weight: 600; cursor: pointer;
-      box-shadow: 0 2px 8px rgba(16,185,129,.25);
-      transition: opacity .18s; white-space: nowrap;
+    /* ─── BARRE DE FILTRES (maquette) ─────────────────── */
+    .toolbar-glass {
+      display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+      padding: 14px 16px; margin-bottom: 18px;
+      border-radius: 18px;
+      background: var(--glass-bg-soft);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--glass-shadow-sm);
     }
-    .btn-purchase:hover { opacity: .88; }
+    .toolbar-search { position: relative; flex: 1; min-width: 220px; }
+    .toolbar-search i {
+      position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+      color: var(--color-text-faint); font-size: 14px;
+    }
+    .toolbar-search input {
+      width: 100%; padding: 10px 14px 10px 38px;
+      border-radius: 11px; border: 1px solid rgba(15,23,42,0.1);
+      background: rgba(255,255,255,0.7); font-size: 14px;
+      color: var(--color-text); outline: none; font-family: inherit;
+      transition: border-color .18s, box-shadow .18s;
+    }
+    .toolbar-search input:focus {
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 3px var(--color-primary-soft);
+    }
+    .gamme-pills { display: flex; gap: 8px; flex-wrap: wrap; }
+    .gpill {
+      padding: 8px 14px; border-radius: 10px;
+      background: rgba(15,23,42,0.04); color: var(--color-text-muted);
+      font-size: 13px; font-weight: 600; cursor: pointer;
+      transition: all .18s; white-space: nowrap;
+    }
+    .gpill:hover { background: rgba(15,23,42,0.08); }
+    .gpill-on { background: var(--color-primary-soft); color: var(--color-primary); }
+
+    .btn-accent {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 10px 16px; border-radius: 11px; border: none;
+      background: var(--color-primary); color: #fff;
+      font-size: 14px; font-weight: 600; cursor: pointer;
+      box-shadow: 0 8px 20px -6px var(--color-primary-glow);
+      font-family: inherit; transition: background .18s; white-space: nowrap;
+    }
+    .btn-accent:hover { background: var(--color-primary-hover); }
+
+    .stock-pill {
+      display: inline-flex; padding: 4px 10px; border-radius: 999px;
+      font-size: 12px; font-weight: 700; white-space: nowrap;
+    }
+    .sp-ok       { background: rgba(16,185,129,0.14); color: #047857; }
+    .sp-low      { background: rgba(245,158,11,0.16); color: #b45309; }
+    .sp-critical { background: rgba(239,68,68,0.14);  color: #b91c1c; }
+    .sp-out      { background: rgba(239,68,68,0.14);  color: #b91c1c; }
 
     /* ─── KPI ROW ─────────────────────────────────────── */
     .kpi-row {
@@ -289,12 +331,14 @@ Chart.register(...registerables);
       gap: .875rem; margin-bottom: 1.5rem;
     }
     .kpi-card {
-      background: var(--color-surface); border-radius: 12px; border: 1px solid var(--color-border);
+      background: var(--glass-bg); border-radius: var(--radius-lg); border: 1px solid var(--glass-border);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
       padding: 1rem 1.25rem; display: flex; flex-direction: column; gap: .3rem;
-      box-shadow: 0 1px 3px rgba(0,0,0,.04);
+      box-shadow: var(--glass-shadow-sm);
       transition: transform .15s, box-shadow .15s;
     }
-    .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.07); }
+    .kpi-card:hover { transform: translateY(-2px); box-shadow: var(--glass-shadow-lg); }
     .kpi-val { font-size: 1.25rem; font-weight: 700; color: var(--color-text); line-height: 1.2; }
     .kpi-lbl {
       font-size: .7rem; font-weight: 600; color: var(--color-text-muted);
@@ -307,14 +351,16 @@ Chart.register(...registerables);
       gap: 1rem; margin-bottom: 1.5rem;
     }
     .chart-card {
-      background: var(--color-surface); border-radius: 12px;
-      border: 1px solid var(--color-border);
-      box-shadow: 0 1px 4px rgba(0,0,0,.04); overflow: hidden;
+      background: var(--glass-bg); border-radius: var(--radius-xl);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--glass-shadow); overflow: hidden;
     }
     .chart-card-header {
       padding: .75rem 1.25rem;
-      background: var(--color-surface);
-      border-bottom: 1px solid var(--color-surface-2);
+      background: transparent;
+      border-bottom: 1px solid var(--glass-border);
       color: var(--color-text); font-weight: 700; font-size: .875rem;
     }
     .chart-body { padding: 1rem; height: 340px; position: relative; }
@@ -322,18 +368,21 @@ Chart.register(...registerables);
 
     /* ─── MAIN CARD ───────────────────────────────────── */
     .main-card {
-      background: var(--color-surface); border-radius: 12px;
-      border: 1px solid var(--color-border);
-      box-shadow: 0 1px 4px rgba(0,0,0,.04); overflow: hidden;
+      background: var(--glass-bg); border-radius: var(--radius-xl);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--glass-shadow); overflow: hidden;
     }
 
     /* ─── FILTER BAR ──────────────────────────────────── */
     .filter-bar {
       display: flex; align-items: flex-end; gap: .875rem;
       padding: 1rem 1.25rem;
-      background: var(--color-bg); border-bottom: 1px solid var(--color-surface-2);
+      background: rgba(255,255,255,0.3); border-bottom: 1px solid var(--glass-border);
       flex-wrap: wrap;
     }
+    :host-context([data-theme="dark"]) .filter-bar { background: rgba(255,255,255,0.03); }
     .filter-group { display: flex; flex-direction: column; gap: .35rem; flex: 1; min-width: 120px; }
     .filter-group.fg-wide { flex: 2; min-width: 180px; }
     .filter-lbl {
@@ -341,16 +390,16 @@ Chart.register(...registerables);
       text-transform: uppercase; letter-spacing: .5px;
     }
     .filter-ctrl {
-      height: 38px; border: 1px solid var(--color-border); border-radius: 8px;
+      height: 38px; border: 1px solid rgba(15,23,42,0.1); border-radius: 8px;
       padding: 0 .75rem; font-size: .85rem;
-      background: var(--color-surface); color: var(--color-text); outline: none;
+      background: rgba(255,255,255,0.7); color: var(--color-text); outline: none;
       transition: border-color .18s; width: 100%;
     }
     .filter-ctrl:focus { border-color: var(--color-primary-hover); box-shadow: 0 0 0 3px rgba(79,70,229,.08); }
     .btn-reset {
       height: 38px; padding: 0 .875rem;
-      border: 1px solid var(--color-border); border-radius: 8px;
-      background: var(--color-surface); color: var(--color-text-muted); font-size: .8rem;
+      border: 1px solid rgba(15,23,42,0.1); border-radius: 8px;
+      background: rgba(255,255,255,0.6); color: var(--color-text-muted); font-size: .8rem;
       font-weight: 500; cursor: pointer; white-space: nowrap;
       align-self: flex-end; transition: all .15s;
     }
@@ -365,21 +414,22 @@ Chart.register(...registerables);
     .toggle-thumb {
       position: absolute; top: 2px; left: 2px;
       width: 18px; height: 18px; border-radius: 50%;
-      background: var(--color-surface); box-shadow: 0 1px 4px rgba(0,0,0,.2); transition: left .25s;
+      background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,.2); transition: left .25s;
     }
     .toggle-track.toggle-on .toggle-thumb { left: 20px; }
     .toggle-text { font-size: .8rem; color: var(--color-text-muted); white-space: nowrap; }
 
     /* ─── TABLE ───────────────────────────────────────── */
     .data-table { width: 100%; border-collapse: collapse; font-size: .875rem; }
-    .data-table thead tr { background: var(--color-bg); border-bottom: 2px solid var(--color-border); }
+    .data-table thead tr { background: rgba(255,255,255,0.3); border-bottom: 2px solid var(--glass-border); }
+    :host-context([data-theme="dark"]) .data-table thead tr { background: rgba(255,255,255,0.03); }
     .data-table th {
       color: var(--color-text-muted); font-weight: 700; padding: .8rem 1rem; text-align: left;
       font-size: .72rem; letter-spacing: .5px; white-space: nowrap; text-transform: uppercase;
     }
     .data-table td { padding: .8rem 1rem; border-bottom: 1px solid var(--color-surface-2); vertical-align: middle; }
     .data-row { transition: background .12s; }
-    .data-row:hover { background: #f5f7ff !important; }
+    .data-row:hover { background: var(--color-primary-soft) !important; }
     .data-row:last-child td { border-bottom: none; }
 
     .ta-r    { text-align: right !important; }
@@ -410,7 +460,7 @@ Chart.register(...registerables);
     .mobile-row {
       padding: 1rem 1.25rem; border-bottom: 1px solid var(--color-surface-2); transition: background .12s;
     }
-    .mobile-row:hover { background: var(--color-bg); }
+    .mobile-row:hover { background: rgba(255,255,255,0.35); }
     .mobile-row:last-child { border-bottom: none; }
     .mobile-row-top {
       display: flex; justify-content: space-between;
@@ -419,7 +469,7 @@ Chart.register(...registerables);
     .mobile-grid-2 { display: grid; grid-template-columns: repeat(2,1fr); gap: .5rem; }
     .mobile-grid-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: .5rem; }
     .mg-cell {
-      background: var(--color-bg); padding: .5rem; border-radius: 8px;
+      background: rgba(15,23,42,0.04); padding: .5rem; border-radius: 8px;
       text-align: center; display: flex; flex-direction: column; gap: .1rem;
     }
     .mg-lbl { font-size: .7rem; color: var(--color-text-muted); }
@@ -439,8 +489,8 @@ Chart.register(...registerables);
       display: flex; align-items: center; gap: .5rem;
       padding: .75rem 1.25rem;
       background: linear-gradient(135deg, var(--color-success), var(--color-success));
-      border-radius: 12px 12px 0 0;
-      color: var(--color-surface); font-weight: 600; font-size: .95rem;
+      border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+      color: #fff; font-weight: 600; font-size: .95rem;
     }
     .form-body { padding: 1.25rem 1.5rem; }
     .form-row  { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.25rem; }
@@ -451,9 +501,9 @@ Chart.register(...registerables);
       text-transform: uppercase; letter-spacing: .5px;
     }
     .form-ctrl {
-      height: 38px; border: 1px solid var(--color-border); border-radius: 8px;
+      height: 38px; border: 1px solid rgba(15,23,42,0.1); border-radius: 8px;
       padding: 0 .75rem; font-size: .85rem;
-      background: var(--color-surface); color: var(--color-text); outline: none;
+      background: rgba(255,255,255,0.7); color: var(--color-text); outline: none;
       transition: border-color .18s; width: 100%;
     }
     .form-ctrl:focus { border-color: var(--color-primary-hover); box-shadow: 0 0 0 3px rgba(79,70,229,.08); }
@@ -472,7 +522,7 @@ Chart.register(...registerables);
     .lines-table-head  {
       display: grid; grid-template-columns: 2fr 1fr 1.2fr 36px;
       gap: .75rem; padding: .6rem 1rem;
-      background: var(--color-bg); border-bottom: 1px solid var(--color-border);
+      background: rgba(255,255,255,0.3); border-bottom: 1px solid var(--glass-border);
     }
     .lth-product, .lth-qty, .lth-price, .lth-del {
       font-size: .72rem; font-weight: 700; color: var(--color-text-muted);
@@ -481,17 +531,19 @@ Chart.register(...registerables);
     .lines-table-row {
       display: grid; grid-template-columns: 2fr 1fr 1.2fr 36px;
       gap: .75rem; align-items: center;
-      padding: .5rem 1rem; border-bottom: 1px solid var(--color-surface-2); background: var(--color-surface);
+      padding: .5rem 1rem; border-bottom: 1px solid var(--color-surface-2); background: transparent;
     }
     .lines-table-row:last-child { border-bottom: none; }
-    .lines-table-row.row-alt    { background: #fafafa; }
+    .lines-table-row.row-alt    { background: rgba(15,23,42,0.03); }
     .line-cell { display: flex; align-items: center; }
 
     .product-dropdown {
       position: fixed; z-index: 9999;
-      background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px;
+      background: var(--glass-bg-strong); border: 1px solid var(--glass-border); border-radius: 11px;
+      backdrop-filter: blur(30px) saturate(180%);
+      -webkit-backdrop-filter: blur(30px) saturate(180%);
       max-height: 280px; overflow-y: auto;
-      box-shadow: 0 8px 24px rgba(0,0,0,.12);
+      box-shadow: var(--glass-shadow-lg);
     }
     .dropdown-empty { padding: .75rem 1rem; color: var(--color-text-faint); font-style: italic; font-size: .85rem; }
     .dropdown-item  { padding: .55rem 1rem; cursor: pointer; border-bottom: 1px solid var(--color-surface-2); font-size: .88rem; transition: background .12s; }
@@ -500,7 +552,7 @@ Chart.register(...registerables);
 
     .btn-del-line {
       width: 34px; height: 34px; border-radius: 6px;
-      border: 1px solid var(--color-danger); background: var(--color-surface);
+      border: 1px solid var(--color-danger); background: rgba(255,255,255,0.6);
       color: var(--color-danger); font-size: .9rem; cursor: pointer;
       display: flex; align-items: center; justify-content: center; transition: background .12s;
     }
@@ -516,7 +568,7 @@ Chart.register(...registerables);
     .btn-submit {
       padding: .6rem 1.5rem;
       background: linear-gradient(135deg, var(--color-success), var(--color-success));
-      color: var(--color-surface); border: none; border-radius: 8px;
+      color: #fff; border: none; border-radius: 8px;
       font-size: .875rem; font-weight: 600; cursor: pointer; transition: opacity .18s;
     }
     .btn-submit:hover { opacity: .88; }
@@ -543,8 +595,12 @@ export class ProductsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   products: any[] = [];
   loading = true;
+  private static readonly LOW_STOCK_THRESHOLD = 50;
+  private static readonly CRITICAL_STOCK_THRESHOLD = 10;
+
   searchText = '';
   showAllProducts = false;
+  selectedGamme = '';
 
   showPurchaseForm = false;
   newPurchase = { supplierId: '', invoiceNumber: '', datePurchase: '' };
@@ -618,6 +674,10 @@ export class ProductsComponent implements OnInit, AfterViewInit, OnDestroy {
       ? [...this.products]
       : this.products.filter(p => (p.currentStockQuantity || 0) > 0);
 
+    if (this.selectedGamme) {
+      list = list.filter(p => p.gamme === this.selectedGamme);
+    }
+
     const q = this.searchText?.toLowerCase().trim();
     if (q) {
       list = list.filter(p =>
@@ -627,6 +687,22 @@ export class ProductsComponent implements OnInit, AfterViewInit, OnDestroy {
       );
     }
     return list;
+  }
+
+  getGammes(): string[] {
+    const gammes = new Set<string>();
+    for (const p of this.products) {
+      if (p.gamme) gammes.add(p.gamme);
+    }
+    return [...gammes].sort();
+  }
+
+  stockStatus(p: any): { kind: string; label: string } {
+    const qty = p.currentStockQuantity || 0;
+    if (qty <= 0) return { kind: 'out', label: 'Rupture' };
+    if (qty < ProductsComponent.CRITICAL_STOCK_THRESHOLD) return { kind: 'critical', label: 'Critique' };
+    if (qty < ProductsComponent.LOW_STOCK_THRESHOLD) return { kind: 'low', label: 'Faible' };
+    return { kind: 'ok', label: 'En stock' };
   }
 
   getTotalStock(): number {

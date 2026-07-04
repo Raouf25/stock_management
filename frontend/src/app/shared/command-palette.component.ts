@@ -89,9 +89,12 @@ interface Command {
       top: 12vh; left: 50%;
       transform: translateX(-50%);
       width: min(640px, calc(100vw - 2rem));
-      background: var(--color-surface, #fff);
-      border-radius: 16px;
-      box-shadow: 0 24px 48px rgba(0,0,0,0.18), 0 0 0 1px rgba(0,0,0,0.06);
+      background: var(--glass-bg-strong);
+      backdrop-filter: blur(30px) saturate(180%);
+      -webkit-backdrop-filter: blur(30px) saturate(180%);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-2xl);
+      box-shadow: 0 24px 70px -24px rgba(49,46,129,0.45);
       z-index: 9001;
       overflow: hidden;
       animation: cpIn 0.18s cubic-bezier(0.34,1.56,0.64,1) both;

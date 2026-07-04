@@ -12,93 +12,44 @@ type TabType = 'login' | 'register';
   imports: [CommonModule, FormsModule, RouterModule],
   template: `
     <div class="auth-page">
+      <div class="auth-card">
 
-      <!-- ══════════════════════════════
-           LEFT PANEL — Branding
-      ══════════════════════════════ -->
-      <div class="brand-panel">
-        <!-- Decorative blobs -->
-        <div class="blob blob-1"></div>
-        <div class="blob blob-2"></div>
-        <div class="blob blob-3"></div>
-
-        <div class="brand-content">
-          <div class="brand-logo">
-            <i class="bi bi-box-seam-fill"></i>
+        <!-- Header -->
+        <div class="auth-head">
+          <div class="auth-logo">
+            <i class="bi bi-boxes"></i>
           </div>
-          <h1 class="brand-name">Bhouri Stock</h1>
-          <p class="brand-tagline">Gérez votre inventaire<br>avec précision et efficacité</p>
-
-          <div class="brand-features">
-            <div class="feature-item">
-              <div class="feature-icon"><i class="bi bi-graph-up-arrow"></i></div>
-              <div class="feature-text">
-                <strong>Tableau de bord analytique</strong>
-                <span>Visualisez vos KPIs en temps réel</span>
-              </div>
-            </div>
-            <div class="feature-item">
-              <div class="feature-icon"><i class="bi bi-receipt"></i></div>
-              <div class="feature-text">
-                <strong>Facturation & BL</strong>
-                <span>Créez et gérez vos documents</span>
-              </div>
-            </div>
-            <div class="feature-item">
-              <div class="feature-icon"><i class="bi bi-boxes"></i></div>
-              <div class="feature-text">
-                <strong>Gestion des stocks</strong>
-                <span>Suivez vos mouvements d'inventaire</span>
-              </div>
-            </div>
-          </div>
+          <h1>Bhouri Stock</h1>
+          <p>{{ activeTab === 'login' ? 'Connectez-vous à votre espace' : 'Créez votre compte' }}</p>
         </div>
-      </div>
 
-      <!-- ══════════════════════════════
-           RIGHT PANEL — Form
-      ══════════════════════════════ -->
-      <div class="form-panel">
-        <div class="form-card">
+        <!-- Tabs -->
+        <div class="tabs">
+          <button [class.active]="activeTab === 'login'" (click)="switchTab('login')" type="button">
+            Connexion
+          </button>
+          <button [class.active]="activeTab === 'register'" (click)="switchTab('register')" type="button">
+            Inscription
+          </button>
+        </div>
 
-          <!-- Header -->
-          <div class="form-header">
-            <div class="form-logo-sm">
-              <i class="bi bi-box-seam-fill"></i>
-            </div>
-            <h2>{{ activeTab === 'login' ? 'Bienvenue !' : 'Créer un compte' }}</h2>
-            <p>{{ activeTab === 'login' ? 'Connectez-vous à votre espace' : 'Rejoignez Bhouri Stock' }}</p>
-          </div>
+        <!-- Alert messages -->
+        <div class="alert alert-error" *ngIf="errorMessage">
+          <i class="bi bi-exclamation-circle-fill"></i>
+          <span>{{ errorMessage }}</span>
+        </div>
+        <div class="alert alert-success" *ngIf="successMessage">
+          <i class="bi bi-check-circle-fill"></i>
+          <span>{{ successMessage }}</span>
+        </div>
 
-          <!-- Tabs -->
-          <div class="tabs">
-            <button [class.active]="activeTab === 'login'" (click)="switchTab('login')" type="button">
-              <i class="bi bi-box-arrow-in-right"></i>
-              Connexion
-            </button>
-            <button [class.active]="activeTab === 'register'" (click)="switchTab('register')" type="button">
-              <i class="bi bi-person-plus"></i>
-              Inscription
-            </button>
-          </div>
+        <!-- ── LOGIN FORM ── -->
+        <form *ngIf="activeTab === 'login'" (ngSubmit)="onLogin()" class="auth-form" autocomplete="on">
 
-          <!-- Alert messages -->
-          <div class="alert alert-error" *ngIf="errorMessage">
-            <i class="bi bi-exclamation-circle-fill"></i>
-            <span>{{ errorMessage }}</span>
-          </div>
-          <div class="alert alert-success" *ngIf="successMessage">
-            <i class="bi bi-check-circle-fill"></i>
-            <span>{{ successMessage }}</span>
-          </div>
-
-          <!-- ── LOGIN FORM ── -->
-          <form *ngIf="activeTab === 'login'" (ngSubmit)="onLogin()" class="auth-form" autocomplete="on">
-
-            <div class="form-field">
-              <label for="login-email">
-                <i class="bi bi-envelope"></i> Email
-              </label>
+          <div class="form-field">
+            <label for="login-email">Adresse e-mail</label>
+            <div class="input-wrap">
+              <i class="bi bi-envelope"></i>
               <input
                 id="login-email"
                 type="email"
@@ -108,50 +59,48 @@ type TabType = 'login' | 'register';
                 autocomplete="email"
                 required>
             </div>
+          </div>
 
-            <div class="form-field">
-              <label for="login-password">
-                <i class="bi bi-lock"></i> Mot de passe
-              </label>
-              <div class="password-wrapper">
-                <input
-                  id="login-password"
-                  [type]="showPassword ? 'text' : 'password'"
-                  [(ngModel)]="loginForm.password"
-                  name="password"
-                  placeholder="••••••••"
-                  autocomplete="current-password"
-                  required>
-                <button type="button" class="btn-eye" (click)="showPassword = !showPassword" tabindex="-1">
-                  <i class="bi" [class.bi-eye]="!showPassword" [class.bi-eye-slash]="showPassword"></i>
-                </button>
-              </div>
+          <div class="form-field">
+            <label for="login-password">Mot de passe</label>
+            <div class="input-wrap">
+              <i class="bi bi-lock"></i>
+              <input
+                id="login-password"
+                [type]="showPassword ? 'text' : 'password'"
+                [(ngModel)]="loginForm.password"
+                name="password"
+                placeholder="••••••••"
+                autocomplete="current-password"
+                required>
+              <button type="button" class="btn-eye" (click)="showPassword = !showPassword" tabindex="-1">
+                <i class="bi" [class.bi-eye]="!showPassword" [class.bi-eye-slash]="showPassword"></i>
+              </button>
             </div>
+          </div>
 
-            <div class="forgot-row">
-              <a routerLink="/forgot-password" class="forgot-link">Mot de passe oublié ?</a>
-            </div>
+          <div class="options-row">
+            <label class="remember">
+              <input type="checkbox" [(ngModel)]="rememberMe" name="rememberMe">
+              Se souvenir de moi
+            </label>
+            <a routerLink="/forgot-password" class="forgot-link">Mot de passe oublié ?</a>
+          </div>
 
-            <button type="submit" class="btn-submit" [disabled]="isLoading">
-              <span class="btn-spinner" *ngIf="isLoading">
-                <i class="bi bi-arrow-repeat spin"></i>
-              </span>
-              <span *ngIf="!isLoading">
-                <i class="bi bi-box-arrow-in-right"></i>
-                Se connecter
-              </span>
-              <span *ngIf="isLoading">Connexion en cours...</span>
-            </button>
+          <button type="submit" class="btn-submit" [disabled]="isLoading">
+            <span *ngIf="isLoading"><i class="bi bi-arrow-repeat spin"></i> Connexion en cours…</span>
+            <span *ngIf="!isLoading">Se connecter</span>
+          </button>
 
-          </form>
+        </form>
 
-          <!-- ── REGISTER FORM ── -->
-          <form *ngIf="activeTab === 'register'" (ngSubmit)="onRegister()" class="auth-form" autocomplete="on">
+        <!-- ── REGISTER FORM ── -->
+        <form *ngIf="activeTab === 'register'" (ngSubmit)="onRegister()" class="auth-form" autocomplete="on">
 
-            <div class="form-field">
-              <label for="reg-name">
-                <i class="bi bi-person"></i> Nom complet
-              </label>
+          <div class="form-field">
+            <label for="reg-name">Nom complet</label>
+            <div class="input-wrap">
+              <i class="bi bi-person"></i>
               <input
                 id="reg-name"
                 type="text"
@@ -161,11 +110,12 @@ type TabType = 'login' | 'register';
                 autocomplete="name"
                 required minlength="2">
             </div>
+          </div>
 
-            <div class="form-field">
-              <label for="reg-email">
-                <i class="bi bi-envelope"></i> Email
-              </label>
+          <div class="form-field">
+            <label for="reg-email">Adresse e-mail</label>
+            <div class="input-wrap">
+              <i class="bi bi-envelope"></i>
               <input
                 id="reg-email"
                 type="email"
@@ -175,37 +125,37 @@ type TabType = 'login' | 'register';
                 autocomplete="email"
                 required>
             </div>
+          </div>
 
-            <div class="form-field">
-              <label for="reg-password">
-                <i class="bi bi-lock"></i> Mot de passe
-              </label>
-              <div class="password-wrapper">
-                <input
-                  id="reg-password"
-                  [type]="showPassword ? 'text' : 'password'"
-                  [(ngModel)]="registerForm.password"
-                  name="password"
-                  placeholder="Minimum 6 caractères"
-                  autocomplete="new-password"
-                  required minlength="6">
-                <button type="button" class="btn-eye" (click)="showPassword = !showPassword" tabindex="-1">
-                  <i class="bi" [class.bi-eye]="!showPassword" [class.bi-eye-slash]="showPassword"></i>
-                </button>
-              </div>
-              <!-- Password strength -->
-              <div class="password-strength" *ngIf="registerForm.password.length > 0">
-                <div class="strength-bar">
-                  <div class="strength-fill" [style.width.%]="getPasswordStrength()" [class]="getPasswordStrengthClass()"></div>
-                </div>
-                <span class="strength-label" [class]="getPasswordStrengthClass()">{{ getPasswordStrengthLabel() }}</span>
-              </div>
+          <div class="form-field">
+            <label for="reg-password">Mot de passe</label>
+            <div class="input-wrap">
+              <i class="bi bi-lock"></i>
+              <input
+                id="reg-password"
+                [type]="showPassword ? 'text' : 'password'"
+                [(ngModel)]="registerForm.password"
+                name="password"
+                placeholder="Minimum 6 caractères"
+                autocomplete="new-password"
+                required minlength="6">
+              <button type="button" class="btn-eye" (click)="showPassword = !showPassword" tabindex="-1">
+                <i class="bi" [class.bi-eye]="!showPassword" [class.bi-eye-slash]="showPassword"></i>
+              </button>
             </div>
+            <!-- Password strength -->
+            <div class="password-strength" *ngIf="registerForm.password.length > 0">
+              <div class="strength-bar">
+                <div class="strength-fill" [style.width.%]="getPasswordStrength()" [class]="getPasswordStrengthClass()"></div>
+              </div>
+              <span class="strength-label" [class]="getPasswordStrengthClass()">{{ getPasswordStrengthLabel() }}</span>
+            </div>
+          </div>
 
-            <div class="form-field">
-              <label for="reg-confirm">
-                <i class="bi bi-lock-fill"></i> Confirmer le mot de passe
-              </label>
+          <div class="form-field">
+            <label for="reg-confirm">Confirmer le mot de passe</label>
+            <div class="input-wrap">
+              <i class="bi bi-lock-fill"></i>
               <input
                 id="reg-confirm"
                 [type]="showPassword ? 'text' : 'password'"
@@ -214,239 +164,118 @@ type TabType = 'login' | 'register';
                 placeholder="Confirmez le mot de passe"
                 autocomplete="new-password"
                 required>
-              <span class="match-indicator" *ngIf="confirmPassword.length > 0">
-                <i class="bi" [class.bi-check-circle-fill]="registerForm.password === confirmPassword"
-                              [class.bi-x-circle-fill]="registerForm.password !== confirmPassword"
-                              [class.text-success]="registerForm.password === confirmPassword"
-                              [class.text-danger]="registerForm.password !== confirmPassword"></i>
-                {{ registerForm.password === confirmPassword ? 'Mots de passe identiques' : 'Mots de passe différents' }}
-              </span>
             </div>
-
-            <button type="submit" class="btn-submit" [disabled]="isLoading">
-              <span *ngIf="isLoading"><i class="bi bi-arrow-repeat spin"></i> Inscription...</span>
-              <span *ngIf="!isLoading"><i class="bi bi-person-check"></i> Créer mon compte</span>
-            </button>
-
-          </form>
-
-          <!-- Footer -->
-          <p class="form-footer">
-            <span *ngIf="activeTab === 'login'">
-              Pas encore de compte ?
-              <a (click)="switchTab('register')" class="switch-link">S'inscrire</a>
+            <span class="match-indicator" *ngIf="confirmPassword.length > 0">
+              <i class="bi" [class.bi-check-circle-fill]="registerForm.password === confirmPassword"
+                            [class.bi-x-circle-fill]="registerForm.password !== confirmPassword"
+                            [class.text-success]="registerForm.password === confirmPassword"
+                            [class.text-danger]="registerForm.password !== confirmPassword"></i>
+              {{ registerForm.password === confirmPassword ? 'Mots de passe identiques' : 'Mots de passe différents' }}
             </span>
-            <span *ngIf="activeTab === 'register'">
-              Déjà un compte ?
-              <a (click)="switchTab('login')" class="switch-link">Se connecter</a>
-            </span>
-          </p>
+          </div>
 
-        </div>
+          <button type="submit" class="btn-submit" [disabled]="isLoading">
+            <span *ngIf="isLoading"><i class="bi bi-arrow-repeat spin"></i> Inscription…</span>
+            <span *ngIf="!isLoading">Créer mon compte</span>
+          </button>
+
+        </form>
+
+        <!-- Footer -->
+        <p class="auth-footer">Bhouri Stock v2.0 · Gestion de stock &amp; facturation</p>
+
       </div>
     </div>
   `,
   styles: [`
-    /* ══════════════════════════════════════════
-       PAGE LAYOUT
-    ══════════════════════════════════════════ */
+    :host { display: block; width: 100%; flex: 1; }
+
+    /* ══ Carte centrée (maquette) ══ */
     .auth-page {
-      display: flex;
-      min-height: 100vh;
-      width: 100vw;
-      position: fixed;
-      inset: 0;
-      z-index: 0;
-    }
-
-    /* ══════════════════════════════════════════
-       LEFT — BRAND PANEL
-    ══════════════════════════════════════════ */
-    .brand-panel {
-      flex: 1;
-      background: linear-gradient(150deg, var(--color-primary-hover) 0%, #6d28d9 50%, #7c3aed 100%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 3rem 2.5rem;
-      position: relative;
-      overflow: hidden;
-    }
-
-    /* Decorative blobs */
-    .blob {
-      position: absolute;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.06);
-    }
-    .blob-1 { width: 320px; height: 320px; top: -80px; left: -80px; animation: float 8s ease-in-out infinite; }
-    .blob-2 { width: 240px; height: 240px; bottom: -60px; right: -40px; animation: float 10s ease-in-out infinite reverse; }
-    .blob-3 { width: 160px; height: 160px; top: 40%; left: 60%; animation: float 7s ease-in-out infinite 2s; }
-
-    @keyframes float {
-      0%, 100% { transform: translateY(0) scale(1); }
-      50%       { transform: translateY(-20px) scale(1.04); }
-    }
-
-    .brand-content {
       position: relative;
       z-index: 1;
-      max-width: 420px;
-      text-align: left;
-    }
-
-    .brand-logo {
-      width: 72px;
-      height: 72px;
-      background: rgba(255,255,255,0.15);
-      border: 2px solid rgba(255,255,255,0.25);
-      border-radius: 1.25rem;
+      min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 2rem;
-      color: white;
-      margin-bottom: 1.5rem;
-      backdrop-filter: blur(10px);
+      padding: 24px;
+      animation: fadeUpAuth .4s ease both;
     }
-
-    .brand-name {
-      font-size: 2.5rem;
-      font-weight: 800;
-      color: white;
-      margin: 0 0 0.75rem;
-      letter-spacing: -0.03em;
-    }
-
-    .brand-tagline {
-      font-size: 1.0625rem;
-      color: rgba(255,255,255,0.75);
-      line-height: 1.65;
-      margin: 0 0 2.5rem;
-    }
-
-    .brand-features { display: flex; flex-direction: column; gap: 1.25rem; }
-
-    .feature-item {
-      display: flex;
-      align-items: flex-start;
-      gap: 1rem;
-      padding: 1rem 1.25rem;
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 0.875rem;
-      backdrop-filter: blur(6px);
-      transition: background 0.2s ease;
-    }
-    .feature-item:hover { background: rgba(255,255,255,0.13); }
-
-    .feature-icon {
-      width: 2.25rem;
-      height: 2.25rem;
-      background: rgba(255,255,255,0.15);
-      border-radius: 0.5rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.0625rem;
-      color: white;
-      flex-shrink: 0;
-    }
-
-    .feature-text { display: flex; flex-direction: column; gap: 0.125rem; }
-    .feature-text strong { font-size: 0.875rem; font-weight: 600; color: white; }
-    .feature-text span   { font-size: 0.8125rem; color: rgba(255,255,255,0.6); }
-
-    /* ══════════════════════════════════════════
-       RIGHT — FORM PANEL
-    ══════════════════════════════════════════ */
-    .form-panel {
-      width: 480px;
-      min-width: 320px;
-      background: var(--color-bg);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 2rem 1.5rem;
-      overflow-y: auto;
-    }
-
-    .form-card {
-      width: 100%;
-      max-width: 400px;
-      background: var(--color-surface);
-      border-radius: 1.25rem;
-      padding: 2.25rem 2rem;
-      box-shadow: 0 4px 32px rgba(67,56,202,0.10), 0 1px 4px rgba(0,0,0,0.06);
-      animation: slideUp 0.35s ease-out;
-    }
-
-    @keyframes slideUp {
-      from { opacity: 0; transform: translateY(16px); }
+    @keyframes fadeUpAuth {
+      from { opacity: 0; transform: translateY(14px); }
       to   { opacity: 1; transform: translateY(0); }
     }
 
-    /* Form header */
-    .form-header { text-align: center; margin-bottom: 1.5rem; }
+    .auth-card {
+      width: 100%;
+      max-width: 410px;
+      padding: 38px 34px;
+      border-radius: 26px;
+      background: var(--glass-bg-strong);
+      backdrop-filter: blur(30px) saturate(180%);
+      -webkit-backdrop-filter: blur(30px) saturate(180%);
+      border: 1px solid var(--glass-border);
+      box-shadow: 0 24px 70px -24px rgba(49,46,129,0.45);
+    }
 
-    .form-logo-sm {
-      width: 48px;
-      height: 48px;
-      background: linear-gradient(135deg, var(--color-primary-hover), #7c3aed);
-      border-radius: 0.875rem;
+    .auth-head {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      margin-bottom: 22px;
+    }
+    .auth-logo {
+      width: 56px;
+      height: 56px;
+      border-radius: 17px;
+      background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover));
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.375rem;
-      color: white;
-      margin: 0 auto 0.875rem;
+      box-shadow: 0 12px 28px -8px var(--color-primary-glow);
+      margin-bottom: 16px;
     }
-
-    .form-header h2 {
-      font-size: 1.375rem;
-      font-weight: 700;
+    .auth-logo i { color: #fff; font-size: 27px; }
+    .auth-head h1 {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
       color: var(--color-text);
-      margin: 0 0 0.25rem;
-    }
-
-    .form-header p {
-      font-size: 0.875rem;
-      color: var(--color-text-muted);
       margin: 0;
     }
+    .auth-head p {
+      font-size: 13px;
+      color: var(--color-text-faint);
+      margin: 4px 0 0;
+    }
 
-    /* Tabs */
+    /* Tabs segmentés */
     .tabs {
       display: flex;
-      gap: 0.5rem;
-      margin-bottom: 1.5rem;
-      background: var(--color-surface-2);
-      padding: 0.25rem;
-      border-radius: 0.75rem;
+      padding: 4px;
+      gap: 4px;
+      border-radius: 13px;
+      background: rgba(15,23,42,0.05);
+      margin-bottom: 18px;
     }
-
     .tabs button {
       flex: 1;
-      padding: 0.625rem 0.75rem;
+      padding: 9px 0;
       border: none;
+      border-radius: 10px;
       background: transparent;
-      border-radius: 0.5625rem;
-      font-size: 0.875rem;
-      font-weight: 500;
       color: var(--color-text-muted);
-      cursor: pointer;
-      transition: all 0.2s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.375rem;
-    }
-    .tabs button:hover:not(.active) { color: var(--color-text-2); }
-    .tabs button.active {
-      background: var(--color-surface);
-      color: var(--color-primary-hover);
+      font-size: 13px;
       font-weight: 600;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+      cursor: pointer;
+      font-family: inherit;
+      transition: all .18s;
+    }
+    .tabs button.active {
+      background: var(--color-primary);
+      color: #fff;
+      box-shadow: 0 6px 16px -6px var(--color-primary-glow);
     }
 
     /* Alerts */
@@ -455,77 +284,110 @@ type TabType = 'login' | 'register';
       align-items: flex-start;
       gap: 0.625rem;
       padding: 0.75rem 1rem;
-      border-radius: 0.625rem;
-      margin-bottom: 1.25rem;
+      border-radius: 0.75rem;
+      margin-bottom: 1rem;
       font-size: 0.875rem;
       line-height: 1.5;
     }
     .alert i { flex-shrink: 0; font-size: 1rem; margin-top: 0.0625rem; }
-    .alert-error   { background: var(--color-danger-bg); color: var(--color-danger-text); border: 1px solid #fecaca; }
-    .alert-success { background: #f0fdf4; color: var(--color-success); border: 1px solid #bbf7d0; }
+    .alert-error   { background: var(--color-danger-bg); color: var(--color-danger-text); border: 1px solid rgba(248,113,113,0.35); }
+    .alert-success { background: var(--color-success-bg); color: var(--color-success-text); border: 1px solid rgba(16,185,129,0.35); }
 
     /* Form */
-    .auth-form { display: flex; flex-direction: column; gap: 1rem; }
+    .auth-form { display: flex; flex-direction: column; gap: 14px; }
 
-    .form-field { display: flex; flex-direction: column; gap: 0.375rem; }
-
+    .form-field { display: flex; flex-direction: column; }
     .form-field label {
-      font-size: 0.8125rem;
+      font-size: 12px;
       font-weight: 600;
       color: var(--color-text-2);
-      display: flex;
-      align-items: center;
-      gap: 0.375rem;
+      display: block;
+      margin-bottom: 6px;
     }
-    .form-field label i { color: #6d28d9; font-size: 0.875rem; }
 
-    .form-field input {
+    .input-wrap { position: relative; }
+    .input-wrap > i {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--color-text-faint);
+      font-size: 14px;
+      pointer-events: none;
+    }
+    .input-wrap input {
       width: 100%;
-      padding: 0.6875rem 0.875rem;
-      border: 1.5px solid var(--color-border);
-      border-radius: 0.625rem;
-      font-size: 0.9375rem;
+      padding: 11px 14px 11px 40px;
+      border-radius: 12px;
+      border: 1px solid rgba(15,23,42,0.1);
+      background: rgba(255,255,255,0.7);
+      font-size: 14px;
       color: var(--color-text);
-      background: var(--color-surface);
-      transition: all 0.18s ease;
-      box-sizing: border-box;
-    }
-    .form-field input::placeholder { color: var(--color-text-faint); }
-    .form-field input:focus {
       outline: none;
-      border-color: #6d28d9;
-      box-shadow: 0 0 0 3px rgba(109,40,217,0.1);
+      font-family: inherit;
+      box-sizing: border-box;
+      transition: border-color .18s, box-shadow .18s;
     }
+    .input-wrap input:focus {
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 3px var(--color-primary-soft);
+    }
+    .input-wrap input::placeholder { color: var(--color-text-faint); }
 
-    /* Password */
-    .password-wrapper { position: relative; }
-    .password-wrapper input { padding-right: 2.75rem; }
     .btn-eye {
       position: absolute;
-      right: 0.75rem;
+      right: 10px;
       top: 50%;
       transform: translateY(-50%);
       background: none;
       border: none;
       color: var(--color-text-faint);
       cursor: pointer;
-      padding: 0.25rem;
-      font-size: 1rem;
-      transition: color 0.15s ease;
+      padding: 4px;
+      font-size: 15px;
+      transition: color .15s;
     }
-    .btn-eye:hover { color: #6d28d9; }
+    .btn-eye:hover { color: var(--color-primary); }
+
+    /* Options row */
+    .options-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 13px;
+      margin-top: 2px;
+    }
+    .remember {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      color: var(--color-text-2);
+      cursor: pointer;
+    }
+    .remember input {
+      accent-color: var(--color-primary);
+      width: 15px;
+      height: 15px;
+    }
+    .forgot-link {
+      color: var(--color-primary);
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .forgot-link:hover { text-decoration: underline; }
 
     /* Password strength */
     .password-strength {
       display: flex;
       align-items: center;
       gap: 0.625rem;
-      margin-top: 0.25rem;
+      margin-top: 0.5rem;
     }
     .strength-bar {
       flex: 1;
       height: 4px;
-      background: var(--color-border);
+      background: rgba(15,23,42,0.08);
       border-radius: 2px;
       overflow: hidden;
     }
@@ -542,86 +404,48 @@ type TabType = 'login' | 'register';
     .strength-label.medium { color: var(--color-warning); }
     .strength-label.strong { color: var(--color-success); }
 
-    /* Match indicator */
     .match-indicator {
       font-size: 0.75rem;
       display: flex;
       align-items: center;
       gap: 0.3rem;
-      margin-top: 0.25rem;
+      margin-top: 0.5rem;
     }
     .text-success { color: var(--color-success); }
     .text-danger  { color: var(--color-danger); }
 
-    /* Forgot link */
-    .forgot-row { text-align: right; margin-top: -0.25rem; }
-    .forgot-link {
-      font-size: 0.8125rem;
-      color: #6d28d9;
-      text-decoration: none;
-      font-weight: 500;
-      transition: color 0.15s ease;
-    }
-    .forgot-link:hover { color: var(--color-primary-hover); text-decoration: underline; }
-
-    /* Submit button */
+    /* Submit */
     .btn-submit {
+      margin-top: 8px;
       width: 100%;
-      padding: 0.8125rem 1rem;
-      background: linear-gradient(135deg, var(--color-primary-hover), #7c3aed);
-      color: white;
+      padding: 13px;
+      border-radius: 13px;
       border: none;
-      border-radius: 0.75rem;
-      font-size: 0.9375rem;
-      font-weight: 600;
+      background: var(--color-primary);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 700;
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-      transition: all 0.2s ease;
-      margin-top: 0.25rem;
-      box-shadow: 0 2px 12px rgba(109,40,217,0.3);
+      box-shadow: 0 12px 26px -8px var(--color-primary-glow);
+      font-family: inherit;
+      transition: background .18s;
     }
-    .btn-submit:hover:not(:disabled) {
-      transform: translateY(-1px);
-      box-shadow: 0 6px 20px rgba(109,40,217,0.4);
-    }
-    .btn-submit:active:not(:disabled) { transform: translateY(0); }
-    .btn-submit:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+    .btn-submit:hover:not(:disabled) { background: var(--color-primary-hover); }
+    .btn-submit:disabled { opacity: 0.7; cursor: not-allowed; }
 
     /* Footer */
-    .form-footer {
+    .auth-footer {
       text-align: center;
-      margin-top: 1.25rem;
-      margin-bottom: 0;
-      font-size: 0.875rem;
-      color: var(--color-text-muted);
+      font-size: 12px;
+      color: var(--color-text-faint);
+      margin: 22px 0 0;
     }
-    .switch-link {
-      color: #6d28d9;
-      font-weight: 600;
-      cursor: pointer;
-      text-decoration: none;
-      margin-left: 0.25rem;
-    }
-    .switch-link:hover { text-decoration: underline; }
 
-    /* Spinner */
     .spin { animation: spin 0.8s linear infinite; display: inline-block; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* ══════════════════════════════════════════
-       RESPONSIVE
-    ══════════════════════════════════════════ */
-    @media (max-width: 900px) {
-      .brand-panel { display: none; }
-      .form-panel  { width: 100%; background: linear-gradient(150deg, var(--color-primary-hover) 0%, #7c3aed 100%); }
-      .form-card   { box-shadow: 0 8px 40px rgba(0,0,0,0.2); }
-    }
     @media (max-width: 480px) {
-      .form-panel  { padding: 1.25rem 1rem; align-items: flex-start; padding-top: 3rem; }
-      .form-card   { padding: 1.75rem 1.25rem; border-radius: 1rem; }
+      .auth-card { padding: 28px 20px; border-radius: 18px; }
     }
   `]
 })
@@ -629,6 +453,7 @@ export class LoginComponent {
   activeTab: TabType = 'login';
   isLoading = false;
   showPassword = false;
+  rememberMe = true;
   errorMessage = '';
   successMessage = '';
 

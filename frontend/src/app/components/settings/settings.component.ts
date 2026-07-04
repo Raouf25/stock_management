@@ -12,13 +12,6 @@ import { AuthService } from '../../services/auth.service';
   template: `
 <div class="page">
 
-  <div class="page-head">
-    <div>
-      <h1 class="page-title">Paramètres</h1>
-      <p class="page-sub">Configuration de l'entreprise et de l'application</p>
-    </div>
-  </div>
-
   <!-- Skeleton pendant le chargement -->
   <ng-container *ngIf="loading">
     <div class="skel-section">
@@ -200,7 +193,7 @@ import { AuthService } from '../../services/auth.service';
   `,
   styles: [`
     .page {
-      background: var(--color-bg);
+      background: transparent;
       min-height: 100vh;
       padding: 1.5rem;
       font-family: var(--font-sans);
@@ -214,10 +207,12 @@ import { AuthService } from '../../services/auth.service';
 
     /* Card */
     .settings-card {
-      background: var(--color-surface);
-      border-radius: 12px;
-      border: 1px solid var(--color-border);
-      box-shadow: var(--shadow-xs);
+      background: var(--glass-bg);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--glass-shadow);
       overflow: hidden;
       margin-bottom: 1rem;
     }
@@ -230,8 +225,8 @@ import { AuthService } from '../../services/auth.service';
       font-size: .82rem;
       font-weight: 700;
       color: var(--color-text);
-      background: var(--color-surface);
-      border-bottom: 1px solid var(--color-border);
+      background: transparent;
+      border-bottom: 1px solid var(--glass-border);
     }
     .card-head i { font-size: 1rem; color: var(--color-primary); }
 
@@ -259,11 +254,11 @@ import { AuthService } from '../../services/auth.service';
     input, textarea {
       width: 100%;
       padding: .6rem .875rem;
-      border: 1.5px solid var(--color-border);
+      border: 1.5px solid rgba(15,23,42,0.1);
       border-radius: 8px;
       font-size: .875rem;
       color: var(--color-text);
-      background: var(--color-surface);
+      background: rgba(255,255,255,0.7);
       transition: border-color .15s, box-shadow .15s;
       box-sizing: border-box;
       font-family: inherit;
@@ -325,7 +320,7 @@ import { AuthService } from '../../services/auth.service';
       width: 20px;
       height: 20px;
       border-radius: 50%;
-      background: var(--color-surface);
+      background: #fff;
       box-shadow: 0 1px 3px rgba(0,0,0,.2);
       transition: transform .2s;
     }
@@ -372,9 +367,11 @@ import { AuthService } from '../../services/auth.service';
 
     /* Skeleton */
     .skel-section {
-      background: var(--color-surface);
-      border-radius: 12px;
-      border: 1px solid var(--color-border);
+      background: var(--glass-bg);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--glass-border);
       overflow: hidden;
     }
     .skel-card-head {

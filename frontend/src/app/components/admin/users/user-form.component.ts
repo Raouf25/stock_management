@@ -86,7 +86,7 @@ import { ToastService } from '../../../services/toast.service';
               <i class="bi" [class.bi-eye]="!showPassword" [class.bi-eye-slash]="showPassword"></i>
             </button>
           </div>
-          <span class="field-error" *ngIf="f.submitted && (!form.password || (form.password?.length ?? 0) < 6)">
+          <span class="field-error" *ngIf="f.submitted && (!form.password || form.password.length < 6)">
             Le mot de passe doit contenir au moins 6 caractères.
           </span>
         </div>
@@ -152,8 +152,11 @@ import { ToastService } from '../../../services/toast.service';
       top: 0; right: 0; bottom: 0;
       width: 420px;
       max-width: 100vw;
-      background: var(--color-surface, var(--color-surface));
-      box-shadow: var(--shadow-xl);
+      background: var(--glass-bg-strong);
+      backdrop-filter: blur(30px) saturate(180%);
+      -webkit-backdrop-filter: blur(30px) saturate(180%);
+      border-left: 1px solid var(--glass-border);
+      box-shadow: var(--glass-shadow-lg);
       z-index: 901;
       display: flex;
       flex-direction: column;
@@ -217,11 +220,11 @@ import { ToastService } from '../../../services/toast.service';
     .field-input {
       width: 100%;
       padding: 0.5625rem 0.875rem;
-      border: 1.5px solid var(--color-border, var(--color-border));
+      border: 1.5px solid rgba(15,23,42,0.1);
       border-radius: var(--radius-sm, 6px);
       font-size: 0.875rem;
       color: var(--color-text, var(--color-text));
-      background: var(--color-surface, var(--color-surface));
+      background: rgba(255,255,255,0.7);
       transition: border-color var(--transition, 150ms ease);
       outline: none;
     }
@@ -251,7 +254,7 @@ import { ToastService } from '../../../services/toast.service';
 
     .reset-section {
       padding: 1rem;
-      background: var(--color-surface-2, var(--color-surface-2));
+      background: rgba(15,23,42,0.04);
       border-radius: var(--radius-md, 10px);
       display: flex;
       flex-direction: column;
@@ -316,8 +319,8 @@ import { ToastService } from '../../../services/toast.service';
 
     .btn-primary {
       background: var(--color-primary, var(--color-primary));
-      color: var(--color-surface);
-      box-shadow: 0 1px 4px rgba(99,102,241,0.25);
+      color: #fff;
+      box-shadow: 0 8px 20px -6px var(--color-primary-glow);
     }
     .btn-primary:hover:not(:disabled) { background: var(--color-primary-hover, var(--color-primary-hover)); }
 
@@ -325,7 +328,7 @@ import { ToastService } from '../../../services/toast.service';
       display: inline-block;
       width: 0.875rem; height: 0.875rem;
       border: 2px solid rgba(255,255,255,0.4);
-      border-top-color: var(--color-surface);
+      border-top-color: #fff;
       border-radius: 50%;
       animation: spin 0.6s linear infinite;
     }

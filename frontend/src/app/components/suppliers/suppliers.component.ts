@@ -16,10 +16,16 @@ import { SkeletonTableComponent } from '../../shared/skeleton.component';
   template: `
 <div class="page">
 
-  <!-- ══ EN-TÊTE ══════════════════════════════════════════════════════════ -->
-  <div class="page-header">
-    <h1 class="page-title">Fournisseurs</h1>
-    <a routerLink="/suppliers/create" class="btn-create">+ Nouveau Fournisseur</a>
+  <!-- ══ BARRE D'ACTIONS (maquette) ═════════════════════════════════════════ -->
+  <div class="toolbar-row">
+    <div class="toolbar-search">
+      <i class="bi bi-search"></i>
+      <input type="text" [ngModel]="searchText" (ngModelChange)="onSearchInput($event)"
+             placeholder="Rechercher un fournisseur…">
+    </div>
+    <a routerLink="/suppliers/create" class="btn-accent">
+      <i class="bi bi-plus-lg"></i> Nouveau fournisseur
+    </a>
   </div>
 
   <!-- ══ KPIs ═════════════════════════════════════════════════════════════ -->
@@ -42,152 +48,100 @@ import { SkeletonTableComponent } from '../../shared/skeleton.component';
     </div>
   </div>
 
-  <!-- ══ CARTE PRINCIPALE ══════════════════════════════════════════════════ -->
-  <div class="main-card">
+  <!-- Skeleton loading -->
+  <app-skeleton-table *ngIf="loading" [rows]="5" [cols]="4" style="margin:.5rem 0;display:block;"></app-skeleton-table>
 
-    <!-- ── Filtre ─────────────────────────────────────────────────────────── -->
-    <div class="filter-bar">
-      <div class="filter-group fg-wide">
-        <label class="filter-lbl">Recherche</label>
-        <input type="text" class="filter-ctrl" [ngModel]="searchText" (ngModelChange)="onSearchInput($event)"
-               placeholder="Nom, email, téléphone, contact…">
+  <!-- ══ GRILLE DE CARTES (maquette) ═════════════════════════════════════════ -->
+  <div *ngIf="!loading" class="suppliers-grid">
+    <div *ngFor="let item of getFilteredSuppliers(); trackBy: trackById"
+         class="supplier-card"
+         (click)="viewSupplier(item.supplier.supplierId || item.supplier.id)">
+      <div class="sc-top">
+        <div class="sc-avatar" [style.background]="avatarGradient(item.supplier.name)">
+          {{ getInitials(item.supplier.name) }}
+        </div>
+        <span class="sc-badge" [class.sc-badge-pause]="item.totalPurchases === 0">
+          {{ item.totalPurchases > 0 ? 'Actif' : 'En pause' }}
+        </span>
       </div>
-      <button *ngIf="searchText" class="btn-reset" (click)="searchText=''">✕ Réinitialiser</button>
-    </div>
-
-    <!-- Skeleton loading -->
-    <app-skeleton-table *ngIf="loading" [rows]="5" [cols]="7" style="margin:.5rem 0;display:block;"></app-skeleton-table>
-
-    <!-- ════════ TABLE (desktop) ════════ -->
-    <div *ngIf="!loading" class="desktop-table">
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>FOURNISSEUR</th>
-            <th>CONTACT</th>
-            <th>COORDONNÉES</th>
-            <th class="ta-r">ACHATS</th>
-            <th class="ta-r">MONTANT (DNT)</th>
-            <th class="ta-r">PRODUITS</th>
-            <th class="ta-c">ACTIONS</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let item of getFilteredSuppliers(); trackBy: trackById"
-              class="data-row"
-              (click)="viewSupplier(item.supplier.supplierId || item.supplier.id)">
-            <td>
-              <div class="client-name">{{ item.supplier.name }}</div>
-              <div class="td-muted">{{ item.supplier.address }}</div>
-            </td>
-            <td class="client-name">{{ item.supplier.contactPerson }}</td>
-            <td>
-              <div class="td-muted">📧 {{ item.supplier.email }}</div>
-              <div class="td-muted">📞 {{ item.supplier.phone }}</div>
-              <div *ngIf="item.supplier.webSite" class="td-muted">🌐 {{ item.supplier.webSite }}</div>
-            </td>
-            <td class="ta-r">
-              <span class="id-badge">{{ item.totalPurchases }}</span>
-            </td>
-            <td class="ta-r fw-600 c-green">{{ item.totalAmount | number:'1.3-3' }}</td>
-            <td class="ta-r fw-600">{{ item.totalProductsSupplied }}</td>
-            <td class="ta-c" (click)="$event.stopPropagation()">
-              <div class="action-group">
-                <button (click)="viewSupplier(item.supplier.supplierId || item.supplier.id)"
-                        class="act-btn act-view" title="Voir détail">👁️</button>
-                <button (click)="editSupplier(item.supplier.supplierId || item.supplier.id)"
-                        class="act-btn act-edit" title="Modifier">✏️</button>
-                <button (click)="deleteSupplier(item.supplier.supplierId || item.supplier.id)"
-                        class="act-btn act-del" title="Supprimer">🗑️</button>
-              </div>
-            </td>
-          </tr>
-          <tr *ngIf="getFilteredSuppliers().length === 0">
-            <td colspan="7" class="empty-state">
-              <div class="empty-icon">📭</div>
-              <p>Aucun fournisseur trouvé</p>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <!-- ════════ CARTES (mobile) ════════ -->
-    <div *ngIf="!loading" class="mobile-cards">
-      <div *ngFor="let item of getFilteredSuppliers(); trackBy: trackById"
-           class="mobile-row"
-           (click)="viewSupplier(item.supplier.supplierId || item.supplier.id)">
-        <div class="mobile-row-top">
-          <div class="mobile-row-left">
-            <span class="client-name">{{ item.supplier.name }}</span>
-          </div>
-          <span class="id-badge">{{ item.totalPurchases }} achats</span>
+      <div class="sc-name">{{ item.supplier.name }}</div>
+      <div class="sc-sub">{{ item.supplier.contactPerson || item.supplier.address || '—' }}</div>
+      <div class="sc-contact">
+        <span *ngIf="item.supplier.email"><i class="bi bi-envelope"></i> {{ item.supplier.email }}</span>
+        <span *ngIf="item.supplier.phone"><i class="bi bi-telephone"></i> {{ item.supplier.phone }}</span>
+      </div>
+      <div class="sc-foot">
+        <div>
+          <div class="sc-flbl">Achats</div>
+          <div class="sc-fval">{{ item.totalAmount | number:'1.0-0' }} DNT</div>
         </div>
-        <div class="td-muted" style="margin:.2rem 0 .4rem;">{{ item.supplier.contactPerson }}</div>
-        <div class="td-muted" style="font-size:.8rem;margin-bottom:.75rem;">
-          📧 {{ item.supplier.email }}&nbsp; 📞 {{ item.supplier.phone }}
-        </div>
-        <div class="mobile-grid-3">
-          <div class="mg-cell">
-            <span class="mg-lbl">Montant</span>
-            <strong class="c-green" style="font-size:.8rem;">{{ item.totalAmount | number:'1.0-0' }}</strong>
-          </div>
-          <div class="mg-cell">
-            <span class="mg-lbl">Achats</span>
-            <strong>{{ item.totalPurchases }}</strong>
-          </div>
-          <div class="mg-cell">
-            <span class="mg-lbl">Produits</span>
-            <strong>{{ item.totalProductsSupplied }}</strong>
-          </div>
-        </div>
-        <div class="mobile-actions" (click)="$event.stopPropagation()">
-          <button (click)="viewSupplier(item.supplier.supplierId || item.supplier.id)"
-                  class="act-btn act-view" title="Voir">👁️</button>
-          <button (click)="editSupplier(item.supplier.supplierId || item.supplier.id)"
-                  class="act-btn act-edit" title="Modifier">✏️</button>
-          <button (click)="deleteSupplier(item.supplier.supplierId || item.supplier.id)"
-                  class="act-btn act-del" title="Supprimer">🗑️</button>
+        <div class="sc-fright">
+          <div class="sc-flbl">Commandes</div>
+          <div class="sc-fval">{{ item.totalPurchases }}</div>
         </div>
       </div>
-      <div *ngIf="getFilteredSuppliers().length === 0" class="empty-state">
-        <div class="empty-icon">📭</div>
-        <p>Aucun fournisseur trouvé</p>
+      <div class="sc-actions" (click)="$event.stopPropagation()">
+        <button (click)="viewSupplier(item.supplier.supplierId || item.supplier.id)"
+                class="sc-act" title="Voir détail"><i class="bi bi-eye"></i></button>
+        <button (click)="editSupplier(item.supplier.supplierId || item.supplier.id)"
+                class="sc-act" title="Modifier"><i class="bi bi-pencil"></i></button>
+        <button (click)="deleteSupplier(item.supplier.supplierId || item.supplier.id)"
+                class="sc-act sc-act-del" title="Supprimer"><i class="bi bi-trash"></i></button>
       </div>
     </div>
-
-  </div><!-- /main-card -->
+    <div *ngIf="getFilteredSuppliers().length === 0" class="empty-state" style="grid-column:1/-1;">
+      <div class="empty-icon">📭</div>
+      <p>Aucun fournisseur trouvé</p>
+    </div>
+  </div>
 
 
 </div><!-- /page -->
   `,
   styles: [`
     *, *::before, *::after {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-family: var(--font-sans);
       box-sizing: border-box;
     }
 
     /* ═══════════════ PAGE ═══════════════ */
-    .page { padding: 1.5rem; background: var(--color-bg); min-height: 100vh; }
+    .page { padding: 1.5rem; background: transparent; min-height: 100vh; }
 
-    /* ═══════════════ HEADER ═══════════════ */
-    .page-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1.5rem;
+    /* ═══════════════ BARRE D'ACTIONS ═══════════════ */
+    .toolbar-row {
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 18px; flex-wrap: wrap;
     }
-    .page-title { font-size: 1.5rem; font-weight: 700; color: var(--color-text); margin: 0; }
-    .btn-create {
-      display: inline-flex; align-items: center; gap: .4rem;
-      padding: .6rem 1.25rem;
-      background: linear-gradient(135deg, var(--color-primary-hover), var(--color-primary));
-      color: var(--color-surface); border-radius: 10px; text-decoration: none;
-      font-size: .875rem; font-weight: 600;
-      transition: opacity .18s;
-      box-shadow: 0 2px 8px rgba(79,70,229,.25);
+    .toolbar-search { position: relative; flex: 1; min-width: 220px; }
+    .toolbar-search i {
+      position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+      color: var(--color-text-faint); font-size: 14px;
     }
-    .btn-create:hover { opacity: .88; }
+    .toolbar-search input {
+      width: 100%; padding: 10px 14px 10px 38px;
+      border-radius: 13px; border: 1px solid var(--glass-border);
+      background: rgba(255,255,255,0.6);
+      backdrop-filter: blur(18px) saturate(180%);
+      -webkit-backdrop-filter: blur(18px) saturate(180%);
+      box-shadow: 0 6px 20px -10px rgba(49,46,129,0.25);
+      font-size: 14px; color: var(--color-text);
+      outline: none; font-family: inherit;
+      transition: border-color .18s, box-shadow .18s;
+    }
+    .toolbar-search input:focus {
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 3px var(--color-primary-soft);
+    }
+    .btn-accent {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 10px 16px; border-radius: 11px; border: none;
+      background: var(--color-primary); color: #fff;
+      font-size: 14px; font-weight: 600; cursor: pointer;
+      box-shadow: 0 8px 20px -6px var(--color-primary-glow);
+      font-family: inherit; transition: background .18s;
+      white-space: nowrap; text-decoration: none;
+    }
+    .btn-accent:hover { background: var(--color-primary-hover); }
 
     /* ═══════════════ KPI ROW ═══════════════ */
     .kpi-row {
@@ -197,134 +151,93 @@ import { SkeletonTableComponent } from '../../shared/skeleton.component';
       margin-bottom: 1.5rem;
     }
     .kpi-card {
-      background: var(--color-surface); border-radius: 12px;
-      border: 1px solid var(--color-border); padding: 1rem 1.25rem;
+      background: var(--glass-bg); border-radius: var(--radius-lg);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border: 1px solid var(--glass-border); padding: 1rem 1.25rem;
       display: flex; flex-direction: column; gap: .3rem;
-      box-shadow: 0 1px 3px rgba(0,0,0,.04);
+      box-shadow: var(--glass-shadow-sm);
       transition: transform .15s, box-shadow .15s;
     }
-    .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.07); }
+    .kpi-card:hover { transform: translateY(-2px); box-shadow: var(--glass-shadow-lg); }
     .kpi-val { font-size: 1.25rem; font-weight: 700; color: var(--color-text); line-height: 1.2; }
     .kpi-lbl {
       font-size: .7rem; font-weight: 600; color: var(--color-text-muted);
       text-transform: uppercase; letter-spacing: .4px;
     }
 
-    /* ═══════════════ MAIN CARD ═══════════════ */
-    .main-card {
-      background: var(--color-surface); border-radius: 12px;
-      border: 1px solid var(--color-border);
-      box-shadow: 0 1px 4px rgba(0,0,0,.04);
+    /* ═══════════════ GRILLE DE CARTES (maquette) ═══════════════ */
+    .suppliers-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 18px;
+    }
+    .supplier-card {
+      padding: 22px; border-radius: 20px;
+      background: var(--glass-bg);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--glass-shadow);
+      cursor: pointer;
+      transition: transform .15s, box-shadow .15s;
+    }
+    .supplier-card:hover { transform: translateY(-2px); box-shadow: var(--glass-shadow-lg); }
+
+    .sc-top {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      margin-bottom: 16px;
+    }
+    .sc-avatar {
+      width: 46px; height: 46px; border-radius: 13px;
+      color: #fff; display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 15px;
+    }
+    .sc-badge {
+      display: inline-flex; padding: 4px 10px; border-radius: 999px;
+      background: rgba(16,185,129,0.14); color: #047857;
+      font-size: 12px; font-weight: 700;
+    }
+    .sc-badge-pause { background: rgba(245,158,11,0.16); color: #b45309; }
+
+    .sc-name { font-size: 16px; font-weight: 700; color: var(--color-text); }
+    .sc-sub  { font-size: 13px; color: var(--color-text-faint); margin-top: 2px; }
+    .sc-contact {
+      display: flex; flex-direction: column; gap: 2px;
+      font-size: 12px; color: var(--color-text-muted); margin-top: 8px;
       overflow: hidden;
     }
+    .sc-contact span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-    /* ═══════════════ FILTER BAR ═══════════════ */
-    .filter-bar {
-      display: flex; align-items: flex-end; gap: .875rem;
-      padding: 1rem 1.25rem;
-      background: var(--color-bg); border-bottom: 1px solid var(--color-surface-2);
-      flex-wrap: wrap;
+    .sc-foot {
+      display: flex; justify-content: space-between;
+      margin-top: 18px; padding-top: 16px;
+      border-top: 1px solid rgba(15,23,42,0.08);
     }
-    .filter-group { display: flex; flex-direction: column; gap: .35rem; flex: 1; min-width: 120px; }
-    .filter-group.fg-wide { flex: 2; min-width: 180px; }
-    .filter-lbl {
-      font-size: .7rem; font-weight: 700; color: var(--color-text-muted);
-      text-transform: uppercase; letter-spacing: .5px;
-    }
-    .filter-ctrl {
-      height: 38px; border: 1px solid var(--color-border); border-radius: 8px;
-      padding: 0 .75rem; font-size: .85rem;
-      background: var(--color-surface); color: var(--color-text); outline: none;
-      transition: border-color .18s; width: 100%;
-    }
-    .filter-ctrl:focus { border-color: var(--color-primary-hover); box-shadow: 0 0 0 3px rgba(79,70,229,.08); }
-    .btn-reset {
-      height: 38px; padding: 0 .875rem;
-      border: 1px solid var(--color-border); border-radius: 8px;
-      background: var(--color-surface); color: var(--color-text-muted); font-size: .8rem;
-      font-weight: 500; cursor: pointer; white-space: nowrap;
-      align-self: flex-end; transition: all .15s;
-    }
-    .btn-reset:hover { border-color: var(--color-danger); color: var(--color-danger); background: var(--color-danger-bg); }
+    .sc-fright { text-align: right; }
+    .sc-flbl { font-size: 11px; color: var(--color-text-faint); font-weight: 600; }
+    .sc-fval { font-size: 15px; font-weight: 700; margin-top: 2px; color: var(--color-text); }
 
-    /* ═══════════════ TABLE ═══════════════ */
-    .data-table { width: 100%; border-collapse: collapse; font-size: .875rem; }
-    .data-table thead tr { background: var(--color-bg); border-bottom: 2px solid var(--color-border); }
-    .data-table th {
-      color: var(--color-text-muted); font-weight: 700; padding: .8rem 1rem; text-align: left;
-      font-size: .72rem; letter-spacing: .5px; white-space: nowrap; text-transform: uppercase;
+    .sc-actions {
+      display: flex; gap: 8px; justify-content: flex-end; margin-top: 14px;
     }
-    .data-table td { padding: .8rem 1rem; border-bottom: 1px solid var(--color-surface-2); vertical-align: middle; }
-    .data-row { cursor: pointer; transition: background .12s; }
-    .data-row:hover { background: #f5f7ff !important; }
-    .data-row:last-child td { border-bottom: none; }
-
-    .ta-r { text-align: right !important; }
-    .ta-c { text-align: center !important; }
-    .fw-600 { font-weight: 600; }
-    .td-muted { color: var(--color-text-muted); font-size: .875rem; }
-    .c-green { color: var(--color-success) !important; }
-    .client-name { font-weight: 500; color: var(--color-text); }
-
-    .id-badge {
-      display: inline-block; padding: .2rem .6rem;
-      background: var(--color-info-bg); color: var(--color-info-text);
-      border: 1px solid var(--color-primary-light); border-radius: 6px;
-      font-weight: 600; font-size: .8rem;
+    .sc-act {
+      width: 30px; height: 30px; border-radius: 9px;
+      border: 1px solid rgba(15,23,42,0.1);
+      background: rgba(255,255,255,0.6); color: var(--color-text-muted);
+      cursor: pointer; font-size: 13px;
+      display: inline-flex; align-items: center; justify-content: center;
+      transition: all .15s;
     }
-
-    /* ═══════════════ ACTION BUTTONS ═══════════════ */
-    .action-group { display: flex; gap: .35rem; justify-content: center; }
-    .act-btn {
-      width: 2rem; height: 2rem; border-radius: 6px;
-      border: 1px solid transparent; cursor: pointer; font-size: .875rem;
-      display: flex; align-items: center; justify-content: center;
-      transition: opacity .15s;
-    }
-    .act-btn:hover { opacity: .75; }
-    .act-view { background: var(--color-success-bg); border-color: var(--color-success); }
-    .act-edit { background: var(--color-warning-bg); border-color: var(--color-warning); }
-    .act-del  { background: var(--color-danger-bg); border-color: #fecaca; }
+    .sc-act:hover { color: var(--color-primary); border-color: var(--color-primary); }
+    .sc-act-del:hover { color: var(--color-danger); border-color: var(--color-danger); background: var(--color-danger-bg); }
 
     /* ═══════════════ EMPTY STATE ═══════════════ */
     .empty-state { padding: 3.5rem 1rem; text-align: center; color: var(--color-text-faint); }
     .empty-icon { font-size: 3.5rem; margin-bottom: .75rem; opacity: .6; }
 
-    /* ═══════════════ MOBILE CARDS ═══════════════ */
-    .mobile-row {
-      padding: 1rem 1.25rem; border-bottom: 1px solid var(--color-surface-2);
-      cursor: pointer; transition: background .12s;
-    }
-    .mobile-row:hover { background: var(--color-bg); }
-    .mobile-row:last-child { border-bottom: none; }
-    .mobile-row-top {
-      display: flex; justify-content: space-between;
-      align-items: flex-start; margin-bottom: .5rem;
-    }
-    .mobile-row-left { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
-    .mobile-grid-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: .5rem; margin-bottom: .75rem; }
-    .mg-cell {
-      background: var(--color-bg); padding: .5rem; border-radius: 8px;
-      text-align: center; display: flex; flex-direction: column; gap: .1rem;
-    }
-    .mg-lbl { font-size: .7rem; color: var(--color-text-muted); }
-    .mobile-actions {
-      display: flex; gap: .5rem; justify-content: flex-end;
-      border-top: 1px solid var(--color-surface-2); padding-top: .75rem;
-    }
-
-    /* ═══════════════ RESPONSIVE ═══════════════ */
-    .desktop-table { display: none; overflow-x: auto; }
-    .mobile-cards  { display: block; }
-
-    @media (min-width: 1024px) {
-      .desktop-table { display: block; }
-      .mobile-cards  { display: none; }
-    }
-
     @media (max-width: 768px) {
       .page { padding: 1rem; }
-      .filter-bar { gap: .625rem; }
     }
   `]
 })
@@ -385,6 +298,30 @@ export class SuppliersComponent implements OnInit, OnDestroy {
 
   trackById(_: number, item: any): number {
     return item.supplier?.supplierId ?? item.supplier?.id;
+  }
+
+  private static readonly AVATAR_GRADIENTS = [
+    'linear-gradient(135deg, #6366f1, #4f46e5)',
+    'linear-gradient(135deg, #fbbf24, #f97316)',
+    'linear-gradient(135deg, #38bdf8, #6366f1)',
+    'linear-gradient(135deg, #34d399, #059669)',
+    'linear-gradient(135deg, #f472b6, #a855f7)'
+  ];
+
+  getInitials(name: string): string {
+    return (name || '?')
+      .split(/\s+/)
+      .map(w => w[0])
+      .join('')
+      .toUpperCase()
+      .substring(0, 2);
+  }
+
+  avatarGradient(name: string): string {
+    let hash = 0;
+    for (const c of name || '') hash = (hash * 31 + c.charCodeAt(0)) | 0;
+    const gradients = SuppliersComponent.AVATAR_GRADIENTS;
+    return gradients[Math.abs(hash) % gradients.length];
   }
 
   viewSupplier(id: number): void   { this.router.navigate(['/suppliers/view', id]); }

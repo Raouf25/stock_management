@@ -43,17 +43,11 @@ interface PeriodRow {
   template: `
 <div class="page">
 
-  <!-- ══ Header ══════════════════════════════════════════════════════════════ -->
-  <div class="page-head">
-    <div>
-      <h1 class="page-title">Rapport TVA / Taxes</h1>
-      <p class="page-sub">Déclaration TVA — taux 19 %</p>
-    </div>
-    <div class="head-actions">
-      <button class="btn-export" (click)="exportCsv()" [disabled]="loading">
-        <i class="bi bi-download"></i> Export CSV
-      </button>
-    </div>
+  <!-- ══ Barre d'actions ═══════════════════════════════════════════════════ -->
+  <div class="actions-row">
+    <button class="btn-export" (click)="exportCsv()" [disabled]="loading">
+      <i class="bi bi-download"></i> Export CSV
+    </button>
   </div>
 
   <!-- ══ Skeleton ══════════════════════════════════════════════════════════ -->
@@ -222,20 +216,17 @@ interface PeriodRow {
   `,
   styles: [`
     *, *::before, *::after {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-family: var(--font-sans);
       box-sizing: border-box;
     }
 
-    .page { padding: 1.5rem; background: var(--color-bg); min-height: 100vh; }
+    .page { padding: 1.5rem; background: transparent; min-height: 100vh; }
 
-    /* ── Header ── */
-    .page-head {
-      display: flex; justify-content: space-between; align-items: flex-start;
-      margin-bottom: 1.5rem;
+    /* ── Barre d'actions ── */
+    .actions-row {
+      display: flex; justify-content: flex-end; align-items: center;
+      margin-bottom: 1.25rem;
     }
-    .page-title { font-size: 1.5rem; font-weight: 700; color: var(--color-text); margin: 0 0 .2rem; }
-    .page-sub   { font-size: .82rem; color: var(--color-text-muted); margin: 0; }
-    .head-actions { display: flex; gap: .625rem; align-items: center; }
 
     /* ── KPI row ── */
     .kpi-row {
@@ -245,14 +236,16 @@ interface PeriodRow {
       margin-bottom: 1.5rem;
     }
     .kpi-card {
-      background: var(--color-surface); border-radius: 12px;
-      border: 1px solid var(--color-border);
+      background: var(--glass-bg); border-radius: var(--radius-lg);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border: 1px solid var(--glass-border);
       padding: 1rem 1.25rem;
       display: flex; flex-direction: column; gap: .1rem;
-      box-shadow: 0 1px 3px rgba(0,0,0,.04);
+      box-shadow: var(--glass-shadow-sm);
       transition: transform .15s, box-shadow .15s;
     }
-    .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 4px 14px rgba(0,0,0,.07); }
+    .kpi-card:hover { transform: translateY(-2px); box-shadow: var(--glass-shadow-lg); }
 
     .kpi-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: .375rem; }
     .kpi-ic-wrap {
@@ -301,31 +294,37 @@ interface PeriodRow {
 
     /* ── Toggle ── */
     .toggle-group {
-      display: flex; background: var(--color-surface-2);
+      display: flex; background: rgba(255,255,255,0.55);
+      backdrop-filter: var(--glass-blur-sm);
+      -webkit-backdrop-filter: var(--glass-blur-sm);
+      border: 1px solid rgba(255,255,255,0.7);
       border-radius: 999px; padding: 2px; gap: 2px;
     }
+    :host-context([data-theme="dark"]) .toggle-group { background: rgba(30,41,59,0.6); border-color: rgba(255,255,255,0.08); }
     .toggle-group button {
       padding: .3rem .875rem; border: none; background: transparent;
       border-radius: 999px; font-size: .8125rem; font-weight: 500;
       color: var(--color-text-muted); cursor: pointer; transition: all .18s;
     }
     .toggle-group button.active {
-      background: var(--color-primary-hover); color: var(--color-surface);
-      box-shadow: 0 1px 4px rgba(79,70,229,.35);
+      background: var(--color-primary); color: #fff;
+      box-shadow: 0 8px 20px -6px var(--color-primary-glow);
     }
 
     /* ── Chart card ── */
     .chart-card {
-      background: var(--color-surface); border-radius: 12px;
-      border: 1px solid var(--color-border);
-      box-shadow: 0 1px 4px rgba(0,0,0,.04);
+      background: var(--glass-bg); border-radius: var(--radius-xl);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--glass-shadow);
       overflow: hidden; display: flex; flex-direction: column;
       margin-bottom: 0;
     }
     .chart-head {
       display: flex; justify-content: space-between; align-items: center;
       padding: .875rem 1.25rem;
-      border-bottom: 1px solid var(--color-surface-2);
+      border-bottom: 1px solid var(--glass-border);
     }
     .chart-title { font-size: .82rem; font-weight: 700; color: var(--color-text); letter-spacing: .2px; }
     .chart-body { padding: 1.25rem; height: 260px; position: relative; }
@@ -333,13 +332,16 @@ interface PeriodRow {
 
     /* ── Table card ── */
     .table-card {
-      background: var(--color-surface); border-radius: 12px;
-      border: 1px solid var(--color-border);
-      box-shadow: 0 1px 4px rgba(0,0,0,.04);
+      background: var(--glass-bg); border-radius: var(--radius-xl);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--glass-shadow);
       overflow-x: auto;
     }
     .table { width: 100%; border-collapse: collapse; font-size: .875rem; }
-    .table thead tr { background: var(--color-bg); border-bottom: 2px solid var(--color-border); }
+    .table thead tr { background: rgba(255,255,255,0.3); border-bottom: 2px solid var(--glass-border); }
+    :host-context([data-theme="dark"]) .table thead tr { background: rgba(255,255,255,0.03); }
     .table th {
       padding: .8rem 1rem; text-align: left; font-size: .72rem;
       font-weight: 700; text-transform: uppercase; letter-spacing: .5px;
@@ -353,8 +355,9 @@ interface PeriodRow {
     .table tbody tr:hover { background: var(--color-primary-muted); }
     .table tfoot td {
       padding: .8rem 1rem; font-weight: 700; color: var(--color-text);
-      background: var(--color-bg); border-top: 2px solid var(--color-border);
+      background: rgba(255,255,255,0.3); border-top: 2px solid var(--glass-border);
     }
+    :host-context([data-theme="dark"]) .table tfoot td { background: rgba(255,255,255,0.03); }
     .num { text-align: right; font-variant-numeric: tabular-nums; }
     .vat-col { color: var(--color-danger); font-weight: 600; }
     .period-cell { font-weight: 600; color: var(--color-text); }
@@ -388,13 +391,13 @@ interface PeriodRow {
     .btn-export {
       display: inline-flex; align-items: center; gap: .35rem;
       padding: .6rem 1.25rem;
-      background: linear-gradient(135deg, var(--color-primary-hover), var(--color-primary));
-      color: var(--color-surface); border: none; border-radius: 10px;
+      background: var(--color-primary);
+      color: #fff; border: none; border-radius: 11px;
       font-size: .875rem; font-weight: 600; cursor: pointer;
-      box-shadow: 0 2px 8px rgba(79,70,229,.25);
-      transition: opacity .18s; white-space: nowrap;
+      box-shadow: 0 8px 20px -6px var(--color-primary-glow);
+      transition: background .18s; white-space: nowrap;
     }
-    .btn-export:hover { opacity: .88; }
+    .btn-export:hover { background: var(--color-primary-hover); }
     .btn-export:disabled { opacity: .5; cursor: not-allowed; }
 
     /* ── Responsive ── */

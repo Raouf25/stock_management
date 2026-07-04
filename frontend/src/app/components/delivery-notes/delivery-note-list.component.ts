@@ -170,7 +170,7 @@ interface DeliveryNoteKPIs {
             <tbody>
               <tr *ngFor="let dn of filteredDeliveryNotes" 
                   style="border-bottom: 1px solid var(--color-border); transition: background 0.2s;"
-                  onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">
+                  onmouseover="this.style.background='rgba(99,102,241,0.05)'" onmouseout="this.style.background='transparent'">
                 <td style="padding: 0.75rem 1rem;">
                   <input type="checkbox" [checked]="isSelected(dn.idDeliveryNote)" 
                          (change)="toggleSelect(dn)"
@@ -244,7 +244,7 @@ interface DeliveryNoteKPIs {
         <!-- Mobile Cards -->
         <div class="mobile-cards">
           <div *ngFor="let dn of filteredDeliveryNotes"
-               style="border-bottom: 1px solid var(--color-border); padding: 1rem; background: white;">
+               style="border-bottom: 1px solid var(--color-border); padding: 1rem; background: transparent;">
             <!-- Header: Checkbox + BL Number + Date + Status -->
             <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 0.75rem;">
               <div style="display: flex; align-items: center; gap: 0.5rem;">

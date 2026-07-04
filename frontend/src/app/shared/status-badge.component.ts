@@ -14,13 +14,13 @@ interface BadgeConfig {
 }
 
 const CONFIGS: Record<string, BadgeConfig> = {
-  // Payment statuses
-  PAID:             { label: 'Payé',      css: 'sb-success', icon: 'bi-check-circle-fill'  },
-  UNPAID:           { label: 'Impayé',    css: 'sb-danger',  icon: 'bi-x-circle-fill'      },
-  PARTIALLY_PAID:   { label: 'Partiel',   css: 'sb-warning', icon: 'bi-dash-circle-fill'   },
+  // Payment statuses (féminin : une facture)
+  PAID:             { label: 'Payée',      css: 'sb-success', icon: 'bi-check-circle-fill'  },
+  UNPAID:           { label: 'Impayée',    css: 'sb-danger',  icon: 'bi-x-circle-fill'      },
+  PARTIALLY_PAID:   { label: 'Partiel',    css: 'sb-warning', icon: 'bi-dash-circle-fill'   },
 
   // Delivery statuses
-  PENDING:          { label: 'En attente', css: 'sb-info',    icon: 'bi-clock-fill'         },
+  PENDING:          { label: 'En attente', css: 'sb-warning', icon: 'bi-clock-fill'         },
   DELIVERED:        { label: 'Livré',      css: 'sb-success', icon: 'bi-truck'              },
   INVOICED:         { label: 'Facturé',    css: 'sb-primary', icon: 'bi-receipt'            },
   CANCELLED:        { label: 'Annulé',     css: 'sb-danger',  icon: 'bi-x-circle-fill'      },
@@ -43,25 +43,33 @@ const CONFIGS: Record<string, BadgeConfig> = {
     </span>
   `,
   styles: [`
+    /* Pilule plate de la maquette : fond translucide, 12px/700, sans icône */
     .sb {
       display: inline-flex;
       align-items: center;
       gap: 4px;
-      padding: 3px 10px;
+      padding: 4px 10px;
       border-radius: 999px;
-      font-size: 0.6875rem;
-      font-weight: 600;
+      font-size: 12px;
+      font-weight: 700;
       line-height: 1.4;
       white-space: nowrap;
     }
     .sb i { font-size: 0.75rem; flex-shrink: 0; }
 
-    .sb-success { background: var(--color-success-bg, #d1fae5); color: var(--color-success-text, #065f46); }
-    .sb-danger  { background: var(--color-danger-bg,  #fee2e2); color: var(--color-danger-text,  #991b1b); }
-    .sb-warning { background: var(--color-warning-bg, #fef3c7); color: var(--color-warning-text, #92400e); }
-    .sb-info    { background: var(--color-info-bg,    #dbeafe); color: var(--color-info-text,    #1e40af); }
-    .sb-primary { background: var(--color-primary-light, #eef2ff); color: var(--color-primary-hover, #4f46e5); }
-    .sb-neutral { background: var(--color-surface-2, #f1f5f9);  color: var(--color-text-muted,  #64748b); }
+    .sb-success { background: rgba(16,185,129,0.14);  color: #047857; }
+    .sb-danger  { background: rgba(239,68,68,0.14);   color: #b91c1c; }
+    .sb-warning { background: rgba(245,158,11,0.16);  color: #b45309; }
+    .sb-info    { background: rgba(99,102,241,0.14);  color: #4f46e5; }
+    .sb-primary { background: rgba(99,102,241,0.14);  color: #4f46e5; }
+    .sb-neutral { background: rgba(148,163,184,0.2);  color: #475569; }
+
+    :host-context([data-theme="dark"]) .sb-success { color: #34d399; }
+    :host-context([data-theme="dark"]) .sb-danger  { color: #f87171; }
+    :host-context([data-theme="dark"]) .sb-warning { color: #fbbf24; }
+    :host-context([data-theme="dark"]) .sb-info,
+    :host-context([data-theme="dark"]) .sb-primary { color: #a5b4fc; }
+    :host-context([data-theme="dark"]) .sb-neutral { color: #94a3b8; }
   `]
 })
 export class StatusBadgeComponent {
@@ -71,7 +79,7 @@ export class StatusBadgeComponent {
   }
   get value(): StatusType { return this._value; }
 
-  @Input() showIcon = true;
+  @Input() showIcon = false;
 
   private _value: StatusType = '';
   config: BadgeConfig = { label: '', css: 'sb-neutral', icon: 'bi-circle' };

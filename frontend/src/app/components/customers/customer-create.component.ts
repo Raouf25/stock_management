@@ -181,7 +181,7 @@ import { ApiService } from '../../services/api.service';
   styles: [`
     .invoice-page-container {
       padding: 2rem;
-      background: var(--color-surface-2);
+      background: transparent;
       min-height: 100vh;
     }
 
@@ -223,9 +223,11 @@ import { ApiService } from '../../services/api.service';
 
     .form-input {
       padding: 0.75rem;
-      border: 1px solid var(--color-border-strong);
+      border: 1px solid rgba(15,23,42,0.1);
       border-radius: 0.5rem;
       font-size: 0.875rem;
+      background: rgba(255,255,255,0.7);
+      color: var(--color-text);
       transition: all 0.2s;
     }
 

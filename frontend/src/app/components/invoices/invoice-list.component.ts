@@ -41,68 +41,25 @@ interface DeliveryNoteKPIs {
   template: `
 <div class="page">
 
-  <!-- ══ EN-TÊTE ══════════════════════════════════════════════════════════ -->
-  <div class="page-header">
-    <h1 class="page-title">
-      {{ activeTab === 'factures' ? 'Factures' : 'Bons de Livraison' }}
-    </h1>
+  <!-- ══ TOGGLE + ACTION (maquette) ═════════════════════════════════════════ -->
+  <div class="tabs-row">
+    <div class="tab-bar">
+      <button class="tab" [class.tab-on]="activeTab==='factures'" (click)="setTab('factures')">
+        Factures
+        <span class="tab-pill">{{ filteredInvoices.length }}</span>
+      </button>
+      <button class="tab" [class.tab-on]="activeTab==='bl'" (click)="setTab('bl')">
+        Bons de livraison
+        <span class="tab-pill">{{ filteredDeliveryNotes.length }}</span>
+      </button>
+    </div>
+    <a routerLink="/documents/create" class="btn-create">
+      <i class="bi bi-plus-lg"></i> Créer un document
+    </a>
   </div>
 
-  <!-- ══ TOGGLE ════════════════════════════════════════════════════════════ -->
-  <div class="tab-bar">
-    <button class="tab" [class.tab-on]="activeTab==='factures'" (click)="setTab('factures')">
-      <span>📁</span> Factures
-      <span class="tab-pill">{{ filteredInvoices.length }}</span>
-    </button>
-    <button class="tab" [class.tab-on]="activeTab==='bl'" (click)="setTab('bl')">
-      <span>📦</span> Bons de Livraison
-      <span class="tab-pill">{{ filteredDeliveryNotes.length }}</span>
-    </button>
-  </div>
-
-  <!-- ══ KPIs FACTURES ════════════════════════════════════════════════════ -->
-  <div *ngIf="activeTab==='factures'" class="kpi-row">
-    <div class="kpi-card kpi-blue">
-      <span class="kpi-val">{{ filteredInvoices.length }}</span>
-      <span class="kpi-lbl">Total Factures</span>
-    </div>
-    <div class="kpi-card kpi-green">
-      <span class="kpi-val">{{ getTotalAmount() | number:'1.3-3' }}</span>
-      <span class="kpi-lbl">Montant Total (DNT)</span>
-    </div>
-    <div class="kpi-card kpi-orange">
-      <span class="kpi-val">{{ getTotalDue() | number:'1.3-3' }}</span>
-      <span class="kpi-lbl">Total Dû (DNT)</span>
-    </div>
-    <div class="kpi-card kpi-indigo">
-      <span class="kpi-val">{{ getCountByStatus('PAID') }}</span>
-      <span class="kpi-lbl">Payées</span>
-    </div>
-    <div class="kpi-card kpi-red">
-      <span class="kpi-val">{{ getCountByStatus('UNPAID') }}</span>
-      <span class="kpi-lbl">Impayées</span>
-    </div>
-  </div>
-
-  <!-- ══ KPIs BL ══════════════════════════════════════════════════════════ -->
-  <div *ngIf="activeTab==='bl'" class="kpi-row">
-    <div class="kpi-card kpi-blue">
-      <span class="kpi-val">{{ kpis.totalDeliveryNotes }}</span>
-      <span class="kpi-lbl">Total BL</span>
-    </div>
-    <div class="kpi-card kpi-orange">
-      <span class="kpi-val">{{ kpis.notInvoiced }}</span>
-      <span class="kpi-lbl">Non Facturés</span>
-    </div>
-    <div class="kpi-card kpi-indigo">
-      <span class="kpi-val">{{ kpis.pendingDelivery }}</span>
-      <span class="kpi-lbl">En Attente</span>
-    </div>
-    <div class="kpi-card kpi-green">
-      <span class="kpi-val">{{ kpis.totalAmountNotInvoiced | number:'1.3-3' }}</span>
-      <span class="kpi-lbl">Montant Non Facturé (DNT)</span>
-    </div>
-  </div>
+  <!-- ══ GRILLE MAQUETTE : TABLE + PANNEAU DE DÉTAIL ═══════════════════════ -->
+  <div class="split-grid">
 
   <!-- ══ CARTE PRINCIPALE ══════════════════════════════════════════════════ -->
   <div class="main-card">
@@ -183,38 +140,35 @@ interface DeliveryNoteKPIs {
       </div>
     </div>
 
-    <!-- ════════ TABLE FACTURES (desktop) ════════ -->
+    <!-- ════════ TABLE FACTURES (desktop, colonnes maquette) ════════ -->
     <div *ngIf="activeTab==='factures'" class="desktop-table">
       <table class="data-table">
         <thead>
           <tr>
             <th>N° FACTURE</th>
-            <th>DATE</th>
             <th>CLIENT</th>
-            <th class="ta-r">MONTANT TOTAL</th>
-            <th class="ta-r">ACOMPTE</th>
-            <th class="ta-r">MONTANT DÛ</th>
-            <th class="ta-c">STATUT</th>
+            <th>DATE</th>
+            <th class="ta-r">MONTANT TTC</th>
+            <th>STATUT</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let inv of filteredInvoices; trackBy: trackByInvoiceId"
-              class="data-row" (click)="openDrawer(inv)">
-            <td><span class="id-badge">{{ inv.billId }}</span></td>
-            <td class="td-muted">{{ inv.billDate | date:'dd/MM/yyyy' }}</td>
+              class="data-row" [class.row-selected]="selectedInvoice?.billId === inv.billId"
+              (click)="selectInvoice(inv)">
+            <td class="num-cell">FAC-{{ inv.billId }}</td>
             <td>
               <div class="client-name">{{ inv.clientName }}</div>
               <div class="client-phone">{{ inv.clientPhone }}</div>
             </td>
-            <td class="ta-r fw-600">{{ inv.totalAmount | number:'1.3-3' }}</td>
-            <td class="ta-r c-cyan">{{ (inv.deposit || 0) | number:'1.3-3' }}</td>
-            <td class="ta-r c-green fw-600">{{ inv.amountDue | number:'1.3-3' }}</td>
-            <td class="ta-c">
+            <td class="td-muted">{{ inv.billDate | date:'dd/MM/yyyy' }}</td>
+            <td class="ta-r fw-700">{{ inv.totalAmount | number:'1.3-3' }}</td>
+            <td>
               <app-status-badge [value]="inv.paymentStatus"></app-status-badge>
             </td>
           </tr>
           <tr *ngIf="filteredInvoices.length === 0">
-            <td colspan="7" class="empty-state">
+            <td colspan="5" class="empty-state">
               <div class="empty-icon">📭</div>
               <p>Aucune facture trouvée</p>
             </td>
@@ -259,7 +213,7 @@ interface DeliveryNoteKPIs {
       (pageSizeChange)="onInvoicePageSizeChange($event)">
     </app-paginator>
 
-    <!-- ════════ TABLE BL (desktop) ════════ -->
+    <!-- ════════ TABLE BL (desktop, colonnes maquette) ════════ -->
     <div *ngIf="activeTab==='bl'" class="desktop-table">
       <table class="data-table">
         <thead>
@@ -268,52 +222,31 @@ interface DeliveryNoteKPIs {
               <input type="checkbox" class="cb" (change)="toggleSelectAll($event)"
                      [checked]="areAllSelected()">
             </th>
-            <th>NUMÉRO BL</th>
-            <th>DATE</th>
+            <th>N° BL</th>
             <th>CLIENT</th>
+            <th>DATE</th>
             <th class="ta-r">MONTANT</th>
-            <th class="ta-c">STATUT</th>
-            <th class="ta-c">FACTURATION</th>
-            <th class="ta-c">ACTIONS</th>
+            <th>STATUT</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let dn of filteredDeliveryNotes" class="data-row" (click)="openBLDrawer(dn)">
+          <tr *ngFor="let dn of filteredDeliveryNotes" class="data-row"
+              [class.row-selected]="selectedBL?.idDeliveryNote === dn.idDeliveryNote"
+              (click)="selectBL(dn)">
             <td class="ta-c" (click)="$event.stopPropagation()">
               <input type="checkbox" class="cb" [checked]="isSelected(dn.idDeliveryNote)"
                      (change)="toggleSelect(dn)" [disabled]="dn.invoiced">
             </td>
-            <td><span class="id-badge">{{ dn.deliveryNoteNumber }}</span></td>
-            <td class="td-muted">{{ dn.dateDelivery | date:'dd/MM/yyyy' }}</td>
+            <td class="num-cell">{{ dn.deliveryNoteNumber }}</td>
             <td class="client-name">{{ dn.customer.name }}</td>
-            <td class="ta-r fw-600">{{ dn.totalAmount | number:'1.3-3' }} DNT</td>
-            <td class="ta-c">
+            <td class="td-muted">{{ dn.dateDelivery | date:'dd/MM/yyyy' }}</td>
+            <td class="ta-r fw-700">{{ dn.totalAmount | number:'1.3-3' }}</td>
+            <td>
               <app-status-badge [value]="dn.status"></app-status-badge>
-            </td>
-            <td class="ta-c">
-              <div *ngIf="dn.invoiced" class="invoiced-cell">
-                <app-status-badge value="INVOICED"></app-status-badge>
-                <span *ngIf="dn.bill?.idBill" class="td-muted" style="font-size:.75rem;">#{{ dn.bill?.idBill }}</span>
-              </div>
-              <app-status-badge *ngIf="!dn.invoiced" value="PENDING"></app-status-badge>
-            </td>
-            <td class="ta-c" (click)="$event.stopPropagation()">
-              <div class="action-group">
-                <button (click)="downloadBLPDF(dn.idDeliveryNote, dn.deliveryNoteNumber)"
-                        class="act-btn act-dl" title="Télécharger PDF">📥</button>
-                <button *ngIf="!dn.invoiced && dn.status==='PENDING'"
-                        (click)="updateBLStatus(dn.idDeliveryNote,'DELIVERED')"
-                        class="act-btn act-deliver" title="Marquer livré">📦</button>
-                <button *ngIf="!dn.invoiced"
-                        (click)="deleteBL(dn.idDeliveryNote)"
-                        class="act-btn act-del" title="Supprimer">🗑️</button>
-                <button *ngIf="dn.invoiced && dn.bill"
-                        class="act-btn act-view" title="Voir facture">📄</button>
-              </div>
             </td>
           </tr>
           <tr *ngIf="filteredDeliveryNotes.length === 0">
-            <td colspan="8" class="empty-state">
+            <td colspan="6" class="empty-state">
               <div class="empty-icon">📭</div><p>Aucun bon de livraison trouvé</p>
             </td>
           </tr>
@@ -364,11 +297,153 @@ interface DeliveryNoteKPIs {
   </div>
   <!-- fin main-card -->
 
+  <!-- ══ PANNEAU DE DÉTAIL FACTURE (maquette) ══════════════════════════════ -->
+  <aside *ngIf="activeTab==='factures'" class="detail-panel">
+    <ng-container *ngIf="selectedInvoice; else noInvSel">
+      <div class="dp-head">
+        <div>
+          <div class="dp-label">Facture</div>
+          <div class="dp-num">FAC-{{ selectedInvoice.billId }}</div>
+        </div>
+        <app-status-badge [value]="selectedInvoice.paymentStatus"></app-status-badge>
+      </div>
+      <div class="dp-client">
+        <div class="dp-sub">Client</div>
+        <div class="dp-client-name">{{ selectedInvoice.clientName }}</div>
+        <div class="dp-meta" *ngIf="selectedInvoice.clientPhone">{{ selectedInvoice.clientPhone }}</div>
+        <div class="dp-meta">Émise le {{ selectedInvoice.billDate | date:'dd/MM/yyyy' }}</div>
+      </div>
+
+      <!-- Articles (maquette : « Plaquettes frein × 4 — 154,000 ») -->
+      <div class="dp-items" *ngIf="detailLoading">
+        <div class="dp-item dp-item-loading">Chargement des articles…</div>
+      </div>
+      <div class="dp-items" *ngIf="!detailLoading && selectedInvoiceDetail?.products?.length">
+        <div class="dp-item" *ngFor="let p of selectedInvoiceDetail.products">
+          <span class="dp-item-name">{{ formatProductName(p.productName) }} × {{ p.quantity }}</span>
+          <span class="dp-item-val">{{ p.totalProductPrice | number:'1.3-3' }}</span>
+        </div>
+      </div>
+
+      <!-- Totaux (maquette : Total HT / TVA 19% / Total TTC accent) -->
+      <div class="dp-rows">
+        <div class="dp-row">
+          <span>Total HT</span>
+          <span class="dp-val">{{ detailTotalHT | number:'1.3-3' }} DNT</span>
+        </div>
+        <div class="dp-row" *ngIf="selectedInvoiceDetail?.applyTva">
+          <span>TVA 19%</span>
+          <span class="dp-val">{{ detailTva | number:'1.3-3' }} DNT</span>
+        </div>
+        <div class="dp-row" *ngIf="(selectedInvoice.deposit || 0) > 0">
+          <span>Acompte</span>
+          <span class="dp-val">{{ selectedInvoice.deposit | number:'1.3-3' }} DNT</span>
+        </div>
+        <div class="dp-row" *ngIf="(selectedInvoice.amountDue || 0) > 0">
+          <span>Montant dû</span>
+          <span class="dp-val dp-val-due">{{ selectedInvoice.amountDue | number:'1.3-3' }} DNT</span>
+        </div>
+      </div>
+      <div class="dp-total">
+        <span>Total TTC</span>
+        <span class="dp-total-val">{{ selectedInvoice.totalAmount | number:'1.3-3' }} DNT</span>
+      </div>
+      <div class="dp-actions">
+        <button class="dp-btn dp-btn-accent" (click)="downloadInvoicePDF(selectedInvoice.billId)">
+          <i class="bi bi-download"></i> PDF
+        </button>
+        <button class="dp-btn dp-btn-ghost"
+                (click)="sendInvoiceByEmail(selectedInvoice)"
+                [disabled]="sendingEmail === selectedInvoice.billId">
+          <i class="bi bi-envelope"></i>
+          {{ sendingEmail === selectedInvoice.billId ? 'Envoi…' : 'Envoyer' }}
+        </button>
+        <button class="dp-btn dp-btn-icon dp-btn-ghost" title="Aperçu"
+                (click)="openDrawer(selectedInvoice)">
+          <i class="bi bi-eye"></i>
+        </button>
+        <button *ngIf="selectedInvoice.paymentStatus !== 'PAID'"
+                class="dp-btn dp-btn-icon dp-btn-success" title="Encaisser"
+                (click)="openPaymentModal(selectedInvoice)">
+          <i class="bi bi-check2-circle"></i>
+        </button>
+      </div>
+    </ng-container>
+    <ng-template #noInvSel>
+      <div class="dp-empty">
+        <i class="bi bi-receipt"></i>
+        <p>Sélectionnez une facture pour afficher son détail</p>
+      </div>
+    </ng-template>
+  </aside>
+
+  <!-- ══ PANNEAU DE DÉTAIL BL (maquette) ═══════════════════════════════════ -->
+  <aside *ngIf="activeTab==='bl'" class="detail-panel">
+    <ng-container *ngIf="selectedBL; else noBLSel">
+      <div class="dp-head">
+        <div>
+          <div class="dp-label">Bon de livraison</div>
+          <div class="dp-num">{{ selectedBL.deliveryNoteNumber }}</div>
+        </div>
+        <app-status-badge [value]="selectedBL.status"></app-status-badge>
+      </div>
+      <div class="dp-client">
+        <div class="dp-sub">Client</div>
+        <div class="dp-client-name">{{ selectedBL.customer.name }}</div>
+        <div class="dp-meta">Livraison le {{ selectedBL.dateDelivery | date:'dd/MM/yyyy' }}</div>
+      </div>
+      <div class="dp-rows">
+        <div class="dp-row">
+          <span>Facturation</span>
+          <span class="dp-val">
+            <app-status-badge [value]="selectedBL.invoiced ? 'INVOICED' : 'PENDING'"></app-status-badge>
+          </span>
+        </div>
+        <div class="dp-row" *ngIf="selectedBL.invoiced && selectedBL.bill?.idBill">
+          <span>Facture liée</span>
+          <span class="dp-val">FAC-{{ selectedBL.bill?.idBill }}</span>
+        </div>
+      </div>
+      <div class="dp-total">
+        <span>Montant</span>
+        <span class="dp-total-val">{{ selectedBL.totalAmount | number:'1.3-3' }} DNT</span>
+      </div>
+      <div class="dp-actions">
+        <button class="dp-btn dp-btn-accent"
+                (click)="downloadBLPDF(selectedBL.idDeliveryNote, selectedBL.deliveryNoteNumber)">
+          <i class="bi bi-download"></i> PDF
+        </button>
+        <button class="dp-btn dp-btn-ghost" title="Aperçu" (click)="openBLDrawer(selectedBL)">
+          <i class="bi bi-eye"></i> Aperçu
+        </button>
+        <button *ngIf="!selectedBL.invoiced && selectedBL.status==='PENDING'"
+                class="dp-btn dp-btn-icon dp-btn-success" title="Marquer livré"
+                (click)="updateBLStatus(selectedBL.idDeliveryNote,'DELIVERED')">
+          <i class="bi bi-box-seam"></i>
+        </button>
+        <button *ngIf="!selectedBL.invoiced"
+                class="dp-btn dp-btn-icon dp-btn-danger" title="Supprimer"
+                (click)="deleteBL(selectedBL.idDeliveryNote)">
+          <i class="bi bi-trash"></i>
+        </button>
+      </div>
+    </ng-container>
+    <ng-template #noBLSel>
+      <div class="dp-empty">
+        <i class="bi bi-truck"></i>
+        <p>Sélectionnez un bon de livraison pour afficher son détail</p>
+      </div>
+    </ng-template>
+  </aside>
+
+  </div>
+  <!-- fin split-grid -->
+
   <!-- ══ DRAWER FACTURE ════════════════════════════════════════════════════ -->
   <div *ngIf="drawerOpen" class="drawer-backdrop" (click)="closeDrawer()"></div>
 
   <div class="invoice-drawer" [class.drawer-open]="drawerOpen">
-    <div class="drawer-iframe-container" *ngIf="selectedInvoice">
+    <div class="drawer-iframe-container" *ngIf="drawerOpen && selectedInvoice">
       <div class="drawer-head">
         <div>
           <h3 class="drawer-title">Facture #{{ selectedInvoice.billId }}</h3>
@@ -377,7 +452,7 @@ interface DeliveryNoteKPIs {
         <button class="btn-close-drawer" (click)="closeDrawer()">✕</button>
       </div>
       <div class="drawer-body">
-        <iframe [src]="iframeSrc"
+        <iframe *ngIf="iframeSrc" [src]="iframeSrc"
                 class="invoice-iframe" title="Prévisualisation"></iframe>
       </div>
       <div class="drawer-foot">
@@ -398,7 +473,7 @@ interface DeliveryNoteKPIs {
   <div *ngIf="blDrawerOpen" class="drawer-backdrop" (click)="closeBLDrawer()"></div>
 
   <div class="invoice-drawer" [class.drawer-open]="blDrawerOpen">
-    <div class="drawer-iframe-container" *ngIf="selectedBL">
+    <div class="drawer-iframe-container" *ngIf="blDrawerOpen && selectedBL">
       <div class="drawer-head">
         <div>
           <h3 class="drawer-title">Bon de livraison #{{ selectedBL.deliveryNoteNumber }}</h3>
@@ -432,54 +507,218 @@ interface DeliveryNoteKPIs {
     :host { display: block; }
 
     .page {
-      background: var(--color-bg);
+      background: transparent;
       min-height: 100vh;
       padding: 1.75rem 2rem;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-family: var(--font-sans);
       box-sizing: border-box;
     }
 
-    /* ═══════════════ HEADER ═══════════════ */
-    .page-header {
+    /* ═══════════════ GRILLE TABLE + PANNEAU (maquette) ═══════════════ */
+    .split-grid {
+      display: grid;
+      grid-template-columns: 1.7fr 360px;
+      gap: 18px;
+      align-items: start;
+    }
+    @media (max-width: 1200px) {
+      .split-grid { grid-template-columns: 1fr; }
+      .detail-panel { position: static !important; }
+    }
+
+    .detail-panel {
+      background: var(--glass-bg-strong);
+      backdrop-filter: blur(26px) saturate(180%);
+      -webkit-backdrop-filter: blur(26px) saturate(180%);
+      border: 1px solid var(--glass-border);
+      border-radius: 22px;
+      box-shadow: var(--glass-shadow-lg);
+      padding: 24px;
+      position: sticky;
+      top: 26px;
+    }
+
+    .dp-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 18px;
+    }
+    .dp-label {
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--color-text-faint);
+      font-weight: 700;
+    }
+    .dp-num { font-size: 17px; font-weight: 800; margin-top: 2px; color: var(--color-text); }
+
+    .dp-client {
+      padding: 14px 0;
+      border-top: 1px solid rgba(15,23,42,0.08);
+      border-bottom: 1px solid rgba(15,23,42,0.08);
+    }
+    .dp-sub { font-size: 12px; color: var(--color-text-faint); font-weight: 600; margin-bottom: 4px; }
+    .dp-client-name { font-size: 14px; font-weight: 700; color: var(--color-text); }
+    .dp-meta { font-size: 12px; color: var(--color-text-muted); margin-top: 2px; }
+
+    /* Articles — maquette : nom × qté à gauche, montant 600 tabulaire à droite */
+    .dp-items {
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+      padding: 14px 0;
+      border-bottom: 1px solid rgba(15,23,42,0.08);
+    }
+    .dp-item {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 1.5rem;
+      gap: 12px;
+      font-size: 13px;
     }
-    .page-title {
-      font-size: 1.5rem;
-      font-weight: 700;
+    .dp-item-name {
+      color: #475569;
+      font-weight: 400;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    :host-context([data-theme="dark"]) .dp-item-name { color: var(--color-text-2); }
+    .dp-item-val { font-weight: 600; font-variant-numeric: tabular-nums; color: var(--color-text); flex-shrink: 0; }
+    .dp-item-loading { color: var(--color-text-faint); font-style: italic; }
+
+    .dp-rows {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      padding: 14px 0 0;
+    }
+    .dp-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      color: var(--color-text-muted);
+    }
+    .dp-val { font-variant-numeric: tabular-nums; color: var(--color-text-muted); }
+    .dp-val-due { color: var(--color-danger); font-weight: 600; }
+
+    .dp-total {
+      display: flex;
+      justify-content: space-between;
+      font-size: 16px;
+      font-weight: 800;
+      padding: 7px 0 4px;
+      margin-top: 4px;
       color: var(--color-text);
-      margin: 0;
     }
+    .dp-total-val { color: var(--color-primary); font-variant-numeric: tabular-nums; }
+
+    .dp-actions { display: flex; gap: 9px; margin-top: 18px; }
+    .dp-btn {
+      flex: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 10px;
+      border-radius: 11px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all .15s;
+      border: none;
+      white-space: nowrap;
+    }
+    .dp-btn:disabled { opacity: .6; cursor: not-allowed; }
+    .dp-btn-icon { flex: 0 0 42px; padding: 10px 0; }
+    .dp-btn-accent {
+      background: var(--color-primary);
+      color: #fff;
+    }
+    .dp-btn-accent:hover { background: var(--color-primary-hover); }
+    .dp-btn-ghost {
+      border: 1px solid rgba(15,23,42,0.12);
+      background: rgba(255,255,255,0.6);
+      color: var(--color-text-2);
+    }
+    .dp-btn-ghost:hover { background: #fff; }
+    .dp-btn-success {
+      border: 1px solid rgba(16,185,129,0.3);
+      background: rgba(16,185,129,0.1);
+      color: #047857;
+      font-size: 14px;
+    }
+    .dp-btn-success:hover { background: rgba(16,185,129,0.18); }
+    .dp-btn-danger {
+      border: 1px solid rgba(239,68,68,0.3);
+      background: rgba(239,68,68,0.08);
+      color: #b91c1c;
+      font-size: 14px;
+    }
+    .dp-btn-danger:hover { background: rgba(239,68,68,0.16); }
+
+    .dp-empty {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: var(--color-text-faint);
+    }
+    .dp-empty i { font-size: 2.5rem; opacity: .5; }
+    .dp-empty p { margin: .75rem 0 0; font-size: .875rem; }
+
+    .num-cell {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--color-primary);
+      font-variant-numeric: tabular-nums;
+      padding: 14px 1rem;
+      white-space: nowrap;
+    }
+    .row-selected { background: var(--color-primary-soft) !important; }
+
+    /* ═══════════════ TABS ROW (maquette) ═══════════════ */
+    .tabs-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+    .tabs-row .tab-bar { margin-bottom: 0; }
     .btn-create {
       display: inline-flex;
       align-items: center;
       gap: .4rem;
       padding: .6rem 1.25rem;
-      background: linear-gradient(135deg, var(--color-primary-hover), var(--color-primary));
-      color: var(--color-surface);
-      border-radius: 10px;
+      background: var(--color-primary);
+      color: #fff;
+      border-radius: 11px;
       text-decoration: none;
       font-size: .875rem;
       font-weight: 600;
-      transition: opacity .18s;
-      box-shadow: 0 2px 8px rgba(79,70,229,.25);
+      transition: background .18s;
+      box-shadow: 0 8px 20px -6px var(--color-primary-glow);
     }
-    .btn-create:hover { opacity: .88; }
+    .btn-create:hover { background: var(--color-primary-hover); }
 
     /* ═══════════════ TOGGLE TAB ═══════════════ */
     .tab-bar {
       display: flex;
-      background: var(--color-surface);
-      border-radius: 12px;
-      border: 1px solid var(--color-border);
+      background: rgba(255,255,255,0.55);
+      backdrop-filter: var(--glass-blur-sm);
+      -webkit-backdrop-filter: var(--glass-blur-sm);
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.7);
       padding: .35rem;
       gap: .35rem;
       width: fit-content;
       margin-bottom: 1.5rem;
-      box-shadow: 0 1px 4px rgba(0,0,0,.04);
+      box-shadow: 0 6px 20px -12px rgba(49,46,129,0.3);
     }
+    :host-context([data-theme="dark"]) .tab-bar { background: rgba(30,41,59,0.6); border-color: rgba(255,255,255,0.08); }
     .tab {
       display: flex;
       align-items: center;
@@ -495,8 +734,8 @@ interface DeliveryNoteKPIs {
       transition: all .18s;
       white-space: nowrap;
     }
-    .tab:hover { background: var(--color-bg); color: var(--color-text-2); }
-    .tab-on { background: var(--color-primary-hover) !important; color: var(--color-surface) !important; }
+    .tab:hover { background: rgba(15,23,42,0.05); color: var(--color-text-2); }
+    .tab-on { background: var(--color-primary) !important; color: #fff !important; box-shadow: 0 8px 20px -6px var(--color-primary-glow); }
     .tab-pill {
       background: rgba(255,255,255,.2);
       padding: .1rem .45rem;
@@ -514,17 +753,19 @@ interface DeliveryNoteKPIs {
       margin-bottom: 1.5rem;
     }
     .kpi-card {
-      background: var(--color-surface);
-      border-radius: 12px;
-      border: 1px solid var(--color-border);
+      background: var(--glass-bg);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--glass-border);
       padding: 1rem 1.25rem;
       display: flex;
       flex-direction: column;
       gap: .3rem;
-      box-shadow: 0 1px 3px rgba(0,0,0,.04);
+      box-shadow: var(--glass-shadow-sm);
       transition: transform .15s, box-shadow .15s;
     }
-    .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.07); }
+    .kpi-card:hover { transform: translateY(-2px); box-shadow: var(--glass-shadow-lg); }
     .kpi-val {
       font-size: 1.25rem;
       font-weight: 700;
@@ -541,10 +782,12 @@ interface DeliveryNoteKPIs {
 
     /* ═══════════════ MAIN CARD ═══════════════ */
     .main-card {
-      background: var(--color-surface);
-      border-radius: 12px;
-      border: 1px solid var(--color-border);
-      box-shadow: 0 1px 4px rgba(0,0,0,.04);
+      background: var(--glass-bg);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--glass-shadow);
       overflow: hidden;
     }
 
@@ -554,10 +797,11 @@ interface DeliveryNoteKPIs {
       align-items: flex-end;
       gap: .875rem;
       padding: 1rem 1.25rem;
-      background: var(--color-bg);
-      border-bottom: 1px solid var(--color-surface-2);
+      background: rgba(255,255,255,0.3);
+      border-bottom: 1px solid var(--glass-border);
       flex-wrap: wrap;
     }
+    :host-context([data-theme="dark"]) .filter-bar { background: rgba(255,255,255,0.03); }
     .filter-group {
       display: flex;
       flex-direction: column;
@@ -575,11 +819,11 @@ interface DeliveryNoteKPIs {
     }
     .filter-ctrl {
       height: 38px;
-      border: 1px solid var(--color-border);
+      border: 1px solid rgba(15,23,42,0.1);
       border-radius: 8px;
       padding: 0 .75rem;
       font-size: .85rem;
-      background: var(--color-surface);
+      background: rgba(255,255,255,0.7);
       color: var(--color-text);
       outline: none;
       transition: border-color .18s;
@@ -590,9 +834,9 @@ interface DeliveryNoteKPIs {
     .btn-reset {
       height: 38px;
       padding: 0 .875rem;
-      border: 1px solid var(--color-border);
+      border: 1px solid rgba(15,23,42,0.1);
       border-radius: 8px;
-      background: var(--color-surface);
+      background: rgba(255,255,255,0.6);
       color: var(--color-text-muted);
       font-size: .8rem;
       font-weight: 500;
@@ -620,7 +864,7 @@ interface DeliveryNoteKPIs {
       padding: .45rem 1rem;
       border: 1px solid var(--color-border);
       border-radius: 8px;
-      background: var(--color-surface);
+      background: rgba(255,255,255,0.6);
       color: var(--color-text-muted);
       font-size: .85rem;
       font-weight: 600;
@@ -631,7 +875,7 @@ interface DeliveryNoteKPIs {
       border: none;
       border-radius: 8px;
       background: linear-gradient(135deg,var(--color-success),var(--color-success));
-      color: var(--color-surface);
+      color: #fff;
       font-size: .85rem;
       font-weight: 600;
       cursor: pointer;
@@ -647,9 +891,10 @@ interface DeliveryNoteKPIs {
       font-size: .875rem;
     }
     .data-table thead tr {
-      background: var(--color-bg);
-      border-bottom: 2px solid var(--color-border);
+      background: rgba(255,255,255,0.3);
+      border-bottom: 2px solid var(--glass-border);
     }
+    :host-context([data-theme="dark"]) .data-table thead tr { background: rgba(255,255,255,0.03); }
     .data-table th {
       color: var(--color-text-muted);
       font-weight: 700;
@@ -707,7 +952,7 @@ interface DeliveryNoteKPIs {
       border-radius: 9999px;
       font-size: .78rem;
       font-weight: 600;
-      color: var(--color-surface);
+      color: #fff;
       white-space: nowrap;
     }
 
@@ -746,7 +991,7 @@ interface DeliveryNoteKPIs {
       cursor: pointer;
       transition: background .12s;
     }
-    .mobile-row:hover { background: var(--color-bg); }
+    .mobile-row:hover { background: rgba(255,255,255,0.35); }
     .mobile-row:last-child { border-bottom: none; }
     .mobile-row-top {
       display: flex;
@@ -762,7 +1007,7 @@ interface DeliveryNoteKPIs {
       display: grid; grid-template-columns: repeat(2,1fr); gap: .5rem;
     }
     .mg-cell {
-      background: var(--color-bg);
+      background: rgba(15,23,42,0.04);
       padding: .5rem;
       border-radius: 8px;
       text-align: center;
@@ -780,9 +1025,11 @@ interface DeliveryNoteKPIs {
     .invoice-drawer {
       position: fixed; top: 0; right: 0;
       height: 100vh; width: 820px; max-width: 96vw;
-      background: rgba(99,102,241,0.55);
+      background: linear-gradient(180deg, rgba(31,35,94,0.92), rgba(16,19,54,0.94));
+      backdrop-filter: blur(30px) saturate(160%);
+      -webkit-backdrop-filter: blur(30px) saturate(160%);
       z-index: 1001;
-      box-shadow: -6px 0 40px rgba(61,45,110,.2);
+      box-shadow: -6px 0 40px rgba(15,23,42,.4);
       transform: translateX(100%);
       transition: transform .3s cubic-bezier(.4,0,.2,1);
       display: flex; flex-direction: column;
@@ -792,37 +1039,37 @@ interface DeliveryNoteKPIs {
 
     .drawer-iframe-container { display: flex; flex-direction: column; flex: 1; height: 100%; }
     .drawer-head {
-      background: rgba(99,102,241,0.55);
+      background: transparent;
       padding: 1rem 1.25rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
       border-bottom: 1px solid rgba(255,255,255,.1);
     }
-    .drawer-title { margin: 0; color: var(--color-surface); font-size: 1.05rem; font-weight: 600; }
+    .drawer-title { margin: 0; color: #fff; font-size: 1.05rem; font-weight: 600; }
     .drawer-sub   { color: #c4b5fd; font-size: .825rem; }
     .btn-close-drawer {
       background: rgba(255,255,255,.12);
       border: 1px solid rgba(255,255,255,.2);
-      color: var(--color-surface); width: 2rem; height: 2rem;
+      color: #fff; width: 2rem; height: 2rem;
       border-radius: 50%; cursor: pointer;
       display: flex; align-items: center; justify-content: center;
       font-size: .9rem; transition: background .15s;
     }
     .btn-close-drawer:hover { background: rgba(255,255,255,.28); }
 
-    .drawer-body { flex: 1; overflow-y: auto; background: var(--color-surface); }
+    .drawer-body { flex: 1; overflow-y: auto; background: #fff; }
     .invoice-iframe { width: 100%; height: 100%; border: none; display: block; }
 
     .drawer-foot {
       display: flex; gap: .5rem;
       padding: .75rem 1rem;
-      background: var(--color-surface);
-      border-top: 1px solid var(--color-border);
+      background: transparent;
+      border-top: 1px solid rgba(255,255,255,.1);
     }
     .drawer-btn {
       flex: 1; padding: .6rem; border-radius: 8px; border: none;
-      color: var(--color-surface); font-weight: 600; font-size: .85rem;
+      color: #fff; font-weight: 600; font-size: .85rem;
       cursor: pointer; transition: opacity .15s;
     }
     .drawer-btn:hover { opacity: .88; }
@@ -939,6 +1186,68 @@ export class InvoiceListComponent implements OnInit {
       if (this.filterDateTo   && d > new Date(this.filterDateTo))   return false;
       return true;
     });
+    this.ensureInvoiceSelection();
+  }
+
+  /* Le panneau de détail (maquette) affiche toujours une facture : par défaut la première. */
+  private ensureInvoiceSelection(): void {
+    const stillVisible = this.selectedInvoice
+      && this.filteredInvoices.some(i => i.billId === this.selectedInvoice.billId);
+    if (!stillVisible) {
+      const first = this.filteredInvoices[0] ?? null;
+      this.selectedInvoice = first;
+      if (first) {
+        this.loadInvoiceDetail(first.billId);
+      } else {
+        this.selectedInvoiceDetail = null;
+      }
+    }
+  }
+
+  selectInvoice(inv: any): void {
+    this.selectedInvoice = inv;
+    this.loadInvoiceDetail(inv.billId);
+  }
+
+  /* Articles + TVA de la facture sélectionnée (bloc central du panneau maquette). */
+  selectedInvoiceDetail: any = null;
+  detailLoading = false;
+
+  private loadInvoiceDetail(billId: number): void {
+    this.detailLoading = true;
+    this.selectedInvoiceDetail = null;
+    this.apiService.getBillById(billId).subscribe({
+      next: (detail) => {
+        if (this.selectedInvoice?.billId === billId) {
+          this.selectedInvoiceDetail = detail;
+          this.detailLoading = false;
+        }
+      },
+      error: () => { this.detailLoading = false; }
+    });
+  }
+
+  /* La base stocke les noms en MAJUSCULES ; la maquette les affiche en casse de phrase. */
+  formatProductName(name: string): string {
+    const lower = (name || '').trim().toLowerCase();
+    return lower.charAt(0).toUpperCase() + lower.slice(1);
+  }
+
+  private static readonly VAT_RATE = 0.19;
+
+  /* Le backend stocke les lignes en HT ; totalAmount est TTC si applyTva. */
+  get detailTotalHT(): number {
+    const d = this.selectedInvoiceDetail;
+    if (!d) return 0;
+    if (!d.applyTva) return d.totalAmount || 0;
+    const itemsHT = (d.products || []).reduce((s: number, p: any) => s + (p.totalProductPrice || 0), 0);
+    return itemsHT > 0 ? itemsHT : (d.totalAmount || 0) / (1 + InvoiceListComponent.VAT_RATE);
+  }
+
+  get detailTva(): number {
+    const d = this.selectedInvoiceDetail;
+    if (!d?.applyTva) return 0;
+    return (d.totalAmount || 0) - this.detailTotalHT;
   }
 
   resetInvoiceFilters(): void {
@@ -986,8 +1295,8 @@ export class InvoiceListComponent implements OnInit {
     this.drawerOpen = true;
   }
   closeDrawer(): void {
+    /* Le panneau latéral continue d'afficher la facture : on ne vide pas la sélection. */
     this.drawerOpen = false;
-    setTimeout(() => { this.selectedInvoice = null; }, 300);
   }
 
   openBLDrawer(dn: DeliveryNote): void {
@@ -1003,12 +1312,16 @@ export class InvoiceListComponent implements OnInit {
     });
   }
   closeBLDrawer(): void {
+    /* Le panneau latéral continue d'afficher le BL : on ne vide pas la sélection. */
     this.blDrawerOpen = false;
     setTimeout(() => {
-      this.selectedBL  = null;
       this.blIframeSrc = null;
       if (this.blBlobUrl) { window.URL.revokeObjectURL(this.blBlobUrl); this.blBlobUrl = null; }
     }, 300);
+  }
+
+  selectBL(dn: DeliveryNote): void {
+    this.selectedBL = dn;
   }
 
   downloadInvoicePDF(id: number): void {
@@ -1085,6 +1398,16 @@ export class InvoiceListComponent implements OnInit {
       }
       return true;
     });
+    this.ensureBLSelection();
+  }
+
+  /* Le panneau de détail (maquette) affiche toujours un BL : par défaut le premier. */
+  private ensureBLSelection(): void {
+    const stillVisible = this.selectedBL
+      && this.filteredDeliveryNotes.some(dn => dn.idDeliveryNote === this.selectedBL!.idDeliveryNote);
+    if (!stillVisible) {
+      this.selectedBL = this.filteredDeliveryNotes[0] ?? null;
+    }
   }
 
   resetBLFilters(): void {

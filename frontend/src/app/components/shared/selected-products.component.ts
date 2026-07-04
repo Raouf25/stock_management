@@ -85,10 +85,13 @@ export interface SelectedProduct {
   `,
   styles: [`
     .section-card {
-      background: white;
-      border-radius: 0.5rem;
+      background: var(--glass-bg);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-lg);
       overflow: hidden;
-      box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+      box-shadow: var(--glass-shadow-sm);
     }
 
     .section-header {
@@ -238,8 +241,8 @@ export interface SelectedProduct {
       display: flex;
       align-items: center;
       justify-content: center;
-      background: white;
-      border: 1px solid rgb(209 213 219);
+      background: rgba(255,255,255,0.7);
+      border: 1px solid rgba(15,23,42,0.1);
       border-radius: 0.25rem;
       cursor: pointer;
       transition: all 0.15s ease;
@@ -271,8 +274,8 @@ export interface SelectedProduct {
     .discount-input {
       width: 3.5rem;
       height: 1.5rem;
-      background: white;
-      border: 1px solid rgb(209 213 219);
+      background: rgba(255,255,255,0.7);
+      border: 1px solid rgba(15,23,42,0.1);
       border-radius: 0.25rem;
       padding: 0 0.25rem;
       text-align: center;

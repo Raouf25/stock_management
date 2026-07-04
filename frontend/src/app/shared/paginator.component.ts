@@ -59,9 +59,10 @@ import { CommonModule } from '@angular/common';
       flex-wrap: wrap;
       gap: 0.5rem;
       padding: 0.75rem 1rem;
-      border-top: 1px solid var(--color-border, #e2e8f0);
-      background: var(--color-surface, #fff);
+      border-top: 1px solid var(--glass-border);
+      background: rgba(255,255,255,0.3);
     }
+    :host-context([data-theme="dark"]) .pag-wrap { background: rgba(255,255,255,0.03); }
 
     .pag-info {
       font-size: 0.8125rem;
@@ -78,8 +79,8 @@ import { CommonModule } from '@angular/common';
     .pag-btn {
       width: 2rem; height: 2rem;
       display: inline-flex; align-items: center; justify-content: center;
-      border: 1px solid var(--color-border, #e2e8f0);
-      background: var(--color-surface, #fff);
+      border: 1px solid rgba(15,23,42,0.1);
+      background: rgba(255,255,255,0.6);
       border-radius: 6px;
       font-size: 0.75rem;
       color: var(--color-text-2, #334155);
@@ -113,9 +114,9 @@ import { CommonModule } from '@angular/common';
     .pag-size {
       padding: 0.25rem 0.5rem;
       font-size: 0.8125rem;
-      border: 1px solid var(--color-border, #e2e8f0);
+      border: 1px solid rgba(15,23,42,0.1);
       border-radius: 6px;
-      background: var(--color-surface, #fff);
+      background: rgba(255,255,255,0.6);
       color: var(--color-text-2, #334155);
       cursor: pointer;
     }
